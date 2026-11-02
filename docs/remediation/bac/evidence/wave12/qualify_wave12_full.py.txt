@@ -1,0 +1,63 @@
+"""T19 required early full gate: collection, preflight and postflight; no checkout creation."""
+from pathlib import Path
+import fcntl,hashlib,json,os,re,shutil,subprocess,sys
+R=Path('/workspace/hamlet');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';Q=Path('/workspace/bac-review-2026-11-01/qualification')
+operation,candidate_tag,run_tag=sys.argv[1:];assert operation in {'collection','preflight','postflight'};assert all(re.fullmatch(r'r[0-9]+',v) for v in (candidate_tag,run_tag))
+mp=W/'wave12'/(candidate_tag+'-candidate.json');m=json.loads(mp.read_text());out=Q/('wave12-full-'+run_tag)
+hash_file=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *args:subprocess.check_output(['git',*args],cwd=R,text=True)
+def stationary():
+ assert git('rev-parse','HEAD').strip()==m['base_commit']
+ with (R/'.superpowers/bac-qualification-index.lock').open('a') as lock:
+  fcntl.flock(lock.fileno(),fcntl.LOCK_EX);state_tree=git('write-tree').strip();fcntl.flock(lock.fileno(),fcntl.LOCK_UN)
+ assert state_tree==m['candidate_tree'];assert subprocess.run(['git','diff','--quiet'],cwd=R).returncode==0
+ assert not git('ls-files','--others','--exclude-standard').strip()
+ for group in ('source_files','configs','artifacts'):
+  for name,digest in m[group].items():assert hash_file(R/name)==digest,(group,name)
+ assert git('worktree','list','--porcelain')==m['worktree_registry'];assert m['worktree_registry'].count('worktree ')==14
+ availability=[{'path':v['path'],'directory_exists':Path(v['path']).is_dir(),'git_pointer_exists':(Path(v['path'])/'.git').exists()} for v in m['worktree_availability']];assert availability==m['worktree_availability']
+ assert not m.get('absent_source_paths');assert len(m['configs'])==573 and len(m['artifacts'])==13
+ for scope in m['inventories'].values():assert len(scope)<=5 and sum(x['lines'] for x in scope)<=5000
+ assert hash_file(R/'docs/superpowers/plans/2026-11-01-bac-remediation-upgrades.md')=='2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1'
+stationary()
+base=['-m','pytest','tests','-q','--no-cov','-p','no:cacheprovider','-p','bac_source_identity']
+if operation=='collection':
+ target=Q/('wave12-full-'+run_tag+'-collection-spec.json');assert not target.exists()
+ spec={'root':str(R),'manifest':str(mp),'output':str(Q/('wave12-full-'+run_tag+'-collection')),'workers':1,'jobs':[{'name':'collection','args':base+['--collect-only']}]};target.write_text(json.dumps(spec,indent=2)+'\n');print(json.dumps({'collection_spec':str(target),'candidate_tree':m['candidate_tree']}));sys.exit(0)
+if operation=='preflight':
+ requirements=json.loads((W/'wave12'/(candidate_tag+'-gate-prerequisites.json')).read_text());assert requirements['status']=='READY_FOR_REQUIRED_FULL_GATE' and requirements['candidate_tree']==m['candidate_tree']
+ allowed={'src/townlet/population/vectorized.py','src/townlet/training/episode.py','src/townlet/training/clock_ledger.py','src/townlet/exploration/rnd.py','tests/test_townlet/regressions/bac/test_outcome_clocks.py','tests/test_townlet/regressions/bac/test_rnd_service.py'};assert set(m['changed_paths'])==allowed
+ checked=[]
+ for ref in requirements['results']:
+  result_path=Q/ref['result'];result=json.loads(result_path.read_text());assert result['exit_code']==0 and hash_file(Path(result['log']))==result['sha256']
+  previous=json.loads(Path(ref['manifest']).read_text());assert result['base_commit']==previous['base_commit'] and result['candidate_tree']==previous['candidate_tree'];assert result['manifest_sha256']==hash_file(Path(ref['manifest']))
+  if previous['candidate_tree']!=m['candidate_tree']:
+   scope=ref['source_scope'];assert previous['inventories'][scope]==m['inventories'][scope]
+  else:assert previous['source_files']==m['source_files']  # identical Git tree; actual prior base/registry identity retained
+  checked.append({'result':ref['result'],'sha256':hash_file(result_path),'actual_base':result['base_commit'],'actual_tree':result['candidate_tree'],'source_scope':ref.get('source_scope','full candidate'),'manifest':ref['manifest'],'manifest_sha256':hash_file(Path(ref['manifest']))})
+ assert {x['name'] for x in requirements['guard_results']}=={'ruff','black','mypy','no-defaults','expression-doc','compiler-cli'}
+ for entry in requirements['guard_results']:
+  path=Q/entry['result'];d=json.loads(path.read_text());guard_manifest=Path(entry['manifest']);prior=json.loads(guard_manifest.read_text());assert d['exit_code']==0 and d['candidate_tree']==m['candidate_tree'] and d['base_commit']==prior['base_commit'] and d['manifest_sha256']==hash_file(guard_manifest) and prior['source_files']==m['source_files'] and hash_file(Path(d['log']))==d['sha256']
+  checked.append({'result':entry['result'],'sha256':hash_file(path),'actual_base':d['base_commit'],'actual_tree':d['candidate_tree'],'source_scope':'identical Git tree guard','manifest':str(guard_manifest),'manifest_sha256':hash_file(guard_manifest)})
+ reports={name:hash_file(W/name) for name in requirements['review_files']};assert requirements['open_material_findings']==[]
+ cpath=Q/('wave12-full-'+run_tag+'-collection/collection-result.json');collection=json.loads(cpath.read_text());assert collection['exit_code']==0 and collection['candidate_tree']==m['candidate_tree'] and collection['manifest_sha256']==hash_file(mp) and hash_file(Path(collection['log']))==collection['sha256']
+ match=re.search(r'(\d+)/(\d+) tests collected',Path(collection['log']).read_text());assert match;selected,total=map(int,match.groups());assert 0<selected<=total;assert (selected,total)==(requirements['expected_selected'],requirements['expected_total'])
+ identity_path=Q/('wave12-full-'+run_tag+'-collection/collection/identity-controller.json');identity=json.loads(identity_path.read_text());assert identity['sha']==m['base_commit'] and identity['candidate_tree']==m['candidate_tree'] and identity['threads']==1 and identity['module']==str(R/'src/townlet/__init__.py')
+ resources={'cpu_max':Path('/sys/fs/cgroup/cpu.max').read_text().strip(),'affinity':len(os.sched_getaffinity(0)),'memory_current':int(Path('/sys/fs/cgroup/memory.current').read_text()),'memory_max':int(Path('/sys/fs/cgroup/memory.max').read_text()),'memory_events':Path('/sys/fs/cgroup/memory.events').read_text(),'workspace_free':shutil.disk_usage('/workspace').free,'TMPDIR':str(Q/'scratch/tmp-wave08-r3'),'workers':4,'Torch_OMP_MKL_OpenBLAS_threads':1,'CUDA':'unavailable/unqualified;CPU-only'};assert resources['cpu_max']=='400000 100000' and resources['affinity']>=4 and resources['workspace_free']>4*1024**3
+ processes=subprocess.check_output(['ps','-eo','pid,comm,pcpu,rss'],text=True).splitlines();resources['observed_python_processes']=[v for v in processes if 'python' in v or 'pytest' in v]
+ out.mkdir(exist_ok=True);pre=out/'fixture-resource-preflight.json';assert not pre.exists()
+ data={'base_commit':m['base_commit'],'candidate_tree':m['candidate_tree'],'manifest_sha256':hash_file(mp),'source_files':m['source_files'],'review_files':reports,'configs':m['configs'],'artifacts':m['artifacts'],'worktree_registry':m['worktree_registry'],'worktree_availability':m['worktree_availability'],'historical_custody_transition':m['source_equivalence']['custody_transition'],'harness_sha256':hash_file(Q/'bac_source_identity.py'),'orchestration_harness_sha256':hash_file(Q/'run_bac_packet_checks_locked.py'),'full_orchestration_sha256':hash_file(Path(__file__)),'prerequisites':checked,'prerequisite_manifest_sha256':hash_file(W/'wave12'/(candidate_tag+'-gate-prerequisites.json')),'collection':{'selected':selected,'total':total,'deselected':total-selected,'log_sha256':collection['sha256']},'resources':resources,'gate':'Required early T19 full gate: existing configured service/clock consumption changes. G3 milestone and whole BAC final acceptance remain open.','runtime_barrier':'All source/test/index/tracked docs and pinned review files frozen; preserve14registry records/current availability;historical13tmp paths alreadyunavailable;no new branch/worktree/project copies.'};pre.write_text(json.dumps(data,indent=2)+'\n')
+ spec={'root':str(R),'manifest':str(mp),'output':str(out),'workers':1,'jobs':[{'name':'full','args':base[:5]+['--maxfail=1']+base[5:]+['-n','4','--dist','worksteal','--basetemp='+str(Q/'scratch'/('wave12-full-'+run_tag))]}]};(Q/('wave12-full-'+run_tag+'-spec.json')).write_text(json.dumps(spec,indent=2)+'\n');print(json.dumps({'preflight':'PASS','candidate_tree':m['candidate_tree'],'selected':selected,'review_files':len(reports),'resources':resources},indent=2));sys.exit(0)
+pre=json.loads((out/'fixture-resource-preflight.json').read_text());assert hash_file(mp)==pre['manifest_sha256'] and m['base_commit']==pre['base_commit'] and m['candidate_tree']==pre['candidate_tree']
+for ref in pre['prerequisites']:
+ path=Q/ref['result'];assert hash_file(path)==ref['sha256'];d=json.loads(path.read_text());assert hash_file(Path(d['log']))==d['sha256'];assert hash_file(Path(ref['manifest']))==ref['manifest_sha256']
+result=json.loads((out/'full-result.json').read_text());assert result['exit_code']==0,'Preserve failure; repair causal prerequisite and re-review before repeating full gate'
+assert result['base_commit']==pre['base_commit'] and result['candidate_tree']==pre['candidate_tree'] and result['manifest_sha256']==pre['manifest_sha256'];assert hash_file(Path(result['log']))==result['sha256']
+log=Path(result['log']).read_text();counts={name:int(re.findall(r'(\d+) '+name,log)[-1]) if re.findall(r'(\d+) '+name,log) else 0 for name in ('passed','skipped','xfailed','xpassed','warnings')};assert sum(counts[x] for x in ('passed','skipped','xfailed','xpassed'))==pre['collection']['selected'];assert counts['passed']>0 and counts['xfailed']==counts['xpassed']==0
+for name,digest in pre['review_files'].items():assert hash_file(W/name)==digest,name
+for name,key in [('bac_source_identity.py','harness_sha256'),('run_bac_packet_checks_locked.py','orchestration_harness_sha256')]:assert hash_file(Q/name)==pre[key]
+assert hash_file(Path(__file__))==pre['full_orchestration_sha256'];assert hash_file(W/'wave12'/(candidate_tag+'-gate-prerequisites.json'))==pre['prerequisite_manifest_sha256']
+identities={p.stem.removeprefix('identity-'):json.loads(p.read_text()) for p in (out/'full').glob('identity-*.json')};assert set(identities)=={'controller','gw0','gw1','gw2','gw3'}
+for name,d in identities.items():assert d['sha']==pre['base_commit'] and d['candidate_tree']==pre['candidate_tree'] and d['threads']==1 and d['module']==str(R/'src/townlet/__init__.py'),name
+assert not list((out/'full').glob('failure-*.json'));stationary()
+report={'candidate_tree':pre['candidate_tree'],'base_commit':pre['base_commit'],'full_exit_code':0,'counts':counts,'wall_seconds':result['seconds'],'verified_source_paths':len(pre['source_files']),'verified_review_artifacts':len(pre['review_files']),'verified_process_identities':5,'verified_config_digests':len(pre['configs']),'verified_native_artifacts':len(pre['artifacts']),'registered_worktree_count':14,'available_checkout_count':sum(x['directory_exists'] for x in pre['worktree_availability']),'worktree_availability':pre['worktree_availability'],'historical_custody_transition':pre['historical_custody_transition'],'entire_current_registry_unchanged':True,'working_tree_equals_index':True,'harness_sha256':pre['harness_sha256'],'orchestration_harness_sha256':pre['orchestration_harness_sha256'],'scope':'Required early full T19 gate only; not G3 milestone or full BAC qualification. Source/docs/evidence checkpoint and exact remote/CI check remain. User requires halt after T19.'};(out/'final-postflight.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

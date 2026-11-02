@@ -1,0 +1,98 @@
+{
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "full_exit_code": 0,
+  "counts": {
+    "passed": 6927,
+    "skipped": 16,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 18
+  },
+  "wall_seconds": 2690.637628555298,
+  "verified_source_paths": 167,
+  "verified_review_artifacts": 13,
+  "verified_process_identities": 5,
+  "verified_config_digests": 573,
+  "verified_native_artifacts": 13,
+  "registered_worktree_count": 14,
+  "available_checkout_count": 1,
+  "worktree_availability": [
+    {
+      "path": "/workspace/hamlet",
+      "directory_exists": true,
+      "git_pointer_exists": true
+    },
+    {
+      "path": "/tmp/bac-verify-T01-1139ddfa42",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T02-25cdec4e82",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T02-r1-94de8d44e8",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T03-4175e78397",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T08-00d385ce62",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T08a-4474a07ae5",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T09a-63beed0c8d",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T18-7901753a30",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T18a-212b3d6d1a",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-wave01-6881a7488a",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-wave02-3d1d21cff5",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-wave02-receipts-ea9bad791f",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/hamlet-bac-4aa5363b",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    }
+  ],
+  "historical_custody_transition": "qualification/wave12-environment-custody-transition.json",
+  "entire_current_registry_unchanged": true,
+  "working_tree_equals_index": true,
+  "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+  "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+  "scope": "Required early full T19 gate only; not G3 milestone or full BAC qualification. Source/docs/evidence checkpoint and exact remote/CI check remain. User requires halt after T19."
+}

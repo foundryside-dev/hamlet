@@ -1,0 +1,277 @@
+diff --git a/src/townlet/exploration/rnd.py b/src/townlet/exploration/rnd.py
+index aa1965c1..cb35be9d 100644
+--- a/src/townlet/exploration/rnd.py
++++ b/src/townlet/exploration/rnd.py
+@@ -11,20 +11,31 @@ import numpy as np
+ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F  # noqa: N812
+ 
+ from townlet.config.bac_options import RNDOptions
+ from townlet.exploration.action_selection import epsilon_greedy_action_selection
+ from townlet.exploration.base import ExplorationStrategy
+ from townlet.training.state import BatchedAgentState
+ 
+ 
++@dataclass(frozen=True)
++class PredictorServiceCounters:
++    """Owned primitive snapshot of recorded cumulative work and current occupancy."""
++
++    admitted_rows: int
++    consumed_rows: int
++    dropped_rows: int
++    pending_rows: int
++    optimizer_updates: int
++
++
+ @dataclass(frozen=True)
+ class PredictorServiceReceipt:
+     """Per-call row accounting; overflow updates are separate from tick pacing.
+ 
+     admitted_rows includes explicitly dropped rows, so cumulative admissions equal
+     consumed + dropped + pending. No reward normalization is performed by service.
+     """
+ 
+     admitted_rows: int
+     consumed_rows: int
+@@ -288,20 +299,37 @@ class RNDExploration(ExplorationStrategy):
+ 
+     def configure_service(self, options: RNDOptions) -> None:
+         """Bind fully resolved policy before service; never choose consumer defaults."""
+         checked = self._validated_options(options)
+         if self.service_options == checked:
+             return
+         if self.obs_buffer or self._admitted_rows:
+             raise ValueError("configure RND service before admission; live policy changes require explicit transfer")
+         self.service_options = checked
+ 
++    def predictor_service_counters(self) -> PredictorServiceCounters:
++        """Observe native recorded counters and occupancy without servicing work.
++
++        External obs_buffer appends affect occupancy immediately; their admissions
++        are recorded by the next update_predictor call, even for a partial batch.
++        Callers measuring legacy work must start their interval before appending
++        and end it after that update. Reading this view never reconciles counters
++        or copies pending observations, networks, or optimizer state.
++        """
++        return PredictorServiceCounters(
++            admitted_rows=self._admitted_rows,
++            consumed_rows=self._consumed_rows,
++            dropped_rows=self._dropped_rows,
++            pending_rows=len(self.obs_buffer),
++            optimizer_updates=self._optimizer_updates,
++        )
++
+     def admit_and_service(self, observations: torch.Tensor, *, vector_tick: int) -> PredictorServiceReceipt:
+         """Admit only caller-selected eligible predecessor rows in bounded chunks.
+ 
+         The caller owns eligibility and local clocks. Repeated calls at the same
+         tick share the ordinary paced budget. Lossless mandatory overflow service
+         may exceed that budget and is reported separately. Each loop either admits,
+         consumes, or explicitly drops rows, including oversized input tensors.
+         """
+         self._validate_observations(observations)
+         options = self.service_options
+diff --git a/tests/test_townlet/regressions/bac/test_rnd_service.py b/tests/test_townlet/regressions/bac/test_rnd_service.py
+index a767c633..0bf86ae9 100644
+--- a/tests/test_townlet/regressions/bac/test_rnd_service.py
++++ b/tests/test_townlet/regressions/bac/test_rnd_service.py
+@@ -413,10 +413,198 @@ def test_public_manual_optimizer_steps_capture_their_live_clock(steps):
+         loss.backward()
+         source.optimizer.step()
+     state = source.checkpoint_state()
+     assert state["predictor_service"]["optimizer_updates"] == 0
+     assert state["predictor_service"]["optimizer_step_offset"] == steps
+     restored = provider(3, 6, "paced_fifo", "service_before_admit")
+     restored.load_state(state)
+     for current in (source, restored):
+         current.admit_and_service(rows(3), vector_tick=0)
+     equal(source.checkpoint_state(), restored.checkpoint_state())
++
++
++def service_counter_values(snapshot):
++    return (
++        snapshot.admitted_rows,
++        snapshot.consumed_rows,
++        snapshot.dropped_rows,
++        snapshot.pending_rows,
++        snapshot.optimizer_updates,
++    )
++
++
++def test_public_predictor_counters_follow_genuine_legacy_optimizer_work():
++    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
++    before = copy.deepcopy(rnd.predictor_network.state_dict())
++    steps = []
++    handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
++    try:
++        rnd.update({"observations": rows(7)})
++    finally:
++        handle.remove()
++    assert steps == [1]
++    assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {1}
++    assert any(not torch.equal(before[key], value) for key, value in rnd.predictor_network.state_dict().items())
++    # The first intended RED is here, after genuine existing one-minibatch work.
++    assert callable(getattr(rnd, "predictor_service_counters", None)), "cheap public predictor accounting view missing"
++    assert service_counter_values(rnd.predictor_service_counters()) == (7, 3, 0, 4, 1)
++
++
++def test_public_predictor_counters_bracket_legacy_partial_and_full_direct_updates():
++    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
++    rnd.obs_buffer.extend(rows(2).unbind())
++    assert rnd.update_predictor() == 0.0
++    assert rnd.optimizer.state == {}
++    before = rnd.predictor_service_counters()
++    assert service_counter_values(before) == (2, 0, 0, 2, 0)
++    rnd.obs_buffer.extend(rows(5).unbind())
++    # An unserviced public-buffer append changes occupancy, not recorded admissions.
++    unserviced = rnd.predictor_service_counters()
++    assert service_counter_values(unserviced) == (2, 0, 0, 7, 0)
++    loss = rnd.update_predictor()
++    assert type(loss) is float
++    after = rnd.predictor_service_counters()
++    assert service_counter_values(after) == (7, 3, 0, 4, 1)
++    assert after.admitted_rows - before.admitted_rows == 5
++    assert after.consumed_rows - before.consumed_rows == 3
++    assert after.optimizer_updates - before.optimizer_updates == 1
++    assert type(rnd.update_predictor()) is float
++    assert service_counter_values(rnd.predictor_service_counters()) == (7, 6, 0, 1, 2)
++    assert rnd.update_predictor() == 0.0
++    assert service_counter_values(rnd.predictor_service_counters()) == (7, 6, 0, 1, 2)
++    assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {2}
++    assert service_counter_values(before) == (2, 0, 0, 2, 0)
++
++
++@pytest.mark.parametrize("configured", [False, True])
++def test_public_predictor_counters_count_real_zero_loss_steps(configured):
++    rnd = (
++        provider(3, 9, "paced_fifo", "service_before_admit")
++        if configured
++        else RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
++    )
++    rnd.predictor_network.load_state_dict(rnd.fixed_network.state_dict())
++    steps = []
++    handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
++    try:
++        if configured:
++            receipt = rnd.admit_and_service(rows(7), vector_tick=0)
++            assert receipt.last_loss == 0.0
++            assert receipt.optimizer_updates == 1
++        else:
++            rnd.obs_buffer.extend(rows(7).unbind())
++            assert rnd.update_predictor() == 0.0
++        assert steps == [1]
++        assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {1}
++        assert service_counter_values(rnd.predictor_service_counters()) == (7, 3, 0, 4, 1)
++        assert rnd.update_predictor() == 0.0
++        assert steps == [1, 1]
++        assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {2}
++        assert service_counter_values(rnd.predictor_service_counters()) == (7, 6, 0, 1, 2)
++        assert rnd.update_predictor() == 0.0
++        assert steps == [1, 1]
++    finally:
++        handle.remove()
++
++
++@pytest.mark.parametrize("mode", ["paced_fifo", "occupancy_fifo"])
++@pytest.mark.parametrize("policy", ["service_before_admit", "drop_oldest", "drop_newest"])
++def test_public_predictor_counters_agree_with_configured_receipts(mode, policy):
++    rnd = provider(3, 3, mode, policy)
++    steps = []
++    handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
++    totals = [0, 0, 0, 0]
++    try:
++        assert service_counter_values(rnd.predictor_service_counters()) == (0, 0, 0, 0, 0)
++        for count, tick in ((7, 4), (2, 4), (0, 5), (4, 6)):
++            receipt = rnd.admit_and_service(rows(count), vector_tick=tick)
++            totals = [
++                a + b
++                for a, b in zip(
++                    totals, (receipt.admitted_rows, receipt.consumed_rows, receipt.dropped_rows, receipt.optimizer_updates), strict=True
++                )
++            ]
++            snapshot = rnd.predictor_service_counters()
++            assert service_counter_values(snapshot) == (*totals[:3], receipt.pending_rows, totals[3])
++            assert snapshot.admitted_rows == snapshot.consumed_rows + snapshot.dropped_rows + snapshot.pending_rows
++            assert snapshot.optimizer_updates == len(steps)
++            assert snapshot.consumed_rows == 3 * len(steps)
++            assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {len(steps)}
++        assert len(steps) > 0
++    finally:
++        handle.remove()
++
++
++@pytest.mark.parametrize("configured", [False, True])
++def test_public_predictor_counters_are_frozen_owned_primitives_and_observationally_pure(monkeypatch, configured):
++    import random
++    from dataclasses import FrozenInstanceError, fields, is_dataclass
++
++    import numpy as np
++
++    rnd = (
++        provider(3, 9, "paced_fifo", "service_before_admit")
++        if configured
++        else RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
++    )
++    rnd.update({"observations": rows(5)})
++    before = rnd.checkpoint_state()  # One test oracle, never the per-step accounting path.
++    queue = rnd.obs_buffer
++    queued_rows = tuple(queue)
++    networks = (rnd.fixed_network, rnd.predictor_network)
++    optimizer = rnd.optimizer
++    gradients = [None if parameter.grad is None else parameter.grad.clone() for parameter in rnd.predictor_network.parameters()]
++    torch_rng = torch.get_rng_state().clone()
++    numpy_rng = np.random.get_state()
++    python_rng = random.getstate()
++
++    def forbidden(*_args, **_kwargs):
++        pytest.fail("counter observation performed clone/model/optimizer/admission/service work")
++
++    with monkeypatch.context() as guarded:
++        for name in ("checkpoint_state", "available_state", "update", "update_predictor", "admit_and_service", "configure_service"):
++            guarded.setattr(rnd, name, forbidden)
++        for network in networks:
++            guarded.setattr(network, "forward", forbidden)
++            guarded.setattr(network, "state_dict", forbidden)
++        for name in ("step", "zero_grad", "state_dict"):
++            guarded.setattr(optimizer, name, forbidden)
++        guarded.setattr("townlet.exploration.rnd.deepcopy", forbidden)
++        guarded.setattr(torch.Tensor, "clone", forbidden)
++        guarded.setattr(torch, "stack", forbidden)
++        snapshots = [rnd.predictor_service_counters() for _ in range(3)]
++
++    snapshot = snapshots[0]
++    assert type(snapshot).__name__ == "PredictorServiceCounters"
++    assert is_dataclass(snapshot)
++    assert tuple(field.name for field in fields(snapshot)) == (
++        "admitted_rows",
++        "consumed_rows",
++        "dropped_rows",
++        "pending_rows",
++        "optimizer_updates",
++    )
++    assert all(type(value) is int for value in service_counter_values(snapshot))
++    assert all(service_counter_values(item) == (5, 3, 0, 2, 1) for item in snapshots)
++    for field in fields(snapshot):
++        with pytest.raises(FrozenInstanceError):
++            setattr(snapshot, field.name, 999)
++    assert rnd.obs_buffer is queue
++    assert len(queue) == len(queued_rows)
++    assert all(current is original for current, original in zip(queue, queued_rows, strict=True))
++    assert rnd.fixed_network is networks[0] and rnd.predictor_network is networks[1]
++    assert rnd.optimizer is optimizer
++    equal(before, rnd.checkpoint_state())
++    for parameter, gradient in zip(rnd.predictor_network.parameters(), gradients, strict=True):
++        if gradient is None:
++            assert parameter.grad is None
++        else:
++            equal(gradient, parameter.grad)
++    equal(torch_rng, torch.get_rng_state())
++    current_numpy_rng = np.random.get_state()
++    assert numpy_rng[0] == current_numpy_rng[0]
++    assert np.array_equal(numpy_rng[1], current_numpy_rng[1])
++    assert numpy_rng[2:] == current_numpy_rng[2:]
++    assert python_rng == random.getstate()
++    rnd.update({"observations": rows(1)})
++    assert service_counter_values(rnd.predictor_service_counters()) == (6, 6, 0, 0, 2)
++    assert service_counter_values(snapshot) == (5, 3, 0, 2, 1)

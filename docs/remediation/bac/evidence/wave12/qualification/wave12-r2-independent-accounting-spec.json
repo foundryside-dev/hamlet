@@ -1,0 +1,31 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "independent-accounting",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_follow_genuine_legacy_optimizer_work",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_bracket_legacy_partial_and_full_direct_updates",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_count_real_zero_loss_steps",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_agree_with_configured_receipts",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_are_frozen_owned_primitives_and_observationally_pure",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r2-independent-accounting"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "joint-collection",
+  "exit_code": 0,
+  "seconds": 6.096885681152344,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-collection/joint-collection.log",
+  "sha256": "9f248e69b528e51c7bdc73d9f0fa96375f21caa0452df7383f16f6cf345c4ac9",
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "ba430b5e0c12dcc31b082250b94d2384ad804c12244fe900e6519f25cdf7c03e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

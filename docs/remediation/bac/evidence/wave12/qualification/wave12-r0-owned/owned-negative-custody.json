@@ -1,0 +1,23 @@
+{
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "candidate_tree": "8feee4b66c0eebc6957c8a87c010ec1ad2872e97",
+  "exit_code": 1,
+  "counts": {
+    "failed": 9,
+    "passed": 1,
+    "errors": 0
+  },
+  "wall_seconds": 49.092506647109985,
+  "log_sha256": "9e7a47393c486d9898288338728cd19dd78aeac313e10259b8563d0be60961b7",
+  "source_guards": 165,
+  "absent_sources_verified": [
+    "src/townlet/training/clock_ledger.py"
+  ],
+  "process_identities": 5,
+  "configs": 573,
+  "artifacts": 13,
+  "worktrees": 14,
+  "custody": "PASS",
+  "interpretation": "Meaningful RED: nine cases complete real legacy2/5 fixture prerequisites, then fail the missing owned LaneOutcome interface assertion. Existing direct legacy one-minibatch control passes. No fixture/collection error.",
+  "style_owed": "Ruff import ordering only plus Black formatting; no semantic test relaxation authorized."
+}

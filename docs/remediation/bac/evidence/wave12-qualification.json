@@ -1,0 +1,1429 @@
+{
+  "task": "T19",
+  "source_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "qualified_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "full_repository": {
+    "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+    "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+    "full_exit_code": 0,
+    "counts": {
+      "passed": 6927,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 18
+    },
+    "wall_seconds": 2690.637628555298,
+    "verified_source_paths": 167,
+    "verified_review_artifacts": 13,
+    "verified_process_identities": 5,
+    "verified_config_digests": 573,
+    "verified_native_artifacts": 13,
+    "registered_worktree_count": 14,
+    "available_checkout_count": 1,
+    "worktree_availability": [
+      {
+        "path": "/workspace/hamlet",
+        "directory_exists": true,
+        "git_pointer_exists": true
+      },
+      {
+        "path": "/tmp/bac-verify-T01-1139ddfa42",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T02-25cdec4e82",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T02-r1-94de8d44e8",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T03-4175e78397",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T08-00d385ce62",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T08a-4474a07ae5",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T09a-63beed0c8d",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T18-7901753a30",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T18a-212b3d6d1a",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-wave01-6881a7488a",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-wave02-3d1d21cff5",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-wave02-receipts-ea9bad791f",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/hamlet-bac-4aa5363b",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      }
+    ],
+    "historical_custody_transition": "qualification/wave12-environment-custody-transition.json",
+    "entire_current_registry_unchanged": true,
+    "working_tree_equals_index": true,
+    "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "scope": "Required early full T19 gate only; not G3 milestone or full BAC qualification. Source/docs/evidence checkpoint and exact remote/CI check remain. User requires halt after T19."
+  },
+  "release": {
+    "status": "SCOPED_QUALIFIED_T19_CPU",
+    "candidate_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+    "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+    "scope": "T19 owned outcomes/global clocks and bounded pure predictor accounting producer",
+    "source_inventories": {
+      "T19": [
+        {
+          "path": "src/townlet/population/vectorized.py",
+          "lines": 2329,
+          "sha256": "629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92",
+          "present": true
+        },
+        {
+          "path": "src/townlet/training/episode.py",
+          "lines": 66,
+          "sha256": "5db951b4e76f88a2339ee5f77fe6515a726b5e2d1a006dbe283ea07d022f7fa9",
+          "present": true
+        },
+        {
+          "path": "src/townlet/training/clock_ledger.py",
+          "lines": 36,
+          "sha256": "117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571",
+          "present": true
+        },
+        {
+          "path": "src/townlet/training/replay_contract.py",
+          "lines": 222,
+          "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+          "present": true
+        },
+        {
+          "path": "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+          "lines": 538,
+          "sha256": "66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9",
+          "present": true
+        }
+      ],
+      "T19-accounting": [
+        {
+          "path": "src/townlet/exploration/rnd.py",
+          "lines": 689,
+          "sha256": "821fd3095e896a5b98d44a671906f9c5cbccec2f00fa430a6f5bb8acb24e4109"
+        },
+        {
+          "path": "src/townlet/config/bac_options.py",
+          "lines": 294,
+          "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+        },
+        {
+          "path": "src/townlet/exploration/adaptive_intrinsic.py",
+          "lines": 226,
+          "sha256": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9"
+        },
+        {
+          "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+          "lines": 610,
+          "sha256": "0477b2531b8a1a109bf71285310c0beda725e295f11c51f61f6713005c2f6a62"
+        }
+      ]
+    },
+    "focused": "R0 meaningful9FAIL1PASS; producer real-Adam RED1; R2joint65PASS; R3 reviewed defects7FAIL7PASS; R4joint79PASS",
+    "owners": "327PASS1SKIP; actual source/process evidence verified, historical tmp availability transition explicitly recorded",
+    "independent": "Astra core24PASS on actual R4 and producer12PASS on actual R2; all original identities retained through same-tree/four-source equivalence",
+    "review_record": "Fresh core R4 rereview all3materialfindings+default repair addressed; producer no defects; sourceverified docs approved",
+    "full_repository": {
+      "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "full_exit_code": 0,
+      "counts": {
+        "passed": 6927,
+        "skipped": 16,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 18
+      },
+      "wall_seconds": 2690.637628555298,
+      "verified_source_paths": 167,
+      "verified_review_artifacts": 13,
+      "verified_process_identities": 5,
+      "verified_config_digests": 573,
+      "verified_native_artifacts": 13,
+      "registered_worktree_count": 14,
+      "available_checkout_count": 1,
+      "worktree_availability": [
+        {
+          "path": "/workspace/hamlet",
+          "directory_exists": true,
+          "git_pointer_exists": true
+        },
+        {
+          "path": "/tmp/bac-verify-T01-1139ddfa42",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T02-25cdec4e82",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T02-r1-94de8d44e8",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T03-4175e78397",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T08-00d385ce62",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T08a-4474a07ae5",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T09a-63beed0c8d",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T18-7901753a30",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-T18a-212b3d6d1a",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-wave01-6881a7488a",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-wave02-3d1d21cff5",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/bac-verify-wave02-receipts-ea9bad791f",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        },
+        {
+          "path": "/tmp/hamlet-bac-4aa5363b",
+          "directory_exists": false,
+          "git_pointer_exists": false
+        }
+      ],
+      "historical_custody_transition": "qualification/wave12-environment-custody-transition.json",
+      "entire_current_registry_unchanged": true,
+      "working_tree_equals_index": true,
+      "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "scope": "Required early full T19 gate only; not G3 milestone or full BAC qualification. Source/docs/evidence checkpoint and exact remote/CI check remain. User requires halt after T19."
+    },
+    "static_guards": "all sixPASS;612default ceiling unchanged",
+    "full_gate_reason": "Required early consumed predictor-service/clock integration trigger, not G3 milestone completion",
+    "open_material_findings_in_T19": [],
+    "unrun_final_programme_checks": "Final common-source22lenses+synthesis,finiteT40+12strictlearning/E2E,complete native10/7,coverage>=70/slow/applicable hardware remain later programme obligations; CUDAunavailable/unqualified",
+    "history": "Existing native checkpoint schema/key set unchanged; new owned ledger/identity persistence remains T24/T25, unavailable historical ledger diagnoses rather than fabricates",
+    "runner": "Existing runner not yet adopted bound begin/commit; explicit caller-owned API qualified, production adoption remains required later",
+    "worktree_custody": {
+      "registered": 14,
+      "available": 1,
+      "historical_unavailable": 13,
+      "cause": "unestablished",
+      "source_and_workspace_history_bundle": "verified",
+      "recreated_pruned_or_deleted_by_checkpoint": false
+    },
+    "stop": "User asked current package completed, allworkcommitted/pushed then graceful halt. No next packet."
+  },
+  "contracts": [
+    "BAC-C07",
+    "BAC-C08",
+    "BAC-C09",
+    "BAC-C13"
+  ],
+  "scope": "Owned explicit-identity completion envelopes and truthful global event clocks; additive pure predictor accounting view; existing legacy/constructor/completion/service behavior retained. Scoped CPU package only.",
+  "repairs": [
+    "Returned canonical tensor mutation fixed by defensive exposures and publication fingerprints",
+    "Late/partial commitment authority preserved across accepted reset",
+    "Finite singleton entropy0 after finite-Q check; invalid input rejected before physics",
+    "No-defaults ceiling612 preserved; no loss-based optimizer inference or checkpoint clone per step"
+  ],
+  "preservation": "Native checkpoint payload unchanged; new owned ledger/history persistence remains mandatory later, unknown historical ledger diagnosed. Ordinary runner still has not adopted bind/begin/commit; no privateB/wholeBAC/learning/GPU closure.",
+  "temporary_checkout_custody": {
+    "registered": 14,
+    "available_at_full_gate": 1,
+    "record": "wave12/qualification/wave12-environment-custody-transition.json",
+    "note": "13 historical tmp directories became unavailable; cause not established. Registry identity records and current source/history workspace bundle verified; no pruning/recreation. Full current-MAIN pre/post registry and availability pinned; original pretransition records retained."
+  },
+  "candidate_patches": [
+    {
+      "metadata": "r0-candidate.json",
+      "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+      "candidate_tree": "8feee4b66c0eebc6957c8a87c010ec1ad2872e97",
+      "patch": "evidence/wave12/candidate-patches/r0-candidate.patch",
+      "sha256": "92bbe245e60f927456a165894e38e13292fe6129bc81e39de9479b5a0b51a712"
+    },
+    {
+      "metadata": "r1-candidate.json",
+      "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+      "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d",
+      "patch": "evidence/wave12/candidate-patches/r1-candidate.patch",
+      "sha256": "3c211b2003c5fa0c56964d4549ccac8ef0b208c04645f3e49c9b9793e0ae087c"
+    },
+    {
+      "metadata": "r2-candidate.json",
+      "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+      "candidate_tree": "ed3cf26770875fc28dab25d89567dd65a19764fe",
+      "patch": "evidence/wave12/candidate-patches/r2-candidate.patch",
+      "sha256": "141b493966e970ea23809d5d18d6cbca86c685ea11979e88ac827081541fd9c7"
+    },
+    {
+      "metadata": "r3-candidate.json",
+      "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+      "candidate_tree": "fcffa0ee0b53a03947ae53426343f834a8d7494a",
+      "patch": "evidence/wave12/candidate-patches/r3-candidate.patch",
+      "sha256": "1e12a10293fb74c027713c7575c65217341d8011582b6b8924537f7e53f54bdc"
+    },
+    {
+      "metadata": "r4-candidate.json",
+      "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+      "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+      "reachable_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6"
+    },
+    {
+      "metadata": "r5-candidate.json",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+      "reachable_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6"
+    }
+  ],
+  "artifacts": {
+    "evidence/wave12/qualification/wave12-full-r0-collection/collection/identity-controller.json": {
+      "sha256": "abca31868d57f8d7325363d1b420f5e75aa68d7d4fe969b8d2aa9665430127f7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r0-collection/collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r0-collection/collection-result.json": {
+      "sha256": "1812c9c9c0f29aec0f84ca222d00a0c6710a562f3a45c14f068d4b8df0040c9a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r0-collection/collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r0-collection/collection.log": {
+      "sha256": "02f651177a45b1cdfaf390ddd7149fc356255f71845809aaaf69294e95e389ec",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r0-collection/collection.log"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/final-postflight.json": {
+      "sha256": "3f218e961801574b579c980c0faf7690fe7c5d16958ad114b15ae24424ab2087",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/final-postflight.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/fixture-resource-preflight.json": {
+      "sha256": "3418ae9909fd3e4969a72f91655cbc87052051904e31ba758d7fd9e0d67505f6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/fixture-resource-preflight.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full/identity-controller.json": {
+      "sha256": "172d34682e1cbe30d91ecf0284a45b74a3175af9f44dae30eb8aad464c6807df",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full/identity-gw0.json": {
+      "sha256": "a03f7145b66d21322c6ac25adc54bb828c9060948f1700c28c96729ea56aad8c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full/identity-gw1.json": {
+      "sha256": "89311c08476563263144c968a7ff9fcc65f25b9558fab78221c76b28a55622f6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full/identity-gw2.json": {
+      "sha256": "bb4b11ad0b82b21a9d5facf287e3414234dd61c87f0ec25cd9f4613b11ee1984",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full/identity-gw2.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full/identity-gw3.json": {
+      "sha256": "46d7b44084093efebd4c8d6ee7e9c9038227daa2ea13e421f2b82751e364054d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full/identity-gw3.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full-result.json": {
+      "sha256": "c2090ab2fc0d80035268baac8329008ec5f8b5a673657e005b842544b3b32b43",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full-result.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1/full.log": {
+      "sha256": "74de0457a96734e4b72c9ebfafbb6cf3c4f686b87c3e14b90645bfd7db9549d5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full.log"
+    },
+    "evidence/wave12/qualification/wave12-full-r1-collection/collection/identity-controller.json": {
+      "sha256": "172d34682e1cbe30d91ecf0284a45b74a3175af9f44dae30eb8aad464c6807df",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1-collection/collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1-collection/collection-result.json": {
+      "sha256": "fe1c3984d8dd29125057ad109393fe2df10c3d76628aafc34a8deed24ce51911",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1-collection/collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1-collection/collection.log": {
+      "sha256": "7f6a3656c99bb963917229a36ff2cd4aa96495a221663a25ca36cd68a2f2e2eb",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1-collection/collection.log"
+    },
+    "evidence/wave12/qualification/wave12-r0-collection/collection/identity-controller.json": {
+      "sha256": "736751d7bab15935f2696c0ee0439e6cbc23960b9f96d153b81d92817ddde682",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-collection/collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-collection/collection-custody.json": {
+      "sha256": "cbe1f7458f518462a40272898545d3f50b13a86b173b78d8ca2d27694fd6d164",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-collection/collection-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-collection/collection-result.json": {
+      "sha256": "4605ba013655218468063ef0a663225d8f5019ac4064869a65f0eb1a1de5ac34",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-collection/collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-collection/collection.log": {
+      "sha256": "3131b694aae163ce65b6349fbfb0ad21ad45c91185a7835e85ef231d29b84a26",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-collection/collection.log"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-1ae162fe385a7aa8.json": {
+      "sha256": "56aeec979e0340dbf9cc24b3e4bcdb7c6acc02bcca6cfdad930646522037a73d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-1ae162fe385a7aa8.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-22089a78321da4c5.json": {
+      "sha256": "d668b2e82276da12cf2f367a204794c604a067d129890bfe72b545090badc1a7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-22089a78321da4c5.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-371274f02dc1f0c6.json": {
+      "sha256": "fc90335c33cbb2c034947d6ee04f149f98213c64543dac6419960a2376d623dc",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-371274f02dc1f0c6.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-4f4112c1a82f569a.json": {
+      "sha256": "9c7e85dd42b9a5882b8eeaeae95947befcdaade4eb0f98e17488b29bf1d06214",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-4f4112c1a82f569a.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-676f0a0f1f2ed6b5.json": {
+      "sha256": "c7ba6d330594a70eca01f4a4d06dbb8d622fe3f8a3fd90a5fb73440bc682871f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-676f0a0f1f2ed6b5.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-6fcfde6bc61c3611.json": {
+      "sha256": "d337e75b0ef59e43a6093c5cdcc4cc15f6e1568a96cec4713f52b7824e58a42e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-6fcfde6bc61c3611.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-b44b99ef8e78168b.json": {
+      "sha256": "34ab0846597953b5093df399aaea59062f43515a36a7014d25b83009065e00ad",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-b44b99ef8e78168b.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-caee150e64f04a2a.json": {
+      "sha256": "e3eb77cbd7f1e2f83cb20af818206896193983d865716e0b8bbda093706f961e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-caee150e64f04a2a.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-controller-d71a6bc24c04b120.json": {
+      "sha256": "be287dfa25bb8ea03687ea7a7e1422bdf9bb7f1838f521c7e3e8c6c18718fa85",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-controller-d71a6bc24c04b120.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw0-676f0a0f1f2ed6b5.json": {
+      "sha256": "b7b836b27154ce7ab17eda8d2ac2e67a21714bbbf88810147ea2c193cb1d84ba",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw0-676f0a0f1f2ed6b5.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw0-b44b99ef8e78168b.json": {
+      "sha256": "863809f8b6c436506e2dfb86c1eed8d1133aa53b6720cacaebe2b003da173759",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw0-b44b99ef8e78168b.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw1-1ae162fe385a7aa8.json": {
+      "sha256": "75ce9b5dfdf97b44141b757de72fc4521da3159570a361396f948238c58a6436",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw1-1ae162fe385a7aa8.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw1-d71a6bc24c04b120.json": {
+      "sha256": "7e4c2cb09e3a8ff2e092d71e5014fe968be6834d33f6b0ba59f0d4558fd31d49",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw1-d71a6bc24c04b120.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw2-371274f02dc1f0c6.json": {
+      "sha256": "deec2fc05bd5c262a34fda36e3cec87f1f7334020220e6e61a744b76ba35b092",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw2-371274f02dc1f0c6.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw2-6fcfde6bc61c3611.json": {
+      "sha256": "61d28eabd5b8aac72e5bef3b9b22b4e63f5a27dca5f66e0c1277861116b67ecf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw2-6fcfde6bc61c3611.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw3-22089a78321da4c5.json": {
+      "sha256": "eab34f78c1ae5295bfcc5df4536a7a9aceb93cd4d42e722b8875717690d0b6a5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw3-22089a78321da4c5.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw3-4f4112c1a82f569a.json": {
+      "sha256": "5ade033f4c12466b76d829f8f153fdce05dfdec5c8796d0c5178d9f0d0c873c0",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw3-4f4112c1a82f569a.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/failure-gw3-caee150e64f04a2a.json": {
+      "sha256": "a471aff8d2a1f50b01ce7e312ab3531887dc764c6d86c49a53c31e45e6455f77",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/failure-gw3-caee150e64f04a2a.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/identity-controller.json": {
+      "sha256": "736751d7bab15935f2696c0ee0439e6cbc23960b9f96d153b81d92817ddde682",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/identity-gw0.json": {
+      "sha256": "72e63a0244e2a6c3d99b1589affe5bc709e6434dcabe737ccbe95c8183005d31",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/identity-gw1.json": {
+      "sha256": "68c36298d902ed4681ee302649b7e14dff52c501e3648d93dc39867e1ee8cea3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/identity-gw2.json": {
+      "sha256": "48f61a03359469aea56b749627d7e5683091703b7cd9d99c2eef51af3a8d74db",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/identity-gw2.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned/identity-gw3.json": {
+      "sha256": "596fcd168ce1be085a836378ec51d852c2ca823b10b2bacf176d0391187760b8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned/identity-gw3.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned-negative-custody.json": {
+      "sha256": "725f878ba75f14dfcb8297e60ea0651afdbb8378361ca18f3bb7edf5daab02ff",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned-negative-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned-result.json": {
+      "sha256": "6ddfd917e699eb3a414a7939bcc5c5f4d941f5033cd329519b87ec734b79b3c1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned/owned.log": {
+      "sha256": "9e7a47393c486d9898288338728cd19dd78aeac313e10259b8563d0be60961b7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned/owned.log"
+    },
+    "evidence/wave12/qualification/wave12-r0-test-style/black-test-result.json": {
+      "sha256": "74352d747ebf1505fe545a1f9b839c477bdf093b31c6c42fe5a83aca07c3409b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-test-style/black-test-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-test-style/black-test.log": {
+      "sha256": "911a200e945502be8e9a48dbf8dabec79fa9bfc6bbe9d83c49961fbb70d0f957",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-test-style/black-test.log"
+    },
+    "evidence/wave12/qualification/wave12-r0-test-style/ruff-test-result.json": {
+      "sha256": "1deb1ccc5be147c3bfc1296695a516b41606929bbdbc398d7647681f3f9b7608",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-test-style/ruff-test-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-test-style/ruff-test.log": {
+      "sha256": "23684da55a6dbed8de7d6c85883f0431d1880c82768d0341ef7be009ca7b8379",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-test-style/ruff-test.log"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-collection/accounting-collection/identity-controller.json": {
+      "sha256": "65efb0288e758649a464d2f7bb41f8e276c1b38fde27971c3ee3cb94bb6fc6bb",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-collection/accounting-collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-collection/accounting-collection-custody.json": {
+      "sha256": "1b8489cc323325639c7d971b39a06632c4fc2c98e665fbd9ea597a810c5d7615",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-collection/accounting-collection-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-collection/accounting-collection-result.json": {
+      "sha256": "231048f007e0c83cb23c4be11222f696c87389ac54f802e1301863559cdf3fb5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-collection/accounting-collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-collection/accounting-collection.log": {
+      "sha256": "b36335aa562bfc5d049041eff428e091f730fde80625645c5e8fa4c143f92650",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-collection/accounting-collection.log"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-red/accounting-red/failure-controller-56a42289e39d0aaf.json": {
+      "sha256": "4755c0c4bd2f4c9b45f9376c04d47612b4915a72e7e6a95aa4169fc9782553ef",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red/accounting-red/failure-controller-56a42289e39d0aaf.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-red/accounting-red/identity-controller.json": {
+      "sha256": "65efb0288e758649a464d2f7bb41f8e276c1b38fde27971c3ee3cb94bb6fc6bb",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red/accounting-red/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-red/accounting-red-negative-custody.json": {
+      "sha256": "b2a5a745b43d055e7619db1fe64931d17df8fcb0076f780b6a3f4b55ec91f45d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red/accounting-red-negative-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-red/accounting-red-result.json": {
+      "sha256": "523942d530bfd28669d972d76bdccd26e56d804aef289c25febff356cc08c89f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red/accounting-red-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-red/accounting-red.log": {
+      "sha256": "203d09bf6c847ef7556ce7aa3fe610ef1dd108057ea0aea6c5d91f3a294571e1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red/accounting-red.log"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-style/black-accounting-result.json": {
+      "sha256": "96fbb7f1b031927b909877417af23edb8323e958d4c871e01447e19806e79d67",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-style/black-accounting-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-style/black-accounting.log": {
+      "sha256": "9c9caee096499c16e9ce5bf2ae2ef78edd16f7b7e613dee9fa5e36e2d32f2980",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-style/black-accounting.log"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-style/ruff-accounting-result.json": {
+      "sha256": "5f0f1ab3892a905c9098818b982579717f65f5e23ae94a09b6ddb91c6a03940f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-style/ruff-accounting-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-style/ruff-accounting.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-style/ruff-accounting.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/black-result.json": {
+      "sha256": "ad0f77f51f4fc72eff384d34c96e53145fa8655d5b69dc8554bb7496a11b1d23",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/black-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/black.log": {
+      "sha256": "c08924d8f62f9853a06fd3f90984a1b529d59c35b916b27ef75c225bf70815b8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/black.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/compiler-cli-result.json": {
+      "sha256": "ecd26a10248474758bb242c623dab4d551300d4cfb5e42471895bc8ecf3ad744",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/compiler-cli-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/compiler-cli.log": {
+      "sha256": "f1fbe7359258b0bf10ea9c1230115bc21571914e089f287a4e25ab1aa68168f3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/compiler-cli.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/expression-doc-result.json": {
+      "sha256": "6f6d0081a9ad666e40a8717b027db866de47782054ef7147e9d363deb62b3f2b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/expression-doc-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/expression-doc.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/mypy-result.json": {
+      "sha256": "430bd0249d46803ca0c45eeff767fb543fb34e756ce177c2816bab0183167e4f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/mypy-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/mypy.log": {
+      "sha256": "202660a8e685a052903d919ce2638f56fc88d4f0db7902d85b06a98746abe585",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/mypy.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/no-defaults-details.log": {
+      "sha256": "70f9514cc5b0ba93bbb719801e4be730fd90f50c79a48ba82903146ee43cc85c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/no-defaults-details.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/no-defaults-result.json": {
+      "sha256": "7d2395eee1811ec5bad7846c836e94c8555be1ed7172476ab3f37c1b193bb808",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/no-defaults-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/no-defaults.log": {
+      "sha256": "26e43abc8b6bc606e854574ee79be4f6f606dfeedf0c81f82ac286022f9eb35f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/no-defaults.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/ruff-result.json": {
+      "sha256": "b4dedddc51f5da9e799a4bf3ca5123935029cbb2a6e2d9c3cc3ca61ff1b8637f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/ruff-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards/ruff.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting/identity-controller.json": {
+      "sha256": "6c4bb1d58eacf6bbacd26d05f98b5ebbfe89bed4f8462b7dcf0d9d142ea4048c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw0.json": {
+      "sha256": "eda98af74a8aff0484edff52996a0c1bbb89d8b61bbb3b2fe0b911898a540479",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw1.json": {
+      "sha256": "18c6918a47159dfade01f0632faad0b05fda347b3c18b748967dac72f127610a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw2.json": {
+      "sha256": "263048780e4bc2e728c20ec7a8f9716b39d215d48707d240f2784f0e30722780",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw2.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw3.json": {
+      "sha256": "3437c9cc0a5eba2aeb1225ff648100a35c91dc41e7da702271d1b843273c3648",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting/identity-gw3.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting-custody.json": {
+      "sha256": "206cbd54a6038bdd3c7156eb988248e2a8c95915c58ec0c0b2e3aa867cf2bcc6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting-result.json": {
+      "sha256": "b317359c3200e3f2481bf4aecfda3e3c69e9d2ecf7b45bb62dd5fc788294274d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting/independent-accounting.log": {
+      "sha256": "2546f2bf0308dcf1496c4d739eae8c48e15aaeddcc091d1a602115ffa4cfefbb",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint/joint/identity-controller.json": {
+      "sha256": "6c4bb1d58eacf6bbacd26d05f98b5ebbfe89bed4f8462b7dcf0d9d142ea4048c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint/joint/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint/joint/identity-gw0.json": {
+      "sha256": "eda98af74a8aff0484edff52996a0c1bbb89d8b61bbb3b2fe0b911898a540479",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint/joint/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint/joint/identity-gw1.json": {
+      "sha256": "18c6918a47159dfade01f0632faad0b05fda347b3c18b748967dac72f127610a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint/joint/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint/joint-custody.json": {
+      "sha256": "249043c18922d310787031be5637f38cf89cbceecf914dfc061044ed33a1fc64",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint/joint-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint/joint-result.json": {
+      "sha256": "c81f784832267e9ce9a4cf233679d3053b19907a2197fe9ee4c1cdd92aa73b17",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint/joint-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint/joint.log": {
+      "sha256": "afe3742d2ed82ca0436d995b2e79974d5cd72c1186ed555d139324feab58805a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint/joint.log"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint-collection/joint-collection/identity-controller.json": {
+      "sha256": "6c4bb1d58eacf6bbacd26d05f98b5ebbfe89bed4f8462b7dcf0d9d142ea4048c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint-collection/joint-collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint-collection/joint-collection-custody.json": {
+      "sha256": "d86eb9ab56d22a8711fce53fea14d43264a2d85f4eb44285b3976d61e0bdf2ef",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint-collection/joint-collection-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint-collection/joint-collection-result.json": {
+      "sha256": "6089da9b4c55be3dd7766bf7c85f817496c33e7a50bdfb3f16c08fc3ff61c94d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint-collection/joint-collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint-collection/joint-collection.log": {
+      "sha256": "5d96b337c0342c29d61b911ef80f4483add2c0fa01061be689bd78b3a6781a94",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint-collection/joint-collection.log"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-collection/review-collection/identity-controller.json": {
+      "sha256": "5b3dc72b863a704a254dbc7b63f46c1a063e6418f2486aa51f39e0fa53a78d2c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-collection/review-collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-collection/review-collection-custody.json": {
+      "sha256": "1de0835654692207dc40fcf647442104930e12f568b89668f707b1a2733ca6ad",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-collection/review-collection-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-collection/review-collection-result.json": {
+      "sha256": "431bd40d59441827cc0522a9867563956c4a4c343bce5f0fd49f438d8acb191e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-collection/review-collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-collection/review-collection.log": {
+      "sha256": "dc26c925a967d935641a92af680b66e4ed4bda8d3e32791ae6b7c53ee06ea0a2",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-collection/review-collection.log"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-31f98a5661a5b415.json": {
+      "sha256": "598ab95aedb9cdc7fc89b05099ab76cfd96b0b8a389ac2b92f6205db7626b91f",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-31f98a5661a5b415.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-4e711d60664675b0.json": {
+      "sha256": "fe40d1b2ebae9b5c1da9e21e293aa3e705775be241b82edb2b0b64b5bafb2462",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-4e711d60664675b0.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-948de703bc3e2264.json": {
+      "sha256": "ea481b572edae4eba2bd3176b4c16efb784bc453abc744cda730da87cb4a89fc",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-948de703bc3e2264.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-9e7c97210dc598b8.json": {
+      "sha256": "54af8c6cf5e70205f8e5a865419fc63359d6c7c6bdbe27c535d51ac0860b9370",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-9e7c97210dc598b8.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-a31353139730dfd0.json": {
+      "sha256": "7050cb114eb011f07ef05ad4039b213df022a869c2ac3f22989adb961d66eb3d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-a31353139730dfd0.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-bd4aab6c484021c1.json": {
+      "sha256": "b12a677b715cc9fd5cf804163875868bdcfb01305f2b9f9b6e3af48d991b6782",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-bd4aab6c484021c1.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-controller-c789d26c4da8256e.json": {
+      "sha256": "f5dbe83e19c76ed1db01a521662a3dc5a79509db7ac967e952052938b469d0af",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-controller-c789d26c4da8256e.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw0-9e7c97210dc598b8.json": {
+      "sha256": "03c45ca61d98281767df39cffbf5304902556286aa62e11e390c35bf11d29876",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw0-9e7c97210dc598b8.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw0-c789d26c4da8256e.json": {
+      "sha256": "e99ed9e5538d7cfb18bbce0f46ed39d6074b6ef7daf2dbc73e1debc508308b82",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw0-c789d26c4da8256e.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw1-948de703bc3e2264.json": {
+      "sha256": "00dcbd67087465cb08c18c4911cf9b5d4dac0d59e1ebd2d665aa7a04b6a614a9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw1-948de703bc3e2264.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw1-a31353139730dfd0.json": {
+      "sha256": "37db47fa7213bf2622278e59d4489ed38967da2193e08ef9223766eabb409203",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw1-a31353139730dfd0.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw2-31f98a5661a5b415.json": {
+      "sha256": "bc96763f55be483ddba44eb9250131c0c7bd246d4c5962f95692b0ecdee9cc4b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw2-31f98a5661a5b415.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw3-4e711d60664675b0.json": {
+      "sha256": "b844085c7f02e553224e317fec077805110aa8f0b63db1fdb13b385b2207afd7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw3-4e711d60664675b0.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/failure-gw3-bd4aab6c484021c1.json": {
+      "sha256": "33085449144729765a4e015ab2ba910b8a8cecc869d9a23dac3fc4b07dd20549",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/failure-gw3-bd4aab6c484021c1.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/identity-controller.json": {
+      "sha256": "5b3dc72b863a704a254dbc7b63f46c1a063e6418f2486aa51f39e0fa53a78d2c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/identity-gw0.json": {
+      "sha256": "9952392fb5b03c790b9d376284eaff68974a6a9f43e5aeda97106aa533c6e87e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/identity-gw1.json": {
+      "sha256": "005231fec62954d43a1d29f29f4efc2eab44cb7c1e6d659c873f9cf77f923a96",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/identity-gw2.json": {
+      "sha256": "54d727164bc1db5085fdd69640bee3ea248a9754a569907c13eed4b3528e4e18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/identity-gw2.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red/identity-gw3.json": {
+      "sha256": "2f5f8df77069130657ed1ced26586ae2a06b757b0cacd9300b81f9ffe294b035",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red/identity-gw3.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red-negative-custody.json": {
+      "sha256": "d1a7a029a9f61c8ba4d39b8a02aeadc9973dda2d7d7e9ce69c6c3ea8adc616b8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red-negative-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red-result.json": {
+      "sha256": "cf20b2a031ee193f33de67333d1fa85f25ef3e0038e749a2e9b57ec815aeb0ce",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red/review-red.log": {
+      "sha256": "aab700af7d0f6340b23b83051baf84d18bdee26f43076915979bb895f97c7433",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red/review-red.log"
+    },
+    "evidence/wave12/qualification/wave12-r3-test-style/black-test-result.json": {
+      "sha256": "8b3136aca64c75d41a1d44dd0dddffa4be39435c4e64221207138bbe37a49e56",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-test-style/black-test-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-test-style/black-test.log": {
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-test-style/black-test.log"
+    },
+    "evidence/wave12/qualification/wave12-r3-test-style/ruff-test-result.json": {
+      "sha256": "77767607420f04dd73d678fa1105a85bb785a5a8c06d56d3b18db718793780b6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-test-style/ruff-test-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-test-style/ruff-test.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-test-style/ruff-test.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected/affected/identity-controller.json": {
+      "sha256": "abca31868d57f8d7325363d1b420f5e75aa68d7d4fe969b8d2aa9665430127f7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected/affected/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected/affected/identity-gw0.json": {
+      "sha256": "a4996bfcb09d8f1242217f53f17bad4b5793b631f619409824f346545e370c3c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected/affected/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected/affected/identity-gw1.json": {
+      "sha256": "61bc17522d640cd54f58bf1e6536916147ab3769067333930f6c91924da1b016",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected/affected/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected/affected/identity-gw2.json": {
+      "sha256": "20e8ba3625ef2b930c185db834e77ad41b2b6adc682561142f4b94213cc855b5",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected/affected/identity-gw2.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected/affected-result.json": {
+      "sha256": "df89281b8371f381092c2779ecb3147899f115e7f4f9c49ead924218feaf4e13",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected/affected-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected/affected.log": {
+      "sha256": "9c91665cba0a0e616184e985da709fb818cb232aabcd21713107ad0ed7631aa6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected/affected.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected-collection/affected-collection/identity-controller.json": {
+      "sha256": "abca31868d57f8d7325363d1b420f5e75aa68d7d4fe969b8d2aa9665430127f7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-collection/affected-collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected-collection/affected-collection-custody.json": {
+      "sha256": "5263a9b801f1aff279e070170c464b75be68757083c13652ddc17cdcc39bee5d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-collection/affected-collection-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected-collection/affected-collection-result.json": {
+      "sha256": "6120f4c9a8087155f215fd0cb2a16e5a3dfa9591ceab7c070a59f8d1752a317e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-collection/affected-collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected-collection/affected-collection.log": {
+      "sha256": "a687800ca0959f59bda573a2014e51825a46093baf690493a7d3271bf0ac9764",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-collection/affected-collection.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/black-result.json": {
+      "sha256": "8372491d96d35862aee03086f7cc8af24964856adfdd0136235330008a5023b0",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/black-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/black.log": {
+      "sha256": "c08924d8f62f9853a06fd3f90984a1b529d59c35b916b27ef75c225bf70815b8",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/black.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/compiler-cli-result.json": {
+      "sha256": "dded30ff1de5867661ac183517b5fffd17cc34c28df1645f7ee4ea79614de3ce",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/compiler-cli-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/compiler-cli.log": {
+      "sha256": "03b97730c6df3c9549b18ef65245d0972ffbd7fe174c8b990be103eec449233e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/compiler-cli.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/expression-doc-result.json": {
+      "sha256": "41dd227c2b3313a2bf0183b0597fcdb509b1b209eb00cbf3fe287a02d58559a9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/expression-doc-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/expression-doc.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/mypy-result.json": {
+      "sha256": "051c97b023666e0d81864b5491f7e4d8790bb8d3f9678fdf344f73afffbca721",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/mypy-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/mypy.log": {
+      "sha256": "202660a8e685a052903d919ce2638f56fc88d4f0db7902d85b06a98746abe585",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/mypy.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/no-defaults-result.json": {
+      "sha256": "87e9b5fb22ed0c3e6825e8b9b76c3367a78548e877f7a090e0c81001dd028b3a",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/no-defaults-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/no-defaults.log": {
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/no-defaults.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/ruff-result.json": {
+      "sha256": "e53044db500a3b4f4ddb0817fd5e234dc382d3f40b2844dafec1c913e256ae8e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/ruff-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards/ruff.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-independent-main/independent-main/identity-controller.json": {
+      "sha256": "abca31868d57f8d7325363d1b420f5e75aa68d7d4fe969b8d2aa9665430127f7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-independent-main/independent-main/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-independent-main/independent-main/identity-gw0.json": {
+      "sha256": "a4996bfcb09d8f1242217f53f17bad4b5793b631f619409824f346545e370c3c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-independent-main/independent-main/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-independent-main/independent-main-result.json": {
+      "sha256": "e459d2e9731ca5b57d6a0655165fd7b0f36c61b312747598a2bc4a87032497aa",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-independent-main/independent-main-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-independent-main/independent-main.log": {
+      "sha256": "7cb95673ba55b651bdb412db4b53ecb5e5dbefd4e46029caa4db7407173cc32e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-independent-main/independent-main.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint/joint/identity-controller.json": {
+      "sha256": "abca31868d57f8d7325363d1b420f5e75aa68d7d4fe969b8d2aa9665430127f7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint/joint/identity-gw0.json": {
+      "sha256": "a4996bfcb09d8f1242217f53f17bad4b5793b631f619409824f346545e370c3c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint/identity-gw0.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint/joint/identity-gw1.json": {
+      "sha256": "61bc17522d640cd54f58bf1e6536916147ab3769067333930f6c91924da1b016",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint/identity-gw1.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint/joint-custody.json": {
+      "sha256": "14584d3298483dd6ebd1a3071ea6e51b3e7808d87b56868c660b743afdb85b67",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint/joint-result.json": {
+      "sha256": "952662a7f1543829523a84a9594400d3213fb2303186faf1b8ef75822ef0d0f6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint/joint.log": {
+      "sha256": "a729d695046ec07c233b6a6f07683657c9e2448478c2b5fe22b49969b5590767",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint.log"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint-collection/joint-collection/identity-controller.json": {
+      "sha256": "abca31868d57f8d7325363d1b420f5e75aa68d7d4fe969b8d2aa9665430127f7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-collection/joint-collection/identity-controller.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint-collection/joint-collection-custody.json": {
+      "sha256": "157d9faeef476e240ec956f9f31f180d80b003f3cc9ec968bacd3917e292ddf4",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-collection/joint-collection-custody.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint-collection/joint-collection-result.json": {
+      "sha256": "bab326df45efe505b4752cb000eb647ab81de4e6a9366d5d43bcdd0362962e2d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-collection/joint-collection-result.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint-collection/joint-collection.log": {
+      "sha256": "9f248e69b528e51c7bdc73d9f0fa96375f21caa0452df7383f16f6cf345c4ac9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-collection/joint-collection.log"
+    },
+    "evidence/wave12/qualification/wave12-environment-custody-transition.json": {
+      "sha256": "5feccfd17fe3dc8f3e735ee7bd4be900d8efb003593b2100d37350b1b4221280",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-environment-custody-transition.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r0-collection-spec.json": {
+      "sha256": "8d512aea4e217d2d979806f4a563d4277c4274b904a74f3f3ad56566eae4e745",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r0-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1-collection-spec.json": {
+      "sha256": "c8967827416f50f42f519a6fc4953325e438cdefe593382ff8d883ecf62d4b84",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-full-r1-spec.json": {
+      "sha256": "3c4210a092da5bc0308a47d32ebacfc3f32c6797ab2590849db9b2eb6f585615",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-collection-spec.json": {
+      "sha256": "3e3a11d21a7766429899cef575ae6888b744bbbbcbf8ec448d4f95a9d77a08a4",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-guards-spec.json": {
+      "sha256": "7e696a5f62ed3b7efbd6cee4e2f086773c1f338c5edd14766d4854733e1708d1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-guards-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-owned-spec.json": {
+      "sha256": "7d93c128acd6da19c3b02bf9033f4e95e44a7df9c32c5de6b15f258271004c18",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-owned-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r0-test-style-spec.json": {
+      "sha256": "84ed67448f207ba4b4a4490b36618ca899fa755d3f8791cbf13920cd66de4953",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r0-test-style-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-collection-spec.json": {
+      "sha256": "2c3058759522a0342c281c5e913a1fcdb41fc2d2358898f474ba601ac5f0d8ec",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-red-spec.json": {
+      "sha256": "1f66cdaa467a3ffa3de8ef7c130ed19002a81ba71a9ebe0472d05318e12481f3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-accounting-style-spec.json": {
+      "sha256": "59dd441a726a688ddf24aea274917e45bc0e2e526a84f6d2a0537ebc1ccc07f1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-style-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-collection-spec.json": {
+      "sha256": "25eadc2dfaa1776594e735436eb720ffbe5f06422508dcf591dc1437a7cf6b27",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-guards-spec.json": {
+      "sha256": "84dfd6b9304e2d62f12bfee78583da342350e5038db8f98a3570b5d532924c59",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-guards-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-owned-spec.json": {
+      "sha256": "5075cc561a780f0450e2ed64c669817a71604597bac77000f75e13b30f59591e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-owned-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r1-test-style-spec.json": {
+      "sha256": "e65a3099344bbd65b6376de02fd66438700efdb5c3741598ca4a265c1ded0def",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-test-style-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-collection-spec.json": {
+      "sha256": "d1c08cbed55b95d123ae086be1345de96117ef897dfa0e7087b193a3242bc04d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-guards-spec.json": {
+      "sha256": "c49003e072770ed9c8260dcb715021685fbfd10c29b81c11a73da155f7501c61",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-guards-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-independent-accounting-spec.json": {
+      "sha256": "9ed11fdbf8fbba8c4b68e24a125426832ae97721280d47cfb51f4b5120cf6893",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint-collection-spec.json": {
+      "sha256": "eb431722d22260bf381d09b3935b47633f58b244d85d60388d720d6140ba44f3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-joint-spec.json": {
+      "sha256": "6a390564375344af2ad010ca86fff98eca3827a6a6fe8ddc43f0847fa4e85c12",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-joint-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-owned-spec.json": {
+      "sha256": "25b20945f34aef7d70f2fee0b6f7e38042ed8f50078adc8a87fa8a8051567437",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-owned-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r2-test-style-spec.json": {
+      "sha256": "1226815e1a97c3ebff24bd06ffa7bfe4392cea8df2f9ccffeb1dcbaf4180e47d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-test-style-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-collection-spec.json": {
+      "sha256": "17a49c2e5e0747bdf90a84ecba448c83747710d51f3228739b3be1a3b5809ac3",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-guards-spec.json": {
+      "sha256": "35ea8a4686210e2782c07542afb63e51eee54d2e98acb625b38fe0e215655497",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-guards-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-owned-spec.json": {
+      "sha256": "033146a3c56f6de182ebc573b20600ffdfb1024aae42f6e8f7d5223c6e68cdfd",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-owned-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-collection-spec.json": {
+      "sha256": "4ee2db9210fa3f0010e415ac31a9b4f5de2046b60fabd6b077e8c9f503ec4b4b",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-review-red-spec.json": {
+      "sha256": "a197f593cffa9df55d2d848447b40d0f90f0268ecd9c2f1214db94f14a90ca64",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r3-test-style-spec.json": {
+      "sha256": "1adfd5474ab23a3ce20ba656f65ca8d4fabfeb79010e06796337302feb45e410",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-test-style-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected-collection-spec.json": {
+      "sha256": "104c2987f0f16ca64af25d94c652a1358ad0de62f72a2460a432ef60bc314721",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-affected-spec.json": {
+      "sha256": "8f1df57d5f8fac2127b18121000584fe776ba78d9d1a7c4bc09eb35c1e5723d6",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-collection-spec.json": {
+      "sha256": "d934ae74eda7194c02be698ebcf77fca2e37a2a9f489b1fbaf1ee3c5f7e9c0b4",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-guards-spec.json": {
+      "sha256": "7de9373413b5e46c26090f46a08aef9b319a0fb73c509014fb6ef7286145553c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-guards-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-independent-main-spec.json": {
+      "sha256": "5743e1d970b4741f2245d8e21014e9263f38305df60b47df0b7632041fa7926e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-independent-main-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint-collection-spec.json": {
+      "sha256": "731b14be54ea44ee2c0435f757bdf5ab6998e6df0c89e0b60b9214330a7536a9",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-collection-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-joint-spec.json": {
+      "sha256": "caa57caa4777faf8c8d692e6f4d0bf4980a83a6241fede4b3236b8fe6152bd6c",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-owned-spec.json": {
+      "sha256": "63b5b7c41719514665853620cd6779b59c5b472e7e43a226fab13efd0e1fbea2",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-owned-spec.json"
+    },
+    "evidence/wave12/qualification/wave12-r4-test-style-spec.json": {
+      "sha256": "8ce259559f489cdfc3a360c824c10c7af7728c1da7bcf6ad9ff89866d8a0c37e",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-test-style-spec.json"
+    },
+    "evidence/wave12/qualification-release.json": {
+      "sha256": "5d967ea98d240997b861582ef6cca47a62ad276b9594ef1330afff3cfd8cfeae",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/qualification-release.json"
+    },
+    "evidence/wave12/r0-candidate.json": {
+      "sha256": "d52368dc61d121cea809b3754a69296e051b2dac611a05ccd208f71ea38533a5",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r0-candidate.json"
+    },
+    "evidence/wave12/r0-fixture-resource-preflight.json": {
+      "sha256": "ca34a4353373d23cee7fa13a5e093ada45c0fdc58058559d81bd3e3b6739bccc",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r0-fixture-resource-preflight.json"
+    },
+    "evidence/wave12/r1-candidate.json": {
+      "sha256": "0212202c2bd53a9ee50ec705e54187ede68506e39366e462813e9c216929f10c",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r1-candidate.json"
+    },
+    "evidence/wave12/r1-fixture-resource-preflight.json": {
+      "sha256": "eee481accc7c81eb8480456ba77be6a5b0f0c7f1b830edd54dedc95eb13381ca",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r1-fixture-resource-preflight.json"
+    },
+    "evidence/wave12/r2-added-default-diagnosis.json": {
+      "sha256": "19573ef275f2cbf164c5296cd329934ee0f6ec23cc850d0893670fa76b0a362d",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r2-added-default-diagnosis.json"
+    },
+    "evidence/wave12/r2-candidate.json": {
+      "sha256": "c9b0ac7c6aa11e0000bfe7958853bd5dc0a4d6bc0ab640545db0ffb86d17382d",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r2-candidate.json"
+    },
+    "evidence/wave12/r2-fixture-resource-preflight.json": {
+      "sha256": "0ed1a380f8e17a7180262880da7d328d7bed177668f37950de0c8f879eb83add",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r2-fixture-resource-preflight.json"
+    },
+    "evidence/wave12/r3-candidate.json": {
+      "sha256": "339a8e6e00b0f89b54dc2e08f3b383dad75e08ff4c8bbfd93efa0ab8f8a059bc",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r3-candidate.json"
+    },
+    "evidence/wave12/r3-fixture-resource-preflight.json": {
+      "sha256": "841984fd49cc543f630c110d6a82174b7f66b9cdceead8366cc106fb11546a80",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r3-fixture-resource-preflight.json"
+    },
+    "evidence/wave12/r4-candidate.json": {
+      "sha256": "ba430b5e0c12dcc31b082250b94d2384ad804c12244fe900e6519f25cdf7c03e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    "evidence/wave12/r4-fixture-resource-preflight.json": {
+      "sha256": "e85a05404db9638e5790f52c86f616f22d318694ac8a921d4cf9b6f0e232e44e",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-fixture-resource-preflight.json"
+    },
+    "evidence/wave12/r4-gate-prerequisites.json": {
+      "sha256": "6485e5deda11d88617f575ee33a40b9483f09ad528d77d1a6c13e83e6c5031fa",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-gate-prerequisites.json"
+    },
+    "evidence/wave12/r4-source-binding.json": {
+      "sha256": "0f202912d20e19bd286b6f7aeb364fe8d3d2cc1684e2d3399da78b983bd2a55f",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-source-binding.json"
+    },
+    "evidence/wave12/r5-candidate.json": {
+      "sha256": "7521b7757d30e58955928f4ddf9d1d389f6cac0047963281104d07472f3e0e13",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r5-candidate.json"
+    },
+    "evidence/wave12/r5-gate-prerequisites.json": {
+      "sha256": "0fce8826b2be8634ced2de84efd5da4a297cab310b24bf9102492e042014d14f",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r5-gate-prerequisites.json"
+    },
+    "evidence/wave12/preparation/T19-accounting-implementation.md": {
+      "sha256": "60cceecd1a8a9d24c3f2c70f1a2e67db72d7e106b9c7a30213f2481dcb177958",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-implementation.md"
+    },
+    "evidence/wave12/preparation/T19-accounting-independent-review-r2.md": {
+      "sha256": "377abb22739246cf6fa0ee4ea5b36b67d72d519845451ca1bd508dca6aece00a",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-independent-review-r2.md"
+    },
+    "evidence/wave12/preparation/T19-accounting-independent-runtime-r2.md": {
+      "sha256": "4968aa410a69b2b10c1e461379c8be1828f0ecdcea7414e4551370b42fb7c2cf",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-independent-runtime-r2.md"
+    },
+    "evidence/wave12/preparation/T19-accounting-r2-review-package.txt": {
+      "sha256": "fb40e25a4231f79a8baa6660bfccf57c2c19d7595a4694c25299cb6564aedc12",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-r2-review-package.txt"
+    },
+    "evidence/wave12/preparation/T19-accounting-source-baseline.json": {
+      "sha256": "76cfcf07f3776209403d943c166ab44d9fe158baa9ca22e4dec18c1968ab4e18",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-source-baseline.json"
+    },
+    "evidence/wave12/preparation/T19-accounting-task-brief.md": {
+      "sha256": "2c5204f7e7a7a86ec6141a036d6c72903266ccf214c8e995d19e116bb01acfc0",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-task-brief.md"
+    },
+    "evidence/wave12/preparation/T19-accounting-test-authoring.md": {
+      "sha256": "12d9cbd2618d1e2a70136be5bddd42d89fb55caee4a42d4ae88c29def9b2cb8b",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-test-authoring.md"
+    },
+    "evidence/wave12/preparation/T19-documentation-draft.md": {
+      "sha256": "b4d831eab0c1a4a69307fc68f3dadf4a09207d2b503d3b7b6dac395751477963",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-documentation-draft.md"
+    },
+    "evidence/wave12/preparation/T19-documentation-independent-review.md": {
+      "sha256": "26a8c35a5603f9804e5e69d9741909a1c92703702c3217d1bf08f86aca816896",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-documentation-independent-review.md"
+    },
+    "evidence/wave12/preparation/T19-entropy-api-handoff.md": {
+      "sha256": "d6f3732f12828a158c9259ee18aefc627365d1137dd6e0da3529fbb5a2241e07",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-entropy-api-handoff.md"
+    },
+    "evidence/wave12/preparation/T19-entropy-source-baseline.json": {
+      "sha256": "60563b656d98865136dc73795382296c5b29d2dd9874177f7cad57af655fd259",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-entropy-source-baseline.json"
+    },
+    "evidence/wave12/preparation/T19-fix-round1-r4-review-package.txt": {
+      "sha256": "72b12fc62d748ab281274ced2b01fe7dc278ca6d5a0921601995231502c7728f",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-fix-round1-r4-review-package.txt"
+    },
+    "evidence/wave12/preparation/T19-fix-round1-r4.md": {
+      "sha256": "6c096d921ea700ee953d90adef794434bc6ebdba4539f5d6213b6123b20b5b30",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-fix-round1-r4.md"
+    },
+    "evidence/wave12/preparation/T19-full-custody-rebind-review.md": {
+      "sha256": "0f9ae3f570bc4dc46937d62d3809ec307d984df34d250136dade91895784ab52",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-full-custody-rebind-review.md"
+    },
+    "evidence/wave12/preparation/T19-full-orchestration-independent-rereview.md": {
+      "sha256": "b44a224481159343b88a48868fc3ca9bd0e75ea223b4ccb477418ce6260c9767",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-full-orchestration-independent-rereview.md"
+    },
+    "evidence/wave12/preparation/T19-full-orchestration-independent-review.md": {
+      "sha256": "e9b69ad694b188e38f87ae8b29ed8deb6d51120a90a977f69788e95a56bee29d",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-full-orchestration-independent-review.md"
+    },
+    "evidence/wave12/preparation/T19-implementation.md": {
+      "sha256": "feec1de503561929e9e5c2d523cbc2712b9ad093da9f30839e31811156d158e0",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-implementation.md"
+    },
+    "evidence/wave12/preparation/T19-independent-rereview-r4.md": {
+      "sha256": "3fc21c78055cf4ceebbf0f8f6a3bbde4ea1fbaf9506a9480bbd187d6da038789",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-independent-rereview-r4.md"
+    },
+    "evidence/wave12/preparation/T19-independent-review-r2.md": {
+      "sha256": "838737e1db400fd6d168107acf44922110527cb45eefad323dbf0c89c7f72e54",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-independent-review-r2.md"
+    },
+    "evidence/wave12/preparation/T19-independent-runtime-r4.md": {
+      "sha256": "4674835efb082e1043d9658d34c99c4fe028b0812fefaa8ee222b327a8148749",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-independent-runtime-r4.md"
+    },
+    "evidence/wave12/preparation/T19-interface-readiness.md": {
+      "sha256": "089ef56020afef15f7544d0175dcb2700b4b168a8231fac11dd8267aa7b0c798",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-interface-readiness.md"
+    },
+    "evidence/wave12/preparation/T19-lane-fixture-api-handoff.md": {
+      "sha256": "2f0f531a67e9a8a0a0ba69f760a5c38ee333b9e50e0ac0d26d0c53825c2630ff",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-lane-fixture-api-handoff.md"
+    },
+    "evidence/wave12/preparation/T19-main-r2-review-package.txt": {
+      "sha256": "95d3e1db588ddfb93219f1b576a2ca870d79b174cd7b2e85f5e2214ecaf1022b",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-main-r2-review-package.txt"
+    },
+    "evidence/wave12/preparation/T19-public-api-handoff.md": {
+      "sha256": "72bfa736416fcd8ccc1b1c05910141956806f242dff8fb4588bf104c4657bc56",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-public-api-handoff.md"
+    },
+    "evidence/wave12/preparation/T19-review-witnesses-r3.md": {
+      "sha256": "2045dcf38b160b8c73481677eb5a2bd94d2ccf394a43be216e1cebef432b44f5",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-review-witnesses-r3.md"
+    },
+    "evidence/wave12/preparation/T19-singleton-data-handoff.md": {
+      "sha256": "83c986be2780e698be31813b939c7c889c5f7113704f4ee031befdf9f5361cb8",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-singleton-data-handoff.md"
+    },
+    "evidence/wave12/preparation/T19-source-baseline.json": {
+      "sha256": "6ca71aee2f7ee8f01d86dff93e15416bd77d323775a9e568600515ae26a671c3",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-source-baseline.json"
+    },
+    "evidence/wave12/preparation/T19-source-docs.patch": {
+      "sha256": "29dc6739691405fd10dfe7c4cab070e8d2c8ffc55fe0f111f35c2c21c0c61ec2",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-source-docs.patch"
+    },
+    "evidence/wave12/preparation/T19-supplier-source-baseline.json": {
+      "sha256": "a40f59fd94bc31edfefbaf4e8bfea02bba1bb66b7b45c2cba2c455dae5d78434",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-supplier-source-baseline.json"
+    },
+    "evidence/wave12/preparation/T19-task-brief.md": {
+      "sha256": "585ec93f6fec8870232692a025cab5b5742487997e24e1f69c7078a89ff868e4",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-task-brief.md"
+    },
+    "evidence/wave12/preparation/T19-test-authoring.md": {
+      "sha256": "67acfd1c496319e982174ceba440a00876ef0004cca23b448f5d797857d2fe0d",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-test-authoring.md"
+    },
+    "evidence/wave12/run_bac_packet_checks_locked.py.txt": {
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py"
+    },
+    "evidence/wave12/bac_source_identity.py.txt": {
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py"
+    },
+    "evidence/wave12/capture_wave12_round.py.txt": {
+      "sha256": "da2c269fa80c44d5dbcfc122e4c8d6f8eeb9a820cf80de5cc898fa354321aef1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/capture_wave12_round.py"
+    },
+    "evidence/wave12/prepare_wave12_affected.py.txt": {
+      "sha256": "b412877182f3cb5a52110170840f1956476d751694ce79b387962f9ae18c8af7",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/prepare_wave12_affected.py"
+    },
+    "evidence/wave12/qualify_wave12_full.py.txt": {
+      "sha256": "4c8a99ce6ea846d15df2a4729675acdcf2ee1c6889318ebde6d157620bb90fd1",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/qualify_wave12_full.py"
+    },
+    "evidence/wave12/qualify_wave12_full-reviewed-81fdb2c.py.txt": {
+      "sha256": "81fdb2c535590960c13fcc8137870fb66be62436f2217656022d872758408305",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/qualify_wave12_full-reviewed-81fdb2c.py.txt"
+    },
+    "package-reviews/T19-test-authoring.md": {
+      "sha256": "67acfd1c496319e982174ceba440a00876ef0004cca23b448f5d797857d2fe0d",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-test-authoring.md"
+    },
+    "package-reviews/T19-implementation.md": {
+      "sha256": "feec1de503561929e9e5c2d523cbc2712b9ad093da9f30839e31811156d158e0",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-implementation.md"
+    },
+    "package-reviews/T19-accounting-test-authoring.md": {
+      "sha256": "12d9cbd2618d1e2a70136be5bddd42d89fb55caee4a42d4ae88c29def9b2cb8b",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-test-authoring.md"
+    },
+    "package-reviews/T19-accounting-implementation.md": {
+      "sha256": "60cceecd1a8a9d24c3f2c70f1a2e67db72d7e106b9c7a30213f2481dcb177958",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-implementation.md"
+    },
+    "package-reviews/T19-accounting-independent-review-r2.md": {
+      "sha256": "377abb22739246cf6fa0ee4ea5b36b67d72d519845451ca1bd508dca6aece00a",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-independent-review-r2.md"
+    },
+    "package-reviews/T19-accounting-independent-runtime-r2.md": {
+      "sha256": "4968aa410a69b2b10c1e461379c8be1828f0ecdcea7414e4551370b42fb7c2cf",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-accounting-independent-runtime-r2.md"
+    },
+    "package-reviews/T19-independent-review-r2.md": {
+      "sha256": "838737e1db400fd6d168107acf44922110527cb45eefad323dbf0c89c7f72e54",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-independent-review-r2.md"
+    },
+    "package-reviews/T19-review-witnesses-r3.md": {
+      "sha256": "2045dcf38b160b8c73481677eb5a2bd94d2ccf394a43be216e1cebef432b44f5",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-review-witnesses-r3.md"
+    },
+    "package-reviews/T19-fix-round1-r4.md": {
+      "sha256": "6c096d921ea700ee953d90adef794434bc6ebdba4539f5d6213b6123b20b5b30",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-fix-round1-r4.md"
+    },
+    "package-reviews/T19-independent-rereview-r4.md": {
+      "sha256": "3fc21c78055cf4ceebbf0f8f6a3bbde4ea1fbaf9506a9480bbd187d6da038789",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-independent-rereview-r4.md"
+    },
+    "package-reviews/T19-independent-runtime-r4.md": {
+      "sha256": "4674835efb082e1043d9658d34c99c4fe028b0812fefaa8ee222b327a8148749",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-independent-runtime-r4.md"
+    },
+    "package-reviews/T19-documentation-draft.md": {
+      "sha256": "b4d831eab0c1a4a69307fc68f3dadf4a09207d2b503d3b7b6dac395751477963",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-documentation-draft.md"
+    },
+    "package-reviews/T19-documentation-independent-review.md": {
+      "sha256": "26a8c35a5603f9804e5e69d9741909a1c92703702c3217d1bf08f86aca816896",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-documentation-independent-review.md"
+    },
+    "package-reviews/T19-full-custody-rebind-review.md": {
+      "sha256": "0f9ae3f570bc4dc46937d62d3809ec307d984df34d250136dade91895784ab52",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12-preparation/T19-full-custody-rebind-review.md"
+    },
+    "evidence/wave12/execution-recovery/tasks.json": {
+      "sha256": "f054a2a11f5e7d56e0ebba0a0466928f649446b85879ad2b5c6b63a0c01398ce",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/tasks.json"
+    },
+    "evidence/wave12/execution-recovery/checkpoint-state.json": {
+      "sha256": "46097bf13f618f21e6dda639aa69a5303b25e55ab458b1dfd2504425deb8a5e0",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/CURRENT-STATE.json"
+    },
+    "evidence/wave12/candidate-patches/r0-candidate.patch": {
+      "sha256": "92bbe245e60f927456a165894e38e13292fe6129bc81e39de9479b5a0b51a712",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r0-candidate.json"
+    },
+    "evidence/wave12/candidate-patches/r1-candidate.patch": {
+      "sha256": "3c211b2003c5fa0c56964d4549ccac8ef0b208c04645f3e49c9b9793e0ae087c",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r1-candidate.json"
+    },
+    "evidence/wave12/candidate-patches/r2-candidate.patch": {
+      "sha256": "141b493966e970ea23809d5d18d6cbca86c685ea11979e88ac827081541fd9c7",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r2-candidate.json"
+    },
+    "evidence/wave12/candidate-patches/r3-candidate.patch": {
+      "sha256": "1e12a10293fb74c027713c7575c65217341d8011582b6b8924537f7e53f54bdc",
+      "original_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r3-candidate.json"
+    }
+  },
+  "optional_p3": [
+    "Durable event identity/fingerprint journals currently grow with run length; any retirement that reduces replay/idempotence needs owner approval.",
+    "Explicit pure-view values after restored/imported predictor checkpoints could strengthen optional coverage; no observed producer defect."
+  ],
+  "programme": "28/66 scoped source packages;38remaining plus all54 final requirements/22fresh final lenses+synthesis and finiteT40+12strict learning/E2E/finalgates remain open. G3 milestone not closed by this early full gate.",
+  "stop": "User explicitly requests commit/push all current work and graceful halt afterT19. No next package started.",
+  "publication": "Code source checkpoint already pushed; final documentation/evidence checkpoint and exact-tip CI checked separately. No PR or merge."
+}

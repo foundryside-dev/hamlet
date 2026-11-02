@@ -1,0 +1,29 @@
+{
+  "name": "joint",
+  "exit_code": 0,
+  "seconds": 53.628167152404785,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r4-joint"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-joint/joint.log",
+  "sha256": "a729d695046ec07c233b6a6f07683657c9e2448478c2b5fe22b49969b5590767",
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "ba430b5e0c12dcc31b082250b94d2384ad804c12244fe900e6519f25cdf7c03e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

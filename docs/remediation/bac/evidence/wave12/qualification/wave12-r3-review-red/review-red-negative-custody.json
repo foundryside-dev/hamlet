@@ -1,0 +1,21 @@
+{
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "candidate_tree": "fcffa0ee0b53a03947ae53426343f834a8d7494a",
+  "counts": {
+    "failed": 7,
+    "passed": 7,
+    "errors": 0
+  },
+  "wall_seconds": 30.360689401626587,
+  "log_sha256": "aab700af7d0f6340b23b83051baf84d18bdee26f43076915979bb895f97c7433",
+  "failure_categories": {
+    "tensor": 4,
+    "late_commit": 2,
+    "singleton_entropy": 1
+  },
+  "singleton_fixture": "Normal authored compilation emitted actual WAIT-only A=1 and bool[N,1] mask; finite world failed specifically at old entropy0/log1 gate. No config failure relabeled as RED.",
+  "passing_controls": "Scalar forgery refusal before/aftercommit; duplicate begin/ordinary reset/history accessor; actual POP unconfigured short-tail/optimizer accounting; nonfinite singleton Q refusals before physics",
+  "custody": "PASS167source/573configs/13artifacts/14worktrees/5actualprocesses",
+  "producer_four_sources": "unchanged from independently12PASS R2",
+  "clearance": "Core production repair round1 permitted, preserve all24 cases and reset/latecommit capabilities; full gate required before release"
+}

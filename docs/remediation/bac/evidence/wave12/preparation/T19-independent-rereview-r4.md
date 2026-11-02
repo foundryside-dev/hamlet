@@ -1,0 +1,47 @@
+# T19 independent scoped re-review R4
+
+**Verdict: all three material R2 findings ADDRESSED; default-control repair ADDRESSED. No unresolved in-scope P1/P2 or implementation/design gap found in the current T19 core.** This is source/spec/design approval of the bounded core, conditional on the remaining scheduled execution/release gates, not repository-green or independent runtime evidence.
+
+Candidate DATA: tree4bf7dab98a9baa1140380e13d8230ddcb445076a over basebc47e44662f7bea953156a668610a20e6bced9f2. Read T19-fix-round1-r4.md and its actual diff packet, inspected current lifecycle/publication/commit/entropy/service source and the entire new test suffix against the original task contracts and prior whole-five-source review. Current hashes independently checked with sha256sum and matched the R4 receipt/DATA. Original owned test prefix329 lines independently hashes to the exact previously reviewed b4f05ea4400b3aafa4696244b7a3ce897c36c9dbd209f1195f09ca427e1ef6c2. Thus earlier assertions were preserved, not replaced by repair controls.
+
+Complete approved corpus: POP2329/EP66/CL36/read-onlyRC222/test538 =3191 lines, projected4280<5000. POP629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92; EP5db951b4e76f88a2339ee5f77fe6515a726b5e2d1a006dbe283ea07d022f7fa9; CL117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571; RC3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c; test66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9. EP/CL/RC unchanged whole-file hashes preserve their prior reviewed implementation. No sixth source read. Separate RND four-source review and independent12 evidence remain their owner's evidence; producer equivalence is attributed to supplied R4 hash preservation, not a new provider review here.
+
+## Finding disposition against actual implementation
+
+1. **Canonical returned-tensor ownership / first-commit authority — ADDRESSED.** POP completed_outcomes now constructs replace(event) for each private event. EP.__post_init__ independently clones both embedded DTO tensors, so public readings no longer alias private canonical tensors or another fresh sink reading. Scalar identity/reward fields remain frozen/owned. The finalizer records the complete event fingerprint before exposure; commit compares against that stored fingerprint, not the current returned object's contents. In-place tensor writes and scalar replacement therefore cannot change authoritative publication content. Validation of the entire incoming sequence precedes committed-state mutation. The new six-case test covers both tensor fields and scalar forgery before and after commitment, verifies the other sink's original bytes, refusal without clock advancement, valid original commitment and reordered replay. This is a substantive ownership repair, not merely a docstring warning.
+
+2. **Finite singleton action entropy — ADDRESSED.** POP checks eligible Q values finite before choosing the singleton branch. Exactly one action gets deterministic zero entropy; NaN/+inf/-inf still refuse before physics. For width>1 the existing all-column softmax, epsilon-inside-log and log(actual width) expression is unchanged, with finite-result validation and last-eligible snapshots retained. No legality reinterpretation, extra curriculum mutation, fabricated static entropy or invalid-value fallback was added. The new authored WAIT-only configuration is compiled through the existing real builder, checks actual action vocabulary, masks and dimensions, executes one genuine step and checks finite zero completion entropy. Its three negative controls check refusal before physics and unchanged clocks/episode counts. Root's meaningful R3 prerequisite and failing finite singleton case establish actual supported-domain reachability, not a fabricated Q-only toy.
+
+3. **Delayed/partial commitment after accepted reset — ADDRESSED.** Publication fingerprints now have lifetime independent of the current episode tuple. Reset clears only the current readings/accumulators/mode as before and preserves event authority. Commit uses the retained publication map for both never-committed and already-committed events; full-lane presence and _committed_batches still ensure exactly one batch increment. Batch begin reuse remains refused. Valid reset+latecommit is preserved rather than prohibited. The new two-case test covers full delayed and partially committed prior batches, lane reversal/new episode, reordered replay, changed old-content refusal, independent second-batch progression and no adaptive callback replay. This closes the original lifecycle gap without adding a new commitment timing restriction.
+
+4. **Default-control / optional predictor loss — ADDRESSED.** The configured service branch explicitly handles last_loss is None and otherwise carries the actual float. This is the same telemetry-only no-loss representation already reviewed; actual service counts continue to come exclusively from receipt.optimizer_updates/admitted_rows/dropped_rows. The syntactic repair does not introduce a new behavioral fallback or infer optimizer work from loss. Root reports the original612 ceiling restored and all six guards passing, without waiver, whitelist or ceiling change; no guard was executed by this reviewer.
+
+## Current complete design assessment and preservation
+
+The repair retains canonical per-lane eligible reward sums, last eligible predecessor entropy, immutable clock snapshots and separate event units. Completed/externally stopped lanes still cannot reenter physics; actual stored dones/nonterminal successors are untouched. Guarded finalization remains the sole adaptive end callback. Explicit fresh binding and nonreused batch identities continue to govern new envelopes, and ordinary unbegun reset/step/flush remains DTO-only. Commit now has independent immutable authority while preserving the existing accepted lifecycle, rather than converting reset into a sink ordering constraint.
+
+The configured provider branch still consumes real receipt deltas including overflow work; legacy POP still brackets append plus one update with pure public counters. The new actual POP legacy accounting test closes the earlier consumer-evidence gap: short tail0 updates followed by real updates, authoritative six before/after readings, expected pending occupancy, nonzero predictor parameter change and no bounded-service substitution. Q training admission/readiness, train vector ticks, target/LR successful updates and eligible terminal accounting remain unaffected by this repair.
+
+Historical ledger access still diagnoses incomplete restoration rather than presenting fabricated zero totals. Existing checkpoint payload keys/version and APIs are unchanged. Full native ledger/event restoration, runner/bank binding and downstream completion consumers/private clocks remain mandatory later owners under the original approved task boundary; this review neither relabels them implemented nor starts their work. Current T19 is the bounded producer/consumer seam explicitly authorized by the task brief, not an end-to-end G3/G4 claim.
+
+No new breakage was found in the repair. Optional P3 remains: run-length publication/commit identity metadata grows to preserve unrestricted delayed commit/replay. Eliminating it requires an explicit retirement protocol; dropping old authority would reintroduce the repaired contract defect. Per-read tensor copies are necessary ownership cost here, with only current-episode tensor payloads retained internally.
+
+## Evidence and release gates
+
+Root reports genuine R3 new14 cases7FAIL/7PASS, R4 joint79PASS in53.6282wall, all six guardsPASS and unchanged producer evidence. These are attributed execution results, not reviewer reruns. Both runtimes were closed for this static review. Earlier full-suite trigger remains applicable: existing configured POP predictor routing changes actual service/update/overflow/drop behavior, so the Section3 integration/consumed-meaning trigger survives the repairs. Root has adopted full before release; no deferral to named milestone G3 is recommended. No final package/repository release assertion is made until root's remaining owner/independent/full gates close at the same candidate.
+
+For my later root-scheduled independent execution, use these actual existing nodes in tests/test_townlet/regressions/bac/test_outcome_clocks.py (all parameterizations):
+
+- test_exposed_event_mutation_cannot_rewrite_publication_authority (6)
+- test_delayed_partial_commit_survives_reset_and_reordered_replay (2)
+- test_actual_singleton_tick_and_owned_entropy_are_finite_zero (1)
+- test_singleton_nonfinite_q_refuses_before_physics (3)
+- test_population_unconfigured_predictor_counts_short_tail_and_real_updates (1)
+- test_duplicate_begin_ordinary_reset_and_historical_ledger_accessor (1)
+- test_lengths2_5_owned_events_and_clock_units (2)
+- test_receipts_and_unequal_train_target_lr_clocks (2)
+- test_external_cuts_keep_owned_reason_and_nonterminal_successor (4)
+
+That is22 existing cases; the remaining binding and direct legacy cases are already in root's24-case core run. Root may select the entire24-case file if preferable within the scheduled budget. No execution authorized or attempted here.
+
+Only this new ignored report was written. No runtime/import/collection/compiler/lint, source/test/index/branch/worktree/project-copy/deletion or subdelegation. All14 worktrees preserved. Stationary for the scheduled independent run and current T19 completion/halt; no next packet.

@@ -1,0 +1,32 @@
+[
+  {
+    "path": "src/townlet/population/vectorized.py",
+    "present": true,
+    "lines": 2146,
+    "sha256": "9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a"
+  },
+  {
+    "path": "src/townlet/training/episode.py",
+    "present": true,
+    "lines": 20,
+    "sha256": "d9f93e2b0551f04ac882ffc7e4a775d34352626af3e868679c00a962f52c00a7"
+  },
+  {
+    "path": "src/townlet/training/clock_ledger.py",
+    "present": false,
+    "lines": 0,
+    "sha256": null
+  },
+  {
+    "path": "src/townlet/training/replay_contract.py",
+    "present": true,
+    "lines": 222,
+    "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c"
+  },
+  {
+    "path": "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+    "present": false,
+    "lines": 0,
+    "sha256": null
+  }
+]

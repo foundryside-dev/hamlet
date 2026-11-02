@@ -1,0 +1,24 @@
+{
+  "name": "accounting-red",
+  "exit_code": 1,
+  "seconds": 12.582795858383179,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_follow_genuine_legacy_optimizer_work",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r1-accounting-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red/accounting-red.log",
+  "sha256": "203d09bf6c847ef7556ce7aa3fe610ef1dd108057ea0aea6c5d91f3a294571e1",
+  "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "0212202c2bd53a9ee50ec705e54187ede68506e39366e462813e9c216929f10c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "Assembly resumed after successful byte-exact export and staging",
+  "cause": "Whitespace check encountered original diff hunk blank-context lines in three raw review-package.txt artifacts",
+  "action": "Preserve immutable raw evidence; narrowly exclude raw review-package diff text alongside original logs/patches from whitespace check; all prose/source still checked",
+  "export_repeated": false,
+  "raw_evidence_rewritten": false,
+  "source_unchanged_from": "39e61662299fb1429a9041e4add795f5c8efb8c6"
+}

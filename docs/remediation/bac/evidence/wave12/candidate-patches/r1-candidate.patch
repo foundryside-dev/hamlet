@@ -1,0 +1,894 @@
+diff --git a/src/townlet/population/vectorized.py b/src/townlet/population/vectorized.py
+index 261a3f89..ebe52155 100644
+--- a/src/townlet/population/vectorized.py
++++ b/src/townlet/population/vectorized.py
+@@ -8,9 +8,10 @@ Manages Q-networks, replay buffers, and training loops.
+ from __future__ import annotations
+ 
+ import copy
++import hashlib
+ import logging
+ import math
+-from collections.abc import Mapping
++from collections.abc import Mapping, Sequence
+ from dataclasses import dataclass, replace
+ from numbers import Real
+ from typing import TYPE_CHECKING, Any, cast
+@@ -35,7 +36,8 @@ from townlet.exploration.rnd import RNDExploration
+ from townlet.population.base import PopulationManager
+ from townlet.population.runtime_registry import AgentRuntimeRegistry
+ from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
+-from townlet.training.episode import CompletionReason, EpisodeCompletion, RunnerCompletionReason
++from townlet.training.clock_ledger import ClockLedger
++from townlet.training.episode import CompletionReason, EpisodeCompletion, LaneOutcome, RunnerCompletionReason
+ from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+ from townlet.training.q_targets import legal_td_target
+ from townlet.training.replay_buffer import ReplayBuffer
+@@ -435,6 +437,18 @@ class VectorizedPopulation(PopulationManager):
+         self.episode_step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=device)
+         self.episode_completed = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
+         self.episode_completions: list[EpisodeCompletion | None] = [None for _ in range(self.num_agents)]
++        self._clock_ledger = ClockLedger(vector_ticks=self.total_steps)
++        self._clock_ledger_restore_unavailable = self.total_steps != 0
++        self._next_world_binding: tuple[tuple[str, ...], tuple[int, ...]] | None = None
++        self._owned_episode: tuple[int, int, tuple[str, ...], tuple[int, ...]] | None = None
++        self._owned_reset_pending = False
++        self._begun_batch_ids: set[int] = set()
++        self._completed_outcomes: tuple[LaneOutcome, ...] = ()
++        self._committed_outcomes: dict[tuple[int, int], str] = {}
++        self._committed_batches: set[int] = set()
++        self._episode_reward_totals = torch.zeros((self.num_agents, 4), dtype=torch.float64)
++        self._episode_entropies = torch.zeros(self.num_agents, dtype=torch.float64)
++        self._episode_entropy_present = torch.zeros(self.num_agents, dtype=torch.bool)
+ 
+         # Current state
+         self.current_obs = torch.zeros((self.num_agents, obs_dim), dtype=torch.float32, device=device)
+@@ -762,6 +776,7 @@ class VectorizedPopulation(PopulationManager):
+         torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=self.max_grad_norm)
+         self.optimizer.step()
+         self.training_step_counter += 1
++        self._clock_ledger = self._clock_ledger.advance(optimizer_updates=1)
+         if self.scheduler is not None:
+             self.scheduler.step()
+         if self.training_step_counter % self.target_update_frequency == 0:
+@@ -785,6 +800,14 @@ class VectorizedPopulation(PopulationManager):
+         self.episode_step_counts.zero_()
+         self.episode_completed.zero_()
+         self.episode_completions = [None for _ in range(self.num_agents)]
++        if not self._owned_reset_pending:
++            self._owned_episode = None
++            self._next_world_binding = None
++        self._owned_reset_pending = False
++        self._completed_outcomes = ()
++        self._episode_reward_totals.zero_()
++        self._episode_entropies.zero_()
++        self._episode_entropy_present.zero_()
+ 
+         # Re-seed population-owned rollout memory and empty episode containers.
+         if self.is_recurrent:
+@@ -802,6 +825,95 @@ class VectorizedPopulation(PopulationManager):
+     # ------------------------------------------------------------------ #
+     # Episode lifecycle helpers
+     # ------------------------------------------------------------------ #
++    @property
++    def clock_ledger(self) -> ClockLedger:
++        """Owned runtime clocks; historical checkpoints do not invent missing units."""
++        if self._clock_ledger_restore_unavailable:
++            raise RuntimeError("The loaded historical checkpoint has no complete clock ledger; native ledger restore is not available")
++        return self._clock_ledger
++
++    @property
++    def completed_outcomes(self) -> tuple[LaneOutcome, ...]:
++        """Frozen envelopes published by this explicitly begun batch episode."""
++        return self._completed_outcomes
++
++    def bind_episode_worlds(self, *, world_ids: Sequence[str], world_episode_seqs: Sequence[int]) -> None:
++        """Own actual caller identities, never infer them from row, batch or tick."""
++        ids, sequences = tuple(world_ids), tuple(world_episode_seqs)
++        if len(ids) != self.num_agents or len(sequences) != self.num_agents:
++            raise ValueError("World identity binding must contain exactly one entry per lane")
++        if any(not isinstance(world, str) or not world.strip() for world in ids) or len(set(ids)) != len(ids):
++            raise ValueError("World IDs must be unique concrete nonempty strings")
++        if any(type(sequence) is not int or sequence < 0 for sequence in sequences):
++            raise ValueError("World episode sequences must be explicit nonnegative integers")
++        if self._owned_reset_pending or bool(((self.episode_step_counts > 0) & ~self.episode_completed).any()):
++            raise RuntimeError("Complete the current episode before binding another episode")
++        self._next_world_binding = ids, sequences
++
++    def begin_batch_episode(self, index: int, planned_horizon: int) -> None:
++        """Pin fresh caller binding before the next population reset and rollout."""
++        if type(index) is not int or index < 0 or type(planned_horizon) is not int or planned_horizon < 1:
++            raise ValueError("Batch index/horizon must be nonnegative/positive integers")
++        if self._next_world_binding is None:
++            raise RuntimeError("Bind concrete world IDs and episode sequences before beginning each owned episode")
++        if self._owned_reset_pending or bool(((self.episode_step_counts > 0) & ~self.episode_completed).any()):
++            raise RuntimeError("Complete the current episode before beginning another episode")
++        if index in self._begun_batch_ids:
++            raise ValueError("A batch episode identity cannot be reused")
++        ids, sequences = self._next_world_binding
++        self._owned_episode = index, planned_horizon, ids, sequences
++        self._next_world_binding = None
++        self._owned_reset_pending = True
++        self._begun_batch_ids.add(index)
++
++    @staticmethod
++    def _outcome_fingerprint(event: LaneOutcome) -> str:
++        completion = event.outcome
++        scalars = (
++            event.batch_episode,
++            event.planned_horizon,
++            event.world_id,
++            event.world_episode_seq,
++            event.reward_total,
++            event.reward_extrinsic,
++            event.reward_intrinsic,
++            event.reward_shaping,
++            event.policy_entropy,
++            completion.agent_idx,
++            completion.reason,
++            completion.survival_time,
++        )
++        digest = hashlib.sha256(repr(scalars).encode("utf-8"))
++        for reading in (completion.final_observation, completion.final_meters):
++            digest.update(str((reading.dtype, tuple(reading.shape))).encode("utf-8"))
++            digest.update(reading.detach().cpu().contiguous().numpy().tobytes())
++        return digest.hexdigest()
++
++    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
++        """Commit owned events idempotently; a batch advances only after every lane."""
++        incoming = tuple(outcomes)
++        prepared: dict[tuple[int, int], str] = {}
++        published = {(event.batch_episode, event.outcome.agent_idx): event for event in self._completed_outcomes}
++        for event in incoming:
++            if not isinstance(event, LaneOutcome):
++                raise ValueError("Only owned LaneOutcome events may be committed")
++            identity = event.batch_episode, event.outcome.agent_idx
++            fingerprint = self._outcome_fingerprint(event)
++            expected = self._committed_outcomes.get(identity)
++            if expected is None:
++                canonical = published.get(identity)
++                if canonical is None:
++                    raise ValueError("Outcome was not published by this population episode")
++                expected = self._outcome_fingerprint(canonical)
++            if fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
++                raise ValueError("An outcome identity cannot be committed with changed content")
++            prepared[identity] = fingerprint
++        self._committed_outcomes.update(prepared)
++        for batch in {identity[0] for identity in prepared}:
++            if batch not in self._committed_batches and all((batch, lane) in self._committed_outcomes for lane in range(self.num_agents)):
++                self._committed_batches.add(batch)
++                self._clock_ledger = self._clock_ledger.advance(completed_batch_episodes=1)
++
+     def _new_episode_container(self) -> EpisodeContainer:
+         """Create a fresh container for accumulating episode data.
+ 
+@@ -1127,8 +1239,28 @@ class VectorizedPopulation(PopulationManager):
+             final_observation=self.current_obs[agent_idx].detach().cpu().clone(),
+             final_meters=self.env.meters[agent_idx].detach().cpu().clone(),
+         )
++        envelope = None
++        if self._owned_episode is not None:
++            if not bool(self._episode_entropy_present[agent_idx]):
++                raise RuntimeError("A nonempty owned episode has no eligible policy entropy snapshot")
++            batch, horizon, worlds, sequences = self._owned_episode
++            totals = self._episode_reward_totals[agent_idx].tolist()
++            envelope = LaneOutcome(
++                outcome=completion,
++                batch_episode=batch,
++                planned_horizon=horizon,
++                reward_total=totals[0],
++                reward_extrinsic=totals[1],
++                reward_intrinsic=totals[2],
++                reward_shaping=totals[3],
++                policy_entropy=float(self._episode_entropies[agent_idx].item()),
++                world_id=worlds[agent_idx],
++                world_episode_seq=sequences[agent_idx],
++            )
+         self.episode_completed[agent_idx] = True
+         self.episode_completions[agent_idx] = completion
++        if envelope is not None:
++            self._completed_outcomes = (*self._completed_outcomes, envelope)
+         self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=survival_time)
+         if isinstance(self.exploration, AdaptiveIntrinsicExploration):
+             self.exploration.update_on_episode_end(survival_time=survival_time)
+@@ -1223,11 +1355,23 @@ class VectorizedPopulation(PopulationManager):
+ 
+         if bool(self.episode_completed.all()):
+             raise RuntimeError("Population episode is complete; call reset before stepping.")
++        if self._owned_reset_pending:
++            raise RuntimeError("Reset the explicitly begun batch before stepping")
+         active_on_entry = ~envs.dones.clone()
+         if bool((active_on_entry & self.episode_completed).any()):
+             raise RuntimeError("A completed population lane cannot enter another transition.")
+         self._bind_training()
+         q_values = self._rollout_q(active_on_entry)
++        if self._owned_episode is not None:
++            probabilities = torch.softmax(q_values, dim=-1)
++            entropy = -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=-1) / torch.log(
++                torch.tensor(q_values.shape[-1], dtype=torch.float32, device=q_values.device)
++            )
++            if not bool(torch.isfinite(entropy[active_on_entry]).all()):
++                raise ValueError("Owned policy entropy must be finite at the eligible predecessor")
++            active_cpu = active_on_entry.detach().cpu()
++            self._episode_entropies[active_cpu] = entropy[active_on_entry].detach().cpu().double()
++            self._episode_entropy_present[active_cpu] = True
+ 
+         # 2. Create temporary agent state for curriculum decision
+         temp_state = BatchedAgentState(
+@@ -1280,6 +1424,10 @@ class VectorizedPopulation(PopulationManager):
+         newly_retired = info["newly_retired"]
+         components = info["reward_components"]
+         intrinsic_weight = info["intrinsic_weight"]
++        if self._owned_episode is not None:
++            active_cpu = active_on_entry.detach().cpu()
++            readings = torch.stack((rewards, components["extrinsic"], components["intrinsic"], components["shaping"]), dim=1)
++            self._episode_reward_totals[active_cpu] += readings[active_on_entry].detach().cpu().double()
+ 
+         # Logging novelty and predictor admission use real predecessor transitions.
+         intrinsic_rewards = torch.zeros_like(rewards)
+@@ -1326,11 +1474,31 @@ class VectorizedPopulation(PopulationManager):
+         # Preserve predictor update ordering after eligible replay admission.
+         if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
+             rnd = self.exploration.rnd if isinstance(self.exploration, AdaptiveIntrinsicExploration) else self.exploration
+-            rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
+-            self.last_rnd_loss = rnd.update_predictor()
++            if rnd.service_options is not None:
++                receipt = rnd.admit_and_service(self.current_obs[active_on_entry], vector_tick=self.total_steps + 1)
++                self._clock_ledger = self._clock_ledger.advance(
++                    predictor_admitted_rows=receipt.admitted_rows,
++                    predictor_consumed_minibatches=receipt.optimizer_updates,
++                    predictor_dropped_rows=receipt.dropped_rows,
++                )
++                self.last_rnd_loss = 0.0 if receipt.last_loss is None else receipt.last_loss
++            else:
++                # Preserve the explicitly supported unconfigured one-minibatch adapter.
++                # Pure producer counters include the caller append and real service;
++                # float loss cannot distinguish a zero-loss update from a short tail.
++                before = rnd.predictor_service_counters()
++                rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
++                self.last_rnd_loss = rnd.update_predictor()
++                after = rnd.predictor_service_counters()
++                self._clock_ledger = self._clock_ledger.advance(
++                    predictor_admitted_rows=after.admitted_rows - before.admitted_rows,
++                    predictor_consumed_minibatches=after.optimizer_updates - before.optimizer_updates,
++                    predictor_dropped_rows=after.dropped_rows - before.dropped_rows,
++                )
+ 
+         # Replay clocks are vector-paced; retained readiness owns optimizer admission.
+         self.total_steps += 1
++        self._clock_ledger = self._clock_ledger.advance(vector_ticks=1, eligible_transitions=int(active_on_entry.sum().item()))
+         self._pace_replay()
+         if self.total_steps % self.train_frequency == 0:
+             self._learn()
+@@ -2069,6 +2237,7 @@ class VectorizedPopulation(PopulationManager):
+         self._bound_replay = None
+         self._last_beta_tick = total_steps
+         self._last_readiness = None
++        self._clock_ledger_restore_unavailable = True
+ 
+     # ------------------------------------------------------------------ #
+     # Cross-universe token-net load (token-obs unit 3 Task 9)
+diff --git a/src/townlet/training/clock_ledger.py b/src/townlet/training/clock_ledger.py
+new file mode 100644
+index 00000000..57f191b9
+--- /dev/null
++++ b/src/townlet/training/clock_ledger.py
+@@ -0,0 +1,36 @@
++"""Explicit units for advancing population events; no schedule owns another clock."""
++
++from dataclasses import dataclass, fields, replace
++
++
++@dataclass(frozen=True, slots=True)
++class ClockLedger:
++    """Immutable readings, replaced only by their population runtime owner.
++
++    Predictor minibatches count successful provider receipt optimizer updates;
++    optimizer_updates counts successful Q learner updates independently.
++    """
++
++    vector_ticks: int = 0
++    eligible_transitions: int = 0
++    optimizer_updates: int = 0
++    completed_batch_episodes: int = 0
++    predictor_admitted_rows: int = 0
++    predictor_consumed_minibatches: int = 0
++    predictor_dropped_rows: int = 0
++
++    def __post_init__(self) -> None:
++        for field in fields(self):
++            value = getattr(self, field.name)
++            if type(value) is not int or value < 0:
++                raise ValueError(f"{field.name} must be a nonnegative integer")
++
++    def advance(self, **increments: int) -> "ClockLedger":
++        """Apply nonnegative deltas without mutating a previously published reading."""
++        names = {field.name for field in fields(self)}
++        if increments.keys() - names:
++            raise ValueError("Unknown clock ledger unit")
++        for name, value in increments.items():
++            if type(value) is not int or value < 0:
++                raise ValueError(f"{name} increment must be a nonnegative integer")
++        return replace(self, **{name: getattr(self, name) + value for name, value in increments.items()})
+diff --git a/src/townlet/training/episode.py b/src/townlet/training/episode.py
+index ad8515b0..24e16a8a 100644
+--- a/src/townlet/training/episode.py
++++ b/src/townlet/training/episode.py
+@@ -1,6 +1,8 @@
+ """Shared immutable outcomes for completed population episode lanes."""
+ 
+-from dataclasses import dataclass
++import math
++from dataclasses import dataclass, replace
++from numbers import Real
+ from typing import Literal
+ 
+ import torch
+@@ -18,3 +20,47 @@ class EpisodeCompletion:
+     survival_time: int
+     final_observation: torch.Tensor
+     final_meters: torch.Tensor
++
++
++@dataclass(frozen=True)
++class LaneOutcome:
++    """An owned completion envelope with explicit caller-supplied world identity.
++
++    Tensor readings are detached CPU copies. Frozen fields prevent rebinding;
++    consumers must treat the owned tensor readings as immutable event data.
++    """
++
++    outcome: EpisodeCompletion
++    batch_episode: int
++    planned_horizon: int
++    reward_total: float
++    reward_extrinsic: float
++    reward_intrinsic: float
++    reward_shaping: float
++    policy_entropy: float
++    world_id: str
++    world_episode_seq: int
++
++    def __post_init__(self) -> None:
++        if not isinstance(self.outcome, EpisodeCompletion):
++            raise ValueError("outcome must be an EpisodeCompletion")
++        for name, minimum in (("batch_episode", 0), ("planned_horizon", 1), ("world_episode_seq", 0)):
++            value = getattr(self, name)
++            if type(value) is not int or value < minimum:
++                raise ValueError(f"{name} must be an integer >= {minimum}")
++        if not isinstance(self.world_id, str) or not self.world_id.strip():
++            raise ValueError("world_id must be a concrete nonempty string")
++        for name in ("reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping", "policy_entropy"):
++            value = getattr(self, name)
++            if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(float(value)):
++                raise ValueError(f"{name} must be a finite real value")
++            object.__setattr__(self, name, float(value))
++        object.__setattr__(
++            self,
++            "outcome",
++            replace(
++                self.outcome,
++                final_observation=self.outcome.final_observation.detach().cpu().clone(),
++                final_meters=self.outcome.final_meters.detach().cpu().clone(),
++            ),
++        )
+diff --git a/tests/test_townlet/regressions/bac/test_outcome_clocks.py b/tests/test_townlet/regressions/bac/test_outcome_clocks.py
+new file mode 100644
+index 00000000..9dbb35a8
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_outcome_clocks.py
+@@ -0,0 +1,329 @@
++"""C07 owned envelopes: real authored lanes, explicit identity, event-owned clocks."""
++
++import copy
++import importlib
++import importlib.util
++from dataclasses import FrozenInstanceError, replace
++
++import pytest
++import torch
++import yaml
++
++from tests.test_townlet.regressions.fixtures.episode_lanes import (
++    UNEQUAL_ENDINGS,
++    build_authored_population,
++    controlled_action_schedule,
++    copy_authored_config,
++    observe_environment_steps,
++)
++from townlet.config.bac_options import RNDOptions
++from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
++from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
++from townlet.training.replay_contract import ReplayRequest
++
++CLOCKS = (
++    "vector_ticks",
++    "eligible_transitions",
++    "optimizer_updates",
++    "completed_batch_episodes",
++    "predictor_admitted_rows",
++    "predictor_consumed_minibatches",
++    "predictor_dropped_rows",
++)
++WORLDS = ("world-cedar", "world-elm")  # Explicit caller-owned world-instance names.
++
++
++def _population(tmp_path, *, learning=False):
++    config = copy_authored_config(tmp_path / "pack", lifespan=10, num_agents=2)
++    if learning:
++        path = config / "levels/L0_test/training.yaml"
++        data = yaml.safe_load(path.read_text())
++        training = data["training"]
++        training["replay_buffer"].update(batch_size=2, min_size=10)
++        training["training_loop"]["train_frequency"] = 2
++        training["q_learning"]["target_update_frequency"] = 2
++        path.write_text(yaml.safe_dump(data, sort_keys=False))
++    pop = build_authored_population(config, num_agents=2, exploration=EpsilonGreedyExploration(0.0, 1.0, 0.0))
++    # Run real fixture/physics/replay prerequisites BEFORE any missing-feature assertion.
++    with controlled_action_schedule(pop.exploration, pop.env, UNEQUAL_ENDINGS):
++        states = [pop.step_population(pop.env) for _ in UNEQUAL_ENDINGS]
++    assert pop.episode_step_counts.tolist() == [2, 5]
++    assert sum(len(state.info["episode_completions"]) for state in states) == 2
++    assert [item.reason for item in pop.episode_completions] == ["authored_terminal"] * 2
++    assert pop.replay_buffer.retained_transitions == 7
++    return pop
++
++
++def _owned_api(pop):
++    episode = importlib.import_module("townlet.training.episode")
++    assert hasattr(episode, "LaneOutcome"), "C07 owned LaneOutcome interface missing"
++    assert importlib.util.find_spec("townlet.training.clock_ledger") is not None, "C07 ClockLedger module missing"
++    ledger = importlib.import_module("townlet.training.clock_ledger")
++    assert hasattr(ledger, "ClockLedger"), "C07 ClockLedger type missing"
++    for name in ("bind_episode_worlds", "begin_batch_episode", "commit_episode_outcomes"):
++        assert callable(getattr(pop, name, None)), f"C07 population {name} interface missing"
++    assert isinstance(getattr(pop, "clock_ledger", None), ledger.ClockLedger), "C07 population-owned ledger missing"
++    assert isinstance(getattr(pop, "completed_outcomes", None), tuple), "C07 immutable outcome tuple missing"
++    return episode.LaneOutcome
++
++
++def _clocks(pop):
++    return tuple(getattr(pop.clock_ledger, name) for name in CLOCKS)
++
++
++def _begin(pop, *, batch, worlds, sequences):
++    pop.bind_episode_worlds(world_ids=worlds, world_episode_seqs=sequences)
++    pop.begin_batch_episode(index=batch, planned_horizon=10)
++    pop.reset()  # The helper's initial empty reset is outside the measured episodes.
++
++
++def _entropy(values):
++    probabilities = torch.softmax(values, dim=-1)
++    return -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=-1) / torch.log(
++        torch.tensor(values.shape[-1], dtype=torch.float32, device=values.device)
++    )
++
++
++def _snapshot(event):
++    return (
++        event.world_id,
++        event.world_episode_seq,
++        event.batch_episode,
++        event.planned_horizon,
++        event.reward_total,
++        event.reward_extrinsic,
++        event.reward_intrinsic,
++        event.reward_shaping,
++        event.policy_entropy,
++        event.outcome.agent_idx,
++        event.outcome.reason,
++        event.outcome.survival_time,
++        event.outcome.final_observation.clone(),
++        event.outcome.final_meters.clone(),
++    )
++
++
++def _unchanged(event, expected):
++    actual = _snapshot(event)
++    assert actual[:-2] == expected[:-2]
++    assert torch.equal(actual[-2], expected[-2])
++    assert torch.equal(actual[-1], expected[-1])
++
++
++@pytest.mark.parametrize("reverse", [False, True])
++def test_lengths2_5_owned_events_and_clock_units(tmp_path, reverse):
++    pop = _population(tmp_path)
++    outcome_type = _owned_api(pop)
++    schedule = tuple(tuple(reversed(row)) if reverse else row for row in UNEQUAL_ENDINGS)
++    worlds = tuple(reversed(WORLDS)) if reverse else WORLDS
++    retained = []
++    for batch, declared in ((9, {WORLDS[0]: 17, WORLDS[1]: 83}), (42, {WORLDS[0]: 18, WORLDS[1]: 84})):
++        before = _clocks(pop)
++        _begin(pop, batch=batch, worlds=worlds, sequences=tuple(declared[world] for world in worlds))
++        for event, frozen in retained:
++            _unchanged(event, frozen)
++        totals = torch.zeros((2, 4), dtype=torch.float64)
++        last_entropy = torch.empty(2)
++        published = []
++        with observe_environment_steps(pop.env) as ticks, controlled_action_schedule(pop.exploration, pop.env, schedule):
++            for row in schedule:
++                state = pop.step_population(pop.env)
++                tick = ticks[-1]
++                active = tick.active_before
++                parts = tick.info["reward_components"]
++                values = torch.stack((tick.rewards, parts["extrinsic"], parts["intrinsic"], parts["shaping"]), dim=1)
++                totals[active] += values[active].double()
++                last_entropy[active] = _entropy(pop.last_selected_q_values)[active].cpu()
++                events = pop.completed_outcomes
++                assert len(events) == len(published) + len(state.info["episode_completions"])
++                for event in events[len(published) :]:
++                    assert isinstance(event, outcome_type)
++                    lane = event.outcome.agent_idx
++                    assert (event.world_id, event.world_episode_seq) == (worlds[lane], declared[worlds[lane]])
++                    assert (event.batch_episode, event.planned_horizon) == (batch, 10)
++                    assert event.outcome.reason == "authored_terminal"
++                    assert event.outcome.survival_time == (2 if event.world_id == WORLDS[0] else 5)
++                    assert (event.reward_total, event.reward_extrinsic, event.reward_intrinsic, event.reward_shaping) == pytest.approx(
++                        totals[lane].tolist()
++                    )
++                    assert event.policy_entropy == pytest.approx(last_entropy[lane].item())
++                    assert torch.equal(event.outcome.final_observation, state.observations[lane].cpu())
++                    assert torch.equal(event.outcome.final_meters, pop.env.meters[lane].cpu())
++                    assert event.outcome.final_observation.data_ptr() != pop.current_obs[lane].data_ptr()
++                    retained.append((event, _snapshot(event)))
++                    published.append(event)
++                for event, frozen in retained:
++                    _unchanged(event, frozen)
++        assert len(published) == 2
++        assert pop.total_steps == pop.clock_ledger.vector_ticks
++        assert tuple(now - old for now, old in zip(_clocks(pop), before)) == (5, 7, 0, 0, 0, 0, 0)
++        pop.commit_episode_outcomes(tuple(published))
++        committed = _clocks(pop)
++        assert committed[3] == before[3] + 1  # Batch commitment is distinct from two lane events.
++        pop.commit_episode_outcomes(tuple(reversed(published)))
++        assert _clocks(pop) == committed
++        assert all(pop.flush_episode(lane, "checkpoint") is None for lane in range(2))
++        with pytest.raises(FrozenInstanceError):
++            published[0].reward_total = -999.0
++        with pytest.raises(FrozenInstanceError):
++            published[0].outcome.reason = "shutdown"
++
++
++@pytest.mark.parametrize("reason", ["cap", "budget", "shutdown", "checkpoint"])
++def test_external_cuts_keep_owned_reason_and_nonterminal_successor(tmp_path, reason):
++    pop = _population(tmp_path)
++    _owned_api(pop)
++    _begin(pop, batch=31, worlds=WORLDS, sequences=(107, 204))
++    with controlled_action_schedule(pop.exploration, pop.env, (("WAIT", "WAIT"),) * 2):
++        pop.step_population(pop.env)
++        state = pop.step_population(pop.env)
++    assert not state.dones.any()
++    assert state.info["successor_action_masks"].any(dim=1).all()
++    for lane in range(2):
++        completion = pop.flush_episode(lane, reason)
++        assert completion.reason == reason
++        assert completion.survival_time == 2
++        assert pop.flush_episode(lane, reason) is None
++    assert len(pop.completed_outcomes) == 2
++    assert all(event.outcome.reason == reason for event in pop.completed_outcomes)
++    # Sampling all real rows independently checks that flush did not forge done=True.
++    batch = pop.replay_buffer.sample_batch(
++        ReplayRequest(pop.replay_buffer.retained_transitions, 1, 0, "uniform_without_replacement", "feedforward", "transition")
++    )
++    assert batch.dones.sum().item() == 2  # Only the two prerequisite authored deaths.
++    for lane in range(2):
++        matching = (batch.next_observations == state.observations[lane]).all(dim=-1) & ~batch.dones
++        assert matching.any()
++        assert (batch.next_action_masks[matching] == state.info["successor_action_masks"][lane]).all()
++    frozen = [(event, _snapshot(event)) for event in pop.completed_outcomes]
++    pop.commit_episode_outcomes(pop.completed_outcomes)
++    _begin(pop, batch=91, worlds=WORLDS, sequences=(108, 205))
++    for event, expected in frozen:
++        _unchanged(event, expected)
++
++
++def test_owned_binding_requires_concrete_fresh_caller_identity(tmp_path):
++    pop = _population(tmp_path)
++    outcome_type = _owned_api(pop)
++    before = _clocks(pop)
++    with pytest.raises((ValueError, RuntimeError)):
++        pop.begin_batch_episode(index=3, planned_horizon=10)
++    for ids, sequences in (
++        (WORLDS, (None, 8)),
++        ((None, WORLDS[1]), (7, 8)),
++        (("", WORLDS[1]), (7, 8)),
++        ((WORLDS[0], WORLDS[0]), (7, 8)),
++        (WORLDS, (True, 8)),
++        (WORLDS, (-1, 8)),
++        (WORLDS[:1], (7,)),
++    ):
++        with pytest.raises((TypeError, ValueError)):
++            pop.bind_episode_worlds(world_ids=ids, world_episode_seqs=sequences)
++        assert _clocks(pop) == before
++    _begin(pop, batch=3, worlds=WORLDS, sequences=(7, 80))
++    with controlled_action_schedule(pop.exploration, pop.env, (("WAIT", "WAIT"),)):
++        pop.step_population(pop.env)
++    for lane in range(2):
++        pop.flush_episode(lane, "cap")
++    event = pop.completed_outcomes[0]
++    assert isinstance(event, outcome_type)
++    for changes in ({"world_id": None}, {"world_id": ""}, {"world_episode_seq": None}, {"world_episode_seq": True}):
++        with pytest.raises((TypeError, ValueError)):
++            replace(event, **changes)
++    pop.commit_episode_outcomes(pop.completed_outcomes)
++    with pytest.raises((ValueError, RuntimeError)):
++        pop.begin_batch_episode(index=4, planned_horizon=10)  # No implicit world sequence from batch/tick/row.
++
++
++@pytest.mark.parametrize("overflow", ["service_before_admit", "drop_newest"])
++def test_receipts_and_unequal_train_target_lr_clocks(tmp_path, monkeypatch, overflow):
++    pop = _population(tmp_path, learning=True)
++    _owned_api(pop)
++    adaptive = AdaptiveIntrinsicExploration(
++        obs_dim=pop.env.observation_dim, rnd_training_batch_size=1, rnd_learning_rate=1e-3, device=pop.device
++    )
++    rnd = adaptive.rnd
++    rnd.configure_service(RNDOptions(service_mode="paced_fifo", max_updates_per_tick=1, max_pending_rows=1, overflow_policy=overflow))
++    pop.exploration = adaptive
++    pop.env.set_exploration_module(adaptive)
++    pop.sync_exploration_metrics()
++    pop.scheduler = torch.optim.lr_scheduler.StepLR(pop.optimizer, step_size=1, gamma=0.5)
++    initial_lr = pop.optimizer.param_groups[0]["lr"]
++    initial_predictor = copy.deepcopy(rnd.predictor_network.state_dict())
++    receipts, attempts, updates, targets, completions = [], [], [], [], []
++    service, learn = rnd.admit_and_service, pop._learn
++    optimizer_step, target_load = pop.optimizer.step, pop.target_network.load_state_dict
++    adaptive_end = adaptive.update_on_episode_end
++
++    def service_spy(observations, *, vector_tick):
++        receipt = service(observations, vector_tick=vector_tick)
++        receipts.append((observations.detach().clone(), vector_tick, receipt))
++        return receipt
++
++    def learn_spy():
++        attempts.append(pop.total_steps)
++        return learn()
++
++    def optimizer_spy(*args, **kwargs):
++        result = optimizer_step(*args, **kwargs)
++        updates.append(pop.total_steps)
++        return result
++
++    def target_spy(*args, **kwargs):
++        result = target_load(*args, **kwargs)
++        targets.append(pop.total_steps)
++        return result
++
++    def completion_spy(*, survival_time):
++        completions.append(survival_time)
++        return adaptive_end(survival_time=survival_time)
++
++    monkeypatch.setattr(rnd, "admit_and_service", service_spy)
++    monkeypatch.setattr(pop, "_learn", learn_spy)
++    monkeypatch.setattr(pop.optimizer, "step", optimizer_spy)
++    monkeypatch.setattr(pop.target_network, "load_state_dict", target_spy)
++    monkeypatch.setattr(adaptive, "update_on_episode_end", completion_spy)
++    before = _clocks(pop)
++    _begin(pop, batch=57, worlds=WORLDS, sequences=(300, 701))
++    predecessors = []
++    with controlled_action_schedule(adaptive, pop.env, UNEQUAL_ENDINGS):
++        for row in UNEQUAL_ENDINGS:
++            predecessors.append(pop.current_obs[~pop.env.dones].clone())
++            pop.step_population(pop.env)
++    assert len(receipts) == 5, "POP must consume the real configured row-service receipt on each vector tick"
++    assert all(torch.equal(rows, expected) for (rows, _, _), expected in zip(receipts, predecessors))
++    assert [tick for _, tick, _ in receipts] == list(range(6, 11))  # Accepted step's vector tick.
++    actual = [receipt for _, _, receipt in receipts]
++    delta = tuple(now - old for now, old in zip(_clocks(pop), before))
++    assert delta[:4] == (5, 7, 2, 0)
++    assert delta[4:] == (
++        sum(r.admitted_rows for r in actual),
++        sum(r.optimizer_updates for r in actual),
++        sum(r.dropped_rows for r in actual),
++    )
++    assert delta[4] == 7
++    assert sum(r.consumed_rows for r in actual) + delta[6] + actual[-1].pending_rows == 7
++    if overflow == "service_before_admit":
++        assert sum(r.overflow_optimizer_updates for r in actual) > 0
++    else:
++        assert delta[6] > 0
++    assert any(not torch.equal(value, initial_predictor[key]) for key, value in rnd.predictor_network.state_dict().items())
++    assert attempts == [6, 8, 10] and updates == [8, 10] and targets == [10]
++    assert pop.training_step_counter == 2
++    assert pop.scheduler.last_epoch == 2
++    assert pop.optimizer.param_groups[0]["lr"] == pytest.approx(initial_lr * 0.25)
++    assert completions == [2, 5]
++    pop.commit_episode_outcomes(pop.completed_outcomes)
++    pop.commit_episode_outcomes(pop.completed_outcomes)
++    assert pop.clock_ledger.completed_batch_episodes == before[3] + 1
++    assert completions == [2, 5] and adaptive.survival_history == [2, 5]
++
++
++def test_legacy_direct_predictor_still_services_one_minibatch(tmp_path):
++    pop = _population(tmp_path)
++    adaptive = AdaptiveIntrinsicExploration(obs_dim=pop.env.observation_dim, rnd_training_batch_size=1, device=pop.device)
++    rnd = adaptive.rnd
++    rnd.obs_buffer.extend(row.detach().cpu().clone() for row in pop.current_obs)
++    rnd.update_predictor()
++    assert len(rnd.obs_buffer) == 1
++    assert torch.equal(rnd.obs_buffer[0], pop.current_obs[1].cpu())
+diff --git a/tests/test_townlet/regressions/bac/test_rnd_service.py b/tests/test_townlet/regressions/bac/test_rnd_service.py
+index a767c633..670a1b40 100644
+--- a/tests/test_townlet/regressions/bac/test_rnd_service.py
++++ b/tests/test_townlet/regressions/bac/test_rnd_service.py
+@@ -420,3 +420,180 @@ def test_public_manual_optimizer_steps_capture_their_live_clock(steps):
+     for current in (source, restored):
+         current.admit_and_service(rows(3), vector_tick=0)
+     equal(source.checkpoint_state(), restored.checkpoint_state())
++
++
++def service_counter_values(snapshot):
++    return (
++        snapshot.admitted_rows,
++        snapshot.consumed_rows,
++        snapshot.dropped_rows,
++        snapshot.pending_rows,
++        snapshot.optimizer_updates,
++    )
++
++
++def test_public_predictor_counters_follow_genuine_legacy_optimizer_work():
++    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
++    before = copy.deepcopy(rnd.predictor_network.state_dict())
++    steps = []
++    handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
++    try:
++        rnd.update({"observations": rows(7)})
++    finally:
++        handle.remove()
++    assert steps == [1]
++    assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {1}
++    assert any(not torch.equal(before[key], value) for key, value in rnd.predictor_network.state_dict().items())
++    # The first intended RED is here, after genuine existing one-minibatch work.
++    assert callable(getattr(rnd, "predictor_service_counters", None)), "cheap public predictor accounting view missing"
++    assert service_counter_values(rnd.predictor_service_counters()) == (7, 3, 0, 4, 1)
++
++
++def test_public_predictor_counters_bracket_legacy_partial_and_full_direct_updates():
++    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
++    rnd.obs_buffer.extend(rows(2).unbind())
++    assert rnd.update_predictor() == 0.0
++    assert rnd.optimizer.state == {}
++    before = rnd.predictor_service_counters()
++    assert service_counter_values(before) == (2, 0, 0, 2, 0)
++    rnd.obs_buffer.extend(rows(5).unbind())
++    # An unserviced public-buffer append changes occupancy, not recorded admissions.
++    unserviced = rnd.predictor_service_counters()
++    assert service_counter_values(unserviced) == (2, 0, 0, 7, 0)
++    loss = rnd.update_predictor()
++    assert type(loss) is float
++    after = rnd.predictor_service_counters()
++    assert service_counter_values(after) == (7, 3, 0, 4, 1)
++    assert after.admitted_rows - before.admitted_rows == 5
++    assert after.consumed_rows - before.consumed_rows == 3
++    assert after.optimizer_updates - before.optimizer_updates == 1
++    assert type(rnd.update_predictor()) is float
++    assert service_counter_values(rnd.predictor_service_counters()) == (7, 6, 0, 1, 2)
++    assert rnd.update_predictor() == 0.0
++    assert service_counter_values(rnd.predictor_service_counters()) == (7, 6, 0, 1, 2)
++    assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {2}
++    assert service_counter_values(before) == (2, 0, 0, 2, 0)
++
++
++@pytest.mark.parametrize("configured", [False, True])
++def test_public_predictor_counters_count_real_zero_loss_steps(configured):
++    rnd = provider(3, 9, "paced_fifo", "service_before_admit") if configured else RNDExploration(
++        obs_dim=2, embed_dim=3, training_batch_size=3
++    )
++    rnd.predictor_network.load_state_dict(rnd.fixed_network.state_dict())
++    steps = []
++    handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
++    try:
++        if configured:
++            receipt = rnd.admit_and_service(rows(7), vector_tick=0)
++            assert receipt.last_loss == 0.0
++            assert receipt.optimizer_updates == 1
++        else:
++            rnd.obs_buffer.extend(rows(7).unbind())
++            assert rnd.update_predictor() == 0.0
++        assert steps == [1]
++        assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {1}
++        assert service_counter_values(rnd.predictor_service_counters()) == (7, 3, 0, 4, 1)
++        assert rnd.update_predictor() == 0.0
++        assert steps == [1, 1]
++        assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {2}
++        assert service_counter_values(rnd.predictor_service_counters()) == (7, 6, 0, 1, 2)
++        assert rnd.update_predictor() == 0.0
++        assert steps == [1, 1]
++    finally:
++        handle.remove()
++
++
++@pytest.mark.parametrize("mode", ["paced_fifo", "occupancy_fifo"])
++@pytest.mark.parametrize("policy", ["service_before_admit", "drop_oldest", "drop_newest"])
++def test_public_predictor_counters_agree_with_configured_receipts(mode, policy):
++    rnd = provider(3, 3, mode, policy)
++    steps = []
++    handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
++    totals = [0, 0, 0, 0]
++    try:
++        assert service_counter_values(rnd.predictor_service_counters()) == (0, 0, 0, 0, 0)
++        for count, tick in ((7, 4), (2, 4), (0, 5), (4, 6)):
++            receipt = rnd.admit_and_service(rows(count), vector_tick=tick)
++            totals = [a + b for a, b in zip(totals, (
++                receipt.admitted_rows, receipt.consumed_rows, receipt.dropped_rows, receipt.optimizer_updates
++            ), strict=True)]
++            snapshot = rnd.predictor_service_counters()
++            assert service_counter_values(snapshot) == (*totals[:3], receipt.pending_rows, totals[3])
++            assert snapshot.admitted_rows == snapshot.consumed_rows + snapshot.dropped_rows + snapshot.pending_rows
++            assert snapshot.optimizer_updates == len(steps)
++            assert snapshot.consumed_rows == 3 * len(steps)
++            assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {len(steps)}
++        assert len(steps) > 0
++    finally:
++        handle.remove()
++
++
++@pytest.mark.parametrize("configured", [False, True])
++def test_public_predictor_counters_are_frozen_owned_primitives_and_observationally_pure(monkeypatch, configured):
++    import random
++    from dataclasses import FrozenInstanceError, fields, is_dataclass
++
++    import numpy as np
++
++    rnd = provider(3, 9, "paced_fifo", "service_before_admit") if configured else RNDExploration(
++        obs_dim=2, embed_dim=3, training_batch_size=3
++    )
++    rnd.update({"observations": rows(5)})
++    before = rnd.checkpoint_state()  # One test oracle, never the per-step accounting path.
++    queue = rnd.obs_buffer
++    queued_rows = tuple(queue)
++    networks = (rnd.fixed_network, rnd.predictor_network)
++    optimizer = rnd.optimizer
++    gradients = [None if parameter.grad is None else parameter.grad.clone() for parameter in rnd.predictor_network.parameters()]
++    torch_rng = torch.get_rng_state().clone()
++    numpy_rng = np.random.get_state()
++    python_rng = random.getstate()
++
++    def forbidden(*_args, **_kwargs):
++        pytest.fail("counter observation performed clone/model/optimizer/admission/service work")
++
++    with monkeypatch.context() as guarded:
++        for name in ("checkpoint_state", "available_state", "update", "update_predictor", "admit_and_service", "configure_service"):
++            guarded.setattr(rnd, name, forbidden)
++        for network in networks:
++            guarded.setattr(network, "forward", forbidden)
++            guarded.setattr(network, "state_dict", forbidden)
++        for name in ("step", "zero_grad", "state_dict"):
++            guarded.setattr(optimizer, name, forbidden)
++        guarded.setattr("townlet.exploration.rnd.deepcopy", forbidden)
++        guarded.setattr(torch.Tensor, "clone", forbidden)
++        guarded.setattr(torch, "stack", forbidden)
++        snapshots = [rnd.predictor_service_counters() for _ in range(3)]
++
++    snapshot = snapshots[0]
++    assert type(snapshot).__name__ == "PredictorServiceCounters"
++    assert is_dataclass(snapshot)
++    assert tuple(field.name for field in fields(snapshot)) == (
++        "admitted_rows", "consumed_rows", "dropped_rows", "pending_rows", "optimizer_updates"
++    )
++    assert all(type(value) is int for value in service_counter_values(snapshot))
++    assert all(service_counter_values(item) == (5, 3, 0, 2, 1) for item in snapshots)
++    for field in fields(snapshot):
++        with pytest.raises(FrozenInstanceError):
++            setattr(snapshot, field.name, 999)
++    assert rnd.obs_buffer is queue
++    assert len(queue) == len(queued_rows)
++    assert all(current is original for current, original in zip(queue, queued_rows, strict=True))
++    assert rnd.fixed_network is networks[0] and rnd.predictor_network is networks[1]
++    assert rnd.optimizer is optimizer
++    equal(before, rnd.checkpoint_state())
++    for parameter, gradient in zip(rnd.predictor_network.parameters(), gradients, strict=True):
++        if gradient is None:
++            assert parameter.grad is None
++        else:
++            equal(gradient, parameter.grad)
++    equal(torch_rng, torch.get_rng_state())
++    current_numpy_rng = np.random.get_state()
++    assert numpy_rng[0] == current_numpy_rng[0]
++    assert np.array_equal(numpy_rng[1], current_numpy_rng[1])
++    assert numpy_rng[2:] == current_numpy_rng[2:]
++    assert python_rng == random.getstate()
++    rnd.update({"observations": rows(1)})
++    assert service_counter_values(rnd.predictor_service_counters()) == (6, 6, 0, 0, 2)
++    assert service_counter_values(snapshot) == (5, 3, 0, 2, 1)

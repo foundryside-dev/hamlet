@@ -1,0 +1,179 @@
+{
+  "status": "SCOPED_QUALIFIED_T19_CPU",
+  "candidate_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "scope": "T19 owned outcomes/global clocks and bounded pure predictor accounting producer",
+  "source_inventories": {
+    "T19": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2329,
+        "sha256": "629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/episode.py",
+        "lines": 66,
+        "sha256": "5db951b4e76f88a2339ee5f77fe6515a726b5e2d1a006dbe283ea07d022f7fa9",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/clock_ledger.py",
+        "lines": 36,
+        "sha256": "117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/replay_contract.py",
+        "lines": 222,
+        "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+        "lines": 538,
+        "sha256": "66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9",
+        "present": true
+      }
+    ],
+    "T19-accounting": [
+      {
+        "path": "src/townlet/exploration/rnd.py",
+        "lines": 689,
+        "sha256": "821fd3095e896a5b98d44a671906f9c5cbccec2f00fa430a6f5bb8acb24e4109"
+      },
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 294,
+        "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+      },
+      {
+        "path": "src/townlet/exploration/adaptive_intrinsic.py",
+        "lines": 226,
+        "sha256": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+        "lines": 610,
+        "sha256": "0477b2531b8a1a109bf71285310c0beda725e295f11c51f61f6713005c2f6a62"
+      }
+    ]
+  },
+  "focused": "R0 meaningful9FAIL1PASS; producer real-Adam RED1; R2joint65PASS; R3 reviewed defects7FAIL7PASS; R4joint79PASS",
+  "owners": "327PASS1SKIP; actual source/process evidence verified, historical tmp availability transition explicitly recorded",
+  "independent": "Astra core24PASS on actual R4 and producer12PASS on actual R2; all original identities retained through same-tree/four-source equivalence",
+  "review_record": "Fresh core R4 rereview all3materialfindings+default repair addressed; producer no defects; sourceverified docs approved",
+  "full_repository": {
+    "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+    "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+    "full_exit_code": 0,
+    "counts": {
+      "passed": 6927,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 18
+    },
+    "wall_seconds": 2690.637628555298,
+    "verified_source_paths": 167,
+    "verified_review_artifacts": 13,
+    "verified_process_identities": 5,
+    "verified_config_digests": 573,
+    "verified_native_artifacts": 13,
+    "registered_worktree_count": 14,
+    "available_checkout_count": 1,
+    "worktree_availability": [
+      {
+        "path": "/workspace/hamlet",
+        "directory_exists": true,
+        "git_pointer_exists": true
+      },
+      {
+        "path": "/tmp/bac-verify-T01-1139ddfa42",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T02-25cdec4e82",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T02-r1-94de8d44e8",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T03-4175e78397",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T08-00d385ce62",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T08a-4474a07ae5",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T09a-63beed0c8d",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T18-7901753a30",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-T18a-212b3d6d1a",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-wave01-6881a7488a",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-wave02-3d1d21cff5",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/bac-verify-wave02-receipts-ea9bad791f",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      },
+      {
+        "path": "/tmp/hamlet-bac-4aa5363b",
+        "directory_exists": false,
+        "git_pointer_exists": false
+      }
+    ],
+    "historical_custody_transition": "qualification/wave12-environment-custody-transition.json",
+    "entire_current_registry_unchanged": true,
+    "working_tree_equals_index": true,
+    "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "scope": "Required early full T19 gate only; not G3 milestone or full BAC qualification. Source/docs/evidence checkpoint and exact remote/CI check remain. User requires halt after T19."
+  },
+  "static_guards": "all sixPASS;612default ceiling unchanged",
+  "full_gate_reason": "Required early consumed predictor-service/clock integration trigger, not G3 milestone completion",
+  "open_material_findings_in_T19": [],
+  "unrun_final_programme_checks": "Final common-source22lenses+synthesis,finiteT40+12strictlearning/E2E,complete native10/7,coverage>=70/slow/applicable hardware remain later programme obligations; CUDAunavailable/unqualified",
+  "history": "Existing native checkpoint schema/key set unchanged; new owned ledger/identity persistence remains T24/T25, unavailable historical ledger diagnoses rather than fabricates",
+  "runner": "Existing runner not yet adopted bound begin/commit; explicit caller-owned API qualified, production adoption remains required later",
+  "worktree_custody": {
+    "registered": 14,
+    "available": 1,
+    "historical_unavailable": 13,
+    "cause": "unestablished",
+    "source_and_workspace_history_bundle": "verified",
+    "recreated_pruned_or_deleted_by_checkpoint": false
+  },
+  "stop": "User asked current package completed, allworkcommitted/pushed then graceful halt. No next packet."
+}

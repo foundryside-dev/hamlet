@@ -1,0 +1,21 @@
+{
+  "job": "review-collection",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "candidate_tree": "fcffa0ee0b53a03947ae53426343f834a8d7494a",
+  "exit_code": 0,
+  "counts": {
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 9.219082593917847,
+  "source_guards": 167,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

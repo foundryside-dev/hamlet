@@ -1,0 +1,41 @@
+# T19 tests-first authoring handoff — execution pending
+
+Root cleared only the owned test after T17 checkpoint `bc47e44662f7bea953156a668610a20e6bced9f2` became pushed/exact-provider verified and all runtime closed. Read the updated T19 task brief first, including its effective appendix. The public API, entropy and real-lane-fixture prose handoffs supplied the external APIs; their linked helper/provider/controller/runner implementations were not opened. No planning/review loop or new integration clearance is requested.
+
+Only `tests/test_townlet/regressions/bac/test_outcome_clocks.py` and this ignored receipt were written. No production edit, project runtime/import, compilation, pytest/collection, lint/formatter, index/staging/commit/push, branch/worktree/project-source copy/deletion or subdelegation occurred. All14 worktrees remain untouched. Root alone owns meaningful RED and later production clearance. No syntax/collection/test pass is claimed.
+
+## Exact complete five-source custody
+
+| Alias | Whole path relative to `/workspace/hamlet` | Lines | SHA256 |
+| --- | --- | ---: | --- |
+| POP unchanged | `src/townlet/population/vectorized.py` | 2146 | `9569eab3d766ed5467ecf78736cd170c7aa0d0b77d90efe28239f3bab64ff12a` |
+| EP unchanged | `src/townlet/training/episode.py` | 20 | `d9f93e2b0551f04ac882ffc7e4a775d34352626af3e868679c00a962f52c00a7` |
+| CL absent | `src/townlet/training/clock_ledger.py` | 0 | null |
+| RC unchanged/read-only | `src/townlet/training/replay_contract.py` | 222 | `3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c` |
+| new owned test | `tests/test_townlet/regressions/bac/test_outcome_clocks.py` | 323 | `cc76ef887d5849e7ffd7c1a50c23eca77ef872102922c4adefc3a724ca33e86d` |
+
+Actual inventory2711 lines; projected POP3000/EP200/CL180/RC250/test350 =3980 remains unchanged. Test has27 lines of headroom; no budget reallocation is needed. YAML DATA inspected: existing lane pack training, root brain and selected level drive. These supply the real feedforward/non-PER configuration and authored fields used by the test; no YAML was changed outside future helper-created temporary test packs.
+
+## Intended assertions and fixture prerequisites
+
+Authored ten cases (parameterization count is textual expectation, not collection evidence):
+
+- `test_lengths2_5_owned_events_and_clock_units[False/True]`: existing real five-action schedule, reversed lane actions and matching explicit caller world binding, two measured reset/episode cycles. Batch indices9/42 and independently authored world episode declarations17/83 then18/84 prevent conflating batch, lane and world sequence. Assert7 eligible transitions,5 vector ticks,2 frozen lane envelopes per measured episode, copied final DTO tensors/reward components, the supplied actual Q entropy signal at each lane's final eligible transition, and retention through later sibling steps/reset. Batch commit is once despite replay/reordered duplicate publication; legacy completion/flush DTOs remain callable.
+- `test_external_cuts_keep_owned_reason_and_nonterminal_successor[cap/budget/shutdown/checkpoint]`: two real WAIT ticks, explicit flushes, exact reasons and2-step survival, no duplicate events. Sample every actual retained replay row through the already-declared ReplayRequest/ReplayBatch transport; only the two prerequisite authored deaths remain terminal, and actual live successor/masks are retained. Reset cannot alter stored envelopes.
+- `test_owned_binding_requires_concrete_fresh_caller_identity`: missing binding refuses owned begin; absent/empty/duplicate world IDs, absent/bool/negative sequences and wrong geometry refuse without clock mutation. Concrete LaneOutcome identity must reject None/empty/bool replacements. Next owned episode requires fresh explicit binding rather than inferred sequence.
+- `test_receipts_and_unequal_train_target_lr_clocks[service_before_admit/drop_newest]`: real AdaptiveIntrinsic/RND with selected predictor minibatch1, pending capacity1, paced ordinary budget1. Observe actual calls/results from the existing bounded row API and actual predictor parameter changes, including mandatory overflow or explicit dropping. Ledger predictor minibatches equal the sum of **receipt.optimizer_updates**, never positive loss, Q batch size or guessed consumed-row division. Assert exact predecessor eligibility/admissions and conservation. Real warmup10, Q batch2 and train frequency2 produce attempts6/8/10, successful Q optimizer work8/10, target sync10, and real StepLR two steps/LR quartering. Adaptive completion receives2/5 once, including after duplicate outcome commits.
+- `test_legacy_direct_predictor_still_services_one_minibatch`: existing unconfigured public-buffer/direct-update adapter retains exactly its second actual row after one predictor minibatch, independently of new envelope APIs.
+
+Every case first builds/runs the actual existing authored fixture through all five real transitions using EpsilonGreedyExploration and verifies current2/5 survival, two authored completions and7 retained rows. Missing LaneOutcome/CL/binding/commit/ledger interfaces are asserted **inside** tests after those prerequisites; neither new EP symbols nor the absent CL module are imported at collection. The intended initial RED is the explicit missing LaneOutcome assertion after real fixture physics/replay; subsequent assertions distinguish missing ledger/setup/qualified envelopes from that first defect. The legacy direct-provider control has no missing-feature assertion.
+
+## Exact authored API/timing seam and bounded assumptions
+
+The test fixes the additive population ledger exposure as `population.clock_ledger: ClockLedger`; fields are the seven task-declared counters. It uses adopted `bind_episode_worlds(world_ids=..., world_episode_seqs=...)`, `begin_batch_episode(index=..., planned_horizon=10)` and `commit_episode_outcomes(...)`. Qualified completion tuples contain required concrete world/episode identity. The old unbegun prerequisite episode remains DTO-only-compatible; it is not relabeled as a qualified outcome. The helper's initial empty reset is followed by an explicit bind/begin and one population reset for each measured episode; ENV reset is never separately called.
+
+Configured RND service is bound explicitly on the real contained `.rnd` before its first admission. Test replacement of the exploration object and ENV attachment is assembly using existing public surfaces, not injected mechanics/reward/done state. The accepted step service tick is explicitly **POP.total_steps +1 at the current preincrement call site**, so measured service ticks are6–10 after the prerequisite's five ticks. It is not a private world service clock. Production must consume actual configured receipts while preserving the legacy direct adapter and existing replacement/lifecycle roles. No fabricated receipts/losses/Q outputs, optimizer stubs or mechanics controls supply passing counts: observers call the original methods exactly once.
+
+Entropy expectation is the supplied all-action-column normalized softmax formula, computed from actual `last_selected_q_values` for eligible lanes and retained at their final eligible pre-physics invocation. It does not call the mutating curriculum method a second time, use a static0 fallback, change legality semantics or implement T20. Replay assertions rely on the existing feedforward lane pack and actual declared uniform-without-replacement request; no storage implementation was read. Real scheduler substitution uses the existing Q optimizer with PyTorch StepLR explicitly specified for this independent schedule witness; the lane pack's constant schedule is not mislabeled as evidence of LR decay.
+
+Full runner/bank/private-clock/native-checkpoint integration remains mandatory under its later owners. These tests qualify caller-bound complete T19 envelopes and global clocks; they do not fabricate ENV identity, claim private-curiosity isolation, or reduce the mandatory final scope. Root retains B03/B11 owner gates, six guards, review, actual-patch full-gate assessment/G3 and all integration/publication.
+
+**Disposition:** test authoring complete, unexecuted; stationary for root's fixture/collection preflight and meaningful RED. No production implementation clearance has been used or assumed.

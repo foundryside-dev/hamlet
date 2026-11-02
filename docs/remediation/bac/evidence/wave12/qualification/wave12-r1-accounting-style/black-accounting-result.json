@@ -1,0 +1,20 @@
+{
+  "name": "black-accounting",
+  "exit_code": 1,
+  "seconds": 0.9482035636901855,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-style/black-accounting.log",
+  "sha256": "9c9caee096499c16e9ce5bf2ae2ef78edd16f7b7e613dee9fa5e36e2d32f2980",
+  "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "0212202c2bd53a9ee50ec705e54187ede68506e39366e462813e9c216929f10c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

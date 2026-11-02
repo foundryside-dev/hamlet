@@ -1,0 +1,52 @@
+"""Export completed T19 proof and historical identities without copying private Git backups."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+hash_file=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *args:subprocess.check_output(['git',*args],cwd=R,text=True).strip()
+post=json.loads((Q/'wave12-full-r1/final-postflight.json').read_text());release=json.loads((W/'wave12/qualification-release.json').read_text());m=json.loads((W/'wave12/r5-candidate.json').read_text());source=git('rev-parse','HEAD');assert release['status']=='SCOPED_QUALIFIED_T19_CPU'
+assert post['full_exit_code']==0 and source==m['base_commit'] and git('rev-parse','HEAD^{tree}')==m['candidate_tree']==post['candidate_tree'];assert not git('status','--porcelain')
+for group in ('source_files','configs','artifacts'):
+ for name,digest in m[group].items():assert hash_file(R/name)==digest,(group,name)
+destination=D/'evidence/wave12';assert not destination.exists(),'Never overwrite published proof';destination.mkdir();published={}
+def copy(original,target):
+ assert not target.exists(),target
+ target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(original.read_bytes());assert hash_file(original)==hash_file(target)
+ published[target.relative_to(D).as_posix()]={'sha256':hash_file(target),'original_path':str(original)}
+for folder in sorted(Q.glob('wave12-*')):
+ if folder.is_dir():
+  for original in sorted(folder.rglob('*')):
+   if original.is_file() and original.suffix in ('.json','.log'):copy(original,destination/'qualification'/folder.name/original.relative_to(folder))
+for original in sorted(Q.glob('wave12-*.json')):copy(original,destination/'qualification'/original.name)
+for original in sorted((W/'wave12').glob('*.json')):copy(original,destination/original.name)
+for original in sorted((W/'wave12-preparation').iterdir()):
+ if original.is_file() and original.suffix in ('.md','.json','.patch','.txt'):copy(original,destination/'preparation'/original.name)
+for name in ('run_bac_packet_checks_locked.py','bac_source_identity.py','capture_wave12_round.py','prepare_wave12_affected.py','qualify_wave12_full.py','qualify_wave12_full-reviewed-81fdb2c.py.txt'):
+ copy(Q/name,destination/(name if name.endswith('.txt') else name+'.txt'))
+reports=['T19-test-authoring.md','T19-implementation.md','T19-accounting-test-authoring.md','T19-accounting-implementation.md','T19-accounting-independent-review-r2.md','T19-accounting-independent-runtime-r2.md','T19-independent-review-r2.md','T19-review-witnesses-r3.md','T19-fix-round1-r4.md','T19-independent-rereview-r4.md','T19-independent-runtime-r4.md','T19-documentation-draft.md','T19-documentation-independent-review.md','T19-full-custody-rebind-review.md']
+for name in reports:copy(W/'wave12-preparation'/name,D/'package-reviews'/name)
+recovery=destination/'execution-recovery';copy(W/'tasks.json',recovery/'tasks.json');copy(W/'CURRENT-STATE.json',recovery/'checkpoint-state.json')
+reachable={}
+for line in git('log','--format=%H %T','HEAD').splitlines():
+ commit,tree=line.split();reachable.setdefault(tree,commit)
+patches=[]
+for metadata in sorted((W/'wave12').glob('*candidate*.json')):
+ c=json.loads(metadata.read_text());base,tree=c.get('base_commit'),c.get('candidate_tree')
+ if not isinstance(base,str) or not isinstance(tree,str):continue
+ item={'metadata':metadata.name,'base_commit':base,'candidate_tree':tree}
+ if tree in reachable:item['reachable_commit']=reachable[tree]
+ else:
+  target=destination/'candidate-patches'/(metadata.stem+'.patch');target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(subprocess.check_output(['git','diff','--binary',base,tree],cwd=R));name=target.relative_to(D).as_posix();published[name]={'sha256':hash_file(target),'original_path':str(metadata)};item.update(patch=name,sha256=hash_file(target))
+ patches.append(item)
+receipt={'task':'T19','source_commit':source,'qualified_tree':m['candidate_tree'],'full_repository':post,'release':release,'contracts':['BAC-C07','BAC-C08','BAC-C09','BAC-C13'],'scope':'Owned explicit-identity completion envelopes and truthful global event clocks; additive pure predictor accounting view; existing legacy/constructor/completion/service behavior retained. Scoped CPU package only.','repairs':['Returned canonical tensor mutation fixed by defensive exposures and publication fingerprints','Late/partial commitment authority preserved across accepted reset','Finite singleton entropy0 after finite-Q check; invalid input rejected before physics','No-defaults ceiling612 preserved; no loss-based optimizer inference or checkpoint clone per step'],'preservation':'Native checkpoint payload unchanged; new owned ledger/history persistence remains mandatory later, unknown historical ledger diagnosed. Ordinary runner still has not adopted bind/begin/commit; no privateB/wholeBAC/learning/GPU closure.','temporary_checkout_custody':{'registered':14,'available_at_full_gate':post['available_checkout_count'],'record':'wave12/qualification/wave12-environment-custody-transition.json','note':'13 historical tmp directories became unavailable; cause not established. Registry identity records and current source/history workspace bundle verified; no pruning/recreation. Full current-MAIN pre/post registry and availability pinned; original pretransition records retained.'},'candidate_patches':patches,'artifacts':published,'optional_p3':['Durable event identity/fingerprint journals currently grow with run length; any retirement that reduces replay/idempotence needs owner approval.','Explicit pure-view values after restored/imported predictor checkpoints could strengthen optional coverage; no observed producer defect.'],'programme':'28/66 scoped source packages;38remaining plus all54 final requirements/22fresh final lenses+synthesis and finiteT40+12strict learning/E2E/finalgates remain open. G3 milestone not closed by this early full gate.','stop':'User explicitly requests commit/push all current work and graceful halt afterT19. No next package started.','publication':'Code source checkpoint already pushed; final documentation/evidence checkpoint and exact-tip CI checked separately. No PR or merge.'}
+(D/'evidence/wave12-qualification.json').write_text(json.dumps(receipt,indent=2)+'\n');c=post['counts'];summary=f"""# T19 scoped qualification
+
+Source `{source}`, exact source tree `{m['candidate_tree']}`.
+
+Caller-bound LaneOutcome snapshots preserve concrete world/episode identity, actual reward/entropy data, defensive tensor ownership and delayed/partial commitment authority across reset. ClockLedger records actual vector ticks, eligible transitions, successful optimizer work, batch commitment and predictor receipts. The pure native counter view preserves legacy one-minibatch accounting without loss inference or per-step checkpoint copying.
+
+Meaningful original regressions and fresh source review exposed three further defects; all were reproduced and fixed. Repaired joint79, actual owner327PASS/1SKIP, independent core24 and producer12 passed (overlapping selections are not summed). Six guards passed with default ceiling612 unchanged. The required early full gate passed **{c['passed']} tests,{c['skipped']} skipped** in {post['wall_seconds']:.2f}s, with current-source/process/config/artifact and availability custody verified. [Evidence](../evidence/wave12-qualification.json) retains original failures/identities and the tmp-checkout discrepancy.
+
+This early gate does not close G3 or full BAC acceptance. 28/66 packages are scoped-qualified;38 and all final requirements remain. Ordinary runner adoption, complete owned ledger/native persistence, private curiosity, finite learning and GPU qualification remain their recorded owners. User requested commit/push and halt after this package; no next package starts.
+""";(D/'package-reviews/T19-qualification.md').write_text(summary)
+print(json.dumps({'export':'PASS','source':source,'tree':m['candidate_tree'],'artifacts':len(published),'candidate_records':len(patches),'bytes':sum((D/name).stat().st_size for name in published)},indent=2))

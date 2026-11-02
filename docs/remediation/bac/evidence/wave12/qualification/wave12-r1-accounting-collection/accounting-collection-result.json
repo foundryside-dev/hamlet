@@ -1,0 +1,24 @@
+{
+  "name": "accounting-collection",
+  "exit_code": 0,
+  "seconds": 7.904964208602905,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-collection/accounting-collection.log",
+  "sha256": "b36335aa562bfc5d049041eff428e091f730fde80625645c5e8fa4c143f92650",
+  "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "0212202c2bd53a9ee50ec705e54187ede68506e39366e462813e9c216929f10c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

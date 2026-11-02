@@ -1,0 +1,4 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Success: no issues found in 193 source files

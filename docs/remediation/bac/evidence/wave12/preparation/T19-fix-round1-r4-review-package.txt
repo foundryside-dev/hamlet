@@ -1,0 +1,92 @@
+diff --git a/src/townlet/population/vectorized.py b/src/townlet/population/vectorized.py
+index ebe52155..42d4d525 100644
+--- a/src/townlet/population/vectorized.py
++++ b/src/townlet/population/vectorized.py
+@@ -444,6 +444,7 @@ class VectorizedPopulation(PopulationManager):
+         self._owned_reset_pending = False
+         self._begun_batch_ids: set[int] = set()
+         self._completed_outcomes: tuple[LaneOutcome, ...] = ()
++        self._published_outcome_fingerprints: dict[tuple[int, int], str] = {}
+         self._committed_outcomes: dict[tuple[int, int], str] = {}
+         self._committed_batches: set[int] = set()
+         self._episode_reward_totals = torch.zeros((self.num_agents, 4), dtype=torch.float64)
+@@ -834,8 +835,10 @@ class VectorizedPopulation(PopulationManager):
+ 
+     @property
+     def completed_outcomes(self) -> tuple[LaneOutcome, ...]:
+-        """Frozen envelopes published by this explicitly begun batch episode."""
+-        return self._completed_outcomes
++        """Independent owned readings of this explicitly begun episode's events."""
++        # LaneOutcome construction clones its embedded DTO tensors. Each sink
++        # receives its own readings and cannot mutate POP's canonical authority.
++        return tuple(replace(event) for event in self._completed_outcomes)
+ 
+     def bind_episode_worlds(self, *, world_ids: Sequence[str], world_episode_seqs: Sequence[int]) -> None:
+         """Own actual caller identities, never infer them from row, batch or tick."""
+@@ -893,18 +896,14 @@ class VectorizedPopulation(PopulationManager):
+         """Commit owned events idempotently; a batch advances only after every lane."""
+         incoming = tuple(outcomes)
+         prepared: dict[tuple[int, int], str] = {}
+-        published = {(event.batch_episode, event.outcome.agent_idx): event for event in self._completed_outcomes}
+         for event in incoming:
+             if not isinstance(event, LaneOutcome):
+                 raise ValueError("Only owned LaneOutcome events may be committed")
+             identity = event.batch_episode, event.outcome.agent_idx
+             fingerprint = self._outcome_fingerprint(event)
+-            expected = self._committed_outcomes.get(identity)
++            expected = self._published_outcome_fingerprints.get(identity)
+             if expected is None:
+-                canonical = published.get(identity)
+-                if canonical is None:
+-                    raise ValueError("Outcome was not published by this population episode")
+-                expected = self._outcome_fingerprint(canonical)
++                raise ValueError("Outcome was not published by this population episode")
+             if fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
+                 raise ValueError("An outcome identity cannot be committed with changed content")
+             prepared[identity] = fingerprint
+@@ -1260,6 +1259,11 @@ class VectorizedPopulation(PopulationManager):
+         self.episode_completed[agent_idx] = True
+         self.episode_completions[agent_idx] = completion
+         if envelope is not None:
++            # Pin authoritative content at publication, before any public read.
++            # Fingerprints survive accepted resets so delayed/partial commits
++            # retain authority without retaining every episode's tensor payloads.
++            identity = envelope.batch_episode, envelope.outcome.agent_idx
++            self._published_outcome_fingerprints[identity] = self._outcome_fingerprint(envelope)
+             self._completed_outcomes = (*self._completed_outcomes, envelope)
+         self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=survival_time)
+         if isinstance(self.exploration, AdaptiveIntrinsicExploration):
+@@ -1363,10 +1367,17 @@ class VectorizedPopulation(PopulationManager):
+         self._bind_training()
+         q_values = self._rollout_q(active_on_entry)
+         if self._owned_episode is not None:
+-            probabilities = torch.softmax(q_values, dim=-1)
+-            entropy = -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=-1) / torch.log(
+-                torch.tensor(q_values.shape[-1], dtype=torch.float32, device=q_values.device)
+-            )
++            if not bool(torch.isfinite(q_values[active_on_entry]).all()):
++                raise ValueError("Owned policy Q-values must be finite at the eligible predecessor")
++            if q_values.shape[-1] == 1:
++                # A finite deterministic vocabulary has zero entropy. Validate
++                # Q first: this is not a fallback for NaN or infinite inputs.
++                entropy = torch.zeros_like(q_values[:, 0])
++            else:
++                probabilities = torch.softmax(q_values, dim=-1)
++                entropy = -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=-1) / torch.log(
++                    torch.tensor(q_values.shape[-1], dtype=torch.float32, device=q_values.device)
++                )
+             if not bool(torch.isfinite(entropy[active_on_entry]).all()):
+                 raise ValueError("Owned policy entropy must be finite at the eligible predecessor")
+             active_cpu = active_on_entry.detach().cpu()
+@@ -1481,7 +1492,10 @@ class VectorizedPopulation(PopulationManager):
+                     predictor_consumed_minibatches=receipt.optimizer_updates,
+                     predictor_dropped_rows=receipt.dropped_rows,
+                 )
+-                self.last_rnd_loss = 0.0 if receipt.last_loss is None else receipt.last_loss
++                if receipt.last_loss is None:
++                    self.last_rnd_loss = 0.0
++                else:
++                    self.last_rnd_loss = receipt.last_loss
+             else:
+                 # Preserve the explicitly supported unconfigured one-minibatch adapter.
+                 # Pure producer counters include the caller append and real service;

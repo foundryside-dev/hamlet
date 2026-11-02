@@ -1,0 +1,182 @@
+# T19 documentation draft — unapplied source-doc patch
+
+Only this ignored draft and `T19-source-docs.patch` were written. README, BAC architecture,
+options, STATUS, root ledger and final halt handoff remain unchanged. No source/test edits,
+project imports/compiler/pytest/lint, index/commit/push, branches/worktrees/project copies,
+deletion or subdelegation occurred. Patch generation used standard-library text/diff operations
+only, without importing the project or writing proposed complete document copies.
+
+Root reports joint79PASS, six guardsPASS and fresh Astra re-review with all material findings
+and the default repair addressed. Consumer328 and independent24 were active when assigned;
+the required full gate remains root-owned/pending. No new result, release-green, whole-BAC,
+learning or GPU claim is included in the proposed docs. User stop after current T19 remains.
+
+## Source and supplier attribution
+
+Bounded actual source: POP2329/629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92;
+EP66/5db951b4e76f88a2339ee5f77fe6515a726b5e2d1a006dbe283ea07d022f7fa9;
+CL36/117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571;
+read-only RC222/3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c;
+test538/66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9.
+Same five whole sources/3191 lines, no sixth implementation/provider/helper read.
+
+The exact legacy producer-view semantics are attributed to existing prose
+`T19-accounting-implementation.md`, SHA256
+60cceecd1a8a9d24c3f2c70f1a2e67db72d7e106b9c7a30213f2481dcb177958.
+No RND source was inspected. Ordinary-runner nonadoption and external identity limits are
+attributed to `T19-public-api-handoff.md` plus root's explicit task requirements. No linked
+runner/environment/provider implementation was opened. Current POP itself verifies the
+bind/begin/reset/outcomes/commit, clock, service-consumption and entropy behavior described.
+
+## Patch bases
+
+| Document | Unchanged base SHA256 |
+| --- | --- |
+| `README.md` | `4dba6c785ddd3cdc4f23acea9f8e64c09523b5163b1372477e4ea40f78c003d6` |
+| `docs/architecture/BAC.md` | `e8e601dc09d382affdcc861af330d8c42d8a5c5d930b8a9a7c4c1cd14a7733ee` |
+| `docs/remediation/bac/options.md` | `d985d7e54c9fd0e1d644cded2809a6aecb1df4615840a79db50948cd87d16988` |
+
+## Proposed README addition
+
+T19 exposes caller-bound `LaneOutcome` snapshots and an immutable global `ClockLedger`.
+Programmatic callers supply actual world IDs/episode sequences, then explicitly begin/reset
+an owned batch before rollout and commit its published outcomes. Public readings own their
+CPU tensors; publication authority survives reset for delayed/partial commitment. The ordinary
+runner has not adopted these begin/commit calls, and complete ledger/native persistence remains
+T24/T25 work. See [owned outcomes and clocks](docs/architecture/BAC.md#owned-lane-outcomes-and-global-clocks)
+and the [API/units reference](docs/remediation/bac/options.md#owned-lane-outcomes-and-global-clocks).
+
+## Proposed BAC architecture addition
+
+### Owned lane outcomes and global clocks
+
+`VectorizedPopulation` retains the existing `EpisodeCompletion`, `reset`, `step_population`
+and explicit-reason `flush_episode` APIs. Callers opt into complete owned envelopes by supplying
+actual identities for the world instances in current lane order:
+
+```python
+population.bind_episode_worlds(
+    world_ids=world_ids,
+    world_episode_seqs=world_episode_seqs,
+)
+population.begin_batch_episode(index=batch_index, planned_horizon=planned_horizon)
+population.reset()
+# Run the existing rollout; flush surviving lanes with an explicit stop reason.
+outcomes = population.completed_outcomes
+population.commit_episode_outcomes(outcomes)
+```
+
+These variables must come from the caller's real identity/episode declarations. World IDs
+are unique nonempty strings, episode sequences are explicit nonnegative integers, and each
+batch needs a fresh binding. Batch indices cannot be reused. No row index, global tick,
+configuration label or guessed sequence supplies missing world identity. Reset still refuses
+unfinished nonempty lanes; complete them through the existing finalizer before resetting.
+The ordinary runner has not adopted this binding/begin/commit protocol. Unbegun calls retain
+their original completion DTO behavior without claiming qualified new envelopes.
+
+`LaneOutcome` adds batch index/planned horizon, total/extrinsic/intrinsic/shaping reward sums,
+policy entropy and concrete world identity to the existing completion DTO. POP owns eligible
+lane accumulation and publishes each nonempty lane once through its guarded finalizer.
+Authored terminal/retirement and cap/budget/shutdown/checkpoint cuts keep their explicit reason;
+a runner cut does not turn its actual nonterminal replay successor into a terminal row.
+`completed_outcomes` returns only the current episode's events, with fresh owned CPU tensor
+readings on every exposure. Mutating a returned reading cannot rewrite canonical data or
+another sink's fresh reading. Publication-time fingerprints retain authority across accepted
+resets, so retained original envelopes can be committed later or partially; changed-content
+replay refuses. Reordered duplicate commitment is idempotent and adds no adaptive callback.
+A batch counter advances once after every lane is committed, independently of lane-event count.
+This identity/fingerprint history is in-memory; no bounded retirement or persistence protocol
+is claimed.
+
+`ClockLedger` is an immutable reading replaced by its population owner. `vector_ticks` uses
+the existing `total_steps` unit; `eligible_transitions` includes each actual entry-eligible
+terminal transition once; `optimizer_updates` counts successful Q steps, with skipped learning
+adding zero. `completed_batch_episodes` counts completed outcome commitments. Predictor row,
+minibatch and drop counters have separate units; they never substitute for Q updates. Train
+frequency and PER beta remain vector-paced, target/LR schedules use successful Q updates, and
+warmup/capacity use retained transitions. Lane survival remains lane-local. The units and
+provider accounting boundary are listed in the [options reference](../remediation/bac/options.md#owned-lane-outcomes-and-global-clocks).
+
+Owned entropy freezes each lane's last eligible predecessor-Q signal before physics. For
+width A>1 it uses `p = softmax(Q)` and `-sum(p * log(p + 1e-10)) / log(A)` over every action
+column, without a legality mask or epsilon-policy mixture. Finite width1 input has deterministic
+entropy0. Eligible nonfinite Q refuses before physics; static curriculum does not create a
+zero fallback for invalid input. Inactive sibling ticks do not overwrite a completed lane's
+entropy.
+
+Current checkpoint payloads do not carry the complete ledger or owned identity/publication
+history. After checkpoint loading or construction at a nonzero restored tick, accessing the
+ledger diagnoses unavailable historical units instead of inventing zero history. Complete
+native ledger/identity persistence and continuation remain T24/T25 integration. This API does
+not establish private-curiosity isolation, world identity attestation, new curriculum dynamics,
+learning quality or GPU qualification.
+
+## Proposed options addition
+
+## Owned lane outcomes and global clocks
+
+T19 adds an explicit programmatic runtime API; it adds no new authoring option or omission
+default. Before an owned rollout, call `bind_episode_worlds(world_ids=...,
+world_episode_seqs=...)`, then `begin_batch_episode(index, planned_horizon)` and `reset()`.
+Supply actual caller-owned world identity/episode declarations in lane order, with fresh
+binding each episode. Qualified `LaneOutcome` fields require concrete world_id and
+world_episode_seq; neither None nor row/batch/tick-derived guesses qualify. Existing unbegun
+completion/reset/flush APIs remain supported. The ordinary runner has not adopted owned
+begin/commit calls.
+
+`completed_outcomes` is a tuple of current-episode snapshots. Every public reading has owned
+CPU DTO tensors; publication fingerprints protect original content across later ticks and
+accepted resets. `commit_episode_outcomes(outcomes)` accepts retained original events after
+reset, supports partial commitment, refuses changed content and makes reordered duplicate
+commitment idempotent. Only commitment of every lane advances a batch once; commitment never
+adds another adaptive death callback. See [the complete calling contract](../../architecture/BAC.md#owned-lane-outcomes-and-global-clocks).
+
+| Ledger field | Actual advancing event / unit |
+| --- | --- |
+| `vector_ticks` | One accepted population step, preserving the recorded `total_steps` unit |
+| `eligible_transitions` | Number of actual entry-eligible rows, including each terminal transition once |
+| `optimizer_updates` | Successful Q optimizer steps; readiness/warmup skips add zero |
+| `completed_batch_episodes` | Once after all lane outcomes in a batch are committed |
+| `predictor_admitted_rows` | Actual provider admission accounting, including explicitly dropped incoming rows |
+| `predictor_consumed_minibatches` | Successful predictor minibatches, separate from Q optimizer work |
+| `predictor_dropped_rows` | Explicit provider drop accounting |
+
+Readings are immutable and population-owned. Global vector ticks pace train frequency and
+PER beta; successful Q updates pace target/LR schedules; retained eligible transitions govern
+warmup/capacity. Lane survival and last-eligible entropy remain lane-local. The new batch unit
+does not itself rewire the ordinary runner's epsilon/checkpoint cadence.
+
+For already configured shared RND/adaptive RND, POP consumes actual
+`admit_and_service(eligible_predecessor_rows, vector_tick=total_steps+1)` receipts after replay
+admission. Admission/drop deltas come from `admitted_rows`/`dropped_rows`;
+`predictor_consumed_minibatches` advances by `receipt.optimizer_updates`, including mandatory
+overflow work. `consumed_rows` counts rows and `pending_rows` is ending occupancy, not another
+update count. Empty new input can still service shared backlog. A zero/None loss does not
+infer whether work occurred; None maps only to the existing float telemetry0.0.
+
+The unconfigured legacy path preserves its public-buffer append plus exactly one
+`update_predictor()` call. POP brackets that interval with the pure public
+`predictor_service_counters()` view and records cumulative admitted/update/drop differences.
+The frozen view contains admitted_rows, consumed_rows, dropped_rows, pending_rows and
+optimizer_updates. It reads recorded counters and current occupancy without model/optimizer/
+FIFO cloning, RNG draws, training or reconciliation. External unserviced appends change
+occupancy immediately; recorded admissions reconcile on the actual direct update, including
+a short tail. This boundary records genuine legacy work without inferring updates from loss
+or copying a checkpoint every step. Existing direct provider APIs retain their service role.
+
+Owned entropy uses the last eligible pre-physics Q values over all columns: normalized
+softmax entropy for width>1, finite deterministic0 for width1, and rejection of eligible
+nonfinite Q before physics. It does not substitute a static-zero, legality-masked or sampled
+policy definition. Returned reward scalars preserve the actual DAC component sums.
+
+Complete ledger/identity/publication persistence is not in the current native payload.
+The historical ledger accessor diagnoses unknown units after load/nonzero-tick construction;
+it does not fabricate totals or world identity. T24/T25 retain full native continuation work,
+and runner/bank owners retain actual identity production and private-clock integration.
+These runtime facts do not qualify strict private curiosity, whole-BAC behavior, learned
+competence or GPU execution.
+
+The options opening ownership list also adds T19 owned outcomes/global clocks. No status,
+qualification-count, gate-selection or halt-ledger edit is proposed. Root can apply the
+unapplied patch after its final full-gate/document review, then own all tracked integration.
+No next package or remaining-owner implementation work is started here. Stationary.

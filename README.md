@@ -388,6 +388,14 @@ limitation and remains selectable. See [encoder options](docs/remediation/bac/op
 and [BAC architecture](docs/architecture/BAC.md#22-architecture-selection) for construction and
 learned-state/context contracts.
 
+T19 exposes caller-bound `LaneOutcome` snapshots and an immutable global `ClockLedger`.
+Programmatic callers supply actual world IDs/episode sequences, then explicitly begin/reset
+an owned batch before rollout and commit its published outcomes. Public readings own their
+CPU tensors; publication authority survives reset for delayed/partial commitment. The ordinary
+runner has not adopted these begin/commit calls, and complete ledger/native persistence remains
+T24/T25 work. See [owned outcomes and clocks](docs/architecture/BAC.md#owned-lane-outcomes-and-global-clocks)
+and the [API/units reference](docs/remediation/bac/options.md#owned-lane-outcomes-and-global-clocks).
+
 The token type schema is the transfer contract; the serialization layout is per universe. At
 `6475cc5b` every one of the 33 compilable levels has `token_type_schema_hash`
 `de093a6e9f59924e` (2-D and 3-D grids, GridND, continuous and aspatial packs alike), while

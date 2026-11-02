@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave12-r1-accounting-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "accounting-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_follow_genuine_legacy_optimizer_work",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r1-accounting-red"
+      ]
+    }
+  ]
+}

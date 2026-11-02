@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r5-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "full",
+      "args": [
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "--no-cov",
+        "--maxfail=1",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-full-r1"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "review-collection",
+  "exit_code": 0,
+  "seconds": 9.219082593917847,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_exposed_event_mutation_cannot_rewrite_publication_authority",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_delayed_partial_commit_survives_reset_and_reordered_replay",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_duplicate_begin_ordinary_reset_and_historical_ledger_accessor",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_population_unconfigured_predictor_counts_short_tail_and_real_updates",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_actual_singleton_tick_and_owned_entropy_are_finite_zero",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_singleton_nonfinite_q_refuses_before_physics",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-collection/review-collection.log",
+  "sha256": "dc26c925a967d935641a92af680b66e4ed4bda8d3e32791ae6b7c53ee06ea0a2",
+  "candidate_tree": "fcffa0ee0b53a03947ae53426343f834a8d7494a",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "339a8e6e00b0f89b54dc2e08f3b383dad75e08ff4c8bbfd93efa0ab8f8a059bc",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

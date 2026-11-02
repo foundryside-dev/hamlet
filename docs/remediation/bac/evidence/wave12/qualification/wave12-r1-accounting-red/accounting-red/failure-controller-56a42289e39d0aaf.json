@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_follow_genuine_legacy_optimizer_work",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_public_predictor_counters_follow_genuine_legacy_optimizer_work():\n        rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)\n        before = copy.deepcopy(rnd.predictor_network.state_dict())\n        steps = []\n        handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))\n        try:\n            rnd.update({\"observations\": rows(7)})\n        finally:\n            handle.remove()\n        assert steps == [1]\n        assert {int(moment[\"step\"].item()) for moment in rnd.optimizer.state.values()} == {1}\n        assert any(not torch.equal(before[key], value) for key, value in rnd.predictor_network.state_dict().items())\n        # The first intended RED is here, after genuine existing one-minibatch work.\n>       assert callable(getattr(rnd, \"predictor_service_counters\", None)), \"cheap public predictor accounting view missing\"\nE       AssertionError: cheap public predictor accounting view missing\nE       assert False\nE        +  where False = callable(None)\nE        +    where None = getattr(<townlet.exploration.rnd.RNDExploration object at 0x7f6f3daf0050>, 'predictor_service_counters', None)\n\ntests/test_townlet/regressions/bac/test_rnd_service.py:448: AssertionError",
+  "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d"
+}

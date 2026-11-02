@@ -6,7 +6,8 @@ policies through explicit or compiled-adapter population learning; T16 forwards 
 effective brain, all six resolved replay leaves and declared warmup through the real runner's
 eager learner seam. [STATUS.md](STATUS.md) records qualification and remaining native/runtime
 requirements. Consumer ownership remains effective configuration/roles T03, encoders T17,
-replay T08–T16, exploration T18a–d, curriculum T20–T22, checkpoints T24–T26 and evaluation T27.
+replay T08–T16, owned lane outcomes/global clocks T19, exploration T18a–d, curriculum
+T20–T22, checkpoints T24–T26 and evaluation T27.
 Current compile/cache transport retains the authored training block and encoder
 block. `resolve_bac_options(training.bac_options, training=training)` returns
 `ResolvedBaCOptions(schema_version, options, provenance)`; serialize this receipt
@@ -172,3 +173,66 @@ literal, both aggregators and encoders, with options-only examples in `options/`
 Tests compile copies with the public UniverseCompiler, exercise compiled DTO and
 msgpack cache round-trips, and rename declarations without changing resolutions.
 These are authoring/transport checks, not whole-BAC runtime qualification.
+
+## Owned lane outcomes and global clocks
+
+T19 adds an explicit programmatic runtime API; it adds no new authoring option or omission
+default. Before an owned rollout, call `bind_episode_worlds(world_ids=...,
+world_episode_seqs=...)`, then `begin_batch_episode(index, planned_horizon)` and `reset()`.
+Supply actual caller-owned world identity/episode declarations in lane order, with fresh
+binding each episode. Qualified `LaneOutcome` fields require concrete world_id and
+world_episode_seq; neither None nor row/batch/tick-derived guesses qualify. Existing unbegun
+completion/reset/flush APIs remain supported. The ordinary runner has not adopted owned
+begin/commit calls.
+
+`completed_outcomes` is a tuple of current-episode snapshots. Every public reading has owned
+CPU DTO tensors; publication fingerprints protect original content across later ticks and
+accepted resets. `commit_episode_outcomes(outcomes)` accepts retained original events after
+reset, supports partial commitment, refuses changed content and makes reordered duplicate
+commitment idempotent. Only commitment of every lane advances a batch once; commitment never
+adds another adaptive death callback. See [the complete calling contract](../../architecture/BAC.md#owned-lane-outcomes-and-global-clocks).
+
+| Ledger field | Actual advancing event / unit |
+| --- | --- |
+| `vector_ticks` | One accepted population step, preserving the recorded `total_steps` unit |
+| `eligible_transitions` | Number of actual entry-eligible rows, including each terminal transition once |
+| `optimizer_updates` | Successful Q optimizer steps; readiness/warmup skips add zero |
+| `completed_batch_episodes` | Once after all lane outcomes in a batch are committed |
+| `predictor_admitted_rows` | Actual provider admission accounting, including explicitly dropped incoming rows |
+| `predictor_consumed_minibatches` | Successful predictor minibatches, separate from Q optimizer work |
+| `predictor_dropped_rows` | Explicit provider drop accounting |
+
+Readings are immutable and population-owned. Global vector ticks pace train frequency and
+PER beta; successful Q updates pace target/LR schedules; retained eligible transitions govern
+warmup/capacity. Lane survival and last-eligible entropy remain lane-local. The new batch unit
+does not itself rewire the ordinary runner's epsilon/checkpoint cadence.
+
+For already configured shared RND/adaptive RND, POP consumes actual
+`admit_and_service(eligible_predecessor_rows, vector_tick=total_steps+1)` receipts after replay
+admission. Admission/drop deltas come from `admitted_rows`/`dropped_rows`;
+`predictor_consumed_minibatches` advances by `receipt.optimizer_updates`, including mandatory
+overflow work. `consumed_rows` counts rows and `pending_rows` is ending occupancy, not another
+update count. Empty new input can still service shared backlog. A zero/None loss does not
+infer whether work occurred; None maps only to the existing float telemetry0.0.
+
+The unconfigured legacy path preserves its public-buffer append plus exactly one
+`update_predictor()` call. POP brackets that interval with the pure public
+`predictor_service_counters()` view and records cumulative admitted/update/drop differences.
+The frozen view contains admitted_rows, consumed_rows, dropped_rows, pending_rows and
+optimizer_updates. It reads recorded counters and current occupancy without model/optimizer/
+FIFO cloning, RNG draws, training or reconciliation. External unserviced appends change
+occupancy immediately; recorded admissions reconcile on the actual direct update, including
+a short tail. This boundary records genuine legacy work without inferring updates from loss
+or copying a checkpoint every step. Existing direct provider APIs retain their service role.
+
+Owned entropy uses the last eligible pre-physics Q values over all columns: normalized
+softmax entropy for width>1, finite deterministic0 for width1, and rejection of eligible
+nonfinite Q before physics. It does not substitute a static-zero, legality-masked or sampled
+policy definition. Returned reward scalars preserve the actual DAC component sums.
+
+Complete ledger/identity/publication persistence is not in the current native payload.
+The historical ledger accessor diagnoses unknown units after load/nonzero-tick construction;
+it does not fabricate totals or world identity. T24/T25 retain full native continuation work,
+and runner/bank owners retain actual identity production and private-clock integration.
+These runtime facts do not qualify strict private curiosity, whole-BAC behavior, learned
+competence or GPU execution.

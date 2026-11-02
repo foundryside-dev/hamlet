@@ -1,0 +1,37 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave12-r4-affected-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "affected-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/population",
+        "tests/test_townlet/unit/exploration",
+        "tests/test_townlet/unit/training/test_episode_accounting.py",
+        "tests/test_townlet/regressions/test_episode_lane_population.py",
+        "tests/test_townlet/regressions/test_episode_lane_learning.py",
+        "tests/test_townlet/regressions/test_episode_lane_environment.py",
+        "tests/test_townlet/regressions/test_episode_lane_sinks.py",
+        "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+        "tests/test_townlet/regressions/test_episode_recording_shutdown.py",
+        "tests/test_townlet/integration/test_episode_execution.py",
+        "tests/test_townlet/integration/test_authored_episode_lanes.py",
+        "tests/test_townlet/integration/test_rnd_loss_tracking.py",
+        "tests/test_townlet/integration/test_recurrent_bptt_runtime.py",
+        "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py",
+        "tests/test_townlet/regressions/bac/test_runner_readiness.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q"
+      ]
+    }
+  ]
+}

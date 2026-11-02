@@ -1,0 +1,363 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [14 items]
+
+FFFFFF.....F..                                                           [100%]
+=================================== FAILURES ===================================
+_ test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_observation] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw0/test_exposed_event_mutation_ca0')
+field = 'final_observation', already_committed = False
+
+    @pytest.mark.parametrize("field", ["final_observation", "final_meters", "reward_total"])
+    @pytest.mark.parametrize("already_committed", [False, True])
+    def test_exposed_event_mutation_cannot_rewrite_publication_authority(tmp_path, field, already_committed):
+        pop = _population(tmp_path)
+        _owned_api(pop)
+        returned = _cut_owned(pop)
+        originals = tuple(replace(event) for event in returned)
+        expected = _snapshot(originals[0])
+        before = _clocks(pop)
+        if already_committed:
+            pop.commit_episode_outcomes(originals)
+        committed = _clocks(pop)
+        if field == "reward_total":
+            changed = replace(returned[0], reward_total=returned[0].reward_total + 0.25)
+        else:
+            getattr(returned[0].outcome, field).add_(0.25)
+            changed = returned[0]
+>       _unchanged(pop.completed_outcomes[0], expected)  # Another sink must see publication-time bytes.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='checkpoint', survival_time=2, final_observation=tensor([ 1....rd_intrinsic=0.0, reward_shaping=0.0, policy_entropy=0.9985483288764954, world_id='world-cedar', world_episode_seq=501)
+expected = ('world-cedar', 501, 71, 10, 1.9975000619888306, 1.9975000619888306, ...)
+
+    def _unchanged(event, expected):
+        actual = _snapshot(event)
+        assert actual[:-2] == expected[:-2]
+>       assert torch.equal(actual[-2], expected[-2])
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7fa0a87f1000>(tensor([ 1.2500,  1.1071,  0.6786,  0.2500,  0.2500,  1.2500,  1.2300,  0.2500,\n         1.2500,  1.2400,  0.2500,  1....57,  1.2500,  0.6786,\n         0.8214, -0.1786,  0.3929,  1.2500,  0.2500,  0.2500,  1.2500,  0.2500,\n         0.2500]), tensor([ 1.0000,  0.8571,  0.4286,  0.0000,  0.0000,  1.0000,  0.9800,  0.0000,\n         1.0000,  0.9900,  0.0000,  1....57,  1.0000,  0.4286,\n         0.5714, -0.4286,  0.1429,  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,\n         0.0000]))
+E        +    where <built-in method equal of type object at 0x7fa0a87f1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:109: AssertionError
+_ test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_observation] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw3/test_exposed_event_mutation_ca0')
+field = 'final_observation', already_committed = True
+
+    @pytest.mark.parametrize("field", ["final_observation", "final_meters", "reward_total"])
+    @pytest.mark.parametrize("already_committed", [False, True])
+    def test_exposed_event_mutation_cannot_rewrite_publication_authority(tmp_path, field, already_committed):
+        pop = _population(tmp_path)
+        _owned_api(pop)
+        returned = _cut_owned(pop)
+        originals = tuple(replace(event) for event in returned)
+        expected = _snapshot(originals[0])
+        before = _clocks(pop)
+        if already_committed:
+            pop.commit_episode_outcomes(originals)
+        committed = _clocks(pop)
+        if field == "reward_total":
+            changed = replace(returned[0], reward_total=returned[0].reward_total + 0.25)
+        else:
+            getattr(returned[0].outcome, field).add_(0.25)
+            changed = returned[0]
+>       _unchanged(pop.completed_outcomes[0], expected)  # Another sink must see publication-time bytes.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='checkpoint', survival_time=2, final_observation=tensor([ 1.... reward_shaping=0.003507578279823065, policy_entropy=0.9978362321853638, world_id='world-cedar', world_episode_seq=501)
+expected = ('world-cedar', 501, 71, 10, 2.0010076761245728, 1.9975000619888306, ...)
+
+    def _unchanged(event, expected):
+        actual = _snapshot(event)
+        assert actual[:-2] == expected[:-2]
+>       assert torch.equal(actual[-2], expected[-2])
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7f7ca8df1000>(tensor([ 1.2500,  0.9643,  0.3929,  0.2500,  0.2500,  1.2500,  1.2300,  0.2500,\n         1.2500,  1.2400,  0.2500,  1....29,  1.2500,  1.1071,\n         0.3929,  0.3929,  0.2500,  1.2500,  0.2500,  0.2500,  1.2500,  0.2500,\n         0.2500]), tensor([ 1.0000,  0.7143,  0.1429,  0.0000,  0.0000,  1.0000,  0.9800,  0.0000,\n         1.0000,  0.9900,  0.0000,  1....29,  1.0000,  0.8571,\n         0.1429,  0.1429,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,\n         0.0000]))
+E        +    where <built-in method equal of type object at 0x7f7ca8df1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:109: AssertionError
+_ test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_meters] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw0/test_exposed_event_mutation_ca1')
+field = 'final_meters', already_committed = False
+
+    @pytest.mark.parametrize("field", ["final_observation", "final_meters", "reward_total"])
+    @pytest.mark.parametrize("already_committed", [False, True])
+    def test_exposed_event_mutation_cannot_rewrite_publication_authority(tmp_path, field, already_committed):
+        pop = _population(tmp_path)
+        _owned_api(pop)
+        returned = _cut_owned(pop)
+        originals = tuple(replace(event) for event in returned)
+        expected = _snapshot(originals[0])
+        before = _clocks(pop)
+        if already_committed:
+            pop.commit_episode_outcomes(originals)
+        committed = _clocks(pop)
+        if field == "reward_total":
+            changed = replace(returned[0], reward_total=returned[0].reward_total + 0.25)
+        else:
+            getattr(returned[0].outcome, field).add_(0.25)
+            changed = returned[0]
+>       _unchanged(pop.completed_outcomes[0], expected)  # Another sink must see publication-time bytes.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='checkpoint', survival_time=2, final_observation=tensor([ 1.... reward_shaping=0.012000000104308128, policy_entropy=0.9975752830505371, world_id='world-cedar', world_episode_seq=501)
+expected = ('world-cedar', 501, 71, 10, 2.0095001459121704, 1.9975000619888306, ...)
+
+    def _unchanged(event, expected):
+        actual = _snapshot(event)
+        assert actual[:-2] == expected[:-2]
+        assert torch.equal(actual[-2], expected[-2])
+>       assert torch.equal(actual[-1], expected[-1])
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7fa0a87f1000>(tensor([1.2300, 1.2400, 1.2340, 1.2440, 0.2500, 0.7460, 1.2420, 1.2380]), tensor([0.9800, 0.9900, 0.9840, 0.9940, 0.0000, 0.4960, 0.9920, 0.9880]))
+E        +    where <built-in method equal of type object at 0x7fa0a87f1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:110: AssertionError
+_________ test_actual_singleton_tick_and_owned_entropy_are_finite_zero _________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw2/test_actual_singleton_tick_and0')
+
+    def test_actual_singleton_tick_and_owned_entropy_are_finite_zero(tmp_path):
+        pop = _singleton_population(tmp_path)
+        before = _clocks(pop)
+        with observe_environment_steps(pop.env) as ticks, controlled_action_schedule(pop.exploration, pop.env, (("WAIT",),)):
+>           state = pop.step_population(pop.env)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:502: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f191ab96120>
+envs = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f191ae7dd30>
+
+    def step_population(
+        self,
+        envs: VectorizedHamletEnv,
+    ) -> BatchedAgentState:
+        """
+        Execute one training step for entire population.
+    
+        Args:
+            envs: Vectorized environment (same as self.env)
+    
+        Returns:
+            BatchedAgentState with all agent data after step
+        """
+    
+        # POP-004: Validate device consistency to prevent cryptic PyTorch errors
+        # Compare device types robustly - cuda:0 == cuda (default device)
+        def _same_device(a: torch.device, b: torch.device) -> bool:
+            """Check if two devices are the same, handling cuda vs cuda:0."""
+            if a.type != b.type:
+                return False
+            if a.type == "cuda":
+                # cuda (no index) means device 0, same as cuda:0
+                a_idx = a.index if a.index is not None else 0
+                b_idx = b.index if b.index is not None else 0
+                return a_idx == b_idx
+            return True
+    
+        if not _same_device(self.current_obs.device, self.device):
+            raise RuntimeError(
+                f"Observation tensor on {self.current_obs.device} but population on {self.device}. "
+                f"Ensure environment and population use the same device."
+            )
+    
+        if bool(self.episode_completed.all()):
+            raise RuntimeError("Population episode is complete; call reset before stepping.")
+        if self._owned_reset_pending:
+            raise RuntimeError("Reset the explicitly begun batch before stepping")
+        active_on_entry = ~envs.dones.clone()
+        if bool((active_on_entry & self.episode_completed).any()):
+            raise RuntimeError("A completed population lane cannot enter another transition.")
+        self._bind_training()
+        q_values = self._rollout_q(active_on_entry)
+        if self._owned_episode is not None:
+            probabilities = torch.softmax(q_values, dim=-1)
+            entropy = -(probabilities * torch.log(probabilities + 1e-10)).sum(dim=-1) / torch.log(
+                torch.tensor(q_values.shape[-1], dtype=torch.float32, device=q_values.device)
+            )
+            if not bool(torch.isfinite(entropy[active_on_entry]).all()):
+>               raise ValueError("Owned policy entropy must be finite at the eligible predecessor")
+E               ValueError: Owned policy entropy must be finite at the eligible predecessor
+
+src/townlet/population/vectorized.py:1371: ValueError
+_ test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_meters] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw3/test_exposed_event_mutation_ca1')
+field = 'final_meters', already_committed = True
+
+    @pytest.mark.parametrize("field", ["final_observation", "final_meters", "reward_total"])
+    @pytest.mark.parametrize("already_committed", [False, True])
+    def test_exposed_event_mutation_cannot_rewrite_publication_authority(tmp_path, field, already_committed):
+        pop = _population(tmp_path)
+        _owned_api(pop)
+        returned = _cut_owned(pop)
+        originals = tuple(replace(event) for event in returned)
+        expected = _snapshot(originals[0])
+        before = _clocks(pop)
+        if already_committed:
+            pop.commit_episode_outcomes(originals)
+        committed = _clocks(pop)
+        if field == "reward_total":
+            changed = replace(returned[0], reward_total=returned[0].reward_total + 0.25)
+        else:
+            getattr(returned[0].outcome, field).add_(0.25)
+            changed = returned[0]
+>       _unchanged(pop.completed_outcomes[0], expected)  # Another sink must see publication-time bytes.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+event = LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='checkpoint', survival_time=2, final_observation=tensor([ 1...., reward_shaping=0.008686291985213757, policy_entropy=0.999346911907196, world_id='world-cedar', world_episode_seq=501)
+expected = ('world-cedar', 501, 71, 10, 2.006186366081238, 1.9975000619888306, ...)
+
+    def _unchanged(event, expected):
+        actual = _snapshot(event)
+        assert actual[:-2] == expected[:-2]
+        assert torch.equal(actual[-2], expected[-2])
+>       assert torch.equal(actual[-1], expected[-1])
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x7f7ca8df1000>(tensor([1.2300, 1.2400, 1.2340, 1.2440, 0.2500, 0.7460, 1.2420, 1.2380]), tensor([0.9800, 0.9900, 0.9840, 0.9940, 0.0000, 0.4960, 0.9920, 0.9880]))
+E        +    where <built-in method equal of type object at 0x7f7ca8df1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:110: AssertionError
+____ test_delayed_partial_commit_survives_reset_and_reordered_replay[False] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw1/test_delayed_partial_commit_su0')
+partial = False
+
+    @pytest.mark.parametrize("partial", [False, True])
+    def test_delayed_partial_commit_survives_reset_and_reordered_replay(tmp_path, partial):
+        pop = _population(tmp_path)
+        _owned_api(pop)
+        adaptive = AdaptiveIntrinsicExploration(obs_dim=pop.env.observation_dim, rnd_training_batch_size=128, device=pop.device)
+        pop.exploration = adaptive
+        pop.env.set_exploration_module(adaptive)
+        pop.sync_exploration_metrics()
+        originals = tuple(replace(event) for event in _cut_owned(pop))
+        before = _clocks(pop)
+        if partial:
+            pop.commit_episode_outcomes(originals[:1])
+        assert pop.clock_ledger.completed_batch_episodes == before[3]
+        assert adaptive.survival_history == [2, 2]
+        _begin(pop, batch=82, worlds=tuple(reversed(WORLDS)), sequences=(908, 502))
+        assert pop.completed_outcomes == ()
+>       pop.commit_episode_outcomes(originals[1:] if partial else originals)
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:387: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f5fcb785e80>
+outcomes = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='checkpoint', survival_time=2, final_observation=tensor([ 1....4923737198114395, reward_shaping=0.0, policy_entropy=0.9986550807952881, world_id='world-elm', world_episode_seq=907))
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Commit owned events idempotently; a batch advances only after every lane."""
+        incoming = tuple(outcomes)
+        prepared: dict[tuple[int, int], str] = {}
+        published = {(event.batch_episode, event.outcome.agent_idx): event for event in self._completed_outcomes}
+        for event in incoming:
+            if not isinstance(event, LaneOutcome):
+                raise ValueError("Only owned LaneOutcome events may be committed")
+            identity = event.batch_episode, event.outcome.agent_idx
+            fingerprint = self._outcome_fingerprint(event)
+            expected = self._committed_outcomes.get(identity)
+            if expected is None:
+                canonical = published.get(identity)
+                if canonical is None:
+>                   raise ValueError("Outcome was not published by this population episode")
+E                   ValueError: Outcome was not published by this population episode
+
+src/townlet/population/vectorized.py:906: ValueError
+____ test_delayed_partial_commit_survives_reset_and_reordered_replay[True] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red/popen-gw1/test_delayed_partial_commit_su1')
+partial = True
+
+    @pytest.mark.parametrize("partial", [False, True])
+    def test_delayed_partial_commit_survives_reset_and_reordered_replay(tmp_path, partial):
+        pop = _population(tmp_path)
+        _owned_api(pop)
+        adaptive = AdaptiveIntrinsicExploration(obs_dim=pop.env.observation_dim, rnd_training_batch_size=128, device=pop.device)
+        pop.exploration = adaptive
+        pop.env.set_exploration_module(adaptive)
+        pop.sync_exploration_metrics()
+        originals = tuple(replace(event) for event in _cut_owned(pop))
+        before = _clocks(pop)
+        if partial:
+            pop.commit_episode_outcomes(originals[:1])
+        assert pop.clock_ledger.completed_batch_episodes == before[3]
+        assert adaptive.survival_history == [2, 2]
+        _begin(pop, batch=82, worlds=tuple(reversed(WORLDS)), sequences=(908, 502))
+        assert pop.completed_outcomes == ()
+>       pop.commit_episode_outcomes(originals[1:] if partial else originals)
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:387: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f5fbb150690>
+outcomes = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=1, reason='checkpoint', survival_time=2, final_observation=tensor([ 1..., reward_shaping=0.01600000075995922, policy_entropy=0.9989334940910339, world_id='world-elm', world_episode_seq=907),)
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Commit owned events idempotently; a batch advances only after every lane."""
+        incoming = tuple(outcomes)
+        prepared: dict[tuple[int, int], str] = {}
+        published = {(event.batch_episode, event.outcome.agent_idx): event for event in self._completed_outcomes}
+        for event in incoming:
+            if not isinstance(event, LaneOutcome):
+                raise ValueError("Only owned LaneOutcome events may be committed")
+            identity = event.batch_episode, event.outcome.agent_idx
+            fingerprint = self._outcome_fingerprint(event)
+            expected = self._committed_outcomes.get(identity)
+            if expected is None:
+                canonical = published.get(identity)
+                if canonical is None:
+>                   raise ValueError("Outcome was not published by this population episode")
+E                   ValueError: Outcome was not published by this population episode
+
+src/townlet/population/vectorized.py:906: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_observation]
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_observation]
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_meters]
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_actual_singleton_tick_and_owned_entropy_are_finite_zero
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_meters]
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_delayed_partial_commit_survives_reset_and_reordered_replay[False]
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_delayed_partial_commit_survives_reset_and_reordered_replay[True]
+========================= 7 failed, 7 passed in 24.87s =========================

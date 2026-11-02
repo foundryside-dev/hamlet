@@ -1,0 +1,32 @@
+{
+  "name": "independent-accounting",
+  "exit_code": 0,
+  "seconds": 14.736199855804443,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_follow_genuine_legacy_optimizer_work",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_bracket_legacy_partial_and_full_direct_updates",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_count_real_zero_loss_steps",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_agree_with_configured_receipts",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_are_frozen_owned_primitives_and_observationally_pure",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r2-independent-accounting"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-r2-independent-accounting/independent-accounting.log",
+  "sha256": "2546f2bf0308dcf1496c4d739eae8c48e15aaeddcc091d1a602115ffa4cfefbb",
+  "candidate_tree": "ed3cf26770875fc28dab25d89567dd65a19764fe",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "manifest_sha256": "c9b0ac7c6aa11e0000bfe7958853bd5dc0a4d6bc0ab640545db0ffb86d17382d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

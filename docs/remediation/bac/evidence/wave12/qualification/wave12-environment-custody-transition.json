@@ -1,0 +1,106 @@
+{
+  "event": "Historical tmp checkout availability changed; cause not established",
+  "source_candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "before_registry": "worktree /workspace/hamlet\nHEAD bc47e44662f7bea953156a668610a20e6bced9f2\nbranch refs/heads/project-recovery-bac-2026-11-01\n\nworktree /tmp/bac-verify-T01-1139ddfa42\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\n\nworktree /tmp/bac-verify-T02-25cdec4e82\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\n\nworktree /tmp/bac-verify-T02-r1-94de8d44e8\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\n\nworktree /tmp/bac-verify-T03-4175e78397\nHEAD 049e305df42392373a52c9eb76552abbd74a5b2b\ndetached\n\nworktree /tmp/bac-verify-T08-00d385ce62\nHEAD 7aa6a8cedfa95f88344a7deaa9c8f80994b0aeb0\ndetached\n\nworktree /tmp/bac-verify-T08a-4474a07ae5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T09a-63beed0c8d\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T18-7901753a30\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-T18a-212b3d6d1a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave01-6881a7488a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave02-3d1d21cff5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\n\nworktree /tmp/bac-verify-wave02-receipts-ea9bad791f\nHEAD ac8f0f9c3c38cd77f533accc5c9259fe4abfc252\ndetached\n\nworktree /tmp/hamlet-bac-4aa5363b\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\n\n",
+  "current_registry": "worktree /workspace/hamlet\nHEAD bc47e44662f7bea953156a668610a20e6bced9f2\nbranch refs/heads/project-recovery-bac-2026-11-01\n\nworktree /tmp/bac-verify-T01-1139ddfa42\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T02-25cdec4e82\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T02-r1-94de8d44e8\nHEAD 5c91dfb9d09b8ba2d422c6fef5c3e468eadfebaf\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T03-4175e78397\nHEAD 049e305df42392373a52c9eb76552abbd74a5b2b\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T08-00d385ce62\nHEAD 7aa6a8cedfa95f88344a7deaa9c8f80994b0aeb0\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T08a-4474a07ae5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T09a-63beed0c8d\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T18-7901753a30\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-T18a-212b3d6d1a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-wave01-6881a7488a\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-wave02-3d1d21cff5\nHEAD 050a1a70e979aa03724219b81e848093820f044f\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/bac-verify-wave02-receipts-ea9bad791f\nHEAD ac8f0f9c3c38cd77f533accc5c9259fe4abfc252\ndetached\nprunable gitdir file points to non-existent location\n\nworktree /tmp/hamlet-bac-4aa5363b\nHEAD 4aa5363b5de54d9a112977c32c2975f37627197f\ndetached\nprunable gitdir file points to non-existent location\n\n",
+  "path_HEAD_branch_records_unchanged": true,
+  "availability": [
+    {
+      "path": "/workspace/hamlet",
+      "directory_exists": true,
+      "git_pointer_exists": true
+    },
+    {
+      "path": "/tmp/bac-verify-T01-1139ddfa42",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T02-25cdec4e82",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T02-r1-94de8d44e8",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T03-4175e78397",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T08-00d385ce62",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T08a-4474a07ae5",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T09a-63beed0c8d",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T18-7901753a30",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-T18a-212b3d6d1a",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-wave01-6881a7488a",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-wave02-3d1d21cff5",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/bac-verify-wave02-receipts-ea9bad791f",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    },
+    {
+      "path": "/tmp/hamlet-bac-4aa5363b",
+      "directory_exists": false,
+      "git_pointer_exists": false
+    }
+  ],
+  "registered_count": 14,
+  "available_directories": 1,
+  "source_configs_artifacts": "PASS167/573/13 unchanged",
+  "actual_checks": [
+    {
+      "job": "affected",
+      "exit_code": 0,
+      "process_identities": 4,
+      "log_sha256": "9c91665cba0a0e616184e985da709fb818cb232aabcd21713107ad0ed7631aa6",
+      "wall_seconds": 470.902156829834,
+      "source_log_import_threads": "PASS",
+      "registry_note": "Original byte-equal registry postflight not certified: historical tmp availability flags changed; path/HEAD/branch identities unchanged, current MAIN source unchanged."
+    },
+    {
+      "job": "independent-main",
+      "exit_code": 0,
+      "process_identities": 2,
+      "log_sha256": "7cb95673ba55b651bdb412db4b53ecb5e5dbefd4e46029caa4db7407173cc32e",
+      "wall_seconds": 147.667254447937,
+      "source_log_import_threads": "PASS",
+      "registry_note": "Original byte-equal registry postflight not certified: historical tmp availability flags changed; path/HEAD/branch identities unchanged, current MAIN source unchanged."
+    }
+  ],
+  "full_gate_status": "NOT STARTED; preflight stopped at registry check, subsequent wrapper had no generated spec and ran no tests. No broad rerun occurred.",
+  "actions": "Preserve registry entries, do not prune/recreate/copy. Commit/push current reviewed source checkpoint, then use explicit new custody observation for full MAIN qualification. User stop-afterT19 remains.",
+  "original_history_bundle_workspace_sha256": "75ca18ad6806eed1731ae82943fbf7337762a8412ca4c9614d8d2a7c22ed2095"
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "path": "src/townlet/exploration/rnd.py",
+    "lines": 661,
+    "sha256": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72"
+  },
+  {
+    "path": "src/townlet/config/bac_options.py",
+    "lines": 294,
+    "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+  },
+  {
+    "path": "src/townlet/exploration/adaptive_intrinsic.py",
+    "lines": 226,
+    "sha256": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9"
+  },
+  {
+    "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "lines": 422,
+    "sha256": "ecd2db6e72de5fba9453a6fff217d68113f6ff138c3c7a6cc9b5548e9e340c74"
+  }
+]

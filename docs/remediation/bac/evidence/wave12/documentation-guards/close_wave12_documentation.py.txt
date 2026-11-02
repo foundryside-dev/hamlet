@@ -1,0 +1,27 @@
+"""Close actual documentation gates and stage their immutable receipt; no commit/push."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+hash_file=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *args:subprocess.check_output(['git',*args],cwd=R,text=True)
+mp=W/'wave12/documentation-candidate.json';m=json.loads(mp.read_text());spec=Q/'wave12-documentation-guards-spec.json';s=json.loads(spec.read_text());out=Path(s['output'])
+assert git('rev-parse','HEAD').strip()==m['base_commit']=='39e61662299fb1429a9041e4add795f5c8efb8c6'
+assert git('write-tree').strip()==m['candidate_tree'] and subprocess.run(['git','diff','--quiet'],cwd=R).returncode==0
+assert git('worktree','list','--porcelain')==m['worktree_registry']
+for name,digest in m['source_files'].items():assert hash_file(R/name)==digest,name
+for item in m['worktree_availability']:
+ p=Path(item['path']);assert p.is_dir()==item['directory_exists'] and (p/'.git').exists()==item['git_pointer_exists']
+assert not git('diff','HEAD','--',*m['source_equivalence']['execution_paths']).strip()
+results={};files={};target=D/'evidence/wave12/documentation-guards';assert not target.exists()
+for job in s['jobs']:
+ p=out/(job['name']+'-result.json');r=json.loads(p.read_text());assert r['exit_code']==0 and r['base_commit']==m['base_commit'] and r['candidate_tree']==m['candidate_tree'] and r['manifest_sha256']==hash_file(mp) and r['harness_sha256']==hash_file(Q/'run_bac_packet_checks_locked.py');assert hash_file(Path(r['log']))==r['sha256'];results[job['name']]=r
+assert set(results)=={'ruff','mypy','black','no-defaults','expression-doc','compiler-cli'}
+target.mkdir(parents=True)
+for original in [mp,spec,*sorted(out.glob('*')),Q/'publish_wave12_evidence.py',Q/'finalize_wave12_checkpoint.py',Path(__file__),Q/'wave12-checkpoint-assembly-recovery.json',Q/'remote-ci-39e6-terminal.json']:
+ if original.is_file() and original.suffix in {'.json','.log','.py'}:
+  dest=target/(original.name+'.txt' if original.suffix=='.py' else original.name);assert not dest.exists();dest.write_bytes(original.read_bytes());assert hash_file(dest)==hash_file(original);files[dest.relative_to(R).as_posix()]=hash_file(dest)
+receipt={'status':'PASS_DOCUMENTATION_CHECKPOINT','task':'T19','source_commit':m['base_commit'],'qualified_source_tree':m['source_equivalence']['source_tree'],'guarded_documentation_tree':m['candidate_tree'],'guards':results,'artifacts':files,'source_equivalence':m['source_equivalence'],'custody':{'registered':14,'available':sum(i['directory_exists'] for i in m['worktree_availability']),'historical_tmp_discrepancy':'13 historical paths unavailable; cause unestablished, no prune/recreation'},'full_evidence':'wave12-qualification.json','later_final_gates':'OPEN; this checkpoint does not claim final BAC/G3 acceptance','stop':'Commit/push all current work, verify exact remote CI, halt. No next package.'}
+p=D/'evidence/wave12-documentation.json';assert not p.exists();p.write_text(json.dumps(receipt,indent=2)+'\n');subprocess.run(['git','add','-f','--',*files,str(p.relative_to(R))],cwd=R,check=True)
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave12/**/*.log',':(glob,exclude)docs/remediation/bac/evidence/wave12/**/*.patch',':(glob,exclude)docs/remediation/bac/evidence/wave12/preparation/*review-package.txt'],cwd=R,check=True)
+assert not git('diff','HEAD','--',*m['source_equivalence']['execution_paths']).strip()
+print(json.dumps({'guards':'all6PASS','source':m['base_commit'],'guarded_tree':m['candidate_tree'],'final_documentation_tree':git('write-tree').strip(),'files_staged':len(git('diff','--cached','--name-only').splitlines()),'stop':'Ready for final docs/evidence commit and push'},indent=2))

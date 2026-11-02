@@ -1,0 +1,160 @@
+{
+  "status": "PASS_DOCUMENTATION_CHECKPOINT",
+  "task": "T19",
+  "source_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "qualified_source_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "guarded_documentation_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+  "guards": {
+    "ruff": {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.27959728240966797,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave12-documentation-guards/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "manifest_sha256": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "mypy": {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 8.616117715835571,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave12-documentation-guards/mypy.log",
+      "sha256": "202660a8e685a052903d919ce2638f56fc88d4f0db7902d85b06a98746abe585",
+      "candidate_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "manifest_sha256": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "no-defaults": {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 4.058690786361694,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave12-documentation-guards/no-defaults.log",
+      "sha256": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+      "candidate_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "manifest_sha256": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "expression-doc": {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 11.25020956993103,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave12-documentation-guards/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "manifest_sha256": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "black": {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 55.550915479660034,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave12-documentation-guards/black.log",
+      "sha256": "c08924d8f62f9853a06fd3f90984a1b529d59c35b916b27ef75c225bf70815b8",
+      "candidate_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "manifest_sha256": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "compiler-cli": {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 181.78898644447327,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave12-documentation-guards/compiler-cli.log",
+      "sha256": "12805b128bbd86069fa9e7b9b968626f92884c47a4d2fb2e35a8939205051a78",
+      "candidate_tree": "22afb5b2c3235d927b7752a454bcd4de0ccaff31",
+      "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "manifest_sha256": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  },
+  "artifacts": {
+    "docs/remediation/bac/evidence/wave12/documentation-guards/documentation-candidate.json": "95d015328a9b2c1f44cc0e28ac9906735322ebaeec4148df13d8779af486223c",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/wave12-documentation-guards-spec.json": "3a100e0affac3703e9fb160bf897cf961f8ca105f95f78d921b14721772f0380",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/black-result.json": "1194930370100b04cdb7f2363f841ed7c94e2420a455816583b6de4be948536e",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/black.log": "c08924d8f62f9853a06fd3f90984a1b529d59c35b916b27ef75c225bf70815b8",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/compiler-cli-result.json": "380692f0cfa1ac09a97f5d5f70e1e5002c7d19b9879dcaf491d444fe74bf2768",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/compiler-cli.log": "12805b128bbd86069fa9e7b9b968626f92884c47a4d2fb2e35a8939205051a78",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/expression-doc-result.json": "3d65e6a9af21e6a15afa9df4d9ad73218ad749983fe3384d8393c488fae4c471",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/expression-doc.log": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/mypy-result.json": "e571210234aba1a2ddc7975fc2324561009376c12387c5d173961cb48e8f5ecc",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/mypy.log": "202660a8e685a052903d919ce2638f56fc88d4f0db7902d85b06a98746abe585",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/no-defaults-result.json": "60dde028ef68d95dcb70172f816f58765026996785d1f3d7b6ec0b2b7a829ed1",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/no-defaults.log": "598fbd71dd7a34f46c3f9cb59d583a08280d89786ee55281809c876e60b2f71e",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/ruff-result.json": "3901a6a4b5976fe653576cb8c40120adddb950d0bddb4df40e6b88e66cdfddf4",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/publish_wave12_evidence.py.txt": "28abdf7ce9a0e8ec2ee42d0e83e89f46df9b3e6936614ba464f8aeeac04fd930",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/finalize_wave12_checkpoint.py.txt": "8cd87807d13099fd7733d971ac12ab475d318e607fc204c092fcacdf67e94235",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/close_wave12_documentation.py.txt": "9a1c6bb814403e15f62119001912a1c6d7d4b6a435d5656b2aa84f4da5fe67b7",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/wave12-checkpoint-assembly-recovery.json": "b1690da83bc428b703a467b39a4a02d208a621393654a19ea6f912a947692e7a",
+    "docs/remediation/bac/evidence/wave12/documentation-guards/remote-ci-39e6-terminal.json": "3d8420c5de7ec8a6d5057c98ee7d4c9cb87f86e058e5b26b3e604f943f26674e"
+  },
+  "source_equivalence": {
+    "source_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+    "source_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+    "execution_paths": [
+      "src",
+      "tests",
+      "configs",
+      "scripts",
+      "pyproject.toml",
+      "uv.lock",
+      ".defaults-ratchet"
+    ]
+  },
+  "custody": {
+    "registered": 14,
+    "available": 1,
+    "historical_tmp_discrepancy": "13 historical paths unavailable; cause unestablished, no prune/recreation"
+  },
+  "full_evidence": "wave12-qualification.json",
+  "later_final_gates": "OPEN; this checkpoint does not claim final BAC/G3 acceptance",
+  "stop": "Commit/push all current work, verify exact remote CI, halt. No next package."
+}

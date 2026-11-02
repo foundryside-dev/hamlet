@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_rnd_service.py F                 [100%]
+
+=================================== FAILURES ===================================
+_____ test_public_predictor_counters_follow_genuine_legacy_optimizer_work ______
+
+    def test_public_predictor_counters_follow_genuine_legacy_optimizer_work():
+        rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+        before = copy.deepcopy(rnd.predictor_network.state_dict())
+        steps = []
+        handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
+        try:
+            rnd.update({"observations": rows(7)})
+        finally:
+            handle.remove()
+        assert steps == [1]
+        assert {int(moment["step"].item()) for moment in rnd.optimizer.state.values()} == {1}
+        assert any(not torch.equal(before[key], value) for key, value in rnd.predictor_network.state_dict().items())
+        # The first intended RED is here, after genuine existing one-minibatch work.
+>       assert callable(getattr(rnd, "predictor_service_counters", None)), "cheap public predictor accounting view missing"
+E       AssertionError: cheap public predictor accounting view missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<townlet.exploration.rnd.RNDExploration object at 0x7f6f3daf0050>, 'predictor_service_counters', None)
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:448: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_rnd_service.py::test_public_predictor_counters_follow_genuine_legacy_optimizer_work
+============================== 1 failed in 3.57s ===============================

@@ -1,0 +1,21 @@
+{
+  "job": "joint",
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "candidate_tree": "ed3cf26770875fc28dab25d89567dd65a19764fe",
+  "exit_code": 0,
+  "counts": {
+    "passed": 65,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 2
+  },
+  "wall_seconds": 48.20531368255615,
+  "source_guards": 167,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktrees": 14,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

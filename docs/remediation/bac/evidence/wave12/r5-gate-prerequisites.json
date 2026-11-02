@@ -1,0 +1,81 @@
+{
+  "status": "READY_FOR_REQUIRED_FULL_GATE",
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "results": [
+    {
+      "result": "wave12-r4-joint/joint-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "result": "wave12-r4-affected/affected-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "result": "wave12-r4-independent-main/independent-main-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "result": "wave12-r2-independent-accounting/independent-accounting-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r2-candidate.json",
+      "source_scope": "T19-accounting"
+    }
+  ],
+  "guard_results": [
+    {
+      "name": "ruff",
+      "result": "wave12-r4-guards/ruff-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "name": "black",
+      "result": "wave12-r4-guards/black-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "name": "mypy",
+      "result": "wave12-r4-guards/mypy-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "name": "no-defaults",
+      "result": "wave12-r4-guards/no-defaults-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "name": "expression-doc",
+      "result": "wave12-r4-guards/expression-doc-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    },
+    {
+      "name": "compiler-cli",
+      "result": "wave12-r4-guards/compiler-cli-result.json",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r4-candidate.json"
+    }
+  ],
+  "review_files": [
+    "wave12-preparation/T19-test-authoring.md",
+    "wave12-preparation/T19-implementation.md",
+    "wave12-preparation/T19-accounting-test-authoring.md",
+    "wave12-preparation/T19-accounting-implementation.md",
+    "wave12-preparation/T19-accounting-independent-review-r2.md",
+    "wave12-preparation/T19-accounting-independent-runtime-r2.md",
+    "wave12-preparation/T19-independent-review-r2.md",
+    "wave12-preparation/T19-review-witnesses-r3.md",
+    "wave12-preparation/T19-fix-round1-r4.md",
+    "wave12-preparation/T19-independent-rereview-r4.md",
+    "wave12-preparation/T19-independent-runtime-r4.md",
+    "wave12-preparation/T19-full-orchestration-independent-review.md",
+    "wave12-preparation/T19-full-orchestration-independent-rereview.md"
+  ],
+  "open_material_findings": [],
+  "closed_findings": {
+    "T19-R2-P2-01": "R3 actual RED\u2192R4 actual GREEN; independent24PASS and fresh source rereview addressed",
+    "T19-R2-P2-02": "Real compiledA1/nonfinite inputs prove RED\u2192GREEN; fresh source rereview addressed",
+    "T19-R2-P2-03": "Real reset/delayed/partial replay RED\u2192GREEN; fresh source rereview addressed",
+    "T19-R2-GATE-01": "New conditional default removed;612ceiling unchanged and guardPASS"
+  },
+  "expected_selected": 6943,
+  "expected_total": 6944,
+  "stop_after": "T19 source/docs/evidence committed and pushed, then halt; no next package",
+  "custody_transition": "qualification/wave12-environment-custody-transition.json; prior results retainactualbasebc47 and all MAIN source/process hashes, registry availability after-boundary not claimed unchanged"
+}

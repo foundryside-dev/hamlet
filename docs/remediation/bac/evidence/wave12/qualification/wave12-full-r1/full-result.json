@@ -1,0 +1,29 @@
+{
+  "name": "full",
+  "exit_code": 0,
+  "seconds": 2690.637628555298,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests",
+    "-q",
+    "--no-cov",
+    "--maxfail=1",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-full-r1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave12-full-r1/full.log",
+  "sha256": "74de0457a96734e4b72c9ebfafbb6cf3c4f686b87c3e14b90645bfd7db9549d5",
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "manifest_sha256": "7521b7757d30e58955928f4ddf9d1d389f6cac0047963281104d07472f3e0e13",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,18 @@
+{
+  "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+  "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d",
+  "counts": {
+    "failed": 1,
+    "errors": 0
+  },
+  "wall_seconds": 12.582795858383179,
+  "log_sha256": "203d09bf6c847ef7556ce7aa3fe610ef1dd108057ea0aea6c5d91f3a294571e1",
+  "source_guards": 167,
+  "process_identities": 1,
+  "configs": 573,
+  "artifacts": 13,
+  "worktrees": 14,
+  "custody": "PASS",
+  "cause": "Actual legacy update on7rows/batch3 called real Adam once, advanced moments and changed parameters; then in-test missing public pure counter view assertion failed. No source/fixture/import failure.",
+  "style": "RuffPASS; Black formatting owed"
+}

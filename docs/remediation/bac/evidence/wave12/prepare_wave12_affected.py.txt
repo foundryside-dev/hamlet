@@ -1,0 +1,26 @@
+"""Prepare existing population/exploration/lane consumers for frozen T19 candidate."""
+from pathlib import Path
+import json,sys
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';tag=sys.argv[1];mp=W/'wave12'/(tag+'-candidate.json');assert mp.is_file()
+paths=[
+ 'tests/test_townlet/unit/population',
+ 'tests/test_townlet/unit/exploration',
+ 'tests/test_townlet/unit/training/test_episode_accounting.py',
+ 'tests/test_townlet/regressions/test_episode_lane_population.py',
+ 'tests/test_townlet/regressions/test_episode_lane_learning.py',
+ 'tests/test_townlet/regressions/test_episode_lane_environment.py',
+ 'tests/test_townlet/regressions/test_episode_lane_sinks.py',
+ 'tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py',
+ 'tests/test_townlet/regressions/test_episode_recording_shutdown.py',
+ 'tests/test_townlet/integration/test_episode_execution.py',
+ 'tests/test_townlet/integration/test_authored_episode_lanes.py',
+ 'tests/test_townlet/integration/test_rnd_loss_tracking.py',
+ 'tests/test_townlet/integration/test_recurrent_bptt_runtime.py',
+ 'tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py',
+ 'tests/test_townlet/regressions/bac/test_runner_readiness.py',
+]
+assert all((R/p).exists() for p in paths)
+base=['-m','pytest',*paths,'--no-cov','-p','no:cacheprovider','-p','bac_source_identity']
+for name,args in [('affected-collection',base+['--collect-only','-q']),('affected',base+['-q','-n','4','--dist','worksteal','--basetemp='+str(Q/'scratch'/('wave12-'+tag+'-affected'))])]:
+ spec={'root':str(R),'manifest':str(mp),'output':str(Q/('wave12-'+tag+'-'+name)),'workers':1,'jobs':[{'name':name,'args':args}]};(Q/('wave12-'+tag+'-'+name+'-spec.json')).write_text(json.dumps(spec,indent=2)+'\n')
+print(json.dumps({'manifest':str(mp),'paths':len(paths),'scope':'Actual population/exploration, B03/B11 lane and real runner/recurrent consumers; executes without extra source inspection. Full standing gate still separately required.'},indent=2))

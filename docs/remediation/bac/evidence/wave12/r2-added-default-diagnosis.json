@@ -1,0 +1,10 @@
+{
+  "added_conditional_defaults": [
+    {
+      "line": 1484,
+      "expression": "0.0 if receipt.last_loss is None else receipt.last_loss"
+    }
+  ],
+  "guard": "613 exceeds612; threshold unchanged",
+  "scope": "Diagnostic only, no code edits"
+}

@@ -1,0 +1,16 @@
+{
+  "cpu": "400000 100000",
+  "affinity": 5,
+  "memory_current": "14699720704",
+  "memory_limit": "17179869184",
+  "memory_events": "low 0\nhigh 0\nmax 8956\noom 0\noom_kill 0\noom_group_kill 0",
+  "load": [
+    0.08203125,
+    0.0556640625,
+    0.099609375
+  ],
+  "workspace_free": 27088302080,
+  "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+  "threads": 1,
+  "CUDA": "unavailable/unqualified"
+}

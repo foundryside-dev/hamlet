@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 10 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_outcome_clocks.py>
+            <Function test_lengths2_5_owned_events_and_clock_units[False]>
+            <Function test_lengths2_5_owned_events_and_clock_units[True]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[cap]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[budget]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[shutdown]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[checkpoint]>
+            <Function test_owned_binding_requires_concrete_fresh_caller_identity>
+            <Function test_receipts_and_unequal_train_target_lr_clocks[service_before_admit]>
+            <Function test_receipts_and_unequal_train_target_lr_clocks[drop_newest]>
+            <Function test_legacy_direct_predictor_still_services_one_minibatch>
+
+========================= 10 tests collected in 0.17s ==========================

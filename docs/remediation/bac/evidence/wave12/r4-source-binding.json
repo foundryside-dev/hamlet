@@ -1,0 +1,29 @@
+{
+  "previous_tree": "fcffa0ee0b53a03947ae53426343f834a8d7494a",
+  "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "owned24_test_bytes_unchanged": true,
+  "producer_four_sources_unchanged": [
+    {
+      "path": "src/townlet/exploration/rnd.py",
+      "lines": 689,
+      "sha256": "821fd3095e896a5b98d44a671906f9c5cbccec2f00fa430a6f5bb8acb24e4109"
+    },
+    {
+      "path": "src/townlet/config/bac_options.py",
+      "lines": 294,
+      "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+    },
+    {
+      "path": "src/townlet/exploration/adaptive_intrinsic.py",
+      "lines": 226,
+      "sha256": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+      "lines": 610,
+      "sha256": "0477b2531b8a1a109bf71285310c0beda725e295f11c51f61f6713005c2f6a62"
+    }
+  ],
+  "only_changed_source": "src/townlet/population/vectorized.py",
+  "old_actual_producer_proof": "R2 independent12PASS, identities retained not relabeled"
+}

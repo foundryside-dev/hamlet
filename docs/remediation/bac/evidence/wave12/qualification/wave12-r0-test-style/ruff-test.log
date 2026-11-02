@@ -1,0 +1,35 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/test_townlet/regressions/bac/test_outcome_clocks.py:3:1
+   |
+ 1 |   """C07 owned envelopes: real authored lanes, explicit identity, event-owned clocks."""
+ 2 |
+ 3 | / import copy
+ 4 | | import importlib
+ 5 | | import importlib.util
+ 6 | | from dataclasses import FrozenInstanceError, replace
+ 7 | |
+ 8 | | import pytest
+ 9 | | import torch
+10 | | import yaml
+11 | |
+12 | | from tests.test_townlet.regressions.fixtures.episode_lanes import (
+13 | |     UNEQUAL_ENDINGS,
+14 | |     build_authored_population,
+15 | |     controlled_action_schedule,
+16 | |     copy_authored_config,
+17 | |     observe_environment_steps,
+18 | | )
+19 | | from townlet.config.bac_options import RNDOptions
+20 | | from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+21 | | from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+22 | | from townlet.training.replay_contract import ReplayRequest
+   | |__________________________________________________________^
+help: Organize imports
+   |
+23 |
+   -
+24 | CLOCKS = (
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

@@ -3,7 +3,7 @@
   "baseline_sha": "4aa5363b5de54d9a112977c32c2975f37627197f",
   "design": "BAC-2026-11-01-r2 plus explicit additive plan decisions",
   "approved_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
-  "phase": "27 of 66 finite source packages scoped-qualified/released;39 remaining packages and all final BAC acceptance OPEN",
+  "phase": "28of66 finite source packages CPU scoped-qualified; user halt after T19;38packages/allfinalBACacceptanceOPEN",
   "completion_bar": "zero unresolved P1/P2 and zero unapproved in-scope capability gaps; all agreed finite evidence, fresh final spec/design/code review, required gates and source-verified docs",
   "requirements": [
     {
@@ -5685,6 +5685,20 @@
       "review": "package-reviews/T17-independent-review-r1.md",
       "source_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
       "disposition": "Nonblocking optional P3; no confirmed production defect or required behavior is waived; final whole-source review must see this record."
+    },
+    {
+      "id": "P3-T19-01",
+      "classification": "optional lifecycle bookkeeping design",
+      "description": "Publication/commit identity journals grow with run length; any bounded retirement must preserve accepted delayed/idempotent commitments or receive owner approval before reducing capability.",
+      "review": "package-reviews/T19-independent-review-r2.md",
+      "disposition": "Nonblocking;not an unlimited cleanup programme"
+    },
+    {
+      "id": "P3-T19-02",
+      "classification": "optional restored counter-view assertion",
+      "description": "Add explicit new-view values after predictor restore/import if useful; source review found no producer defect. Native ledger/identity persistence itself remains mandatory later, not optional.",
+      "review": "package-reviews/T19-accounting-independent-review-r2.md",
+      "disposition": "Nonblocking optional extra assertion only"
     }
   ],
   "final_candidate_sha": null,
@@ -6201,6 +6215,120 @@
         "evidence/wave11-qualification.json"
       ],
       "final_acceptance": "Remaining39packages/all54requirements/22fresh final lenses+synthesis, strict private curiosity/X02, provider/runner integration, complete native10/7,T40+12strict learning/E2E,coverage>=70,slow/applicable hardware/exacttipCI remain OPEN. CPU-only;CUDA unavailable/unqualified."
+    },
+    {
+      "task": "T19",
+      "source_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "qualified_sum_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+      "status": "Scoped owned outcomes/global clocks plus pure predictor accounting qualified; current-user halt requested after publication",
+      "full_repository_result": {
+        "candidate_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+        "base_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+        "full_exit_code": 0,
+        "counts": {
+          "passed": 6927,
+          "skipped": 16,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 18
+        },
+        "wall_seconds": 2690.637628555298,
+        "verified_source_paths": 167,
+        "verified_review_artifacts": 13,
+        "verified_process_identities": 5,
+        "verified_config_digests": 573,
+        "verified_native_artifacts": 13,
+        "registered_worktree_count": 14,
+        "available_checkout_count": 1,
+        "worktree_availability": [
+          {
+            "path": "/workspace/hamlet",
+            "directory_exists": true,
+            "git_pointer_exists": true
+          },
+          {
+            "path": "/tmp/bac-verify-T01-1139ddfa42",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T02-25cdec4e82",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T02-r1-94de8d44e8",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T03-4175e78397",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T08-00d385ce62",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T08a-4474a07ae5",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T09a-63beed0c8d",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T18-7901753a30",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-T18a-212b3d6d1a",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-wave01-6881a7488a",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-wave02-3d1d21cff5",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/bac-verify-wave02-receipts-ea9bad791f",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          },
+          {
+            "path": "/tmp/hamlet-bac-4aa5363b",
+            "directory_exists": false,
+            "git_pointer_exists": false
+          }
+        ],
+        "historical_custody_transition": "qualification/wave12-environment-custody-transition.json",
+        "entire_current_registry_unchanged": true,
+        "working_tree_equals_index": true,
+        "harness_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+        "orchestration_harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "scope": "Required early full T19 gate only; not G3 milestone or full BAC qualification. Source/docs/evidence checkpoint and exact remote/CI check remain. User requires halt after T19."
+      },
+      "reports": [
+        "package-reviews/T19-qualification.md",
+        "package-reviews/T19-independent-rereview-r4.md",
+        "package-reviews/T19-independent-runtime-r4.md",
+        "package-reviews/T19-accounting-independent-review-r2.md",
+        "package-reviews/T19-accounting-independent-runtime-r2.md",
+        "package-reviews/T19-documentation-independent-review.md",
+        "evidence/wave12-qualification.json"
+      ],
+      "final_acceptance": "OPEN:all54finalrequirements/22lenses+synthesis,38packets,complete native10/7,strictperworldcuriosity,provider/runner/curriculum integration,finite T40 plus 12 learning/E2E scenarios,coverage>=70/slow/hardware/exactfinalCI remain. CUDAunavailable."
     }
   ],
   "evidence_note": "Each package records its actual immutable source/evidence. Wave05 qualified sum-tree postflight verified 53 source hashes, three final Astra reviews, five process identities, preserved configuration/native artifacts and the worktree registry. Storage archive proofs do not close required native historical dispatch, captured learning/readiness or final common-source acceptance.",
@@ -6408,5 +6536,19 @@
     "full_repository": "Authorized G3 deferral, not current repository green",
     "capability_reductions": false,
     "final_acceptance": "OPEN; all finite final obligations retained"
+  },
+  "wave12_qualified_scope": {
+    "tasks": [
+      "T19"
+    ],
+    "source_head": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+    "tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+    "receipt": "evidence/wave12-qualification.json",
+    "qualified_packages": 28,
+    "remaining_packages": 38,
+    "effective_requirements": 54,
+    "early_full_gate": "PASS,notG3milestone",
+    "capability_reductions": false,
+    "user_stop": "HALT after current checkpoint;no next packet"
   }
 }

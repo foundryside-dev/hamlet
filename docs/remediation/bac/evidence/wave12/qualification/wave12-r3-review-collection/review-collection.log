@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 14 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_outcome_clocks.py>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_observation]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_meters]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[False-reward_total]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_observation]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_meters]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[True-reward_total]>
+            <Function test_delayed_partial_commit_survives_reset_and_reordered_replay[False]>
+            <Function test_delayed_partial_commit_survives_reset_and_reordered_replay[True]>
+            <Function test_duplicate_begin_ordinary_reset_and_historical_ledger_accessor>
+            <Function test_population_unconfigured_predictor_counts_short_tail_and_real_updates>
+            <Function test_actual_singleton_tick_and_owned_entropy_are_finite_zero>
+            <Function test_singleton_nonfinite_q_refuses_before_physics[nan]>
+            <Function test_singleton_nonfinite_q_refuses_before_physics[inf]>
+            <Function test_singleton_nonfinite_q_refuses_before_physics[-inf]>
+
+========================= 14 tests collected in 0.19s ==========================

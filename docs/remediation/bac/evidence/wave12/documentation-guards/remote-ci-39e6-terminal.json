@@ -1,0 +1,71 @@
+{
+  "source_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "runs": [
+    {
+      "id": 41539457400,
+      "name": "Lint",
+      "head_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/41539457400"
+    },
+    {
+      "id": 41539457429,
+      "name": "Config Validation",
+      "head_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/41539457429"
+    },
+    {
+      "id": 41539457415,
+      "name": "Tests",
+      "head_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/41539457415"
+    }
+  ],
+  "jobs": [
+    {
+      "run_id": 41539457400,
+      "jobs": [
+        {
+          "id": 125599606609,
+          "head_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+          "name": "lint",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/foundryside-dev/hamlet/actions/runs/41539457400/job/125599606609"
+        }
+      ]
+    },
+    {
+      "run_id": 41539457429,
+      "jobs": [
+        {
+          "id": 125599606418,
+          "head_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+          "name": "validate-config-packs",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/foundryside-dev/hamlet/actions/runs/41539457429/job/125599606418"
+        }
+      ]
+    },
+    {
+      "run_id": 41539457415,
+      "jobs": [
+        {
+          "id": 125599606214,
+          "head_sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+          "name": "unit",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/foundryside-dev/hamlet/actions/runs/41539457415/job/125599606214"
+        }
+      ]
+    }
+  ],
+  "verification": "Every workflow and job completed successfully for exact qualified source. Final documentation checkpoint CI is separate."
+}

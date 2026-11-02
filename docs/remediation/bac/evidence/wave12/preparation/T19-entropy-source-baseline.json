@@ -1,0 +1,17 @@
+[
+  {
+    "path": "src/townlet/curriculum/base.py",
+    "lines": 86,
+    "sha256": "04bfb42f3b5d4faa3728be82d6c476448011fdb0c63788a24296839375b1ae26"
+  },
+  {
+    "path": "src/townlet/curriculum/adversarial.py",
+    "lines": 565,
+    "sha256": "8ce48905b6163d25ff98f692af7986447245cc29eba47bcc248f10e4f4b8cf8b"
+  },
+  {
+    "path": "src/townlet/curriculum/static.py",
+    "lines": 143,
+    "sha256": "4bce47073d50962defe1c405ca4a5fbda480e8321e2e38ff8e3558d7fafbf1be"
+  }
+]

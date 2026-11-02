@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_owned_binding_requires_concrete_fresh_caller_identity",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw3",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r0-owned/popen-gw3/test_owned_binding_requires_co0')\n\n    def test_owned_binding_requires_concrete_fresh_caller_identity(tmp_path):\n        pop = _population(tmp_path)\n>       outcome_type = _owned_api(pop)\n                       ^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_outcome_clocks.py:208: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npop = <townlet.population.vectorized.VectorizedPopulation object at 0x7fd5af1c8550>\n\n    def _owned_api(pop):\n        episode = importlib.import_module(\"townlet.training.episode\")\n>       assert hasattr(episode, \"LaneOutcome\"), \"C07 owned LaneOutcome interface missing\"\nE       AssertionError: C07 owned LaneOutcome interface missing\nE       assert False\nE        +  where False = hasattr(<module 'townlet.training.episode' from '/workspace/hamlet/src/townlet/training/episode.py'>, 'LaneOutcome')\n\ntests/test_townlet/regressions/bac/test_outcome_clocks.py:60: AssertionError",
+  "candidate_tree": "8feee4b66c0eebc6957c8a87c010ec1ad2872e97"
+}

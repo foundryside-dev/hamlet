@@ -1,0 +1,32 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave12-r3-review-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "review-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_exposed_event_mutation_cannot_rewrite_publication_authority",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_delayed_partial_commit_survives_reset_and_reordered_replay",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_duplicate_begin_ordinary_reset_and_historical_ledger_accessor",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_population_unconfigured_predictor_counts_short_tail_and_real_updates",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_actual_singleton_tick_and_owned_entropy_are_finite_zero",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_singleton_nonfinite_q_refuses_before_physics",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave12-r3-review-red"
+      ]
+    }
+  ]
+}

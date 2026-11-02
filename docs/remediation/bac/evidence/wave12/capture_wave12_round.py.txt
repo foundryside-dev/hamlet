@@ -1,0 +1,33 @@
+"""Root-only stationary T19 snapshot, with explicit absent new CL at RED."""
+from pathlib import Path
+import hashlib,json,os,re,shutil,subprocess,sys
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+tag=sys.argv[1];assert re.fullmatch(r'r[0-9]+',tag)
+hash_file=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True)
+head=git('rev-parse','HEAD').strip();assert head=='bc47e44662f7bea953156a668610a20e6bced9f2';assert git('branch','--show-current').strip()=='project-recovery-bac-2026-11-01'
+test='tests/test_townlet/regressions/bac/test_outcome_clocks.py';new_cl='src/townlet/training/clock_ledger.py'
+allowed={'src/townlet/population/vectorized.py','src/townlet/training/episode.py',new_cl,test,'.defaults-ratchet','src/townlet/exploration/rnd.py','tests/test_townlet/regressions/bac/test_rnd_service.py'}
+changed=set(git('diff','--name-only').splitlines())|set(git('diff','--cached','--name-only').splitlines());assert changed<=allowed,changed;assert (R/test).is_file()
+stage=sorted(changed|{test}|({new_cl} if (R/new_cl).is_file() else set()));subprocess.run(['git','add','-f','--',*stage],cwd=R,check=True);assert subprocess.run(['git','diff','--quiet'],cwd=R).returncode==0
+metadata=json.loads((W/'tasks.json').read_text());task=next(x for x in metadata['tasks'] if x['id']=='T19');inventory=[];absent=[]
+for item in task['reviewer_read_inventory']:
+ p=R/item['path'];present=p.is_file();lines=len(p.read_bytes().splitlines()) if present else 0;assert lines<=item['projected_lines'],(p,lines,item['projected_lines']);inventory.append({'path':item['path'],'lines':lines,'sha256':hash_file(p) if present else None,'present':present})
+ if not present:absent.append(item['path'])
+assert len(inventory)==5 and sum(x['lines'] for x in inventory)<=5000;assert set(absent)<= {new_cl}
+aux_paths=['src/townlet/exploration/rnd.py','src/townlet/config/bac_options.py','src/townlet/exploration/adaptive_intrinsic.py','tests/test_townlet/regressions/bac/test_rnd_service.py']
+aux_inventory=[{'path':p,'lines':len((R/p).read_bytes().splitlines()),'sha256':hash_file(R/p)} for p in aux_paths]
+assert len(aux_inventory)==4 and sum(x['lines'] for x in aux_inventory)<=5000
+old=json.loads((W/'wave11/r2-candidate.json').read_text());paths=set(old['source_files'])|{x['path'] for x in inventory if x['present']}|set(aux_paths);source={p:hash_file(R/p) for p in sorted(paths)}
+for group in ('configs','artifacts'):
+ for p,h in old[group].items():assert hash_file(R/p)==h,(group,p)
+registry=git('worktree','list','--porcelain');assert registry==old['worktree_registry'].replace('HEAD '+old['base_commit']+'\n','HEAD '+head+'\n',1)
+out=W/'wave12';out.mkdir(exist_ok=True);mp=out/(tag+'-candidate.json');assert not mp.exists(),'Preserve candidate history'
+m={'base_commit':head,'candidate_tree':git('write-tree').strip(),'source_files':source,'absent_source_paths':absent,'changed_paths':git('diff','--cached','--name-only').splitlines(),'task_ids':['T19'],'inventories':{'T19':inventory,'T19-accounting':aux_inventory},'worktree_registry':registry,'configs':old['configs'],'artifacts':old['artifacts'],'runtime_barrier':'Writers stationary; source/test/index/tracked-docs frozen throughout runtime. Root verifies recorded absent new source before/after.'};mp.write_text(json.dumps(m,indent=2)+'\n')
+base=['-m','pytest',test,'--no-cov','-p','no:cacheprovider','-p','bac_source_identity']
+for kind,args in [('collection',base+['--collect-only','-q']),('owned',base+['-q','-n','4','--dist','worksteal','--basetemp='+str(Q/'scratch'/('wave12-'+tag+'-owned'))])]:
+ spec={'root':str(R),'manifest':str(mp),'output':str(Q/('wave12-'+tag+'-'+kind)),'workers':1,'jobs':[{'name':kind,'args':args}]};(Q/('wave12-'+tag+'-'+kind+'-spec.json')).write_text(json.dumps(spec,indent=2)+'\n')
+guards=json.loads((Q/'wave11-r2-guards-spec.json').read_text());guards.update(manifest=str(mp),output=str(Q/('wave12-'+tag+'-guards')),workers=4);(Q/('wave12-'+tag+'-guards-spec.json')).write_text(json.dumps(guards,indent=2)+'\n')
+style={'root':str(R),'manifest':str(mp),'output':str(Q/('wave12-'+tag+'-test-style')),'workers':2,'jobs':[{'name':'ruff-test','args':['-m','ruff','check',test]},{'name':'black-test','args':['-m','black','--check',test,'--workers','1']}]};(Q/('wave12-'+tag+'-test-style-spec.json')).write_text(json.dumps(style,indent=2)+'\n')
+resources={'cpu':Path('/sys/fs/cgroup/cpu.max').read_text().strip(),'affinity':len(os.sched_getaffinity(0)),'memory_current':Path('/sys/fs/cgroup/memory.current').read_text().strip(),'memory_limit':Path('/sys/fs/cgroup/memory.max').read_text().strip(),'memory_events':Path('/sys/fs/cgroup/memory.events').read_text().strip(),'load':os.getloadavg(),'workspace_free':shutil.disk_usage('/workspace').free,'TMPDIR':str(Q/'scratch/tmp-wave08-r3'),'threads':1,'CUDA':'unavailable/unqualified'};assert resources['cpu']=='400000 100000' and resources['affinity']>=4;(out/(tag+'-fixture-resource-preflight.json')).write_text(json.dumps(resources,indent=2)+'\n')
+print(json.dumps({'candidate':str(mp),'tree':m['candidate_tree'],'whole_files':len(inventory),'lines':sum(x['lines'] for x in inventory),'guarded_paths':len(source),'absent_sources':absent,'resources':resources},indent=2))

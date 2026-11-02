@@ -1,0 +1,97 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 79 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_outcome_clocks.py>
+            <Function test_lengths2_5_owned_events_and_clock_units[False]>
+            <Function test_lengths2_5_owned_events_and_clock_units[True]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[cap]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[budget]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[shutdown]>
+            <Function test_external_cuts_keep_owned_reason_and_nonterminal_successor[checkpoint]>
+            <Function test_owned_binding_requires_concrete_fresh_caller_identity>
+            <Function test_receipts_and_unequal_train_target_lr_clocks[service_before_admit]>
+            <Function test_receipts_and_unequal_train_target_lr_clocks[drop_newest]>
+            <Function test_legacy_direct_predictor_still_services_one_minibatch>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_observation]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[False-final_meters]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[False-reward_total]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_observation]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[True-final_meters]>
+            <Function test_exposed_event_mutation_cannot_rewrite_publication_authority[True-reward_total]>
+            <Function test_delayed_partial_commit_survives_reset_and_reordered_replay[False]>
+            <Function test_delayed_partial_commit_survives_reset_and_reordered_replay[True]>
+            <Function test_duplicate_begin_ordinary_reset_and_historical_ledger_accessor>
+            <Function test_population_unconfigured_predictor_counts_short_tail_and_real_updates>
+            <Function test_actual_singleton_tick_and_owned_entropy_are_finite_zero>
+            <Function test_singleton_nonfinite_q_refuses_before_physics[nan]>
+            <Function test_singleton_nonfinite_q_refuses_before_physics[inf]>
+            <Function test_singleton_nonfinite_q_refuses_before_physics[-inf]>
+          <Module test_rnd_service.py>
+            <Function test_occupancy512_consumes_four_batches>
+            <Function test_seven_rows_fifo_tail_and_normalizer_are_distinct>
+            <Function test_paced_retention_is_bounded[service_before_admit]>
+            <Function test_paced_retention_is_bounded[drop_oldest]>
+            <Function test_paced_retention_is_bounded[drop_newest]>
+            <Function test_oversized_fifo_policy_retains_exact_rows[service_before_admit-expected0-0]>
+            <Function test_oversized_fifo_policy_retains_exact_rows[drop_oldest-expected1-1]>
+            <Function test_oversized_fifo_policy_retains_exact_rows[drop_newest-expected2-1]>
+            <Function test_same_tick_does_not_reset_paced_budget>
+            <Function test_two_of_three_tail_resume>
+            <Function test_malformed_state_is_atomic[tail_shape]>
+            <Function test_malformed_state_is_atomic[tail_nan]>
+            <Function test_malformed_state_is_atomic[capacity]>
+            <Function test_malformed_state_is_atomic[policy]>
+            <Function test_malformed_state_is_atomic[count]>
+            <Function test_malformed_state_is_atomic[clock]>
+            <Function test_malformed_state_is_atomic[normalizer]>
+            <Function test_malformed_state_is_atomic[network]>
+            <Function test_malformed_state_is_atomic[optimizer]>
+            <Function test_service_options_are_explicit_and_buffer_admission_validated>
+            <Function test_direct_minibatch_and_explicit_legacy_available_state>
+            <Function test_invalid_minibatch_refuses_before_allocation>
+            <Function test_corrupt_optimizer_and_service_metadata_are_atomic[negative_moment]>
+            <Function test_corrupt_optimizer_and_service_metadata_are_atomic[orphan_moment]>
+            <Function test_corrupt_optimizer_and_service_metadata_are_atomic[fractional_batch]>
+            <Function test_corrupt_optimizer_and_service_metadata_are_atomic[false_clock_count]>
+            <Function test_paced_budget_survives_resume_and_service_instances_are_private>
+            <Function test_checkpoint_validation_does_not_install_valid_foreign_state>
+            <Function test_configured_direct_operation_is_one_batch_and_update_adapter_advances_clock>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption>
+            <Function test_configured_direct_buffer_api_retains_checkpointable_counters[paced_fifo-5]>
+            <Function test_configured_direct_buffer_api_retains_checkpointable_counters[occupancy_fifo-8]>
+            <Function test_optimizer_continuation_refuses_corruption_before_install[missing]>
+            <Function test_optimizer_continuation_refuses_corruption_before_install[empty]>
+            <Function test_optimizer_continuation_refuses_corruption_before_install[reset_steps]>
+            <Function test_optimizer_continuation_refuses_corruption_before_install[capturable]>
+            <Function test_optimizer_continuation_refuses_corruption_before_install[unknown_group_key]>
+            <Function test_optimizer_continuation_refuses_corruption_before_install[wrong_flag_type]>
+            <Function test_historical_optimizer_history_aligns_with_existing_service_counts[0]>
+            <Function test_historical_optimizer_history_aligns_with_existing_service_counts[3]>
+            <Function test_supported_optimizer_execution_options_survive_restore>
+            <Function test_public_manual_optimizer_steps_capture_their_live_clock[1]>
+            <Function test_public_manual_optimizer_steps_capture_their_live_clock[5]>
+            <Function test_public_predictor_counters_follow_genuine_legacy_optimizer_work>
+            <Function test_public_predictor_counters_bracket_legacy_partial_and_full_direct_updates>
+            <Function test_public_predictor_counters_count_real_zero_loss_steps[False]>
+            <Function test_public_predictor_counters_count_real_zero_loss_steps[True]>
+            <Function test_public_predictor_counters_agree_with_configured_receipts[service_before_admit-paced_fifo]>
+            <Function test_public_predictor_counters_agree_with_configured_receipts[service_before_admit-occupancy_fifo]>
+            <Function test_public_predictor_counters_agree_with_configured_receipts[drop_oldest-paced_fifo]>
+            <Function test_public_predictor_counters_agree_with_configured_receipts[drop_oldest-occupancy_fifo]>
+            <Function test_public_predictor_counters_agree_with_configured_receipts[drop_newest-paced_fifo]>
+            <Function test_public_predictor_counters_agree_with_configured_receipts[drop_newest-occupancy_fifo]>
+            <Function test_public_predictor_counters_are_frozen_owned_primitives_and_observationally_pure[False]>
+            <Function test_public_predictor_counters_are_frozen_owned_primitives_and_observationally_pure[True]>
+
+========================= 79 tests collected in 0.15s ==========================

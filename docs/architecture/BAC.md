@@ -221,6 +221,69 @@ This correction preserves the broader dated review boundary above.
   reward/update integration (T18e/T18f)
   (`population/vectorized.py:198,595,2011,2033`).
 
+### Owned lane outcomes and global clocks
+
+`VectorizedPopulation` retains the existing `EpisodeCompletion`, `reset`, `step_population`
+and explicit-reason `flush_episode` APIs. Callers opt into complete owned envelopes by supplying
+actual identities for the world instances in current lane order:
+
+```python
+population.bind_episode_worlds(
+    world_ids=world_ids,
+    world_episode_seqs=world_episode_seqs,
+)
+population.begin_batch_episode(index=batch_index, planned_horizon=planned_horizon)
+population.reset()
+# Run the existing rollout; flush surviving lanes with an explicit stop reason.
+outcomes = population.completed_outcomes
+population.commit_episode_outcomes(outcomes)
+```
+
+These variables must come from the caller's real identity/episode declarations. World IDs
+are unique nonempty strings, episode sequences are explicit nonnegative integers, and each
+batch needs a fresh binding. Batch indices cannot be reused. No row index, global tick,
+configuration label or guessed sequence supplies missing world identity. Reset still refuses
+unfinished nonempty lanes; complete them through the existing finalizer before resetting.
+The ordinary runner has not adopted this binding/begin/commit protocol. Unbegun calls retain
+their original completion DTO behavior without claiming qualified new envelopes.
+
+`LaneOutcome` adds batch index/planned horizon, total/extrinsic/intrinsic/shaping reward sums,
+policy entropy and concrete world identity to the existing completion DTO. POP owns eligible
+lane accumulation and publishes each nonempty lane once through its guarded finalizer.
+Authored terminal/retirement and cap/budget/shutdown/checkpoint cuts keep their explicit reason;
+a runner cut does not turn its actual nonterminal replay successor into a terminal row.
+`completed_outcomes` returns only the current episode's events, with fresh owned CPU tensor
+readings on every exposure. Mutating a returned reading cannot rewrite canonical data or
+another sink's fresh reading. Publication-time fingerprints retain authority across accepted
+resets, so retained original envelopes can be committed later or partially; changed-content
+replay refuses. Reordered duplicate commitment is idempotent and adds no adaptive callback.
+A batch counter advances once after every lane is committed, independently of lane-event count.
+This identity/fingerprint history is in-memory; no bounded retirement or persistence protocol
+is claimed.
+
+`ClockLedger` is an immutable reading replaced by its population owner. `vector_ticks` uses
+the existing `total_steps` unit; `eligible_transitions` includes each actual entry-eligible
+terminal transition once; `optimizer_updates` counts successful Q steps, with skipped learning
+adding zero. `completed_batch_episodes` counts completed outcome commitments. Predictor row,
+minibatch and drop counters have separate units; they never substitute for Q updates. Train
+frequency and PER beta remain vector-paced, target/LR schedules use successful Q updates, and
+warmup/capacity use retained transitions. Lane survival remains lane-local. The units and
+provider accounting boundary are listed in the [options reference](../remediation/bac/options.md#owned-lane-outcomes-and-global-clocks).
+
+Owned entropy freezes each lane's last eligible predecessor-Q signal before physics. For
+width A>1 it uses `p = softmax(Q)` and `-sum(p * log(p + 1e-10)) / log(A)` over every action
+column, without a legality mask or epsilon-policy mixture. Finite width1 input has deterministic
+entropy0. Eligible nonfinite Q refuses before physics; static curriculum does not create a
+zero fallback for invalid input. Inactive sibling ticks do not overwrite a completed lane's
+entropy.
+
+Current checkpoint payloads do not carry the complete ledger or owned identity/publication
+history. After checkpoint loading or construction at a nonzero restored tick, accessing the
+ledger diagnoses unavailable historical units instead of inventing zero history. Complete
+native ledger/identity persistence and continuation remain T24/T25 integration. This API does
+not establish private-curiosity isolation, world identity attestation, new curriculum dynamics,
+learning quality or GPU qualification.
+
 ---
 
 ## 3. The design target — not built

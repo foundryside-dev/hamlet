@@ -1,0 +1,20 @@
+{
+  "status": "MEANINGFUL_CURRENT_ONLY_RED",
+  "base_commit": "383d21acc07a8568adf0056f00c73114ff4bbfc5",
+  "candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8",
+  "counts": {
+    "failed": 46,
+    "passed": 34
+  },
+  "errors": 0,
+  "seconds": 13.098233461380005,
+  "concrete_R1_checkpoint_witnesses": [
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[survival_baseline-0.0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress--2.0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-1e+300]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-2.0]"
+  ],
+  "interpretation": "Four exact corrupted-baseline/impossible-progress native loads failed DIDNOTRAISE after real completed state; remaining failures expose missing current-only schema/preflight, old-selector acceptance and conflicting-duplicate handling. Existing controls34PASS; no implementation correction yet.",
+  "custody": "PASS172source573configs13artifacts14registry1available5processes",
+  "log_sha256": "1d4eda738259e9a6dcb71bc0296eac506820565c02e0613f0d68db15c3230304"
+}

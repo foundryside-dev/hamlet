@@ -8,11 +8,13 @@ and to validate the curriculum interface works.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from typing import Any
 
 import torch
 
 from townlet.curriculum.base import CurriculumManager
+from townlet.training.episode import LaneOutcome
 from townlet.training.state import BatchedAgentState, CurriculumDecision
 
 
@@ -81,6 +83,10 @@ class StaticCurriculum(CurriculumManager):
 
         # Return same decision for all agents
         return [decision] * len(agent_ids)
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Static decisions have no completion-dependent state, including on replay."""
+        return None
 
     def checkpoint_state(self) -> dict[str, Any]:
         """

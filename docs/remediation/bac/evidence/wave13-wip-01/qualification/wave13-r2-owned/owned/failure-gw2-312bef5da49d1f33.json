@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress--2.0]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "field = 'learning_progress', value = -2.0\n\n    @pytest.mark.parametrize(\"field,value\", [\n        (\"survival_baseline\", 0.0), (\"learning_progress\", 2.0),\n        (\"learning_progress\", -2.0), (\"learning_progress\", 1e300),\n    ])\n    def test_checkpoint_contradiction_or_impossible_progress_refuses_atomically(field, value):\n        # Keep this on R1's reachable public API: no missing new constructor/preflight\n        # can hide the reviewer's concrete malformed-restore acceptance witness.\n        manager = curriculum(dwell=10)\n        commit(manager, outcome())\n        damaged = deepcopy(manager.checkpoint_state())\n        damaged[\"completion\"][\"metrics\"][0][field] = value\n        before = snapshot(manager)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:292: Failed",
+  "candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8"
+}

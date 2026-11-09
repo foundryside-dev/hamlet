@@ -1,0 +1,35 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave13/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-owners",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owners",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/curriculum/test_curriculums.py",
+        "tests/test_townlet/test_curriculum/test_stage_info.py",
+        "tests/test_townlet/unit/config/test_curriculum_config_dto.py",
+        "tests/test_townlet/integration/test_curriculum_signal_purity.py",
+        "tests/test_townlet/integration/test_curriculum_transfer.py",
+        "tests/test_townlet/integration/test_curriculum_compatibility.py",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+        "tests/test_townlet/unit/training/test_checkpoint_utils.py",
+        "tests/test_townlet/integration/test_checkpointing.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave13-r1-owners"
+      ]
+    }
+  ]
+}

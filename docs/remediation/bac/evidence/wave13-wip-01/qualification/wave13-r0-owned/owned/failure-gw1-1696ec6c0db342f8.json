@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_static_curriculum_accepts_completion_without_changing_decisions",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "def test_static_curriculum_accepts_completion_without_changing_decisions():\n        manager = StaticCurriculum(difficulty_level=0.6, depletion_multiplier=0.8)\n        manager.initialize_population(1)\n        before = decisions(manager)[0]\n        event = outcome()\n>       commit(manager, event, event)\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:239: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nmanager = <townlet.curriculum.static.StaticCurriculum object at 0x7f2a7b31d940>\nevents = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...insic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1))\nconsumer = None, @py_assert2 = False\n@py_format4 = 'Curriculum must consume owned LaneOutcome completions\\n>assert False\\n{False = callable(None)\\n}'\n\n    def commit(manager, *events):\n        consumer = getattr(manager, \"commit_episode_outcomes\", None)\n>       assert callable(consumer), \"Curriculum must consume owned LaneOutcome completions\"\nE       AssertionError: Curriculum must consume owned LaneOutcome completions\nE       assert False\nE        +  where False = callable(None)\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError",
+  "candidate_tree": "e9b0a91ecc800f65169ef082731a8df90ffc9ad3"
+}

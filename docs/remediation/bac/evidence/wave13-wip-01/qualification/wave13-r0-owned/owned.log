@@ -1,0 +1,547 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [22 items]
+
+FFFFFFFFFFFFFFFFFFFFFF                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_low_survival_retreats_even_with_positive_learning_progress ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_low_survival_retreats_even_with_positive_learning_progress():
+        manager = curriculum(dwell=2)
+        manager.tracker.agent_stages[0] = 2
+>       commit(manager, outcome(steps=2, entropy=0.99))
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f2a7b31d400>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=2, final_observation=tensor([0.2500, 0...sic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.99, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+__ test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward __
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward():
+        manager = curriculum(dwell=10)
+>       commit(manager, outcome(steps=8, horizon=10, entropy=0.9))
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7fefb9805400>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=8, final_observation=tensor([0.2500, 0...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.9, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+______________________ test_full_survival_survives_reset _______________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_full_survival_survives_reset():
+        manager = curriculum()
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff63aa05400>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+__ test_checkpoint_resume_preserves_completion_identity_and_completed_metrics __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_checkpoint_resume_preserves_completion_identity_and_completed_metrics():
+        manager = curriculum()
+        event = outcome()
+>       commit(manager, event)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f2a7b3060d0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+______ test_completion_mode_step_interface_does_not_commit_stage_or_dwell ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_completion_mode_step_interface_does_not_commit_stage_or_dwell():
+        manager = curriculum(dwell=10)
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f2a7b306990>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+_______________________ test_singleton_band[stage_band] ________________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+mode = 'stage_band'
+
+    @pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
+    def test_singleton_band(mode):
+        manager = curriculum(mode=mode, low=0.6, high=0.6)
+>       assert decisions(manager)[0].difficulty_level == pytest.approx(0.6)
+E       assert 0.0 == 0.6 ± 6.0e-07
+E         
+E         comparison failed
+E         Obtained: 0.0
+E         Expected: 0.6 ± 6.0e-07
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:186: AssertionError
+______________________ test_dwell_counts_ten_transitions _______________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_dwell_counts_ten_transitions():
+        manager = curriculum()
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff63a9fa0d0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+____ test_advance_requires_completion_entropy_and_eligible_dwell[0.9-10-1] _____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+entropy = 0.9, steps = 10, want = 1
+
+    @pytest.mark.parametrize("entropy,steps,want", [(0.9, 10, 1), (0.1, 9, 1), (0.1, 10, 2)])
+    def test_advance_requires_completion_entropy_and_eligible_dwell(entropy, steps, want):
+        manager = curriculum(dwell=10)
+>       commit(manager, outcome(steps=steps, entropy=entropy))
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7fefb97fa0d0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.9, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+______________________ test_singleton_band[rate_limited] _______________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+mode = 'rate_limited'
+
+    @pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
+    def test_singleton_band(mode):
+        manager = curriculum(mode=mode, low=0.6, high=0.6)
+>       assert decisions(manager)[0].difficulty_level == pytest.approx(0.6)
+E       assert 0.0 == 0.6 ± 6.0e-07
+E         
+E         comparison failed
+E         Obtained: 0.0
+E         Expected: 0.6 ± 6.0e-07
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:186: AssertionError
+_______ test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage():
+        manager = curriculum(dwell=10)
+        event = outcome()
+>       commit(manager, event)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff63a9fa990>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+_____ test_advance_requires_completion_entropy_and_eligible_dwell[0.1-9-1] _____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+entropy = 0.1, steps = 9, want = 1
+
+    @pytest.mark.parametrize("entropy,steps,want", [(0.9, 10, 1), (0.1, 9, 1), (0.1, 10, 2)])
+    def test_advance_requires_completion_entropy_and_eligible_dwell(entropy, steps, want):
+        manager = curriculum(dwell=10)
+>       commit(manager, outcome(steps=steps, entropy=entropy))
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7fefb97f9f90>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=9, final_observation=tensor([0.2500, 0...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+___________________ test_rate_has_declared_effect[0.01-0.1] ____________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+rate = 0.01, want = 0.1
+
+    @pytest.mark.parametrize("rate,want", [(0.01, 0.1), (0.1, 0.25)])
+    def test_rate_has_declared_effect(rate, want):
+        manager = curriculum(dwell=10, mode="rate_limited", rate=rate)
+        assert decisions(manager)[0].difficulty_level == pytest.approx(0.0)
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f2a7b317bf0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+_ test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.1] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+rate = 0.1
+
+    @pytest.mark.parametrize("rate", [0.01, 0.1])
+    def test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate(rate):
+        manager = curriculum(lanes=5, rate=rate, low=0.2, high=0.6)
+        manager.tracker.agent_stages.copy_(torch.tensor([1, 2, 3, 4, 5]))
+        result = decisions(manager, 5)
+        assert [d.difficulty_level for d in result] == pytest.approx([0.2, 0.3, 0.4, 0.5, 0.6])
+        assert [d.depletion_multiplier for d in result] == pytest.approx([0.2, 0.5, 0.8, 1.0, 1.0])
+        assert [d.reward_mode for d in result] == ["shaped", "shaped", "shaped", "shaped", "sparse"]
+        assert result[0].active_meters == ["energy", "hygiene"]
+        info = manager.get_stage_info()
+>       assert info["commitment_mode"] == "completion"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'commitment_mode'
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:220: KeyError
+_________ test_distinct_lanes_and_reordered_duplicates_are_independent _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_distinct_lanes_and_reordered_duplicates_are_independent():
+        manager = curriculum(lanes=2)
+        first = outcome(lane=0, steps=10)
+        second = outcome(lane=1, steps=4, reason="authored_terminal")
+>       commit(manager, second, first)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff63aa68b00>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=1, reason='authored_terminal', survival_time=4, final_observation=ten...insic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1))
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+____________ test_legacy_step_remains_an_explicit_working_interface ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_legacy_step_remains_an_explicit_working_interface():
+        manager = curriculum(commitment="legacy_step")
+        manager.tracker.update_step(torch.tensor([2.0]), torch.tensor([False]))
+        assert manager.tracker.episode_steps.tolist() == [1.0]
+        assert manager.tracker.steps_at_stage.tolist() == [1.0]
+>       assert manager.get_stage_info()["commitment_mode"] == "legacy_step"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'commitment_mode'
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:231: KeyError
+____ test_advance_requires_completion_entropy_and_eligible_dwell[0.1-10-2] _____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+entropy = 0.1, steps = 10, want = 2
+
+    @pytest.mark.parametrize("entropy,steps,want", [(0.9, 10, 1), (0.1, 9, 1), (0.1, 10, 2)])
+    def test_advance_requires_completion_entropy_and_eligible_dwell(entropy, steps, want):
+        manager = curriculum(dwell=10)
+>       commit(manager, outcome(steps=steps, entropy=entropy))
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7fefb986cb00>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+_____ test_static_curriculum_accepts_completion_without_changing_decisions _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_static_curriculum_accepts_completion_without_changing_decisions():
+        manager = StaticCurriculum(difficulty_level=0.6, depletion_multiplier=0.8)
+        manager.initialize_population(1)
+        before = decisions(manager)[0]
+        event = outcome()
+>       commit(manager, event, event)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:239: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.static.StaticCurriculum object at 0x7f2a7b31d940>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...insic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1))
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+__ test_learning_progress_compares_completed_fractions_before_baseline_update __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_learning_progress_compares_completed_fractions_before_baseline_update():
+        manager = curriculum()
+>       commit(manager, outcome(steps=4, horizon=10, extrinsic=1000.0))
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff63aa69220>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=4, final_observation=tensor([0.2500, 0...c=1000.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+_ test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.01] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+rate = 0.01
+
+    @pytest.mark.parametrize("rate", [0.01, 0.1])
+    def test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate(rate):
+        manager = curriculum(lanes=5, rate=rate, low=0.2, high=0.6)
+        manager.tracker.agent_stages.copy_(torch.tensor([1, 2, 3, 4, 5]))
+        result = decisions(manager, 5)
+        assert [d.difficulty_level for d in result] == pytest.approx([0.2, 0.3, 0.4, 0.5, 0.6])
+        assert [d.depletion_multiplier for d in result] == pytest.approx([0.2, 0.5, 0.8, 1.0, 1.0])
+        assert [d.reward_mode for d in result] == ["shaped", "shaped", "shaped", "shaped", "sparse"]
+        assert result[0].active_meters == ["energy", "hygiene"]
+        info = manager.get_stage_info()
+>       assert info["commitment_mode"] == "completion"
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'commitment_mode'
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:220: KeyError
+____ test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate _____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate():
+        manager = curriculum(dwell=10)
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7fefb986d0f0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+___________________ test_rate_has_declared_effect[0.1-0.25] ____________________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+rate = 0.1, want = 0.25
+
+    @pytest.mark.parametrize("rate,want", [(0.01, 0.1), (0.1, 0.25)])
+    def test_rate_has_declared_effect(rate, want):
+        manager = curriculum(dwell=10, mode="rate_limited", rate=rate)
+        assert decisions(manager)[0].difficulty_level == pytest.approx(0.0)
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12ff901400>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+____ test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band _____
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band():
+        manager = curriculum(dwell=10, mode="rate_limited", rate=0.01, low=0.2, high=0.6)
+>       commit(manager, outcome())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:204: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12ff8f4e10>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+consumer = None, @py_assert2 = False
+@py_format4 = 'Curriculum must consume owned LaneOutcome completions\n>assert False\n{False = callable(None)\n}'
+
+    def commit(manager, *events):
+        consumer = getattr(manager, "commit_episode_outcomes", None)
+>       assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
+E       AssertionError: Curriculum must consume owned LaneOutcome completions
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_low_survival_retreats_even_with_positive_learning_progress
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_full_survival_survives_reset
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_resume_preserves_completion_identity_and_completed_metrics
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_completion_mode_step_interface_does_not_commit_stage_or_dwell
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band[stage_band]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_dwell_counts_ten_transitions
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_advance_requires_completion_entropy_and_eligible_dwell[0.9-10-1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band[rate_limited]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_advance_requires_completion_entropy_and_eligible_dwell[0.1-9-1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect[0.01-0.1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_distinct_lanes_and_reordered_duplicates_are_independent
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_legacy_step_remains_an_explicit_working_interface
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_advance_requires_completion_entropy_and_eligible_dwell[0.1-10-2]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_static_curriculum_accepts_completion_without_changing_decisions
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_learning_progress_compares_completed_fractions_before_baseline_update
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.01]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_has_declared_effect[0.1-0.25]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band
+============================= 22 failed in 13.30s ==============================

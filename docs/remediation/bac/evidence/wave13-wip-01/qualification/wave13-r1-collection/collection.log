@@ -1,0 +1,39 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 22 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_curriculum_events.py>
+            <Function test_full_survival_survives_reset>
+            <Function test_dwell_counts_ten_transitions>
+            <Function test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage>
+            <Function test_distinct_lanes_and_reordered_duplicates_are_independent>
+            <Function test_learning_progress_compares_completed_fractions_before_baseline_update>
+            <Function test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward>
+            <Function test_advance_requires_completion_entropy_and_eligible_dwell[0.9-10-1]>
+            <Function test_advance_requires_completion_entropy_and_eligible_dwell[0.1-9-1]>
+            <Function test_advance_requires_completion_entropy_and_eligible_dwell[0.1-10-2]>
+            <Function test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate>
+            <Function test_low_survival_retreats_even_with_positive_learning_progress>
+            <Function test_checkpoint_resume_preserves_completion_identity_and_completed_metrics>
+            <Function test_completion_mode_step_interface_does_not_commit_stage_or_dwell>
+            <Function test_singleton_band[stage_band]>
+            <Function test_singleton_band[rate_limited]>
+            <Function test_rate_has_declared_effect[0.01-0.1]>
+            <Function test_rate_has_declared_effect[0.1-0.25]>
+            <Function test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band>
+            <Function test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.01]>
+            <Function test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.1]>
+            <Function test_legacy_step_remains_an_explicit_working_interface>
+            <Function test_static_curriculum_accepts_completion_without_changing_decisions>
+
+========================= 22 tests collected in 0.74s ==========================

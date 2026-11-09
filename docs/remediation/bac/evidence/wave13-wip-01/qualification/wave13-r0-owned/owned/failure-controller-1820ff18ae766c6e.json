@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.01]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "rate = 0.01\n\n    @pytest.mark.parametrize(\"rate\", [0.01, 0.1])\n    def test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate(rate):\n        manager = curriculum(lanes=5, rate=rate, low=0.2, high=0.6)\n        manager.tracker.agent_stages.copy_(torch.tensor([1, 2, 3, 4, 5]))\n        result = decisions(manager, 5)\n        assert [d.difficulty_level for d in result] == pytest.approx([0.2, 0.3, 0.4, 0.5, 0.6])\n        assert [d.depletion_multiplier for d in result] == pytest.approx([0.2, 0.5, 0.8, 1.0, 1.0])\n        assert [d.reward_mode for d in result] == [\"shaped\", \"shaped\", \"shaped\", \"shaped\", \"sparse\"]\n        assert result[0].active_meters == [\"energy\", \"hygiene\"]\n        info = manager.get_stage_info()\n>       assert info[\"commitment_mode\"] == \"completion\"\n               ^^^^^^^^^^^^^^^^^^^^^^^\nE       KeyError: 'commitment_mode'\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:220: KeyError",
+  "candidate_tree": "e9b0a91ecc800f65169ef082731a8df90ffc9ad3"
+}

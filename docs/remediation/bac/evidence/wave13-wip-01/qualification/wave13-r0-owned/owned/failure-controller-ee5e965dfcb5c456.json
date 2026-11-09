@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_singleton_band[rate_limited]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "mode = 'rate_limited'\n\n    @pytest.mark.parametrize(\"mode\", [\"stage_band\", \"rate_limited\"])\n    def test_singleton_band(mode):\n        manager = curriculum(mode=mode, low=0.6, high=0.6)\n>       assert decisions(manager)[0].difficulty_level == pytest.approx(0.6)\nE       assert 0.0 == 0.6 \u00b1 6.0e-07\nE         \nE         comparison failed\nE         Obtained: 0.0\nE         Expected: 0.6 \u00b1 6.0e-07\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:186: AssertionError",
+  "candidate_tree": "e9b0a91ecc800f65169ef082731a8df90ffc9ad3"
+}

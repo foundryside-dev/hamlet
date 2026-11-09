@@ -1,0 +1,117 @@
+{
+  "owned": "22PASS17.5925wall",
+  "owners": "152PASS2warnings170.43498wall",
+  "guards": {
+    "mypy-result": {
+      "name": "mypy",
+      "exit_code": 1,
+      "seconds": 11.664718389511108,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-guards/mypy.log",
+      "sha256": "a1cd69fec165fed78b760c96a231db60d4ab86dc403ce4f15a6a2bcc1fd0e8c4",
+      "candidate_tree": "d5717c96be86b505b35b42936bc944a589aae769",
+      "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "manifest_sha256": "b7479f168a570eec6f6a21f787d2373dea75068586dd775df2711b9f5505de94",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "compiler-cli-result": {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 204.8112165927887,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-guards/compiler-cli.log",
+      "sha256": "8fe796c231e6ea2aabd493522f2c52c43cef3b9af887a64e9fe7c60450fd2b66",
+      "candidate_tree": "d5717c96be86b505b35b42936bc944a589aae769",
+      "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "manifest_sha256": "b7479f168a570eec6f6a21f787d2373dea75068586dd775df2711b9f5505de94",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "ruff-result": {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.7732641696929932,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-guards/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "d5717c96be86b505b35b42936bc944a589aae769",
+      "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "manifest_sha256": "b7479f168a570eec6f6a21f787d2373dea75068586dd775df2711b9f5505de94",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "expression-doc-result": {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.12430739402771,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-guards/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "d5717c96be86b505b35b42936bc944a589aae769",
+      "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "manifest_sha256": "b7479f168a570eec6f6a21f787d2373dea75068586dd775df2711b9f5505de94",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "black-result": {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 97.9144721031189,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-guards/black.log",
+      "sha256": "8acda098fe7bafcfbe705866501e10ffde61144f718077ed485235665d707032",
+      "candidate_tree": "d5717c96be86b505b35b42936bc944a589aae769",
+      "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "manifest_sha256": "b7479f168a570eec6f6a21f787d2373dea75068586dd775df2711b9f5505de94",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    "no-defaults-result": {
+      "name": "no-defaults",
+      "exit_code": 1,
+      "seconds": 1.4043138027191162,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r1-guards/no-defaults.log",
+      "sha256": "11bd0b16719ee648305cd14ad0f0856df5d66d1c18883dfcde84edf0c6d0421c",
+      "candidate_tree": "d5717c96be86b505b35b42936bc944a589aae769",
+      "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "manifest_sha256": "b7479f168a570eec6f6a21f787d2373dea75068586dd775df2711b9f5505de94",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  },
+  "review": "T20-independent-review-r1.md requests changes: inconsistent restored completed metrics/progress",
+  "new_user_rule": "No legacy behavior or backwards compatibility; pending T20 redesigned against new ruling. Original results retained as historical, package not released."
+}

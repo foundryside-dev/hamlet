@@ -6,8 +6,10 @@ agent performance metrics (survival time, learning progress, policy entropy).
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from typing import Any
 
+from townlet.training.episode import LaneOutcome
 from townlet.training.state import BatchedAgentState, CurriculumDecision
 
 
@@ -18,6 +20,10 @@ class CurriculumManager(ABC):
     Implementations control environment difficulty by returning CurriculumDecisions
     that specify depletion rates, active meters, and reward mode.
     """
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Consume owned completions once; legacy subclasses may opt in additively."""
+        raise NotImplementedError("This curriculum does not consume completion outcomes")
 
     def initialize_population(self, num_agents: int) -> None:
         """

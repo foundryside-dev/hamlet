@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_schema_has_one_canonical_completed_state_and_no_tracker_protocol",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_current_schema_has_one_canonical_completed_state_and_no_tracker_protocol():\n        manager = curriculum()\n        commit(manager, outcome())\n        state = manager.checkpoint_state()\n>       assert set(state) == {\"version\", \"strategy\", \"completion\"}\nE       AssertionError: assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}\nE         \nE         Extra items in the left set:\nE         'episode_rewards'\nE         'agent_stages'\nE         'episodes_at_stage'\nE         'episode_steps'\nE         'steps_at_stage'...\nE         \nE         ...Full output truncated (6 lines hidden), use '-vv' to show\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:443: AssertionError",
+  "candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8"
+}

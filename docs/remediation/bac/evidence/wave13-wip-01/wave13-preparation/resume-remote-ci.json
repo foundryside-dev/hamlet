@@ -1,0 +1,62 @@
+{
+  "verified_tip": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+  "workflows": [
+    {
+      "id": 41546939594,
+      "name": "Tests",
+      "sha": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 41546939664,
+      "name": "Lint",
+      "sha": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 41546939671,
+      "name": "Config Validation",
+      "sha": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 41546939594,
+      "jobs": [
+        {
+          "sha": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+          "name": "unit",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 41546939664,
+      "jobs": [
+        {
+          "sha": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+          "name": "lint",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 41546939671,
+      "jobs": [
+        {
+          "sha": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+          "name": "validate-config-packs",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "resume": "Latest user Please continue; supersedes the completed stop-after-T19 boundary. No new branch/worktree or scope reduction."
+}

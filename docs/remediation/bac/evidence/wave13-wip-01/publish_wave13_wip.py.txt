@@ -1,0 +1,30 @@
+"""Durable unqualified T20 checkpoint; copies evidence, never private Git backups."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';Q=Path('/workspace/bac-review-2026-11-01/qualification');D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave13/r2-candidate.json').read_text());red=json.loads((W/'wave13/r2-red-postflight.json').read_text());assert red['counts']=={'failed':46,'passed':34};assert git('rev-parse','HEAD')==m['base_commit'];assert git('write-tree')==m['candidate_tree'];assert not git('diff','--name-only')
+for group in ['source_files','configs','artifacts']:
+ for n,h in m[group].items():assert sha(R/n)==h,n
+out=D/'evidence/wave13-wip-01';assert not out.exists();out.mkdir();artifacts={}
+def copy(src,dst):
+ assert not dst.exists();dst.parent.mkdir(parents=True,exist_ok=True);dst.write_bytes(src.read_bytes());assert sha(src)==sha(dst);artifacts[dst.relative_to(R).as_posix()]={'sha256':sha(dst),'original':str(src)}
+for folder in sorted(Q.glob('wave13-*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in {'.json','.log'}:copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave13-*.json')):copy(p,out/'qualification'/p.name)
+for folder in ['wave13','wave13-preparation']:
+ for p in sorted((W/folder).iterdir()):
+  if p.is_file() and p.suffix in {'.json','.md','.txt'}:copy(p,out/folder/p.name)
+for n in ['capture_wave13_round.py','capture_wave13_current_round.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave13_wip.py']:copy(Q/n,out/(n+'.txt'))
+copy(W/'wave13-preparation/NO-COMPAT-EXECUTION-AMENDMENT.md',D/'NO-COMPAT-EXECUTION-AMENDMENT.md')
+for i in [1,2]:copy(W/f'wave13-preparation/NO-COMPAT-astra-review-r{i}.md',D/f'plan-reviews/no-compat-round-{i:02d}.md')
+manifest={'status':'WIP — NOT QUALIFIED — NOT RELEASED','packet':'T20 current-only remediation and no-compat execution amendment','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':{n:git('rev-parse',m['candidate_tree']+':'+n) for n in ['src','tests','configs','scripts']},'source_inventory':m['inventories'],'source_files':m['source_files'],'current_red':red,'previous_R1':'22 ownedPASS/152 ownerPASS; independent checkpoint consistencyP2; mypy9errors and defaults614>612FAIL. Old results retain actual506674b5/tree d5717c96 identity.','authority':'User explicitly requires no legacy behavior/backwards compatibility; AGENTS.md383d21ac and exact-hash approved amendment2a33daacf77c0e8823917a6e27cf3b3a1eb2bbd5a05e071a06010ada9405410d','open':['Replace R1 legacy_step/tracker/old7-state with current-only core after RED','Repair checkpoint P2, types and defaults; new80-case GREEN and fresh actual-source Astra review','Current config/factory, actual world identity authority, PW05/T18d completion preflight/retry, per-world dynamics and POP/runner routing','Current serializers/population/world/curriculum restore and committed boundary; existing caller tests/docs updated','All integrated full/owner/static/native/strict curiosity/finite learning/E2E/final54requirements/22lenses remain owed; obsolete compatibility requirements explicitly superseded, not counted as passes'],'unrun':'Current-only implementation/GREEN, new-source guards, integrated full/default coverage/slow/applicable hardware/final CI. CUDA unavailable. WIP CI status checked after push; no pass implied.','qualified_progress':'28/66 previous scoped packages; T20 unreleased. Maintenance slices are traced to existing task owners; no new closure claim.','custody':'14 registered checkouts, only current MAIN available;13 historical tmp paths unavailable, cause unestablished. No creation/prune/delete; original history bundle stays local and is NOT published.','artifacts':artifacts,'publication':'Existing branch only; authorized WIP durability, no PR/merge or qualified dependency release.'}
+p=D/'evidence/wave13-wip-01.json';p.write_text(json.dumps(manifest,indent=2)+'\n')
+p=D/'STATUS.md';p.write_text(p.read_text()+'\n\nUser resumed after the T19 halt and explicitly ruled out legacy behavior/backwards compatibility. [AGENTS.md](../../../AGENTS.md) and [the approved execution amendment](NO-COMPAT-EXECUTION-AMENDMENT.md) supersede obsolete BAC compatibility obligations. T20 is **WIP — NOT QUALIFIED — NOT RELEASED**: current-only RED46failed/34passed exposes missing current APIs and four native corruption refusals. Earlier R1passes do not close its checkpointP2/type/default failures. [WIP evidence](evidence/wave13-wip-01.json) preserves exact source identities and open caller/world/provider/native/qualification seams. Prior28 scoped packages remain recorded; no full BAC acceptance or new T20release is claimed. No further halt was requested after resumption.\n')
+paths=[*artifacts,'docs/remediation/bac/evidence/wave13-wip-01.json','docs/remediation/bac/STATUS.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True)
+for n,h in manifest['execution_subtrees'].items():assert git('rev-parse',git('write-tree')+':'+n)==h,n
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave13-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'wip_tree':git('write-tree'),'source_equivalence':'PASS;src/tests/configs/scripts unchanged by evidence export','staged_paths':git('diff','--cached','--name-only').splitlines(),'artifact_count':len(artifacts)};(Q/'wave13-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

@@ -1,0 +1,26 @@
+"""Coordinator snapshot after owner no-compat rule; historical R0/R1 helper remains unchanged."""
+from pathlib import Path
+import hashlib,json,os,re,shutil,subprocess,sys
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+tag=sys.argv[1];assert re.fullmatch(r'r[0-9]+',tag)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True)
+head=git('rev-parse','HEAD').strip();assert head=='383d21acc07a8568adf0056f00c73114ff4bbfc5';assert git('branch','--show-current').strip()=='project-recovery-bac-2026-11-01'
+task=next(t for t in json.loads((W/'tasks.json').read_text())['tasks'] if t['id']=='T20');test=task['test_path'];allowed=set(task['write_paths']);changed=set(git('diff','--name-only').splitlines())|set(git('diff','--cached','--name-only').splitlines());assert changed<=allowed,changed;assert (R/test).is_file()
+subprocess.run(['git','add','-f','--',*sorted(changed|{test})],cwd=R,check=True);assert subprocess.run(['git','diff','--quiet'],cwd=R).returncode==0
+inventory=[]
+for item in task['reads']:
+ p=R/item['path'];lines=len(p.read_bytes().splitlines());assert lines<=item['projected_lines'],(p,lines,item['projected_lines']);inventory.append({'path':item['path'],'lines':lines,'sha256':sha(p),'present':True})
+assert len(inventory)==5 and sum(x['lines'] for x in inventory)<=5000
+old=json.loads((W/'wave12/r5-candidate.json').read_text());paths=set(old['source_files'])|{x['path'] for x in inventory}|{'AGENTS.md'};source={p:sha(R/p) for p in sorted(paths)}
+for group in ('configs','artifacts'):
+ for p,h in old[group].items():assert sha(R/p)==h,(group,p)
+pre=json.loads((W/'wave13-preparation/T20-source-baseline.json').read_text());registry=git('worktree','list','--porcelain');assert registry==pre['worktree_registry'].replace('HEAD 506674b538b01dbfb97a1e45df1bf22060bcab5c\n','HEAD '+head+'\n',1);availability=[{'path':s[9:],'directory_exists':Path(s[9:]).is_dir()} for s in registry.splitlines() if s.startswith('worktree ')];assert availability==pre['worktree_availability']
+out=W/'wave13';out.mkdir(exist_ok=True);mp=out/(tag+'-candidate.json');assert not mp.exists()
+m={'base_commit':head,'candidate_tree':git('write-tree').strip(),'source_files':source,'changed_paths':git('diff','--cached','--name-only').splitlines(),'task_ids':['T20'],'inventories':{'T20':inventory},'worktree_registry':registry,'worktree_availability':availability,'configs':old['configs'],'artifacts':old['artifacts'],'runtime_barrier':'All source/test/index/tracked docs frozen throughout runtime. Registry14/currentMAIN1; historical13tmp paths unavailable, no recreate/prune.'};mp.write_text(json.dumps(m,indent=2)+'\n')
+base=['-m','pytest',test,'--no-cov','-p','no:cacheprovider','-p','bac_source_identity']
+for kind,args in [('collection',base+['--collect-only','-q']),('owned',base+['-q','-n','4','--dist','worksteal','--basetemp='+str(Q/'scratch'/('wave13-'+tag+'-owned'))])]:
+ spec={'root':str(R),'manifest':str(mp),'output':str(Q/('wave13-'+tag+'-'+kind)),'workers':1,'jobs':[{'name':kind,'args':args}]};(Q/('wave13-'+tag+'-'+kind+'-spec.json')).write_text(json.dumps(spec,indent=2)+'\n')
+guards=json.loads((Q/'wave12-r4-guards-spec.json').read_text());guards.update(manifest=str(mp),output=str(Q/('wave13-'+tag+'-guards')),workers=4);(Q/('wave13-'+tag+'-guards-spec.json')).write_text(json.dumps(guards,indent=2)+'\n')
+resources={'cpu':Path('/sys/fs/cgroup/cpu.max').read_text().strip(),'affinity':len(os.sched_getaffinity(0)),'memory_current':Path('/sys/fs/cgroup/memory.current').read_text().strip(),'memory_limit':Path('/sys/fs/cgroup/memory.max').read_text().strip(),'memory_events':Path('/sys/fs/cgroup/memory.events').read_text().strip(),'workspace_free':shutil.disk_usage('/workspace').free,'TMPDIR':str(Q/'scratch/tmp-wave08-r3'),'threads':1,'CUDA':'unavailable/unqualified'};assert resources['cpu']=='400000 100000' and resources['affinity']>=4;(out/(tag+'-fixture-resource-preflight.json')).write_text(json.dumps(resources,indent=2)+'\n')
+print(json.dumps({'candidate':str(mp),'tree':m['candidate_tree'],'whole_files':len(inventory),'lines':sum(x['lines'] for x in inventory),'guarded_paths':len(source),'resources':resources},indent=2))

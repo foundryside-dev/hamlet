@@ -1,0 +1,15 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/curriculum/adversarial.py:345: error: Unsupported operand types for + ("None" and "float")  [operator]
+src/townlet/curriculum/adversarial.py:345: note: Both left and right operands are unions
+src/townlet/curriculum/adversarial.py:345: error: Unsupported operand types for - ("float" and "None")  [operator]
+src/townlet/curriculum/adversarial.py:345: error: Unsupported operand types for - ("None" and "float")  [operator]
+src/townlet/curriculum/adversarial.py:345: error: Unsupported left operand type for - ("None")  [operator]
+src/townlet/curriculum/adversarial.py:346: error: Unsupported operand types for * ("None" and "int")  [operator]
+src/townlet/curriculum/adversarial.py:346: note: Left operand is of type "float | None"
+src/townlet/curriculum/adversarial.py:347: error: Value of type variable "SupportsRichComparisonT" of "min" cannot be "float | None"  [type-var]
+src/townlet/curriculum/adversarial.py:347: error: Incompatible types in assignment (expression has type "float | None", target has type "float")  [assignment]
+src/townlet/curriculum/adversarial.py:348: error: Value of type variable "SupportsRichComparisonT" of "max" cannot be "float | None"  [type-var]
+src/townlet/curriculum/adversarial.py:694: error: Item "None" of "PerformanceTracker | None" has no attribute "num_agents"  [union-attr]
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 9 errors in 1 file (checked 193 source files)

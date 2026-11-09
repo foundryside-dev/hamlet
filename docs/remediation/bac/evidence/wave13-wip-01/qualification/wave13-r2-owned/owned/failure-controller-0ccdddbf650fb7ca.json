@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_prepare_rejects_later_invalid_lane_without_mutation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_prepare_rejects_later_invalid_lane_without_mutation():\n        manager = curriculum(lanes=2, mode=\"rate_limited\")\n        before = snapshot(manager, 2)\n        method = getattr(manager, \"prepare_episode_outcomes\", None)\n>       assert callable(method), \"Pure preparation must exist before sink mutation\"\nE       AssertionError: Pure preparation must exist before sink mutation\nE       assert False\nE        +  where False = callable(None)\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:395: AssertionError",
+  "candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8"
+}

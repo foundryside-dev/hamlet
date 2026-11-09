@@ -4,13 +4,17 @@ Tracks per-agent metrics (survival, learning, entropy) and adapts stage
 through 5 progressive difficulty levels culminating in sparse rewards.
 """
 
-from typing import Any
+import math
+from collections.abc import Sequence
+from copy import deepcopy
+from typing import Any, get_args
 
 import torch
 import yaml
 from pydantic import BaseModel
 
 from townlet.curriculum.base import CurriculumManager
+from townlet.training.episode import CompletionReason, LaneOutcome
 from townlet.training.state import BatchedAgentState, CurriculumDecision
 
 
@@ -70,12 +74,14 @@ class PerformanceTracker:
     def __init__(self, num_agents: int, device: torch.device):
         self.num_agents = num_agents
         self.device = device
+        self.completion_mode = False
 
         # Performance metrics (per agent)
         self.episode_rewards = torch.zeros(num_agents, device=device)
         self.episode_steps = torch.zeros(num_agents, device=device)
         self.prev_avg_reward = torch.zeros(num_agents, device=device)
         self.last_survival_rate = torch.zeros(num_agents, device=device)
+        self.completed_progress = torch.zeros(num_agents, device=device)
 
         # Stage tracking
         self.agent_stages = torch.ones(num_agents, dtype=torch.long, device=device)
@@ -88,6 +94,8 @@ class PerformanceTracker:
         Note: rewards here are actually survival_steps, not rewards.
         This is called from Population.update_curriculum_tracker which passes step counts.
         """
+        if self.completion_mode:
+            return  # Completion owns metrics/dwell; this legacy clock is inactive.
         self.episode_rewards += rewards
         self.episode_steps += 1.0
         self.steps_at_stage += 1.0
@@ -108,17 +116,23 @@ class PerformanceTracker:
         self.episode_steps = torch.where(dones, 0.0, self.episode_steps)
 
     def get_survival_rate(self, max_steps: int) -> torch.Tensor:
-        """Calculate survival rate (0-1) for each agent."""
+        """Completed fractions in completion mode; in-flight fractions in legacy mode."""
+        if self.completion_mode:
+            return self.last_survival_rate
         return self.episode_steps / max_steps
 
     def get_learning_progress(self) -> torch.Tensor:
-        """Calculate learning progress (reward improvement) for each agent."""
+        """Completed fraction delta, or legacy in-flight average reward delta."""
+        if self.completion_mode:
+            return self.completed_progress
         current_avg = self.episode_rewards / torch.clamp(self.episode_steps, min=1.0)
         progress = current_avg - self.prev_avg_reward
         return progress
 
     def update_baseline(self):
         """Update reward baseline for learning progress calculation."""
+        if self.completion_mode:
+            return  # Completion owns the fraction baseline, not this legacy hook.
         current_avg = self.episode_rewards / torch.clamp(self.episode_steps, min=1.0)
         self.prev_avg_reward = current_avg
 
@@ -164,6 +178,11 @@ class AdversarialCurriculum(CurriculumManager):
         self.difficulty_adaptation_rate: float | None = None
         self.difficulty_min: float | None = None
         self.difficulty_max: float | None = None
+        self.commit_mode = "legacy_step"
+        self.difficulty_mode = "stage_band"
+        self._seen_completions: set[tuple[int, int]] = set()
+        self._completed: list[dict[str, Any]] = []
+        self._difficulty: list[float] = []
 
     def configure_from_training(self, config: Any) -> None:
         """Configure curriculum thresholds and difficulty mapping from TrainingV2Config.
@@ -178,12 +197,37 @@ class AdversarialCurriculum(CurriculumManager):
                 - survival_retreat_threshold
                 - entropy_gate
                 - min_steps_at_stage
+                - commit_mode: legacy_step (default) or completion
+                - difficulty_mode: stage_band (default) or rate_limited
+                  (adaptation_rate is difficulty change per eligible transition)
         """
+        commitment = getattr(config, "commit_mode", self.commit_mode)
+        difficulty = getattr(config, "difficulty_mode", self.difficulty_mode)
+        low, high = getattr(config, "min_difficulty", 0.0), getattr(config, "max_difficulty", 1.0)
+        rate = getattr(config, "adaptation_rate", None)
+        if commitment not in ("legacy_step", "completion") or difficulty not in ("stage_band", "rate_limited"):
+            raise ValueError("Unknown curriculum commitment/difficulty mode")
+        if difficulty == "rate_limited" and commitment != "completion":
+            raise ValueError("rate_limited requires the completion transition clock")
+        if (
+            any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in (low, high))
+            or not 0 <= low <= high <= 1
+        ):
+            raise ValueError("Difficulty bounds must be finite and ordered within [0, 1]")
+        if rate is not None and (isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate < 0):
+            raise ValueError("adaptation_rate must be finite and nonnegative")
+        if difficulty == "rate_limited" and rate is None:
+            raise ValueError("rate_limited requires adaptation_rate")
+        if self.tracker is not None and (
+            self.commit_mode == "completion" or commitment != self.commit_mode or difficulty != self.difficulty_mode
+        ):
+            raise RuntimeError("Select curriculum modes before initialize_population")
+        self.commit_mode, self.difficulty_mode = commitment, difficulty
         # Difficulty mapping configuration (v2.1)
         self.difficulty_metric = getattr(config, "difficulty_metric", None)
         self.difficulty_adaptation_rate = getattr(config, "adaptation_rate", None)
-        self.difficulty_min = getattr(config, "min_difficulty", None)
-        self.difficulty_max = getattr(config, "max_difficulty", None)
+        self.difficulty_min = low
+        self.difficulty_max = high
 
         # Thresholds: override constructor defaults with config values when provided.
         self.survival_advance_threshold = getattr(config, "survival_advance_threshold", self.survival_advance_threshold)
@@ -222,7 +266,88 @@ class AdversarialCurriculum(CurriculumManager):
     def initialize_population(self, num_agents: int):
         """Initialize performance tracking for population."""
         self.tracker = PerformanceTracker(num_agents, self.device)
+        self.tracker.completion_mode = self.commit_mode == "completion"
+        self._seen_completions.clear()
+        self._completed = [{} for _ in range(num_agents)]
+        self._difficulty = [self.difficulty_min if self.difficulty_min is not None else 0.0] * num_agents
         self.transition_events.clear()
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Commit once per (batch episode, lane), using eligible lane transitions.
+
+        Legacy step mode keeps its original metrics and does not accept a second
+        clock. Configure completion before population initialization to opt in.
+        """
+        tracker = self.tracker
+        if tracker is None or self.commit_mode != "completion":
+            raise RuntimeError("Initialize a completion-mode population before committing")
+        for event in outcomes:
+            if not isinstance(event, LaneOutcome):
+                raise ValueError("Expected LaneOutcome")
+            lane, steps = event.outcome.agent_idx, event.outcome.survival_time
+            if (
+                type(lane) is not int
+                or not 0 <= lane < tracker.num_agents
+                or type(steps) is not int
+                or not 0 < steps <= event.planned_horizon
+            ):
+                raise ValueError("Completion lane/transitions outside declared population/horizon")
+            if event.outcome.reason not in get_args(CompletionReason):
+                raise ValueError("Unknown completion reason")
+        for event in outcomes:
+            lane, steps = event.outcome.agent_idx, event.outcome.survival_time
+            identity = (event.batch_episode, lane)
+            if identity in self._seen_completions:
+                continue
+            fraction = steps / event.planned_horizon
+            progress = fraction - self._completed[lane].get("survival_baseline", 0.0)
+            tracker.last_survival_rate[lane] = fraction
+            tracker.completed_progress[lane] = progress
+            tracker.steps_at_stage[lane] += steps
+            tracker.episodes_at_stage[lane] += 1
+            self._completed[lane] = {
+                "learning_progress": progress,
+                "completion_reason": event.outcome.reason,
+                "policy_entropy": event.policy_entropy,
+                "survival_baseline": fraction,
+                **{
+                    key: getattr(event, key)
+                    for key in ("reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping", "world_id", "world_episode_seq")
+                },
+            }
+            stage, dwell = int(tracker.agent_stages[lane].item()), int(tracker.steps_at_stage[lane].item())
+            reason = None
+            if dwell >= self.min_steps_at_stage:
+                if stage > 1 and (fraction < self.survival_retreat_threshold or progress < 0):
+                    reason = "retreat"
+                elif stage < 5 and fraction > self.survival_advance_threshold and progress > 0 and event.policy_entropy < self.entropy_gate:
+                    reason = "advance"
+            if reason is not None:
+                tracker.agent_stages[lane] += 1 if reason == "advance" else -1
+                tracker.steps_at_stage[lane] = 0
+                tracker.episodes_at_stage[lane] = 0
+                self._record_transition_event(
+                    agent_id=None,
+                    from_stage=stage,
+                    to_stage=int(tracker.agent_stages[lane].item()),
+                    reason=reason,
+                    survival_rate=fraction,
+                    learning_progress=progress,
+                    entropy=event.policy_entropy,
+                    steps_at_stage=dwell,
+                )
+                self.transition_events[-1].update(
+                    agent_idx=lane, world_id=event.world_id, world_episode_seq=event.world_episode_seq, batch_episode=event.batch_episode
+                )
+            tracker.prev_avg_reward[lane] = fraction
+            if self.difficulty_mode == "rate_limited":
+                low, high = self.difficulty_min, self.difficulty_max
+                target = low + (int(tracker.agent_stages[lane].item()) - 1) / 4 * (high - low)
+                budget = self.difficulty_adaptation_rate * steps
+                self._difficulty[lane] = min(
+                    high, max(low, self._difficulty[lane] + max(-budget, min(budget, target - self._difficulty[lane])))
+                )
+            self._seen_completions.add(identity)
 
     def _get_active_meters(self, stage: int) -> list[str]:
         """Get active meters for stage."""
@@ -319,7 +444,7 @@ class AdversarialCurriculum(CurriculumManager):
             transition_reason: str | None = None
 
             # Check for retreat first (takes priority)
-            if self._should_retreat(i):
+            if self.commit_mode == "legacy_step" and self._should_retreat(i):
                 tracker.agent_stages[i] -= 1
                 tracker.steps_at_stage[i] = 0
                 tracker.episodes_at_stage[i] = 0
@@ -328,7 +453,7 @@ class AdversarialCurriculum(CurriculumManager):
                 tracker.prev_avg_reward[i] = current_avg_i
                 transition_reason = "retreat"
             # Then check for advancement
-            elif self._should_advance(i, entropies[i].item()):
+            elif self.commit_mode == "legacy_step" and self._should_advance(i, entropies[i].item()):
                 tracker.agent_stages[i] += 1
                 tracker.steps_at_stage[i] = 0
                 tracker.episodes_at_stage[i] = 0
@@ -363,10 +488,12 @@ class AdversarialCurriculum(CurriculumManager):
             # express difficulty bands declaratively.
             low = self.difficulty_min if self.difficulty_min is not None else 0.0
             high = self.difficulty_max if self.difficulty_max is not None else 1.0
-            if high > low:
+            if high >= low:
                 difficulty_level = low + base_difficulty * (high - low)
             else:
                 difficulty_level = base_difficulty
+            if self.difficulty_mode == "rate_limited":
+                difficulty_level = self._difficulty[i]
 
             decision = CurriculumDecision(
                 difficulty_level=difficulty_level,
@@ -386,7 +513,7 @@ class AdversarialCurriculum(CurriculumManager):
     def _record_transition_event(
         self,
         *,
-        agent_id: str,
+        agent_id: str | None,
         from_stage: int,
         to_stage: int,
         reason: str,
@@ -474,7 +601,33 @@ class AdversarialCurriculum(CurriculumManager):
         if self.tracker is None:
             return {}
 
-        return {field: getattr(self.tracker, field).cpu() for field in self._TRACKER_FIELDS}
+        state = {field: getattr(self.tracker, field).cpu().clone() for field in self._TRACKER_FIELDS}
+        if self.commit_mode == "completion":
+            state["completion"] = {
+                "version": 1,
+                "config": self._completion_config(),
+                "seen": sorted(self._seen_completions),
+                "metrics": deepcopy(self._completed),
+                "difficulty": self._difficulty.copy(),
+            }
+        return state
+
+    def _completion_config(self) -> dict[str, Any]:
+        """Meaning-bearing configuration must match on completion-mode resume."""
+        return {
+            key: getattr(self, key)
+            for key in (
+                "commit_mode",
+                "difficulty_mode",
+                "difficulty_adaptation_rate",
+                "difficulty_min",
+                "difficulty_max",
+                "survival_advance_threshold",
+                "survival_retreat_threshold",
+                "entropy_gate",
+                "min_steps_at_stage",
+            )
+        }
 
     def load_state(self, state: dict[str, Any]) -> None:
         """Restore curriculum manager from checkpoint.
@@ -485,7 +638,15 @@ class AdversarialCurriculum(CurriculumManager):
         assert self.tracker is not None
         for field in self._TRACKER_FIELDS:
             tensor = state[field]
-            setattr(self.tracker, field, tensor.to(self.device))
+            setattr(self.tracker, field, tensor.to(self.device).clone())
+        if self.commit_mode == "completion":
+            completed = state["completion"]
+            self._seen_completions = set(completed["seen"])
+            self._completed = deepcopy(completed["metrics"])
+            self._difficulty = completed["difficulty"].copy()
+            self.tracker.completed_progress = torch.tensor(
+                [row.get("learning_progress", 0.0) for row in self._completed], device=self.device
+            )
 
     def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
         """Validate exact tracker state without mutating the live curriculum."""
@@ -495,6 +656,8 @@ class AdversarialCurriculum(CurriculumManager):
             raise ValueError(f"Adversarial curriculum checkpoint must be a dictionary; got {type(state).__name__}.")
 
         expected_keys = set(self._TRACKER_FIELDS)
+        if self.commit_mode == "completion":
+            expected_keys.add("completion")
         state_keys = set(state)
         if state_keys != expected_keys:
             missing = sorted(expected_keys - state_keys)
@@ -515,10 +678,76 @@ class AdversarialCurriculum(CurriculumManager):
                 )
             if tensor.dtype != current.dtype:
                 raise ValueError(
-                    f"Adversarial curriculum checkpoint {field} dtype mismatch: " f"checkpoint={tensor.dtype}, current={current.dtype}."
+                    f"Adversarial curriculum checkpoint {field} dtype mismatch: checkpoint={tensor.dtype}, current={current.dtype}."
                 )
             if tensor.is_floating_point() and not torch.isfinite(tensor).all().item():
                 raise ValueError(f"Adversarial curriculum checkpoint {field} must contain only finite values.")
+        if self.commit_mode == "completion":
+            self._validate_completed_state(state["completion"])
+
+    def _validate_completed_state(self, completed: Any) -> None:
+        if not isinstance(completed, dict) or set(completed) != {"version", "config", "seen", "metrics", "difficulty"}:
+            raise ValueError("Invalid completion checkpoint envelope")
+        if type(completed["version"]) is not int or completed["version"] != 1 or completed["config"] != self._completion_config():
+            raise ValueError("Completion checkpoint version/configuration mismatch")
+        seen, metrics, difficulty = (completed[k] for k in ("seen", "metrics", "difficulty"))
+        count = self.tracker.num_agents
+        if not isinstance(seen, list) or any(
+            not isinstance(pair, tuple)
+            or len(pair) != 2
+            or type(pair[0]) is not int
+            or pair[0] < 0
+            or type(pair[1]) is not int
+            or not 0 <= pair[1] < count
+            for pair in seen
+        ):
+            raise ValueError("Invalid completion event identities")
+        if len(set(seen)) != len(seen):
+            raise ValueError("Duplicate completion identities in checkpoint")
+        if not isinstance(metrics, list) or len(metrics) != count or not isinstance(difficulty, list) or len(difficulty) != count:
+            raise ValueError("Completion checkpoint population mismatch")
+        keys = {
+            "learning_progress",
+            "completion_reason",
+            "policy_entropy",
+            "survival_baseline",
+            "reward_total",
+            "reward_extrinsic",
+            "reward_intrinsic",
+            "reward_shaping",
+            "world_id",
+            "world_episode_seq",
+        }
+        for lane, (row, value) in enumerate(zip(metrics, difficulty, strict=True)):
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or not (self.difficulty_min if self.difficulty_min is not None else 0.0)
+                <= value
+                <= (self.difficulty_max if self.difficulty_max is not None else 1.0)
+            ):
+                raise ValueError("Invalid checkpoint difficulty")
+            if not isinstance(row, dict) or bool(row) != any(pair[1] == lane for pair in seen) or (row and set(row) != keys):
+                raise ValueError("Missing or invalid completed metrics")
+            if not row:
+                continue
+            if (
+                row["completion_reason"] not in get_args(CompletionReason)
+                or not isinstance(row["world_id"], str)
+                or not row["world_id"].strip()
+                or type(row["world_episode_seq"]) is not int
+                or row["world_episode_seq"] < 0
+            ):
+                raise ValueError("Invalid completed world identity/reason")
+            if (
+                any(
+                    isinstance(row[k], bool) or not isinstance(row[k], (int, float)) or not math.isfinite(row[k])
+                    for k in keys - {"completion_reason", "world_id", "world_episode_seq"}
+                )
+                or not 0 <= row["survival_baseline"] <= 1
+            ):
+                raise ValueError("Invalid completed numeric metrics")
 
     def get_stage_info(self, agent_idx: int = 0) -> dict:
         """Get detailed stage information for an agent.
@@ -562,4 +791,13 @@ class AdversarialCurriculum(CurriculumManager):
             "episodes_at_stage": episodes_at_stage,
             "survival_rate": survival_rate,
             "likely_transition_soon": likely_transition,
+            "commit_mode": self.commit_mode,
+            "difficulty_mode": self.difficulty_mode,
+            "adaptation_rate": self.difficulty_adaptation_rate,
+            "adaptation_rate_active": self.difficulty_mode == "rate_limited",
+            "adaptation_rate_units": "difficulty_per_eligible_transition" if self.difficulty_mode == "rate_limited" else "inactive",
+            "active_meters_status": "unqualified",
+            "reward_mode_status": "unqualified",
+            "difficulty_calibrated": False,
+            **(self._completed[agent_idx] if self.commit_mode == "completion" else {}),
         }

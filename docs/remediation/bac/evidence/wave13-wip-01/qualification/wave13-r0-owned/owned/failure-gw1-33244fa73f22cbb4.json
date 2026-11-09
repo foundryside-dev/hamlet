@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_legacy_step_remains_an_explicit_working_interface",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "def test_legacy_step_remains_an_explicit_working_interface():\n        manager = curriculum(commitment=\"legacy_step\")\n        manager.tracker.update_step(torch.tensor([2.0]), torch.tensor([False]))\n        assert manager.tracker.episode_steps.tolist() == [1.0]\n        assert manager.tracker.steps_at_stage.tolist() == [1.0]\n>       assert manager.get_stage_info()[\"commitment_mode\"] == \"legacy_step\"\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       KeyError: 'commitment_mode'\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:231: KeyError",
+  "candidate_tree": "e9b0a91ecc800f65169ef082731a8df90ffc9ad3"
+}

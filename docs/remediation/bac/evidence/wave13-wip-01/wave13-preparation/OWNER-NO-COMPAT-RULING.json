@@ -1,0 +1,12 @@
+{
+  "owner_words": [
+    "we don't need legacy behaviour we have no users",
+    "Please add that to your agents.md, no backwards compatability please"
+  ],
+  "instruction": "AGENTS.md Owner clarification \u2014 no legacy compatibility",
+  "instruction_commit": "383d21acc07a8568adf0056f00c73114ff4bbfc5",
+  "applies": "Retire obsolete compatibility protocols, modes and state-format adapters; update current callers/tests/docs coherently. Existing genuine current feature choices are assessed against design, not retained solely for compatibility.",
+  "historical_evidence": "R0/R1 results remain actual-source history; T20 has not been released; R1checkpointconsistencyP2/mypy9errors/default614>612 remain open.",
+  "next": "Bounded no-compat design/execution reconciliation and independent Astra medium approval; implement coherent core/current-caller slices with tests and fresh review, no branches/worktrees or cleanup.",
+  "remote_verified_commit": "383d21acc07a8568adf0056f00c73114ff4bbfc5"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_prepared_receipt_owns_content_and_refuses_stale_generation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_prepared_receipt_owns_content_and_refuses_stale_generation():\n        manager = curriculum(mode=\"rate_limited\")\n        original = outcome()\n>       first = prepare(manager, original)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:404: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nmanager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12b9878450>\nevents = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)\nmethod = None, @py_assert2 = False\n@py_format4 = 'Curriculum needs pure whole-batch preparation\\n>assert False\\n{False = callable(None)\\n}'\n\n    def prepare(manager, *events):\n        method = getattr(manager, \"prepare_episode_outcomes\", None)\n>       assert callable(method), \"Curriculum needs pure whole-batch preparation\"\nE       AssertionError: Curriculum needs pure whole-batch preparation\nE       assert False\nE        +  where False = callable(None)\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:366: AssertionError",
+  "candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8"
+}

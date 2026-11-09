@@ -1,0 +1,1515 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [80 items]
+
+....................F..FFFFFFFFFFFFFFF...F.FFFFF.FFFFFFFFFFFFFF..F..F.F. [ 90%]
+.FFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+_____________________ test_obsolete_commit_mode_is_refused _____________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_obsolete_commit_mode_is_refused():
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:235: Failed
+______ test_changed_content_duplicate_refuses_without_any_effect[reason] _______
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'reason'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+______ test_current_nested_corruption_refuses_before_installation[config] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'config'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f908790da90>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[survival_baseline-0.0] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'survival_baseline', value = 0.0
+
+    @pytest.mark.parametrize("field,value", [
+        ("survival_baseline", 0.0), ("learning_progress", 2.0),
+        ("learning_progress", -2.0), ("learning_progress", 1e300),
+    ])
+    def test_checkpoint_contradiction_or_impossible_progress_refuses_atomically(field, value):
+        # Keep this on R1's reachable public API: no missing new constructor/preflight
+        # can hide the reviewer's concrete malformed-restore acceptance witness.
+        manager = curriculum(dwell=10)
+        commit(manager, outcome())
+        damaged = deepcopy(manager.checkpoint_state())
+        damaged["completion"]["metrics"][0][field] = value
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:292: Failed
+_ test_changed_content_duplicate_refuses_without_any_effect[final_observation] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'final_observation'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+__ test_current_nested_corruption_refuses_before_installation[missing_nested] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'missing_nested'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90878fdd10>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-2.0] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'learning_progress', value = 2.0
+
+    @pytest.mark.parametrize("field,value", [
+        ("survival_baseline", 0.0), ("learning_progress", 2.0),
+        ("learning_progress", -2.0), ("learning_progress", 1e300),
+    ])
+    def test_checkpoint_contradiction_or_impossible_progress_refuses_atomically(field, value):
+        # Keep this on R1's reachable public API: no missing new constructor/preflight
+        # can hide the reviewer's concrete malformed-restore acceptance witness.
+        manager = curriculum(dwell=10)
+        commit(manager, outcome())
+        damaged = deepcopy(manager.checkpoint_state())
+        damaged["completion"]["metrics"][0][field] = value
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:292: Failed
+___ test_changed_content_duplicate_refuses_without_any_effect[reward_total] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'reward_total'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+___ test_changed_content_duplicate_refuses_without_any_effect[final_meters] ____
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'final_meters'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_ test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress--2.0] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'learning_progress', value = -2.0
+
+    @pytest.mark.parametrize("field,value", [
+        ("survival_baseline", 0.0), ("learning_progress", 2.0),
+        ("learning_progress", -2.0), ("learning_progress", 1e300),
+    ])
+    def test_checkpoint_contradiction_or_impossible_progress_refuses_atomically(field, value):
+        # Keep this on R1's reachable public API: no missing new constructor/preflight
+        # can hide the reviewer's concrete malformed-restore acceptance witness.
+        manager = curriculum(dwell=10)
+        commit(manager, outcome())
+        damaged = deepcopy(manager.checkpoint_state())
+        damaged["completion"]["metrics"][0][field] = value
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:292: Failed
+__ test_current_nested_corruption_refuses_before_installation[unknown_nested] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'unknown_nested'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90878fdf90>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_changed_content_duplicate_refuses_without_any_effect[reward_extrinsic] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'reward_extrinsic'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_ test_changed_content_duplicate_refuses_without_any_effect[observation_dtype] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'observation_dtype'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_ test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-1e+300] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'learning_progress', value = 1e+300
+
+    @pytest.mark.parametrize("field,value", [
+        ("survival_baseline", 0.0), ("learning_progress", 2.0),
+        ("learning_progress", -2.0), ("learning_progress", 1e300),
+    ])
+    def test_checkpoint_contradiction_or_impossible_progress_refuses_atomically(field, value):
+        # Keep this on R1's reachable public API: no missing new constructor/preflight
+        # can hide the reviewer's concrete malformed-restore acceptance witness.
+        manager = curriculum(dwell=10)
+        commit(manager, outcome())
+        damaged = deepcopy(manager.checkpoint_state())
+        damaged["completion"]["metrics"][0][field] = value
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:292: Failed
+_ test_changed_content_duplicate_refuses_without_any_effect[reward_intrinsic] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'reward_intrinsic'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_ test_changed_content_duplicate_refuses_without_any_effect[observation_shape] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'observation_shape'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+____ test_current_nested_corruption_refuses_before_installation[stage_low] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'stage_low'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f908796d0f0>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+__ test_changed_content_duplicate_refuses_without_any_effect[reward_shaping] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'reward_shaping'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_____________ test_prepare_is_pure_and_prepared_retry_commits_once _____________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_prepare_is_pure_and_prepared_retry_commits_once():
+        manager = curriculum(dwell=10, mode="rate_limited")
+        before = snapshot(manager)
+>       receipt = prepare(manager, outcome())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:379: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12b99f2ad0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+method = None, @py_assert2 = False
+@py_format4 = 'Curriculum needs pure whole-batch preparation\n>assert False\n{False = callable(None)\n}'
+
+    def prepare(manager, *events):
+        method = getattr(manager, "prepare_episode_outcomes", None)
+>       assert callable(method), "Curriculum needs pure whole-batch preparation"
+E       AssertionError: Curriculum needs pure whole-batch preparation
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:366: AssertionError
+____ test_current_nested_corruption_refuses_before_installation[stage_high] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'stage_high'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f908796d6e0>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+___________ test_prepare_rejects_later_invalid_lane_without_mutation ___________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_prepare_rejects_later_invalid_lane_without_mutation():
+        manager = curriculum(lanes=2, mode="rate_limited")
+        before = snapshot(manager, 2)
+        method = getattr(manager, "prepare_episode_outcomes", None)
+>       assert callable(method), "Pure preparation must exist before sink mutation"
+E       AssertionError: Pure preparation must exist before sink mutation
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:395: AssertionError
+__ test_changed_content_duplicate_refuses_without_any_effect[policy_entropy] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'policy_entropy'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+__ test_current_nested_corruption_refuses_before_installation[negative_dwell] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'negative_dwell'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f9087aef890>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_____ test_changed_content_duplicate_refuses_without_any_effect[world_id] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'world_id'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_______ test_prepared_receipt_owns_content_and_refuses_stale_generation ________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_prepared_receipt_owns_content_and_refuses_stale_generation():
+        manager = curriculum(mode="rate_limited")
+        original = outcome()
+>       first = prepare(manager, original)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12b9878450>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+method = None, @py_assert2 = False
+@py_format4 = 'Curriculum needs pure whole-batch preparation\n>assert False\n{False = callable(None)\n}'
+
+    def prepare(manager, *events):
+        method = getattr(manager, "prepare_episode_outcomes", None)
+>       assert callable(method), "Curriculum needs pure whole-batch preparation"
+E       AssertionError: Curriculum needs pure whole-batch preparation
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:366: AssertionError
+____ test_current_nested_corruption_refuses_before_installation[prior_high] ____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'prior_high'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff11d3f14f0>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episodes_at_stage'
+E         'last_survival_rate'
+E         'episode_steps'
+E         'steps_at_stage'
+E         'prev_avg_reward'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_changed_content_duplicate_refuses_without_any_effect[world_episode_seq] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'world_episode_seq'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_ test_current_nested_corruption_refuses_before_installation[negative_episodes] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'negative_episodes'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90879df460>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+__________ test_prepared_receipt_from_other_owner_refuses_atomically ___________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_prepared_receipt_from_other_owner_refuses_atomically():
+        manager = curriculum()
+        other = curriculum()
+>       foreign = prepare(other, outcome())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:421: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12b99de8a0>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+method = None, @py_assert2 = False
+@py_format4 = 'Curriculum needs pure whole-batch preparation\n>assert False\n{False = callable(None)\n}'
+
+    def prepare(manager, *events):
+        method = getattr(manager, "prepare_episode_outcomes", None)
+>       assert callable(method), "Curriculum needs pure whole-batch preparation"
+E       AssertionError: Curriculum needs pure whole-batch preparation
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:366: AssertionError
+__ test_changed_content_duplicate_refuses_without_any_effect[planned_horizon] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'planned_horizon'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+__ test_current_nested_corruption_refuses_before_installation[prior_infinite] __
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'prior_infinite'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff11d3f1f40>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episodes_at_stage'
+E         'last_survival_rate'
+E         'episode_steps'
+E         'steps_at_stage'
+E         'prev_avg_reward'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_____ test_current_nested_corruption_refuses_before_installation[bad_rate] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'bad_rate'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90878a8270>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+______ test_changed_duplicate_inside_single_preflight_refuses_atomically _______
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_changed_duplicate_inside_single_preflight_refuses_atomically():
+        manager = curriculum()
+        event = outcome()
+        before = snapshot(manager)
+        method = getattr(manager, "prepare_episode_outcomes", None)
+>       assert callable(method), "Preflight must compare duplicate content within a batch"
+E       AssertionError: Preflight must compare duplicate content within a batch
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:433: AssertionError
+_ test_current_nested_corruption_refuses_before_installation[duplicate_event] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'duplicate_event'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f9087aebd50>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+__ test_current_nested_corruption_refuses_before_installation[event_content] ___
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'event_content'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff11d202f90>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episodes_at_stage'
+E         'last_survival_rate'
+E         'episode_steps'
+E         'steps_at_stage'
+E         'prev_avg_reward'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+___ test_changed_content_duplicate_refuses_without_any_effect[survival_time] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'survival_time'
+
+    @pytest.mark.parametrize("change", [
+        "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
+        "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
+        "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
+    ])
+    def test_changed_content_duplicate_refuses_without_any_effect(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        event = outcome()
+        commit(manager, event)
+        if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
+            value = {
+                "survival_time": 9, "reason": "budget",
+                "final_observation": torch.tensor([0.5, 0.5]),
+                "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
+                "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
+                "observation_shape": torch.tensor([[0.25, 0.75]]),
+            }[change]
+            field = "final_observation" if change.startswith("observation_") else change
+            changed = replace(event, outcome=replace(event.outcome, **{field: value}))
+        else:
+            value = {"world_id": "other-declared-town", "world_episode_seq": 2,
+                     "planned_horizon": 20}.get(change, 0.5)
+            changed = replace(event, **{change: value})
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:351: Failed
+_ test_current_schema_has_one_canonical_completed_state_and_no_tracker_protocol _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_current_schema_has_one_canonical_completed_state_and_no_tracker_protocol():
+        manager = curriculum()
+        commit(manager, outcome())
+        state = manager.checkpoint_state()
+>       assert set(state) == {"version", "strategy", "completion"}
+E       AssertionError: assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episode_rewards'
+E         'agent_stages'
+E         'episodes_at_stage'
+E         'episode_steps'
+E         'steps_at_stage'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:443: AssertionError
+___ test_current_nested_corruption_refuses_before_installation[bad_identity] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'bad_identity'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90877a4550>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_current_nested_corruption_refuses_before_installation[event_fingerprint] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'event_fingerprint'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff11d2482f0>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episodes_at_stage'
+E         'last_survival_rate'
+E         'episode_steps'
+E         'steps_at_stage'
+E         'prev_avg_reward'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_current_nested_corruption_refuses_before_installation[missing_metrics] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'missing_metrics'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90879cba70>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+_ test_current_nested_corruption_refuses_before_installation[negative_generation] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'negative_generation'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff11d249710>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episodes_at_stage'
+E         'last_survival_rate'
+E         'episode_steps'
+E         'steps_at_stage'
+E         'prev_avg_reward'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+___ test_completion_transition_uses_canonical_identity_without_legacy_alias ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_completion_transition_uses_canonical_identity_without_legacy_alias():
+        manager = curriculum(dwell=10)
+        commit(manager, outcome())
+        transition = manager.transition_events[0]
+        assert transition["agent_idx"] == 0
+        assert transition["world_id"] == "town-world-0"
+        assert transition["world_episode_seq"] == 1
+        assert transition["batch_episode"] == 1
+        assert transition["from_stage"] == 1
+        assert transition["to_stage"] == 2
+>       assert "agent_id" not in transition
+E       AssertionError: assert 'agent_id' not in {'agent_id': None, 'agent_idx': 0, 'batch_episode': 1, 'entropy': 0.1, ...}
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:514: AssertionError
+________ test_current_event_tensor_snapshots_are_owned_on_save_and_load ________
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_current_event_tensor_snapshots_are_owned_on_save_and_load():
+        manager = curriculum()
+        commit(manager, outcome())
+>       state = current_state(manager)
+                ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:604: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f12b9815fd0>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episode_rewards'
+E         'agent_stages'
+E         'episodes_at_stage'
+E         'episode_steps'
+E         'steps_at_stage'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+____ test_current_nested_corruption_refuses_before_installation[prior_low] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+change = 'prior_low'
+
+    @pytest.mark.parametrize("change", [
+        "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
+        "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
+        "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
+        "event_content", "event_fingerprint", "negative_generation",
+    ])
+    def test_current_nested_corruption_refuses_before_installation(change):
+        manager = curriculum(dwell=10, mode="rate_limited")
+        commit(manager, outcome())
+>       damaged = current_state(manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:533: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f90877f8320>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'last_survival_rate'
+E         'episode_steps'
+E         'episode_rewards'
+E         'episodes_at_stage'
+E         'agent_stages'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+____ test_static_preparation_is_pure_and_changed_duplicate_is_still_refused ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_static_preparation_is_pure_and_changed_duplicate_is_still_refused():
+        manager = StaticCurriculum(difficulty_level=0.6, depletion_multiplier=0.8)
+        manager.initialize_population(1)
+        before = snapshot(manager, 0)
+>       receipt = prepare(manager, outcome())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:589: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.static.StaticCurriculum object at 0x7f7900d15a90>
+events = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=10, final_observation=tensor([0.2500, ...nsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=1),)
+method = None, @py_assert2 = False
+@py_format4 = 'Curriculum needs pure whole-batch preparation\n>assert False\n{False = callable(None)\n}'
+
+    def prepare(manager, *events):
+        method = getattr(manager, "prepare_episode_outcomes", None)
+>       assert callable(method), "Curriculum needs pure whole-batch preparation"
+E       AssertionError: Curriculum needs pure whole-batch preparation
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:366: AssertionError
+_ test_current_valid_restore_installs_one_authoritative_fraction_and_progress __
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_current_valid_restore_installs_one_authoritative_fraction_and_progress():
+        manager = curriculum()
+        commit(manager, outcome(steps=8))
+>       state = current_state(manager)
+                ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:574: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manager = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7ff11d24aa50>
+
+    def current_state(manager):
+        state = deepcopy(manager.checkpoint_state())
+>       assert set(state) == {"version", "strategy", "completion"}, "Current native state is required"
+E       AssertionError: Current native state is required
+E       assert {'agent_stage...al_rate', ...} == {'completion'...y', 'version'}
+E         
+E         Extra items in the left set:
+E         'episodes_at_stage'
+E         'last_survival_rate'
+E         'episode_steps'
+E         'steps_at_stage'
+E         'prev_avg_reward'...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:519: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_obsolete_commit_mode_is_refused
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[reason]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[config]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[survival_baseline-0.0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[final_observation]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[missing_nested]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-2.0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[reward_total]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[final_meters]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress--2.0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[unknown_nested]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[reward_extrinsic]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[observation_dtype]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-1e+300]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[reward_intrinsic]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[observation_shape]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[stage_low]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[reward_shaping]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_prepare_is_pure_and_prepared_retry_commits_once
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[stage_high]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_prepare_rejects_later_invalid_lane_without_mutation
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[policy_entropy]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[negative_dwell]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[world_id]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_prepared_receipt_owns_content_and_refuses_stale_generation
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[prior_high]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[world_episode_seq]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[negative_episodes]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_prepared_receipt_from_other_owner_refuses_atomically
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[planned_horizon]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[prior_infinite]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[bad_rate]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_duplicate_inside_single_preflight_refuses_atomically
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[duplicate_event]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[event_content]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_changed_content_duplicate_refuses_without_any_effect[survival_time]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_schema_has_one_canonical_completed_state_and_no_tracker_protocol
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[bad_identity]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[event_fingerprint]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[missing_metrics]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[negative_generation]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_completion_transition_uses_canonical_identity_without_legacy_alias
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_event_tensor_snapshots_are_owned_on_save_and_load
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_nested_corruption_refuses_before_installation[prior_low]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_static_preparation_is_pure_and_changed_duplicate_is_still_refused
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_current_valid_restore_installs_one_authoritative_fraction_and_progress
+======================== 46 failed, 34 passed in 7.04s =========================

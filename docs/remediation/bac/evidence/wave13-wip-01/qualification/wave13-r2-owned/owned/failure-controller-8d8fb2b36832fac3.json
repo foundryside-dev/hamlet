@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_completion_transition_uses_canonical_identity_without_legacy_alias",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_completion_transition_uses_canonical_identity_without_legacy_alias():\n        manager = curriculum(dwell=10)\n        commit(manager, outcome())\n        transition = manager.transition_events[0]\n        assert transition[\"agent_idx\"] == 0\n        assert transition[\"world_id\"] == \"town-world-0\"\n        assert transition[\"world_episode_seq\"] == 1\n        assert transition[\"batch_episode\"] == 1\n        assert transition[\"from_stage\"] == 1\n        assert transition[\"to_stage\"] == 2\n>       assert \"agent_id\" not in transition\nE       AssertionError: assert 'agent_id' not in {'agent_id': None, 'agent_idx': 0, 'batch_episode': 1, 'entropy': 0.1, ...}\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:514: AssertionError",
+  "candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8"
+}

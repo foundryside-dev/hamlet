@@ -1,0 +1,13 @@
+{
+  "id": "T20-READABLE-SOURCE-PROJECTION",
+  "task": "T20",
+  "path": "src/townlet/curriculum/adversarial.py",
+  "old_projected_lines": 800,
+  "new_projected_lines": 950,
+  "whole_inventory_files": 5,
+  "whole_inventory_projected_lines": 1870,
+  "actual_before_formatter": 711,
+  "reason": "Readable formatting of additive completion/state validation code; no minification, new source file or capability removal",
+  "authority": "User additions/complexity authorized; hard5files/5000lines unchanged. Root ownership control unchanged. Frozen approved plan bytes unchanged.",
+  "technical_review": "Owed with T20 actual-source Astra medium review before dependency release"
+}

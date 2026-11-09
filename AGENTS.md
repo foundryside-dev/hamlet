@@ -4,6 +4,13 @@
 
 **THIS PROJECT IS PRE-RELEASE WITH ZERO USERS AND ZERO DOWNLOADS.**
 
+**Owner clarification — no legacy compatibility:** We do not need legacy behavior
+or backwards compatibility. Replace obsolete APIs, state formats, and runtime
+protocols directly, and update their callers, tests, and documentation together.
+Do not retain `legacy_*` modes, compatibility adapters, deprecated aliases, or
+fallback paths solely to preserve old behavior. This instruction supersedes
+earlier BAC remediation guidance that required retaining such compatibility.
+
 **ABSOLUTE RULES:**
 
 1. **NO backwards compatibility arrangements** - Delete old code paths immediately

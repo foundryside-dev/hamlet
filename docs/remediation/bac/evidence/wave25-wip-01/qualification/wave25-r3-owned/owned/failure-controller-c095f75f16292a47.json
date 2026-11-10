@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_receipt_failure_after_observation_tracks_revision",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "harness_factory = <function harness_factory.<locals>.make at 0x7f02f91e9760>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f02f8aee8b0>\n\n    def test_completion_receipt_failure_after_observation_tracks_revision(harness_factory: Any, monkeypatch: Any) -> None:\n        h = harness_factory(\"adaptive_rnd\")\n        _step(h.bank, h.accepted, _context(1, (True, True), 3, 0.0))\n        before = {world: h.bank._owners[world].snapshot() for world in WORLD_IDS}\n        revision = h.bank.mutation_revision\n    \n        def fail_issue(*, kind: str, payload: Any) -> Any:\n            assert kind == \"prepared_dispositions\"\n            raise RuntimeError(\"injected completion receipt allocation failure\")\n    \n        with monkeypatch.context() as patch:\n            patch.setattr(h.bank._issuer, \"issue\", fail_issue)\n            with pytest.raises(RuntimeError, match=\"injected completion receipt\"):\n                _completion(h.bank, h.accepted, WORLD_IDS, 1)\n>       assert h.bank.mutation_revision == revision + 1\nE       assert 4 == (4 + 1)\nE        +  where 4 = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f02f8a938a0>.mutation_revision\nE        +    where <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f02f8a938a0> = <test_pw_private_bank._Harness object at 0x7f02f91e9ef0>.bank\n\ntests/test_townlet/regressions/bac/test_pw_private_bank.py:1210: AssertionError",
+  "candidate_tree": "00f65f75a79bab1fe5577f0b8337db12c287c7dd"
+}

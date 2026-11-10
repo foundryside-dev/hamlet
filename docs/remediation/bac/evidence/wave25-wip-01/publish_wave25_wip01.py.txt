@@ -1,0 +1,35 @@
+"""Publish exact independently reviewed BANK producer evidence, without claiming integration."""
+from pathlib import Path
+import hashlib,json,subprocess,sys
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave25/r5-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+contract=W/'wave25-preparation/CURRENT-CURIOSITY-BANK-CONTRACT.md';assert len(sys.argv)==2 and sha(contract)==sys.argv[1]
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')};out=D/'evidence/wave25-wip-01';out.mkdir(exist_ok=True);artifacts={}
+def copy(source,dest):
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if dest.exists():assert sha(source)==sha(dest),str(dest)
+ else:dest.write_bytes(source.read_bytes())
+ assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave25-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave25-r*.json')):copy(p,out/'qualification'/p.name)
+for folder in ('wave25','wave25-preparation'):
+ for p in sorted((W/folder).glob('*')):
+  if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/folder/p.name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave25_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md','tasks.json','final-review-lenses.json'):copy(W/name,out/('execution-'+name))
+copy(contract,D/'CURRENT-CURIOSITY-BANK-CONTRACT.md')
+receipt=json.loads((W/'wave25/r5-checkpoint-receipt.json').read_text());manifest={'status':receipt['status'],'packet':'PW05 actual private curiosity bank and explicit shared alternative, bounded producer handoff','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original releases unchanged; actual BANK bounded producer accepted, integrated/native/runner/final requirements remain OPEN','publication':'Existing authorized remote branch; no new branch/worktree/repositorycopy/PR/merge/deletion; private Git backup bundle excluded. Continue planned delivery without routine halt.','next':'PW06/PW07 strict current native checkpoint preparation and initialization, actual ENV/RP/POP/runner/parent integration, real ordinary runner qualification and early coherent full gate.'}
+mp=D/'evidence/wave25-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n')
+p=D/'STATUS.md';p.write_text(p.read_text()+'''\n\nThe actual PW05 curiosity bank is accepted as a bounded producer: all five real provider families support independently owned per-world learning state, and the explicit shared option retains grouped behavior. Private replay uses each world's last local event and original tick, including after unrelated world activity; completion retains full canonical outcomes and publishes adaptive history/weight without reconstructing live models or gradients. Independent review found and repaired publication-failure quarantine, pending-completion allocation ordering and local replay gaps. Root84PASS and fresh Sol84PASS/source/spec/quality approval, plus551 covering PASS/three CUDA skips, qualify this source slice. [Contract](CURRENT-CURIOSITY-BANK-CONTRACT.md) and [evidence](evidence/wave25-wip-01.json) retain genuine RED controls, a corrected causal service fixture, exact source identity and limitations. All four cheap global guards pass; the defaults threshold stays601. Nine existing oracle/POP mypy errors remain. These synthetic-geometry unit traces and cooperative lifecycle roles do not qualify actual ENV/RP/POP/runner routing or current parent checkpoint/resume. **WIP — NOT INTEGRATED-QUALIFIED — NOT RELEASED.** Original28/66 releases remain unchanged. Current native restore/conversion, real ordinary runner behavior, CLI/default repository/coverage/slow/hardware/fresh final acceptance and exact-tip CI remain required. Continue the planned checkpoint and runtime integration work without a routine halt.\n''')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave25-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave25-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

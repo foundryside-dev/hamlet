@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_count_zero_width_refuses_before_any_provider_call",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "harness_factory = <function harness_factory.<locals>.make at 0x7efbe6ba3920>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7efbe6a4f820>\n\n    def test_count_zero_width_refuses_before_any_provider_call(harness_factory: Any, monkeypatch: Any) -> None:\n>       _bank_type()\n\ntests/test_townlet/regressions/bac/test_pw_private_bank.py:804: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    def _bank_type() -> type:\n        # Explicit intended RED, after fixture construction, not an import error.\n>       assert importlib.util.find_spec(BANK_MODULE) is not None, \"PW05 missing CuriosityBank implementation\"\nE       AssertionError: PW05 missing CuriosityBank implementation\nE       assert None is not None\nE        +  where None = <function find_spec at 0x7efcaf582340>('townlet.exploration.scoped_curiosity')\nE        +    where <function find_spec at 0x7efcaf582340> = <module 'importlib.util' (frozen)>.find_spec\nE        +      where <module 'importlib.util' (frozen)> = importlib.util\n\ntests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError",
+  "candidate_tree": "44bd9dc4d48786f8e982e863af397cba366ca635"
+}

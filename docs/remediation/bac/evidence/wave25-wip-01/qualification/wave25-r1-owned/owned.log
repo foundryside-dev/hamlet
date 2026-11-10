@@ -1,0 +1,2092 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [72 items]
+
+FFFFFFFF.F.F.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.F.F.FFFFFF [100%]
+=================================== FAILURES ===================================
+__________ test_private_models_moments_and_queues_do_not_alias[none] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac48585e0>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_models_moments_and_queues_do_not_alias(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______ test_private_models_moments_and_queues_do_not_alias[count_based] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4b3a5c0>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_models_moments_and_queues_do_not_alias(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________ test_private_models_moments_and_queues_do_not_alias[rnd] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac5007ce0>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_models_moments_and_queues_do_not_alias(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+______ test_private_models_moments_and_queues_do_not_alias[adaptive_rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4bde980>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_models_moments_and_queues_do_not_alias(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________ test_private_models_moments_and_queues_do_not_alias[icm] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4bdcb80>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_models_moments_and_queues_do_not_alias(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:232: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_________ test_world1_updates_match_when_world0_activity_changes[none] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4e62660>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_world1_updates_match_when_world0_activity_changes(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____ test_world1_updates_match_when_world0_activity_changes[count_based] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac48cd260>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_world1_updates_match_when_world0_activity_changes(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_________ test_world1_updates_match_when_world0_activity_changes[rnd] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac48cf880>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_world1_updates_match_when_world0_activity_changes(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____ test_world1_updates_match_when_world0_activity_changes[adaptive_rnd] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4cb2020>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_world1_updates_match_when_world0_activity_changes(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_________ test_world1_updates_match_when_world0_activity_changes[icm] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4c545e0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_world1_updates_match_when_world0_activity_changes(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________________ test_shared_mode_retains_coupled_control ___________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4c57100>
+
+    def test_shared_mode_retains_coupled_control(harness_factory: Any) -> None:
+>       first, second = harness_factory("count_based", scope="shared"), harness_factory("count_based", scope="shared")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+____ test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97657a160>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_ordinary_episode_preserves_learning_rng_and_cumulative_clock(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family)
+            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:786: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+______________ test_phase_retry_inactive_and_terminal_once[none] _______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4ec5800>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_phase_retry_inactive_and_terminal_once(harness_factory: Any, family: str) -> None:
+>       harness = harness_factory(family)
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_ test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97647a020>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_ordinary_episode_preserves_learning_rng_and_cumulative_clock(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family)
+            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:786: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________ test_phase_retry_inactive_and_terminal_once[count_based] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4c571a0>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_phase_retry_inactive_and_terminal_once(harness_factory: Any, family: str) -> None:
+>       harness = harness_factory(family)
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+____ test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[icm] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9763447c0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_ordinary_episode_preserves_learning_rng_and_cumulative_clock(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family)
+            ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:786: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______________ test_phase_retry_inactive_and_terminal_once[rnd] _______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4eca660>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_phase_retry_inactive_and_terminal_once(harness_factory: Any, family: str) -> None:
+>       harness = harness_factory(family)
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________________ test_supported_geometry_positive[none-0] ___________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976346c00>
+family = 'none', width = 0
+
+    @pytest.mark.parametrize("family,width", (("none", 0), ("count_based", 3)))
+    def test_supported_geometry_positive(harness_factory: Any, family: str, width: int) -> None:
+>       h = harness_factory(family, width=width)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:808: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+__________ test_phase_retry_inactive_and_terminal_once[adaptive_rnd] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4970d60>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_phase_retry_inactive_and_terminal_once(harness_factory: Any, family: str) -> None:
+>       harness = harness_factory(family)
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______________ test_supported_geometry_positive[count_based-3] ________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9762c9760>
+family = 'count_based', width = 3
+
+    @pytest.mark.parametrize("family,width", (("none", 0), ("count_based", 3)))
+    def test_supported_geometry_positive(harness_factory: Any, family: str, width: int) -> None:
+>       h = harness_factory(family, width=width)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:808: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+____________ test_count_zero_width_refuses_before_any_provider_call ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9762c99e0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb9763848a0>
+
+    def test_count_zero_width_refuses_before_any_provider_call(harness_factory: Any, monkeypatch: Any) -> None:
+>       _bank_type()
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:814: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______________ test_phase_retry_inactive_and_terminal_once[icm] _______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac49734c0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_phase_retry_inactive_and_terminal_once(harness_factory: Any, family: str) -> None:
+>       harness = harness_factory(family)
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____________ test_shared_real_family_and_aggregate_receipt[none] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976330220>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_shared_real_family_and_aggregate_receipt(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:829: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______ test_complete_batch_preflight_precedes_any_world_effect[action] ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4759b20>
+corruption = 'action'
+
+    @pytest.mark.parametrize("corruption", ("action", "width", "dtype", "tick", "eligibility", "token"))
+    def test_complete_batch_preflight_precedes_any_world_effect(harness_factory: Any, corruption: str) -> None:
+>       h = harness_factory("icm")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+__________ test_shared_real_family_and_aggregate_receipt[count_based] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976332ca0>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_shared_real_family_and_aggregate_receipt(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:829: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________ test_complete_batch_preflight_precedes_any_world_effect[width] ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4948220>
+corruption = 'width'
+
+    @pytest.mark.parametrize("corruption", ("action", "width", "dtype", "tick", "eligibility", "token"))
+    def test_complete_batch_preflight_precedes_any_world_effect(harness_factory: Any, corruption: str) -> None:
+>       h = harness_factory("icm")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+______________ test_shared_real_family_and_aggregate_receipt[rnd] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97608d1c0>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_shared_real_family_and_aggregate_receipt(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:829: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________ test_complete_batch_preflight_precedes_any_world_effect[dtype] ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac49480e0>
+corruption = 'dtype'
+
+    @pytest.mark.parametrize("corruption", ("action", "width", "dtype", "tick", "eligibility", "token"))
+    def test_complete_batch_preflight_precedes_any_world_effect(harness_factory: Any, corruption: str) -> None:
+>       h = harness_factory("icm")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_________ test_shared_real_family_and_aggregate_receipt[adaptive_rnd] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97608f9c0>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_shared_real_family_and_aggregate_receipt(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:829: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________ test_complete_batch_preflight_precedes_any_world_effect[tick] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac46e11c0>
+corruption = 'tick'
+
+    @pytest.mark.parametrize("corruption", ("action", "width", "dtype", "tick", "eligibility", "token"))
+    def test_complete_batch_preflight_precedes_any_world_effect(harness_factory: Any, corruption: str) -> None:
+>       h = harness_factory("icm")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+______________ test_shared_real_family_and_aggregate_receipt[icm] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97618a0c0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_shared_real_family_and_aggregate_receipt(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:829: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______ test_exact_id_not_row_or_spectator_controls_private_state[none] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9761f8a40>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_exact_id_not_row_or_spectator_controls_private_state(harness_factory: Any, family: str) -> None:
+>       first = harness_factory(family)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____ test_complete_batch_preflight_precedes_any_world_effect[eligibility] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac44042c0>
+corruption = 'eligibility'
+
+    @pytest.mark.parametrize("corruption", ("action", "width", "dtype", "tick", "eligibility", "token"))
+    def test_complete_batch_preflight_precedes_any_world_effect(harness_factory: Any, corruption: str) -> None:
+>       h = harness_factory("icm")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________ test_complete_batch_preflight_precedes_any_world_effect[token] ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac46e2700>
+corruption = 'token'
+
+    @pytest.mark.parametrize("corruption", ("action", "width", "dtype", "tick", "eligibility", "token"))
+    def test_complete_batch_preflight_precedes_any_world_effect(harness_factory: Any, corruption: str) -> None:
+>       h = harness_factory("icm")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+______________ test_reserved_tick_order_and_expired_events_refuse ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac494a020>
+
+    def test_reserved_tick_order_and_expired_events_refuse(harness_factory: Any) -> None:
+>       h = harness_factory("rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:375: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+____ test_exact_id_not_row_or_spectator_controls_private_state[count_based] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9761fb2e0>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_exact_id_not_row_or_spectator_controls_private_state(harness_factory: Any, family: str) -> None:
+>       first = harness_factory(family)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______ test_all_inactive_shared_call_does_not_service_pending_tail[rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac494a520>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_all_inactive_shared_call_does_not_service_pending_tail(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:392: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________ test_exact_id_not_row_or_spectator_controls_private_state[rnd] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9761f9bc0>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_exact_id_not_row_or_spectator_controls_private_state(harness_factory: Any, family: str) -> None:
+>       first = harness_factory(family)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+__ test_all_inactive_shared_call_does_not_service_pending_tail[adaptive_rnd] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac475a660>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_all_inactive_shared_call_does_not_service_pending_tail(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:392: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___ test_exact_id_not_row_or_spectator_controls_private_state[adaptive_rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97618b560>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_exact_id_not_row_or_spectator_controls_private_state(harness_factory: Any, family: str) -> None:
+>       first = harness_factory(family)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______ test_all_inactive_shared_call_does_not_service_pending_tail[icm] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac49705e0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_all_inactive_shared_call_does_not_service_pending_tail(harness_factory: Any, family: str) -> None:
+>       h = harness_factory(family, scope="shared")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:392: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________ test_exact_id_not_row_or_spectator_controls_private_state[icm] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976188c20>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_exact_id_not_row_or_spectator_controls_private_state(harness_factory: Any, family: str) -> None:
+>       first = harness_factory(family)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+____________ test_completion_preserves_nonempty_gradients_and_tail _____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4970a40>
+
+    def test_completion_preserves_nonempty_gradients_and_tail(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:405: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____________ test_adaptive_real_history_weight_and_per_row_scale ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97608cea0>
+
+    def test_adaptive_real_history_weight_and_per_row_scale(harness_factory: Any) -> None:
+>       first, second = harness_factory("adaptive_rnd"), harness_factory("adaptive_rnd")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:870: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____ test_completion_malformed_last_outcome_and_wrong_destination_refuse ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4eca340>
+
+    def test_completion_malformed_last_outcome_and_wrong_destination_refuse(harness_factory: Any) -> None:
+>       h, foreign = harness_factory("adaptive_rnd"), harness_factory("adaptive_rnd")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:442: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___ test_completion_content_is_full_canonical_outcome_not_just_hash[payload] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976333600>
+mutation = 'payload'
+
+    @pytest.mark.parametrize("mutation", ("payload", "fingerprint", "order"))
+    def test_completion_content_is_full_canonical_outcome_not_just_hash(harness_factory: Any, mutation: str) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______ test_nonparticipant_retirement_does_not_invent_adaptive_history ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4ec98a0>
+
+    def test_nonparticipant_retirement_does_not_invent_adaptive_history(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:464: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_ test_completion_content_is_full_canonical_outcome_not_just_hash[fingerprint] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9762c9120>
+mutation = 'fingerprint'
+
+    @pytest.mark.parametrize("mutation", ("payload", "fingerprint", "order"))
+    def test_completion_content_is_full_canonical_outcome_not_just_hash(harness_factory: Any, mutation: str) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+________________ test_initial_snapshot_has_no_fabricated_event _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4ec7060>
+
+    def test_initial_snapshot_has_no_fabricated_event(harness_factory: Any) -> None:
+>       h = harness_factory("none", begin=False)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:473: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+____ test_completion_content_is_full_canonical_outcome_not_just_hash[order] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976331bc0>
+mutation = 'order'
+
+    @pytest.mark.parametrize("mutation", ("payload", "fingerprint", "order"))
+    def test_completion_content_is_full_canonical_outcome_not_just_hash(harness_factory: Any, mutation: str) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:895: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_______________ test_empty_evidence_and_conservative_quarantine ________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4c57f60>
+
+    def test_empty_evidence_and_conservative_quarantine(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________ test_private_count_same_bin_and_owned_container_mutation ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9763459e0>
+
+    def test_private_count_same_bin_and_owned_container_mutation(harness_factory: Any) -> None:
+>       first, second = harness_factory("count_based"), harness_factory("count_based")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:970: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___ test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[none] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976478360>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_idle_ticks_do_not_change_local_updates_or_retry_cache(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1007: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________ test_quarantine_prevents_pending_completion_publication ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4cb14e0>
+
+    def test_quarantine_prevents_pending_completion_publication(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:511: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____________ test_allocation_report_can_refuse_before_constructor _____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4c553a0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4ac463a190>
+
+    def test_allocation_report_can_refuse_before_constructor(harness_factory: Any, monkeypatch: Any) -> None:
+>       cls = _bank_type()
+              ^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:520: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_ test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[count_based] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb97657b600>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_idle_ticks_do_not_change_local_updates_or_retry_cache(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1007: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_________ test_completion_allocation_refusal_leaves_provider_untouched _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4c56fc0>
+
+    def test_completion_allocation_refusal_leaves_provider_untouched(harness_factory: Any) -> None:
+        reports: list[Any] = []
+    
+        def admission(report: Any) -> None:
+            reports.append(report)
+            if report.operation == "complete":
+                raise ValueError("completion allocation refused")
+    
+>       h = harness_factory("adaptive_rnd", report_allocation=admission)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:557: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___ test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976696d40>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_idle_ticks_do_not_change_local_updates_or_retry_cache(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1007: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_ test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976675e40>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_idle_ticks_do_not_change_local_updates_or_retry_cache(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1007: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___ test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[icm] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976689300>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_idle_ticks_do_not_change_local_updates_or_retry_cache(harness_factory: Any, family: str) -> None:
+>       first, second = harness_factory(family), harness_factory(family)
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1007: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_____ test_conservative_quarantine_after_actual_env_abandon_refusal[step] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4970220>
+pending = 'step'
+
+    @pytest.mark.parametrize("pending", ("step", "completion"))
+    def test_conservative_quarantine_after_actual_env_abandon_refusal(harness_factory: Any, pending: str) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+_ test_expected_numeric_completion_refusal_only_advances_observation_revision __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb9762025c0>
+
+    def test_expected_numeric_completion_refusal_only_advances_observation_revision(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1066: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+__ test_conservative_quarantine_after_actual_env_abandon_refusal[completion] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac4970ae0>
+pending = 'completion'
+
+    @pytest.mark.parametrize("pending", ("step", "completion"))
+    def test_conservative_quarantine_after_actual_env_abandon_refusal(harness_factory: Any, pending: str) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___ test_unexpected_callback_failure_quarantines_earlier_success_and_replay ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976060c20>
+
+    def test_unexpected_callback_failure_quarantines_earlier_success_and_replay(harness_factory: Any) -> None:
+>       h = harness_factory("rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1082: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+___________ test_exact_whitespace_world_id_survives_real_completion ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7f4ac475bce0>
+
+    def test_exact_whitespace_world_id_survives_real_completion(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd", ids=(" ", "world1"))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7f4b8239a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7f4b8239a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+______________ test_quarantine_refuses_cached_completion_success _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+harness_factory = <function harness_factory.<locals>.make at 0x7fb976063600>
+
+    def test_quarantine_refuses_cached_completion_success(harness_factory: Any) -> None:
+>       h = harness_factory("adaptive_rnd")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:1146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:747: in make
+    return _Harness(compiled, family, scope, begin, report_allocation, ids, width)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:656: in __init__
+    self.bank = _bank_type()(
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _bank_type() -> type:
+        # Explicit intended RED, after fixture construction, not an import error.
+>       assert importlib.util.find_spec(BANK_MODULE) is not None, "PW05 missing CuriosityBank implementation"
+E       AssertionError: PW05 missing CuriosityBank implementation
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fba3f01a340>('townlet.exploration.scoped_curiosity')
+E        +    where <function find_spec at 0x7fba3f01a340> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:41: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_mode_retains_coupled_control
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_supported_geometry_positive[none-0]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_supported_geometry_positive[count_based-3]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_count_zero_width_refuses_before_any_provider_call
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[action]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[width]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[tick]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[eligibility]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[token]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_reserved_tick_order_and_expired_events_refuse
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_all_inactive_shared_call_does_not_service_pending_tail[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_all_inactive_shared_call_does_not_service_pending_tail[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_all_inactive_shared_call_does_not_service_pending_tail[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_preserves_nonempty_gradients_and_tail
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_adaptive_real_history_weight_and_per_row_scale
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_malformed_last_outcome_and_wrong_destination_refuse
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_content_is_full_canonical_outcome_not_just_hash[payload]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_nonparticipant_retirement_does_not_invent_adaptive_history
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_content_is_full_canonical_outcome_not_just_hash[fingerprint]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_initial_snapshot_has_no_fabricated_event
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_content_is_full_canonical_outcome_not_just_hash[order]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_empty_evidence_and_conservative_quarantine
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_count_same_bin_and_owned_container_mutation
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_quarantine_prevents_pending_completion_publication
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_allocation_report_can_refuse_before_constructor
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_allocation_refusal_leaves_provider_untouched
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_idle_ticks_do_not_change_local_updates_or_retry_cache[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_conservative_quarantine_after_actual_env_abandon_refusal[step]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_expected_numeric_completion_refusal_only_advances_observation_revision
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_conservative_quarantine_after_actual_env_abandon_refusal[completion]
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_unexpected_callback_failure_quarantines_earlier_success_and_replay
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_whitespace_world_id_survives_real_completion
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_quarantine_refuses_cached_completion_success
+======================== 66 failed, 6 passed in 12.17s =========================

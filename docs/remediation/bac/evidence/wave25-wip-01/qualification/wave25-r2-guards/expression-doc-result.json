@@ -1,0 +1,16 @@
+{
+  "name": "expression-doc",
+  "exit_code": 0,
+  "seconds": 2.5308611392974854,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/gen_expression_functions_doc.py",
+    "--check"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave25-r2-guards/expression-doc.log",
+  "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+  "candidate_tree": "fee0eac4e8e3944296fa4e22a8ad9f4a8f17f684",
+  "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+  "manifest_sha256": "9deff37978a2daf7312c96638260ea653aaddb0225361273d963038c7e987b64",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

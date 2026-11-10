@@ -1,0 +1,25 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 3.860222101211548,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_private_bank.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--collect-only",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave25-r0-collection"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave25-r0-collection/collection.log",
+  "sha256": "fc253e74349c705b1e8c62c005c7718791d0394c1eb66c8fa0bef92957350d22",
+  "candidate_tree": "44bd9dc4d48786f8e982e863af397cba366ca635",
+  "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+  "manifest_sha256": "2e7ca1c742cc40a97ba53f607b38bc7a070993fd3938b91a755709d66f654d11",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

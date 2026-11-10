@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_preserves_nonempty_gradients_and_tail",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "harness_factory = <function harness_factory.<locals>.make at 0x7f5a8ee0a0c0>\n\n    def test_completion_preserves_nonempty_gradients_and_tail(harness_factory: Any) -> None:\n        h = harness_factory(\"adaptive_rnd\")\n        for tick in range(1, 8):\n            _step(h.bank, h.accepted, _context(tick, (True, True), 3, 0.0))\n        before = {world: _inspect(h.bank, world, \"adaptive_rnd\") for world in WORLD_IDS}\n        for value in before.values():\n            assert any(gradient is not None and bool(gradient.ne(0).any()) for gradient in value[\"gradients\"])\n>           assert value[\"native\"][\"rnd_state\"][\"predictor_service\"][\"pending_observations\"]\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE           RuntimeError: Boolean value of Tensor with more than one value is ambiguous\n\ntests/test_townlet/regressions/bac/test_pw_private_bank.py:411: RuntimeError",
+  "candidate_tree": "fee0eac4e8e3944296fa4e22a8ad9f4a8f17f684"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "covering",
+  "exit_code": 0,
+  "seconds": 36.72961211204529,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+    "tests/test_townlet/regressions/bac/test_pw_rng_binding.py",
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+    "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py",
+    "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave25-r5-covering"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave25-r5-covering/covering.log",
+  "sha256": "e7eb582a99c59eb188d3a88c1eb92bc0880c85c94525bc75c63ad6756eb1b9d7",
+  "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+  "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+  "manifest_sha256": "f8a71478372c1a2d6584e3138f3e3b8ac9406e037d99fe07756fba3100fb5b9e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

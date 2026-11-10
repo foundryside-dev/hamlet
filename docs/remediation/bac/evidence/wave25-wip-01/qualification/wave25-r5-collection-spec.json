@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave25/r5-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave25-r5-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "collection",
+      "args": [
+        "-m",
+        "pytest",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "tests/test_townlet/regressions/bac/test_pw_private_bank.py",
+        "--collect-only",
+        "-q"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "service-red",
+  "exit_code": 1,
+  "seconds": 12.400837659835815,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_post_provider_publication_failure_quarantines_real_effect[service]",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave25-r4-service-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave25-r4-service-red/service-red.log",
+  "sha256": "7e05ea90f6ebd401fce3b8d3eeb1f775ca1cf73c48f8c0fd507b74923384caf2",
+  "candidate_tree": "7e6c15f3a171c94d538b9284a3e7474948657017",
+  "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+  "manifest_sha256": "795be72109bee3be039f8756dfff5bc0581cfeb8e13f3af2342a761c97ec8767",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

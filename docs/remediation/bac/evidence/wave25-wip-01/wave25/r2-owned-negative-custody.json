@@ -1,0 +1,13 @@
+{
+  "candidate_tree": "fee0eac4e8e3944296fa4e22a8ad9f4a8f17f684",
+  "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+  "owned": {
+    "passed": 71,
+    "failed": 1,
+    "seconds": 21.4243266582489,
+    "cause": "test411ambiguousboolTensorbeforecompletiontarget;nonemptytailrequirementretained"
+  },
+  "custody": "PASS350source573config13artifact3process/index/import/intra1/registry14MAIN1",
+  "wrapper_postflight": "outer0confirmed",
+  "source_repair": "NONEyet"
+}

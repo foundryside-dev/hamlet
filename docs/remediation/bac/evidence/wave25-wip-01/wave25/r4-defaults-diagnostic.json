@@ -1,0 +1,23 @@
+{
+  "scope": "Diagnostic only while implementation repair active; no qualified runtime or candidate pass claim",
+  "guard": "ASG002 ternary expressions, NOT parameter/dataclass defaults",
+  "original_BANK_SHA": "987f53b290b126385a2aa167eefa12211f3f430e5be1ebae590fb6a1a0bf425f",
+  "locations": [
+    "145:8",
+    "160:18",
+    "248:18",
+    "416:17",
+    "421:20",
+    "425:24",
+    "461:17",
+    "483:30",
+    "568:25",
+    "634:24",
+    "679:22",
+    "687:12"
+  ],
+  "whitelisted": 613,
+  "ceiling": 601,
+  "exit_code": 1,
+  "repair": "Equivalent explicit control flow; no whitelist/ratchet change"
+}

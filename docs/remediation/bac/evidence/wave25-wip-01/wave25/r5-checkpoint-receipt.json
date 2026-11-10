@@ -1,0 +1,195 @@
+{
+  "status": "BOUNDED CURIOSITY BANK PRODUCER HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+  "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+  "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+  "inventory": [
+    {
+      "path": "src/townlet/exploration/world_curiosity_state.py",
+      "lines": 871,
+      "sha256": "a639d6f927492cf0334a49f330f514b6472be75f624f24a2f1b5e8381af93b2c",
+      "present": true
+    },
+    {
+      "path": "src/townlet/exploration/provider_factory.py",
+      "lines": 153,
+      "sha256": "7ca30733720017eea4a8063be0261dfd365c9547f501649bd71d937eecd5efb0",
+      "present": true
+    },
+    {
+      "path": "src/townlet/config/exploration_policy.py",
+      "lines": 768,
+      "sha256": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+      "present": true
+    },
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "lines": 901,
+      "sha256": "3e0e4fd17d8f9588e5975769d3639a75ff6f53b43a4a4d716743b100f8200f2b",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_private_bank.py",
+      "lines": 1348,
+      "sha256": "45cc06aa000158c4b1c26f3000bca7a2fcc87477e961e64b87039f6383ec9b73",
+      "present": true
+    }
+  ],
+  "review_report_sha256": "a349a97330f3aab4cabe0bad9905775917fd71cc50827986a2f73e9eb0d900df",
+  "review": "Other-model Sol SPEC+QUALITY APPROVED actualR5; all5material findings addressed, no materialfix-induced defect",
+  "results": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+      "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 4.234289884567261,
+      "source_guards": 350,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "prerequisites": {
+      "job": "prerequisites",
+      "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+      "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+      "exit_code": 0,
+      "counts": {
+        "passed": 6,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 8.4022057056427,
+      "source_guards": 350,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+      "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+      "exit_code": 0,
+      "counts": {
+        "passed": 84,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 28.457337379455566,
+      "source_guards": 350,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+      "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+      "exit_code": 0,
+      "counts": {
+        "passed": 84,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 45.34940242767334,
+      "source_guards": 350,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "covering": {
+      "job": "covering",
+      "base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+      "candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+      "exit_code": 0,
+      "counts": {
+        "passed": 551,
+        "skipped": 3,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 36.72961211204529,
+      "source_guards": 350,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "guards": {
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.08954238891601562,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 34.24900007247925,
+      "sha256": "ab32891fbe89262af90d3b2d8ac8a4b2b212140bd35ba395ff3d318343e55cc4"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.841564416885376,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 1.8973541259765625,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 56.79005694389343,
+      "sha256": "c7587058e78c4df96c32e921569f89e8f8ae8103f0539ccaf2fa1de3c7e3b9ad"
+    }
+  },
+  "source_prerequisites": "R1T2 genuine72collection/6controls/66missingBANKRED;R2actual71PASS1testprereqFAIL;R3fixedprereq+72PASS12FAIL(11causal1servicefixture);R4singleactualupdatecausalRED;R5all84GREEN. No failed prerequisites relabeled as intended defect proof.",
+  "finding_dispositions": {
+    "F1": "ADDR real pending rowcount; complete live gradient/model/target/optimizer/moment-storage/native-tail preservation reached and passed",
+    "F2": "ADDR12ASG002 ternarysyntax replaced explicit branches; ratchet/whitelist unchanged601",
+    "F3": "ADDRoperation-level postcallbackpublication/return failure quarantine; completion offside observation failure revision tracked; fault controls show real unrolled-back RMS/optimizer effects",
+    "F4": "ADDR first admitted fullowned DTO scalar/tensor evidence; pending equal/changed retry before codec/report/owner observations; complete canonical hex+fingerprint retained",
+    "F5": "ADDR original private event/tick perworld last cache replay survives inactive source changes/otherworld-only activity; changedown/mode/tick/expired refused; shared wholeorderedbatch remains"
+  },
+  "limits": "Synthetic3D/2action training traces and cooperative otherrole lifecyclefixtures are bounded unit controls, not actual ENV/RP/POP/runner/parent restore proof. Memory report estimates known tensors, unknown overhead explicit. CUDA unavailable/unqualified. No fullbank nativeimport/clone/conversion yet.",
+  "open": "PW06/PW07 currentnative restore/conversion, RP/ENV/POP/runner/effects parent integration, actualordinaryrunner/native tail,nextoptimizer/deepcorruption/Qparentimmutability, global9mypyerrors/T19sharedfixture prerequisites, CLI/defaultrepo/coverage>=70/slow/applicablehardware/provider/fresh54requirements22lenses+synthesis/exact-tipCI remain required. Original28/66 releasecount unchanged.",
+  "decisions": "None pending; no new branch/worktree/repositorycopy/deletion/PR/merge; existingbranchpublication authorized; no backwardcompatibility; preserve shared alternative and all5families.",
+  "source_review_verdict_initial_sha256": "1ece6f3c56dde6d5ef73de745ff99c10a18f4ea03a3e06a9e2263fca4e9dd8e2",
+  "documentation": {
+    "sha256": "ce1c95919fa2e9c0e8fa9157c723542962430e719808df4e59a73a71eaff7f93",
+    "review": "FreshSolsource-truthAPPROVED,3narrowwordingcorrectionsADDR",
+    "report_sha256": "a349a97330f3aab4cabe0bad9905775917fd71cc50827986a2f73e9eb0d900df"
+  }
+}

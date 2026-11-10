@@ -1,0 +1,29 @@
+diff --git a/tests/test_townlet/unit/training/test_token_checkpoint_gates.py b/tests/test_townlet/unit/training/test_token_checkpoint_gates.py
+index f0c03972..639c98b9 100644
+--- a/tests/test_townlet/unit/training/test_token_checkpoint_gates.py
++++ b/tests/test_townlet/unit/training/test_token_checkpoint_gates.py
+@@ -330,21 +330,23 @@ class TestCrossUniverseLoadResets:
+     def _population(self, spec: TokenSpec) -> VectorizedPopulation:
+         """Construct the live compact token reader through its public runtime seam."""
+         device = torch.device("cpu")
+         env = SimpleNamespace(
+             token_spec=spec,
+             attach_runtime_registry=lambda registry: None,
+             set_exploration_module=lambda module: None,
+         )
+         population = VectorizedPopulation(
+             env=env,
+-            curriculum=StaticCurriculum(difficulty_level=0.5),
++            curriculum=StaticCurriculum(
++                commit_mode="completion", difficulty_level=0.5, reward_mode="shaped", active_meters=[], depletion_multiplier=1.0
++            ),
+             exploration=RNDExploration(obs_dim=spec.total_dims, embed_dim=8, device=device),
+             agent_ids=["agent_0"],
+             device=device,
+             brain_config=_token_brain_config(),
+             obs_dim=spec.total_dims,
+             train_frequency=1,
+             batch_size=2,
+             sequence_length=1,
+             max_grad_norm=1.0,
+             action_dim=5,

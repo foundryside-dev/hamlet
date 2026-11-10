@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave15/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-fixture-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fixture-independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestCrossUniverseLoadResets::test_resets_optimizer_target_and_rnd",
+        "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestReviewRound1Pins::test_adaptive_wrapper_annealing_state_resets",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r3-fixture-independent"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave15/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-compiler-owners",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owners",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/universe/test_brain_level_override.py",
+        "tests/test_townlet/unit/universe/test_compiler_declaration_origins.py",
+        "tests/test_townlet/unit/universe/test_declaration_input_shapes.py",
+        "tests/test_townlet/unit/universe/test_declaration_store.py",
+        "tests/test_townlet/unit/training/test_token_checkpoint_gates.py",
+        "tests/test_townlet/unit/training/test_brain_lineage_legibility.py",
+        "tests/test_townlet/unit/universe/test_compiled_universe_serialization.py",
+        "tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+        "tests/test_townlet/integration/test_token_transfer_contract.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "3",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r3-compiler-owners"
+      ]
+    }
+  ]
+}

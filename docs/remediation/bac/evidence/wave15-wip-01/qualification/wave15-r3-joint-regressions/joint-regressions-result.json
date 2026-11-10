@@ -1,0 +1,25 @@
+{
+  "name": "joint-regressions",
+  "exit_code": 0,
+  "seconds": 4.987726211547852,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r3-joint-regressions"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-joint-regressions/joint-regressions.log",
+  "sha256": "0958f4ab23ad855f980288bc3efce5948cb3c8b35115222d6aae3514e8423562",
+  "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "manifest_sha256": "1c2ae7f9cc0ba7782ed86fd8343e655dfb4d18e8e8f0982359279ff55a706095",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

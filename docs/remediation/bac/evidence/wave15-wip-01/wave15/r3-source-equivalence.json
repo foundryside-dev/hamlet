@@ -1,0 +1,14 @@
+{
+  "prior_tested_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+  "final_candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+  "same_execution_subtrees": {
+    "src": "0de5fe5ad9cf62a0fcd31b36aa168b164482d969",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e"
+  },
+  "same_5_CU_source_hashes": true,
+  "only_change": [
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py"
+  ],
+  "newfixture_evidence": "Targeted2PASS+independentAstra2PASS; freshbroader153PASS, no assertionremoved"
+}

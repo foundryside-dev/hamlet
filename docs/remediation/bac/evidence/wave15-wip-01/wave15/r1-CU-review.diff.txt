@@ -1,0 +1,735 @@
+ src/townlet/universe/compiled.py                   |  82 +++--
+ .../bac/test_curriculum_compiled_roster.py         | 340 +++++++++++++++++++++
+ .../regressions/bac/test_effective_run.py          |  31 +-
+ 3 files changed, 406 insertions(+), 47 deletions(-)
+
+diff --git a/src/townlet/universe/compiled.py b/src/townlet/universe/compiled.py
+index 1d3ad866..6912966f 100644
+--- a/src/townlet/universe/compiled.py
++++ b/src/townlet/universe/compiled.py
+@@ -161,23 +161,23 @@ from townlet.world.expression.references import ENTITY_NAMES
+ # hash move; a 1.37 artifact of an unchanged pack would serve both stale, so it is refused.
+ # 1.39: one spelling per reference (VFS round-2 S5). `effects_schema` and the dead
+ # `vfs_expression_schema` leave the artifact: the environment builds a command pipeline's
+ # namespace from the compiled roster (`Namespace.of_registry`), exactly as the compiler does.
+ # Hydrated command and spawn-predicate ASTs inline pure expression variables; a 1.38
+ # artifact carries the deleted fields and old spellings, so it is refused as stale.
+ # 1.40: two hashes join checkpoint identity (compiler re-review N5, 2026-10-31): the pack-scope
+ # `effects_hash` (canonical content of the `effects` declaration, None without one) and each
+ # level's `items_appearance_hash` (canonical spawn rules, None without a declaration). Both
+ # are required on load; a 1.39 artifact lacks them and is refused as stale.
+-# 1.41 adds a validated current effective view. Known 1.40 payloads contain the
+-# complete selected base/training/drive inputs and derive that view on access.
+-COMPILED_SCHEMA_VERSION = "1.41"
++# 1.42 requires the current roster-bound effective view. Older native formats
++# describe a different policy contract and must be recompiled from authoring.
++COMPILED_SCHEMA_VERSION = "1.42"
+ 
+ REQUIRED_COMPILED_UNIVERSE_FIELDS: tuple[str, ...] = (
+     "compiled_schema_version",
+     "metadata",
+     "experiment",
+     "stratum",
+     "environment",
+     "actions",
+     "brain",
+     "items_catalog",
+@@ -190,24 +190,23 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS: tuple[str, ...] = (
+     "brain_hash",
+     "pack_brain_hash",
+     "experiment_hash",
+     "stratum_hash",
+     "environment_hash",
+     "actions_hash",
+     "items_hash",
+     "variables_hash",
+     "effects_hash",
+     "all_levels",
++    "effective_run",
+ )
+ """Every top-level key ``to_dict`` writes. A payload with a key outside this set is a foreign or stale artifact."""
+-V1_40_COMPILED_UNIVERSE_FIELDS = REQUIRED_COMPILED_UNIVERSE_FIELDS
+-REQUIRED_COMPILED_UNIVERSE_FIELDS += ("effective_run",)
+ 
+ COMPILED_LEVEL_FIELDS = (
+     "level_name",
+     "bars",
+     "affordances",
+     "drive",
+     "drive_hash",
+     "curriculum_hash",
+     "bars_hash",
+     "affordances_hash",
+@@ -375,33 +374,64 @@ class CompiledUniverse:
+         token_advisories: tuple[str, ...]
+ 
+     def __post_init__(self) -> None:
+         if not self.all_levels:
+             raise ValueError("all_levels must be a non-empty dict of LevelMetadata")
+         if self.metadata.primary_level not in self.all_levels:
+             raise ValueError(f"primary_level {self.metadata.primary_level!r} is absent from all_levels")
+         self._derive_effective_run({"capture_origin": "current compiled configuration"})
+ 
+     def _derive_effective_run(self, origins: Mapping[str, str]) -> None:
++        object.__setattr__(self, "effective_run", self._resolve_effective_run(origins))
++
++    def _resolve_effective_run(self, origins: Mapping[str, str]) -> EffectiveRunConfig:
++        """Resolve a candidate from actual compiled inputs without installing it."""
++        declared_meter_names = self._validate_meter_rosters()
+         level = self.get_level(self.metadata.primary_level)
+-        object.__setattr__(
+-            self,
+-            "effective_run",
+-            resolve_effective_run(
+-                self.brain,
+-                level.training,
+-                primary_level=self.metadata.primary_level,
+-                origins=origins,
+-                drive_intrinsic=level.drive.intrinsic,
+-            ),
++        return resolve_effective_run(
++            self.brain,
++            level.training,
++            primary_level=self.metadata.primary_level,
++            origins=origins,
++            drive_intrinsic=level.drive.intrinsic,
++            declared_meter_names=declared_meter_names,
+         )
+ 
++    def _validate_meter_rosters(self) -> tuple[str, ...]:
++        """Keep authored bars, compiled declarations and public summaries aligned."""
++        for level_name, level in self.all_levels.items():
++            names = tuple(meter.name for meter in level.bars.meters)
++            if any(not isinstance(name, str) or not name.strip() for name in names) or len(set(names)) != len(names):
++                raise ValueError(f"Compiled universe meter roster for {level_name!r} must contain unique nonblank strings")
++            if tuple(meter.name for meter in level.meter_declarations) != names:
++                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter declarations")
++            if tuple(meter.name for meter in level.meter_metadata.meters) != names:
++                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter metadata")
++            if tuple(meter.index for meter in level.meter_metadata.meters) != tuple(range(len(names))):
++                raise ValueError(f"Compiled universe meter roster for {level_name!r} has inconsistent meter indices")
++
++        selected = self.get_level(self.metadata.primary_level)
++        selected_names = tuple(meter.name for meter in selected.bars.meters)
++        if (
++            tuple(self.metadata.meter_names) != selected_names
++            or self.metadata.meter_count != len(selected_names)
++            or self.metadata.meter_name_to_index != {name: index for index, name in enumerate(selected_names)}
++        ):
++            raise ValueError("Compiled universe selected meter roster disagrees with public metadata summary")
++        return selected_names
++
++    def _validate_effective_run(self, run: EffectiveRunConfig) -> EffectiveRunConfig:
++        """Compare the complete transported view with independently resolved inputs."""
++        expected = self._resolve_effective_run(run.origins)
++        expected.validate_payload(run.to_dict())
++        return expected
++
+     @property
+     def available_levels(self) -> list[str]:
+         return sorted(self.all_levels.keys())
+ 
+     def get_level(self, level_name: str) -> CompiledUniverse.LevelMetadata:
+         if level_name not in self.all_levels:
+             raise ValueError(f"Level '{level_name}' not found. Available: {list(self.all_levels.keys())}")
+         return self.all_levels[level_name]
+ 
+     def metadata_for_level(self, level_name: str) -> UniverseMetadata:
+@@ -461,34 +491,37 @@ class CompiledUniverse:
+             experiment_dir=self.experiment_dir,
+             brain_hash=self.brain_hash,
+             pack_brain_hash=self.pack_brain_hash,
+             experiment_hash=self.experiment_hash,
+             stratum_hash=self.stratum_hash,
+             environment_hash=self.environment_hash,
+             actions_hash=self.actions_hash,
+             items_hash=self.items_hash,
+             effects_hash=self.effects_hash,
+         )
+-        object.__setattr__(cloned, "effective_run", EffectiveRunConfig.from_dict(self.effective_run.to_dict()))
++        run = EffectiveRunConfig.from_dict(self.effective_run.to_dict())
++        expected = cloned._validate_effective_run(run)
++        object.__setattr__(cloned, "effective_run", expected)
+         return cloned
+ 
+     def to_dict(self) -> dict[str, Any]:
+         """Convert to a serialization-friendly dictionary."""
++        expected = self._validate_effective_run(self.effective_run)
+         return {
+             "compiled_schema_version": COMPILED_SCHEMA_VERSION,
+             "metadata": _dataclass_to_plain(self.metadata),
+             "experiment": self.experiment.model_dump(),
+             "stratum": self.stratum.model_dump(),
+             "environment": self.environment.model_dump(),
+             "actions": self.actions.model_dump(),
+             "brain": self.brain.model_dump(),
+-            "effective_run": self.effective_run.to_dict(),
++            "effective_run": expected.to_dict(),
+             "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
+             "presentation": self.presentation.model_dump() if self.presentation is not None else None,
+             "compiled_vfs_profiles": (
+                 _serialize_vfs_profiles(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None
+             ),
+             "compiled_effect_catalog": (
+                 _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
+             ),
+             "vfs_history_spec": self.vfs_history_spec,
+             "vfs_evaluation_marks": (
+@@ -546,22 +579,20 @@ class CompiledUniverse:
+                 }
+                 for name, meta in self.all_levels.items()
+             },
+         }
+ 
+     @classmethod
+     def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
+         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
+         _validate_compiled_schema_version(payload, source="dictionary")
+         known_fields = REQUIRED_COMPILED_UNIVERSE_FIELDS
+-        if payload["compiled_schema_version"] == "1.40":
+-            known_fields = V1_40_COMPILED_UNIVERSE_FIELDS
+         _refuse_unknown_fields(payload, known_fields, field_name="compiled universe")
+         for field_name in known_fields:
+             _required_field(payload, field_name)
+ 
+         # The profiles deserialize before the levels: each level's transition schedule
+         # inlines the expression variables its writes and rules read (VFS round-2 S4).
+         raw_vfs_profiles = _required_field(payload, "compiled_vfs_profiles")
+         compiled_vfs_profiles: CompiledVFSProfiles | None
+         expression_profiles: tuple[CompiledGlobalProfile | None, ...]
+         if raw_vfs_profiles is None:
+@@ -689,28 +720,23 @@ class CompiledUniverse:
+             experiment_hash=_required_field(payload, "experiment_hash"),
+             stratum_hash=_required_field(payload, "stratum_hash"),
+             environment_hash=_required_field(payload, "environment_hash"),
+             actions_hash=_required_field(payload, "actions_hash"),
+             items_hash=_required_field(payload, "items_hash"),
+             variables_hash=_required_field(payload, "variables_hash"),
+             effects_hash=_required_field(payload, "effects_hash"),
+             all_levels=all_levels,
+         )
+         _validate_compiled_token_coherence(compiled)
+-        if payload["compiled_schema_version"] == "1.40":
+-            compiled._derive_effective_run(
+-                {"capture_origin": "current derivation from known compiled schema 1.40; not historically captured"}
+-            )
+-        else:
+-            run = EffectiveRunConfig.from_dict(_required_mapping(payload, "effective_run"))
+-            compiled._derive_effective_run(run.origins)
+-            compiled.effective_run.validate_payload(run.to_dict())
++        run = EffectiveRunConfig.from_dict(_required_mapping(payload, "effective_run"))
++        expected = compiled._validate_effective_run(run)
++        object.__setattr__(compiled, "effective_run", expected)
+         return compiled
+ 
+     def save_to_cache(self, path: Path) -> None:
+         """Serialize compiled universe to MessagePack file."""
+         data = self.to_dict()
+         packed = msgpack.packb(data, use_bin_type=True)
+         path.write_bytes(packed)
+ 
+     @classmethod
+     def load_from_cache(cls, path: Path) -> CompiledUniverse:
+@@ -826,21 +852,21 @@ def _required_field(payload: Mapping[str, Any], field_name: str) -> Any:
+ 
+ def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[str, Any]:
+     value = _required_field(payload, field_name)
+     if not isinstance(value, Mapping):
+         raise ValueError(f"Compiled universe cache field '{field_name}' must be a mapping; recompile the config pack.")
+     return value
+ 
+ 
+ def _validate_compiled_schema_version(payload: Mapping[str, Any], *, source: str) -> None:
+     schema_version = _required_field(payload, "compiled_schema_version")
+-    if schema_version not in ("1.40", COMPILED_SCHEMA_VERSION):
++    if schema_version != COMPILED_SCHEMA_VERSION:
+         raise ValueError(
+             f"Compiled universe schema mismatch for {source}: "
+             f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
+             "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
+         )
+ 
+ 
+ def _refuse_unknown_fields(payload: Mapping[str, Any], known: tuple[str, ...], *, field_name: str) -> None:
+     """A key this schema version never writes marks a stale or foreign artifact; it fails loudly, never silently."""
+     unknown = sorted(set(payload) - set(known))
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py b/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py
+new file mode 100644
+index 00000000..b0085f25
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py
+@@ -0,0 +1,340 @@
++"""Real authored compilation binds the current curriculum view to selected bars."""
++
++import hashlib
++import json
++import shutil
++from copy import deepcopy
++from pathlib import Path
++
++import msgpack
++import pytest
++import torch
++import yaml
++
++from townlet.config.effective_run import EffectiveRunConfig, resolve_effective_run
++from townlet.curriculum.factory import build_curriculum
++from townlet.training.episode import EpisodeCompletion, LaneOutcome
++from townlet.universe.compiled import CompiledUniverse
++from townlet.universe.compiler import UniverseCompiler
++
++ROOT = Path(__file__).resolve().parents[4]
++
++
++@pytest.fixture
++def pack(tmp_path):
++    destination = tmp_path / "authored-pack"
++    shutil.copytree(ROOT / "configs/test/token_set_smoke", destination, ignore=shutil.ignore_patterns(".compiled"))
++    return destination
++
++
++def edit(path, update):
++    payload = yaml.safe_load(path.read_text())
++    update(payload)
++    path.write_text(yaml.safe_dump(payload, sort_keys=False))
++
++
++def compile_pack(pack, *, level="L0_test", cache=False):
++    return UniverseCompiler().compile(pack, primary_level=level, use_cache=cache)
++
++
++def roster(compiled):
++    return tuple(meter.name for meter in compiled.get_level(compiled.metadata.primary_level).bars.meters)
++
++
++def resolve_for(compiled, *, names, training=None):
++    run = compiled.effective_run
++    return resolve_effective_run(
++        run.base_brain,
++        run.training if training is None else training,
++        primary_level=run.primary_level,
++        origins=run.origins,
++        drive_intrinsic=compiled.get_level(run.primary_level).drive.intrinsic,
++        declared_meter_names=names,
++    )
++
++
++def manager_for(compiled):
++    run = compiled.effective_run
++    assert run.options.curriculum is not None
++    manager = build_curriculum(
++        run.training,
++        curriculum_options=run.options.curriculum,
++        static_policy=run.static_policy,
++        device=torch.device("cpu"),
++    )
++    manager.initialize_population(run.training.population.size)
++    return manager
++
++
++def test_actual_selected_level_roster_reaches_current_factory(pack):
++    edit(pack / "levels/L1_attention/bars.yaml", lambda p: p["bars"]["meters"].reverse())
++    first = compile_pack(pack)
++    selected = compile_pack(pack, level="L1_attention")
++    expected = roster(selected)
++    assert expected == tuple(reversed(roster(first)))
++    assert selected.metadata.primary_level == "L1_attention"
++    assert selected.effective_run.primary_level == "L1_attention"
++    assert selected.effective_run.static_policy.active_meters == expected
++    assert tuple(m.name for m in selected.get_level("L1_attention").meter_declarations) == expected
++    assert tuple(m.name for m in selected.get_level("L1_attention").meter_metadata.meters) == expected
++    assert selected.effective_run.options.curriculum.commit_mode == "completion"
++    assert selected.effective_run.options.curriculum.difficulty_mode == "stage_band"
++    manager = manager_for(selected)
++    decisions = manager.get_batch_decisions(None, [f"lane-{i}" for i in range(selected.effective_run.training.population.size)])
++    assert all(decision.difficulty_level == 0.5 for decision in decisions)
++    assert all(decision.reward_mode == "shaped" for decision in decisions)
++    assert all(decision.depletion_multiplier == 1.0 for decision in decisions)
++    assert all(decision.active_meters == list(expected) for decision in decisions)
++    decisions[0].active_meters.clear()
++    assert manager.get_batch_decisions(None, [f"lane-{i}" for i in range(len(decisions))])[0].active_meters == list(expected)
++
++
++def test_arbitrary_authored_names_are_not_replaced_by_global_defaults(pack):
++    replacements = {"energy": "reserve_alpha", "health": "thermal_budget"}
++    for path in pack.rglob("*.yaml"):
++        text = path.read_text()
++        for before, after in replacements.items():
++            text = text.replace(before, after)
++        path.write_text(text)
++    compiled = compile_pack(pack)
++    expected = roster(compiled)
++    assert expected[:2] == ("reserve_alpha", "thermal_budget")
++    assert compiled.effective_run.static_policy.active_meters == expected
++    manager = manager_for(compiled)
++    ids = [f"lane-{i}" for i in range(compiled.effective_run.training.population.size)]
++    assert manager.get_batch_decisions(None, ids)[0].active_meters == list(expected)
++
++
++def test_current_native_dict_json_msgpack_clone_and_cache_roundtrip(pack, tmp_path):
++    compiled = compile_pack(pack, cache=True)
++    original = compiled.to_dict()
++    assert original["compiled_schema_version"] == "1.42"
++    run = compiled.effective_run
++    assert run.static_policy.active_meters == roster(compiled)
++    portable = json.loads(json.dumps(run.to_dict()))
++    assert isinstance(portable["static_policy"]["active_meters"], list)
++    assert EffectiveRunConfig.from_dict(portable).static_policy.active_meters == roster(compiled)
++    path = tmp_path / "current.msgpack"
++    compiled.save_to_cache(path)
++    before = path.read_bytes()
++    variants = (
++        CompiledUniverse.from_dict(original),
++        CompiledUniverse.load_from_cache(path),
++        compiled.clone(),
++        compile_pack(pack, cache=True),
++    )
++    for other in variants:
++        assert other.to_dict() == original
++        assert other.effective_run.static_policy.active_meters == roster(other)
++        assert other.execution_hash == compiled.execution_hash
++        assert other.authored_identity == compiled.authored_identity
++        assert other.brain_hash == compiled.brain_hash
++        assert other.pack_brain_hash == compiled.pack_brain_hash
++        assert other.effective_run.origins == run.origins
++    assert path.read_bytes() == before
++    exported = variants[0].to_dict()
++    exported["effective_run"]["static_policy"]["active_meters"] = ["foreign"]
++    assert compiled.to_dict() == original
++
++
++@pytest.mark.parametrize("strategy", ["static", "adversarial"])
++def test_self_consistent_foreign_roster_refuses_expected_world_restore(pack, strategy):
++    edit(pack / "levels/L0_test/training.yaml", lambda p: p["training"]["curriculum"].update(strategy=strategy))
++    compiled = compile_pack(pack)
++    original = compiled.to_dict()
++    names = tuple(reversed(roster(compiled)))
++    foreign = resolve_for(compiled, names=names)
++    assert EffectiveRunConfig.from_dict(foreign.to_dict()).to_dict() == foreign.to_dict()
++    assert (foreign.execution_hash != compiled.execution_hash) == (strategy == "static")
++    payload = deepcopy(original)
++    payload["effective_run"] = foreign.to_dict()
++    with pytest.raises(ValueError, match="effective_run|roster|meter"):
++        CompiledUniverse.from_dict(payload)
++    assert compiled.to_dict() == original
++
++
++@pytest.mark.parametrize("operation", ["clone", "to_dict", "save_to_cache"])
++def test_foreign_effective_view_refuses_before_clone_or_export(pack, tmp_path, operation):
++    compiled = compile_pack(pack)
++    foreign = resolve_for(compiled, names=("foreign_meter",))
++    object.__setattr__(compiled, "effective_run", foreign)
++    before = foreign.to_dict()
++    target = tmp_path / "must-remain-unchanged.msgpack"
++    target.write_bytes(b"original sentinel")
++    with pytest.raises(ValueError, match="effective_run|roster|meter"):
++        if operation == "clone":
++            compiled.clone()
++        elif operation == "to_dict":
++            compiled.to_dict()
++        else:
++            compiled.save_to_cache(target)
++    assert compiled.effective_run.to_dict() == before
++    assert target.read_bytes() == b"original sentinel"
++
++
++@pytest.mark.parametrize("surface", ["bars", "declarations", "meter_metadata", "summary"])
++def test_selected_roster_products_must_agree(pack, surface):
++    compiled = compile_pack(pack)
++    original = compiled.to_dict()
++    payload = deepcopy(original)
++    level = payload["all_levels"]["L0_test"]
++    if surface == "bars":
++        level["bars"]["meters"].reverse()
++    elif surface == "declarations":
++        level["meter_declarations"].reverse()
++    elif surface == "meter_metadata":
++        level["meter_metadata"]["meters"].reverse()
++    else:
++        payload["metadata"]["meter_names"] = list(reversed(payload["metadata"]["meter_names"]))
++    with pytest.raises(ValueError):
++        CompiledUniverse.from_dict(payload)
++    assert compiled.to_dict() == original
++
++
++@pytest.mark.parametrize("change", ["missing_policy", "missing_view", "hash", "role", "duplicate", "blank", "nonstring"])
++def test_current_effective_payload_tampering_refuses(pack, change):
++    compiled = compile_pack(pack)
++    original = compiled.to_dict()
++    payload = deepcopy(original)
++    run = payload["effective_run"]
++    if change == "missing_policy":
++        run.pop("static_policy")
++    elif change == "missing_view":
++        payload.pop("effective_run")
++    elif change == "hash":
++        run["execution_hash"] = "0" * 64
++    elif change == "role":
++        run["field_roles"]["static_policy.active_meters"]["status"] = "active"
++    else:
++        names = {"duplicate": ["repeated", "repeated"], "blank": [" "], "nonstring": [3]}
++        run["static_policy"]["active_meters"] = names[change]
++    with pytest.raises(ValueError):
++        CompiledUniverse.from_dict(payload)
++    assert compiled.to_dict() == original
++
++
++@pytest.mark.parametrize("version", ["1.40", "1.41", "1.39", "future", None])
++def test_old_unknown_and_missing_native_version_refuse_read_only(pack, tmp_path, version):
++    payload = compile_pack(pack).to_dict()
++    if version is None:
++        payload.pop("compiled_schema_version")
++    else:
++        payload["compiled_schema_version"] = version
++    path = tmp_path / "obsolete.msgpack"
++    path.write_bytes(msgpack.packb(payload, use_bin_type=True))
++    before = path.read_bytes()
++    digest = hashlib.sha256(before).hexdigest()
++    with pytest.raises(ValueError, match="schema mismatch|missing required field"):
++        CompiledUniverse.from_dict(payload)
++    with pytest.raises(ValueError, match="schema mismatch|missing required field"):
++        CompiledUniverse.load_from_cache(path)
++    assert path.read_bytes() == before
++    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
++
++
++@pytest.mark.parametrize("cache_state", ["old", "corrupt"])
++def test_authored_compile_preserves_cache_recovery(pack, cache_state):
++    compiler = UniverseCompiler()
++    first = compiler.compile(pack, primary_level="L0_test", use_cache=True)
++    path = pack / ".compiled/universe-L0_test.msgpack"
++    if cache_state == "old":
++        payload = first.to_dict()
++        payload["compiled_schema_version"] = "1.40"
++        payload.pop("effective_run")
++        path.write_bytes(msgpack.packb(payload, use_bin_type=True))
++    else:
++        path.write_bytes(b"not a MessagePack compiled universe")
++    rebuilt = compiler.compile(pack, primary_level="L0_test", use_cache=True)
++    assert rebuilt.to_dict()["compiled_schema_version"] == "1.42"
++    assert rebuilt.effective_run.static_policy.active_meters == roster(rebuilt)
++    assert CompiledUniverse.load_from_cache(path).execution_hash == first.execution_hash
++
++
++def test_authored_roster_edit_moves_static_identity_and_cache_fingerprint(pack):
++    first = compile_pack(pack, cache=True)
++    edit(pack / "levels/L0_test/bars.yaml", lambda p: p["bars"]["meters"].reverse())
++    second = compile_pack(pack, cache=True)
++    assert second.effective_run.static_policy.active_meters == tuple(reversed(roster(first)))
++    assert first.execution_hash != second.execution_hash
++    assert first.metadata.config_hash != second.metadata.config_hash
++    assert first.metadata.provenance_id != second.metadata.provenance_id
++    assert first.effective_run.field_roles["static_policy.active_meters"].status == "unqualified"
++    assert second.effective_run.field_roles["static_policy.reward_mode"].status == "unqualified"
++
++
++def test_fresh_current_recurrent_authoring_replaces_obsolete_runtime_success_claim(pack, tmp_path):
++    architecture = yaml.safe_load((ROOT / "configs/test/bac_remediation/recurrent/brain.yaml").read_text())["architecture"]
++    edit(pack / "brain.yaml", lambda p: p.update(architecture=architecture))
++    compiled = compile_pack(pack)
++    assert compiled.effective_run.effective_brain.architecture.type == "recurrent"
++    path = tmp_path / "current-recurrent.msgpack"
++    compiled.save_to_cache(path)
++    restored = CompiledUniverse.load_from_cache(path)
++    assert restored.effective_run.effective_brain.architecture.type == "recurrent"
++    assert restored.execution_hash == compiled.execution_hash
++    assert restored.get_level("L0_test").training_hash == compiled.get_level("L0_test").training_hash
++
++
++def completion(compiled, *, sequence):
++    return LaneOutcome(
++        outcome=EpisodeCompletion(
++            agent_idx=0,
++            reason="cap",
++            survival_time=10,
++            final_observation=torch.zeros(2),
++            final_meters=torch.ones(len(roster(compiled))),
++        ),
++        batch_episode=sequence,
++        planned_horizon=10,
++        reward_total=0.0,
++        reward_extrinsic=0.0,
++        reward_intrinsic=0.0,
++        reward_shaping=0.0,
++        policy_entropy=0.0,
++        world_id="authored-compile-test-world",
++        world_episode_seq=sequence,
++    )
++
++
++@pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
++def test_authored_compiled_modes_rates_and_owned_native_future(pack, mode, rate, expected):
++    def author(payload):
++        training = payload["training"]
++        training["curriculum"]["strategy"] = "adversarial"
++        training["curriculum"]["adversarial"].update(
++            adaptation_rate=rate,
++            min_difficulty=0.0,
++            max_difficulty=1.0,
++            min_steps_at_stage=1,
++            survival_advance_threshold=0.8,
++            survival_retreat_threshold=0.2,
++            entropy_gate=0.5,
++        )
++        training["bac_options"] = {"curriculum": {"commit_mode": "completion", "difficulty_mode": mode}}
++
++    edit(pack / "levels/L0_test/training.yaml", author)
++    compiled = compile_pack(pack)
++    assert compiled.effective_run.options.curriculum.difficulty_mode == mode
++    assert compiled.effective_run.training.curriculum.adversarial.adaptation_rate == rate
++    manager = manager_for(compiled)
++    ids = [f"lane-{i}" for i in range(compiled.effective_run.training.population.size)]
++    outcome = completion(compiled, sequence=0)
++    manager.commit_episode_outcomes([outcome])
++    assert manager.get_batch_decisions(None, ids)[0].difficulty_level == pytest.approx(expected)
++    state = manager.checkpoint_state()
++    assert set(state) == {"version", "strategy", "completion"}
++    assert state["version"] == 2
++    manager.commit_episode_outcomes([outcome])
++    assert manager.checkpoint_state() == state
++    restored = manager_for(CompiledUniverse.from_dict(compiled.to_dict()))
++    restored.validate_checkpoint_state(state)
++    restored.load_state(state)
++    owned = deepcopy(state)
++    state.clear()
++    assert restored.checkpoint_state() == owned
++    future = completion(compiled, sequence=1)
++    manager.commit_episode_outcomes([future])
++    prepared = restored.prepare_episode_outcomes([future])
++    restored.commit_prepared_episode_outcomes(prepared)
++    assert restored.checkpoint_state() == manager.checkpoint_state()
++    assert restored.get_batch_decisions(None, ids) == manager.get_batch_decisions(None, ids)
+diff --git a/tests/test_townlet/regressions/bac/test_effective_run.py b/tests/test_townlet/regressions/bac/test_effective_run.py
+index 5a3c16c6..555332f2 100644
+--- a/tests/test_townlet/regressions/bac/test_effective_run.py
++++ b/tests/test_townlet/regressions/bac/test_effective_run.py
+@@ -199,65 +199,55 @@ def test_materialized_provider_defaults_are_not_authored_overrides(pack):
+     assert run.exploration.provider_parameters["training_batch_size"] == 4
+     assert run.options.providers.icm.feature_dim == 7
+     assert run.options.providers.icm.hidden_dim == 14
+     assert run.options.providers.icm.training_batch_size == 4
+     assert run.exploration.predictor_input_kind == "transition"
+     assert run.authored_options.model_dump(exclude_none=True) == {"providers": {"icm": {"training_batch_size": 4}}}
+     assert run.exploration.raw_provider_parameters["icm_config"]["future"]["x"] == (1, 2)
+     assert CompiledUniverse.from_dict(universe.to_dict()).effective_run.to_dict() == run.to_dict()
+ 
+ 
+-def test_known_v1_40_compiled_cache_derives_current_effective_view_without_rehashing(pack):
++@pytest.mark.parametrize("version", ["1.40", "1.41", "1.39", "9.99"])
++def test_obsolete_compiled_cache_refuses_without_rewriting_payload(pack, version):
+     current = compile_pack(pack)
+     payload = current.to_dict()
+-    payload["compiled_schema_version"] = "1.40"
+-    payload.pop("effective_run", None)
++    payload["compiled_schema_version"] = version
+     original = deepcopy(payload)
+-    loaded = CompiledUniverse.from_dict(payload)
+-    assert hasattr(loaded, "effective_run"), "known 1.40 caches need a truthful derived current view"
+-    assert payload == original
+-    assert loaded.brain_hash == original["brain_hash"]
+-    assert loaded.pack_brain_hash == original["pack_brain_hash"]
+-    assert loaded.execution_hash == current.execution_hash
+-    assert "1.40" in loaded.effective_run.derivations["capture_origin"]
+-    payload["compiled_schema_version"] = "1.39"
+     with pytest.raises(ValueError, match="schema mismatch"):
+         CompiledUniverse.from_dict(payload)
++    assert payload == original
+ 
+ 
+-def test_original_historical_compiled_caches_stay_readable():
++def test_original_historical_compiled_caches_refuse_and_keep_original_bytes():
+     manifest = json.loads((HISTORY / "portable-manifest.json").read_text())
+     checked = 0
+     for artifact in manifest["canonical_artifacts"]:
+         if artifact["label"] not in ("uniform", "per", "sequence-trained"):
+             continue
+         for relative, expected in artifact["config_files"].items():
+             if "/.compiled/" not in relative:
+                 continue
+             path = HISTORY / relative
+             assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
+             payload = msgpack.unpackb(path.read_bytes(), raw=False, strict_map_key=False)
+             assert payload["compiled_schema_version"] == "1.40"
+-            loaded = CompiledUniverse.load_from_cache(path)
+-            assert hasattr(loaded, "effective_run"), "original historic cache must remain readable"
+-            assert loaded.brain_hash == payload["brain_hash"]
+-            assert loaded.pack_brain_hash == payload["pack_brain_hash"]
+-            assert "1.40" in loaded.effective_run.derivations["capture_origin"]
++            with pytest.raises(ValueError, match="schema mismatch"):
++                CompiledUniverse.load_from_cache(path)
+             assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
+             checked += 1
+     assert checked == 15
+     # The original pre-optimizer sequential capture is separately retained.
+     path = HISTORY / "sequence-pack/.compiled/universe-L1_full_observability.msgpack"
+     before = path.read_bytes()
+     assert hashlib.sha256(before).hexdigest() == "5a654e72b714e771f7f9326b93647d71d804e48ff5fffd48d0f76d6d360c415a"
+-    loaded = CompiledUniverse.load_from_cache(path)
+-    assert loaded.effective_run.effective_brain.architecture.type == "recurrent"
++    with pytest.raises(ValueError, match="schema mismatch"):
++        CompiledUniverse.load_from_cache(path)
+     assert path.read_bytes() == before
+ 
+ 
+ @pytest.mark.parametrize("change", ["active", "inactive", "unqualified"])
+ def test_field_roles_drive_execution_identity(pack, change):
+     first = compile_pack(pack)
+     assert hasattr(first, "effective_run"), "finite field roles must govern execution identity"
+     if change == "active":
+         edit(pack / "brain.yaml", lambda p: p["architecture"]["token_set"].update(token_embed_dim=24))
+     elif change == "inactive":
+@@ -279,20 +269,21 @@ def test_shadowed_base_fields_remain_authored_presets(pack):
+     base.q_learning.target_update_frequency = 77
+     base.q_learning.use_double_dqn = False
+     base.optimizer.learning_rate = 0.003
+     base.replay.capacity = 12345
+     changed = resolve_effective_run(
+         base,
+         run.training,
+         primary_level=run.primary_level,
+         origins=run.origins,
+         drive_intrinsic=universe.get_level("L0_test").drive.intrinsic,
++        declared_meter_names=tuple(meter.name for meter in universe.get_level("L0_test").bars.meters),
+     )
+     assert changed.authored_brain_hash != run.authored_brain_hash
+     assert changed.authored_identity != run.authored_identity
+     assert changed.execution_hash == run.execution_hash
+     assert compute_brain_hash(changed.effective_brain) == universe.brain_hash
+ 
+ 
+ @pytest.mark.parametrize("strategy", ["none", "rnd", "adaptive_rnd", "icm", "count_based"])
+ def test_selected_provider_activity_is_schema_owned(pack, strategy):
+     from townlet.config.effective_run import EffectiveRunConfig, resolve_effective_run
+@@ -301,30 +292,32 @@ def test_selected_provider_activity_is_schema_owned(pack, strategy):
+     universe = compile_pack(pack)
+     run = universe.effective_run
+     training = run.training
+     training.intrinsic.rnd.feature_dim = 96
+     changed = resolve_effective_run(
+         run.base_brain,
+         training,
+         primary_level=run.primary_level,
+         origins=run.origins,
+         drive_intrinsic=universe.get_level("L0_test").drive.intrinsic,
++        declared_meter_names=tuple(meter.name for meter in universe.get_level("L0_test").bars.meters),
+     )
+     assert changed.authored_identity != run.authored_identity
+     assert (changed.execution_hash != run.execution_hash) == (strategy in ("rnd", "adaptive_rnd", "icm"))
+     assert EffectiveRunConfig.from_dict(changed.to_dict()).to_dict() == changed.to_dict()
+     if strategy == "none":
+         training = run.training
+         from townlet.config.bac_options import BaCOptions
+ 
+         training.bac_options = BaCOptions.model_validate({"providers": {"icm": {"training_batch_size": 100, "max_pending_transitions": 1}}})
+         preset = resolve_effective_run(
+             run.base_brain,
+             training,
+             primary_level=run.primary_level,
+             origins=run.origins,
+             drive_intrinsic=universe.get_level("L0_test").drive.intrinsic,
++            declared_meter_names=tuple(meter.name for meter in universe.get_level("L0_test").bars.meters),
+         )
+         assert preset.authored_identity != run.authored_identity
+         assert preset.execution_hash == run.execution_hash
+         assert preset.options.providers.icm.max_pending_transitions == 1
+         assert preset.field_roles["bac_options.providers.icm.training_batch_size"].status == "inactive_preset"

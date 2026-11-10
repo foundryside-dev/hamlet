@@ -1,0 +1,282 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [51 items]
+
+F...........F.....F..FFF...........................                      [100%]
+=================================== FAILURES ===================================
+__________ test_actual_selected_level_roster_reaches_current_factory ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r1-owned/popen-gw1/test_actual_selected_level_ros0/authored-pack')
+
+    def test_actual_selected_level_roster_reaches_current_factory(pack):
+        edit(pack / "levels/L1_attention/bars.yaml", lambda p: p["bars"]["meters"].reverse())
+>       first = compile_pack(pack)
+                ^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:37: in compile_pack
+    return UniverseCompiler().compile(pack, primary_level=level, use_cache=cache)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:266: in compile
+    compiled = self._stage_8_emit_artifact(
+src/townlet/universe/compiler.py:641: in _stage_8_emit_artifact
+    compiled = CompiledUniverse(
+<string>:26: in __init__
+    ???
+src/townlet/universe/compiled.py:381: in __post_init__
+    self._derive_effective_run({"capture_origin": "current compiled configuration"})
+src/townlet/universe/compiled.py:384: in _derive_effective_run
+    object.__setattr__(self, "effective_run", self._resolve_effective_run(origins))
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiled.py:388: in _resolve_effective_run
+    declared_meter_names = self._validate_meter_rosters()
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'CompiledUniverse' object has no attribute 'effective_run'") raised in repr()] CompiledUniverse object at 0x7f6450f238c0>
+
+    def _validate_meter_rosters(self) -> tuple[str, ...]:
+        """Keep authored bars, compiled declarations and public summaries aligned."""
+        for level_name, level in self.all_levels.items():
+            names = tuple(meter.name for meter in level.bars.meters)
+            if any(not isinstance(name, str) or not name.strip() for name in names) or len(set(names)) != len(names):
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} must contain unique nonblank strings")
+            if tuple(meter.name for meter in level.meter_declarations) != names:
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter declarations")
+            if tuple(meter.name for meter in level.meter_metadata.meters) != names:
+>               raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter metadata")
+E               ValueError: Compiled universe meter roster for 'L1_attention' disagrees with meter metadata
+
+src/townlet/universe/compiled.py:408: ValueError
+_______ test_current_effective_payload_tampering_refuses[missing_policy] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r1-owned/popen-gw1/test_current_effective_payload0/authored-pack')
+change = 'missing_policy'
+
+    @pytest.mark.parametrize("change", ["missing_policy", "missing_view", "hash", "role", "duplicate", "blank", "nonstring"])
+    def test_current_effective_payload_tampering_refuses(pack, change):
+        compiled = compile_pack(pack)
+        original = compiled.to_dict()
+        payload = deepcopy(original)
+        run = payload["effective_run"]
+        if change == "missing_policy":
+            run.pop("static_policy")
+        elif change == "missing_view":
+            payload.pop("effective_run")
+        elif change == "hash":
+            run["execution_hash"] = "0" * 64
+        elif change == "role":
+            run["field_roles"]["static_policy.active_meters"]["status"] = "active"
+        else:
+            names = {"duplicate": ["repeated", "repeated"], "blank": [" "], "nonstring": [3]}
+            run["static_policy"]["active_meters"] = names[change]
+        with pytest.raises(ValueError):
+>           CompiledUniverse.from_dict(payload)
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/compiled.py:730: in from_dict
+    run = EffectiveRunConfig.from_dict(_required_mapping(payload, "effective_run"))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'townlet.config.effective_run.EffectiveRunConfig'>
+payload = {'authored_brain_hash': '7b29b57b8318e11001ae00fbb01559cd69b0d7a807878d771048386944fc9f5f', 'authored_identity': '654d...1'}, 'optimizer': {'adam_beta1': 0.9, 'adam_beta2': 0.999, 'adam_eps': 1e-08, 'learning_rate': 0.0001, ...}, ...}, ...}
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> EffectiveRunConfig:
+>       static_data = dict(payload["static_policy"])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'static_policy'
+
+src/townlet/config/effective_run.py:118: KeyError
+____ test_authored_roster_edit_moves_static_identity_and_cache_fingerprint _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r1-owned/popen-gw0/test_authored_roster_edit_move0/authored-pack')
+
+    def test_authored_roster_edit_moves_static_identity_and_cache_fingerprint(pack):
+        first = compile_pack(pack, cache=True)
+        edit(pack / "levels/L0_test/bars.yaml", lambda p: p["bars"]["meters"].reverse())
+>       second = compile_pack(pack, cache=True)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:37: in compile_pack
+    return UniverseCompiler().compile(pack, primary_level=level, use_cache=cache)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:266: in compile
+    compiled = self._stage_8_emit_artifact(
+src/townlet/universe/compiler.py:641: in _stage_8_emit_artifact
+    compiled = CompiledUniverse(
+<string>:26: in __init__
+    ???
+src/townlet/universe/compiled.py:381: in __post_init__
+    self._derive_effective_run({"capture_origin": "current compiled configuration"})
+src/townlet/universe/compiled.py:384: in _derive_effective_run
+    object.__setattr__(self, "effective_run", self._resolve_effective_run(origins))
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiled.py:388: in _resolve_effective_run
+    declared_meter_names = self._validate_meter_rosters()
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'CompiledUniverse' object has no attribute 'effective_run'") raised in repr()] CompiledUniverse object at 0x7f6a70d630b0>
+
+    def _validate_meter_rosters(self) -> tuple[str, ...]:
+        """Keep authored bars, compiled declarations and public summaries aligned."""
+        for level_name, level in self.all_levels.items():
+            names = tuple(meter.name for meter in level.bars.meters)
+            if any(not isinstance(name, str) or not name.strip() for name in names) or len(set(names)) != len(names):
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} must contain unique nonblank strings")
+            if tuple(meter.name for meter in level.meter_declarations) != names:
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter declarations")
+            if tuple(meter.name for meter in level.meter_metadata.meters) != names:
+>               raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter metadata")
+E               ValueError: Compiled universe meter roster for 'L0_test' disagrees with meter metadata
+
+src/townlet/universe/compiled.py:408: ValueError
+_ test_authored_compiled_modes_rates_and_owned_native_future[stage_band-0.01-0.25] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r1-owned/popen-gw0/test_authored_compiled_modes_r0/authored-pack')
+mode = 'stage_band', rate = 0.01, expected = 0.25
+
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_authored_compiled_modes_rates_and_owned_native_future(pack, mode, rate, expected):
+        def author(payload):
+            training = payload["training"]
+            training["curriculum"]["strategy"] = "adversarial"
+            training["curriculum"]["adversarial"].update(
+                adaptation_rate=rate,
+                min_difficulty=0.0,
+                max_difficulty=1.0,
+                min_steps_at_stage=1,
+                survival_advance_threshold=0.8,
+                survival_retreat_threshold=0.2,
+                entropy_gate=0.5,
+            )
+            training["bac_options"] = {"curriculum": {"commit_mode": "completion", "difficulty_mode": mode}}
+    
+        edit(pack / "levels/L0_test/training.yaml", author)
+        compiled = compile_pack(pack)
+        assert compiled.effective_run.options.curriculum.difficulty_mode == mode
+        assert compiled.effective_run.training.curriculum.adversarial.adaptation_rate == rate
+        manager = manager_for(compiled)
+        ids = [f"lane-{i}" for i in range(compiled.effective_run.training.population.size)]
+        outcome = completion(compiled, sequence=0)
+        manager.commit_episode_outcomes([outcome])
+        assert manager.get_batch_decisions(None, ids)[0].difficulty_level == pytest.approx(expected)
+        state = manager.checkpoint_state()
+        assert set(state) == {"version", "strategy", "completion"}
+        assert state["version"] == 2
+        manager.commit_episode_outcomes([outcome])
+>       assert manager.checkpoint_state() == state
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: Boolean value of Tensor with more than one value is ambiguous
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:328: RuntimeError
+_ test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.01-0.1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r1-owned/popen-gw0/test_authored_compiled_modes_r1/authored-pack')
+mode = 'rate_limited', rate = 0.01, expected = 0.1
+
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_authored_compiled_modes_rates_and_owned_native_future(pack, mode, rate, expected):
+        def author(payload):
+            training = payload["training"]
+            training["curriculum"]["strategy"] = "adversarial"
+            training["curriculum"]["adversarial"].update(
+                adaptation_rate=rate,
+                min_difficulty=0.0,
+                max_difficulty=1.0,
+                min_steps_at_stage=1,
+                survival_advance_threshold=0.8,
+                survival_retreat_threshold=0.2,
+                entropy_gate=0.5,
+            )
+            training["bac_options"] = {"curriculum": {"commit_mode": "completion", "difficulty_mode": mode}}
+    
+        edit(pack / "levels/L0_test/training.yaml", author)
+        compiled = compile_pack(pack)
+        assert compiled.effective_run.options.curriculum.difficulty_mode == mode
+        assert compiled.effective_run.training.curriculum.adversarial.adaptation_rate == rate
+        manager = manager_for(compiled)
+        ids = [f"lane-{i}" for i in range(compiled.effective_run.training.population.size)]
+        outcome = completion(compiled, sequence=0)
+        manager.commit_episode_outcomes([outcome])
+        assert manager.get_batch_decisions(None, ids)[0].difficulty_level == pytest.approx(expected)
+        state = manager.checkpoint_state()
+        assert set(state) == {"version", "strategy", "completion"}
+        assert state["version"] == 2
+        manager.commit_episode_outcomes([outcome])
+>       assert manager.checkpoint_state() == state
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: Boolean value of Tensor with more than one value is ambiguous
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:328: RuntimeError
+_ test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.1-0.25] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r1-owned/popen-gw0/test_authored_compiled_modes_r2/authored-pack')
+mode = 'rate_limited', rate = 0.1, expected = 0.25
+
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_authored_compiled_modes_rates_and_owned_native_future(pack, mode, rate, expected):
+        def author(payload):
+            training = payload["training"]
+            training["curriculum"]["strategy"] = "adversarial"
+            training["curriculum"]["adversarial"].update(
+                adaptation_rate=rate,
+                min_difficulty=0.0,
+                max_difficulty=1.0,
+                min_steps_at_stage=1,
+                survival_advance_threshold=0.8,
+                survival_retreat_threshold=0.2,
+                entropy_gate=0.5,
+            )
+            training["bac_options"] = {"curriculum": {"commit_mode": "completion", "difficulty_mode": mode}}
+    
+        edit(pack / "levels/L0_test/training.yaml", author)
+        compiled = compile_pack(pack)
+        assert compiled.effective_run.options.curriculum.difficulty_mode == mode
+        assert compiled.effective_run.training.curriculum.adversarial.adaptation_rate == rate
+        manager = manager_for(compiled)
+        ids = [f"lane-{i}" for i in range(compiled.effective_run.training.population.size)]
+        outcome = completion(compiled, sequence=0)
+        manager.commit_episode_outcomes([outcome])
+        assert manager.get_batch_decisions(None, ids)[0].difficulty_level == pytest.approx(expected)
+        state = manager.checkpoint_state()
+        assert set(state) == {"version", "strategy", "completion"}
+        assert state["version"] == 2
+        manager.commit_episode_outcomes([outcome])
+>       assert manager.checkpoint_state() == state
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: Boolean value of Tensor with more than one value is ambiguous
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:328: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_actual_selected_level_roster_reaches_current_factory
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_current_effective_payload_tampering_refuses[missing_policy]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_roster_edit_moves_static_identity_and_cache_fingerprint
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_compiled_modes_rates_and_owned_native_future[stage_band-0.01-0.25]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.01-0.1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.1-0.25]
+=================== 6 failed, 45 passed in 222.24s (0:03:42) ===================

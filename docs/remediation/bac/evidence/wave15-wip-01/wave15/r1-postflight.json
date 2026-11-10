@@ -1,0 +1,61 @@
+{
+  "status": "R1_EXECUTION_CHANGES_REQUIRED",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "candidate_tree": "ca5c48c6002218b63733965f9a800e25fc2024e0",
+  "counts": {
+    "failed": 6,
+    "passed": 45,
+    "errors": 0
+  },
+  "wall_seconds": 231.5193955898285,
+  "classified_causes": {
+    "validbarpermutationfalserejection": 2,
+    "invalidrawTensortreeequalitytest": 3,
+    "missingchildpolicyKeyErrornormalization": 1
+  },
+  "failed_nodes": [
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_actual_selected_level_roster_reaches_current_factory",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.01-0.1]",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.1-0.25]",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_compiled_modes_rates_and_owned_native_future[stage_band-0.01-0.25]",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_authored_roster_edit_moves_static_identity_and_cache_fingerprint",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_current_effective_payload_tampering_refuses[missing_policy]"
+  ],
+  "guards": [
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.12909483909606934
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 3.387420177459717
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.3955004215240479
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 5.81585168838501
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 48.018813371658325
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 254.4184193611145
+    }
+  ],
+  "custody": "178source573config13artifact/3process/index/import/threads/14registry1availablePASS",
+  "log_sha256": "3f2e2294f6aa39f6a5b0af466a5a58e11339bb2405cbf57a93382b9960dac565",
+  "scope_extension": "Actualreadonlymetadata.py165 proves environment/metadata order authority differsfrombars; fifthsource300newtotal5/4700. No metadata producerchange, preservevalidauthoredbarordering.",
+  "review": "EarlierstaticACCEPTsupersededCHANGESREQUIREDbyactualexecution/sourceordercontract; no independent25caseexecutionyet",
+  "clearance": "Sameauthor fix1 onlyafterfiniteordercontractruling; no broadrepeatunchangedsource"
+}

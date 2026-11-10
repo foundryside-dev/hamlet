@@ -1,0 +1,26 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 7.107778310775757,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestCrossUniverseLoadResets::test_resets_optimizer_target_and_rnd",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestReviewRound1Pins::test_adaptive_wrapper_annealing_state_resets",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r3-targeted-token",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-collection/collection.log",
+  "sha256": "3fc08c138622d17469a652f9e7a6cdd59b14cdee99ce702c5f013f3202266705",
+  "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "manifest_sha256": "1c2ae7f9cc0ba7782ed86fd8343e655dfb4d18e8e8f0982359279ff55a706095",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

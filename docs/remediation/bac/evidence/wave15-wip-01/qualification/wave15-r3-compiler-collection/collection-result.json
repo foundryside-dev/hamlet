@@ -1,0 +1,32 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 8.966696977615356,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/universe/test_brain_level_override.py",
+    "tests/test_townlet/unit/universe/test_compiler_declaration_origins.py",
+    "tests/test_townlet/unit/universe/test_declaration_input_shapes.py",
+    "tests/test_townlet/unit/universe/test_declaration_store.py",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py",
+    "tests/test_townlet/unit/training/test_brain_lineage_legibility.py",
+    "tests/test_townlet/unit/universe/test_compiled_universe_serialization.py",
+    "tests/test_townlet/unit/universe/test_compiled_token_coherence.py",
+    "tests/test_townlet/integration/test_token_transfer_contract.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-compiler-collection/collection.log",
+  "sha256": "3de07cac42901f7d78cb26a00bc9736877446a2ff415d60f54ac4fe3a445eb88",
+  "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "manifest_sha256": "1c2ae7f9cc0ba7782ed86fd8343e655dfb4d18e8e8f0982359279ff55a706095",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

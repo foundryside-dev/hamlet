@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave15/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-fixture-style",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "ruff-fixture",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "tests/test_townlet/unit/training/test_token_checkpoint_gates.py"
+      ]
+    },
+    {
+      "name": "black-fixture",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/unit/training/test_token_checkpoint_gates.py",
+        "--workers",
+        "1"
+      ]
+    }
+  ]
+}

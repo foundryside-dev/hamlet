@@ -1,0 +1,44 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 51 items / 25 deselected / 26 selected
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_curriculum_compiled_roster.py>
+            <Function test_actual_selected_level_roster_reaches_current_factory>
+            <Function test_current_native_dict_json_msgpack_clone_and_cache_roundtrip>
+            <Function test_self_consistent_foreign_roster_refuses_expected_world_restore[static]>
+            <Function test_self_consistent_foreign_roster_refuses_expected_world_restore[adversarial]>
+            <Function test_foreign_effective_view_refuses_before_clone_or_export[clone]>
+            <Function test_foreign_effective_view_refuses_before_clone_or_export[to_dict]>
+            <Function test_foreign_effective_view_refuses_before_clone_or_export[save_to_cache]>
+            <Function test_selected_roster_products_must_agree[bars]>
+            <Function test_selected_roster_products_must_agree[declarations]>
+            <Function test_selected_roster_products_must_agree[meter_metadata]>
+            <Function test_selected_roster_products_must_agree[summary]>
+            <Function test_current_effective_payload_tampering_refuses[missing_policy]>
+            <Function test_current_effective_payload_tampering_refuses[missing_view]>
+            <Function test_current_effective_payload_tampering_refuses[hash]>
+            <Function test_current_effective_payload_tampering_refuses[role]>
+            <Function test_current_effective_payload_tampering_refuses[duplicate]>
+            <Function test_current_effective_payload_tampering_refuses[blank]>
+            <Function test_current_effective_payload_tampering_refuses[nonstring]>
+            <Function test_authored_compile_preserves_cache_recovery[old]>
+            <Function test_authored_compile_preserves_cache_recovery[corrupt]>
+            <Function test_authored_roster_edit_moves_static_identity_and_cache_fingerprint>
+            <Function test_authored_compiled_modes_rates_and_owned_native_future[stage_band-0.01-0.25]>
+            <Function test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.01-0.1]>
+            <Function test_authored_compiled_modes_rates_and_owned_native_future[rate_limited-0.1-0.25]>
+          <Module test_effective_run.py>
+            <Function test_inactive_raw_nan_presets_survive_real_msgpack>
+            <Function test_original_historical_compiled_caches_refuse_and_keep_original_bytes>
+
+================ 26/51 tests collected (25 deselected) in 0.05s ================

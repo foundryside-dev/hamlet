@@ -337,7 +337,9 @@ class TestCrossUniverseLoadResets:
         )
         population = VectorizedPopulation(
             env=env,
-            curriculum=StaticCurriculum(difficulty_level=0.5),
+            curriculum=StaticCurriculum(
+                commit_mode="completion", difficulty_level=0.5, reward_mode="shaped", active_meters=[], depletion_multiplier=1.0
+            ),
             exploration=RNDExploration(obs_dim=spec.total_dims, embed_dim=8, device=device),
             agent_ids=["agent_0"],
             device=device,

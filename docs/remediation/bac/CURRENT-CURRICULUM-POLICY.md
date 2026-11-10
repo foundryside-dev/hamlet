@@ -134,8 +134,8 @@ StaticCurriculum(
 
 This is a programmatic current policy, not an override of `static-baseline-v1`. Arbitrary new reward labels are not a supported feature.
 
-## Open compiled integration
+## Current compiled transport
 
-The supplied compiler API is `UniverseCompiler().compile(Path(pack), primary_level='L0_test', use_cache=False)`, with `compiled.effective_run` as the transport. Required roster maintenance at the compiler producer remains the forthcoming separate serial slice. It is not yet a working compiled-route witness; root reports the remaining global type error at `compiled.py:389`. No compiled example here claims execution success.
+`UniverseCompiler().compile(Path(pack), primary_level=ACTUAL_LEVEL, use_cache=False)` now supplies `compiled.effective_run` with the actual selected bars roster. Current compiled native schema is1.42; clone, current serialized/cache restoration and export compare the complete effective view with the actual outer world inputs. See [the compiled policy contract](CURRENT-COMPILED-POLICY-CONTRACT.md) for exact APIs, the distinct meter-order authorities and original-artifact/cache behavior.
 
-Actual compiler/caller maintenance, a real compiled factory witness, current outer validators, all-lane dynamics, world identity and remaining integration/full-suite/native/learning/restart/E2E/final BAC acceptance gates remain open. This document was written only as ignored developer-contract prose during the source/index freeze; no code, tests, tracked documentation, runtime or Git actions were performed.
+Real compile→effective→factory, selected stage/rate values and owned native future behavior have executable bounded evidence. Current parent world identity/lifecycle, all-lane dynamics, complete checkpoint/runner integration, full repository suite, real learning/restart/E2E and final BAC acceptance remain open; this is not whole-program release qualification.

@@ -1,0 +1,22 @@
+{
+  "job": "astra-independent",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+  "exit_code": 0,
+  "counts": {
+    "passed": 26,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 103.91195702552795,
+  "source_guards": 179,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

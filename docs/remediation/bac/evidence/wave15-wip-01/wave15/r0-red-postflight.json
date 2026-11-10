@@ -1,0 +1,18 @@
+{
+  "status": "MEANINGFUL_COMPILED_PREREQUISITE_RED",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "candidate_tree": "9b024043e7fdb39f2ad06dba7612679471c87ff0",
+  "collected": 51,
+  "counts": {
+    "failed": 1,
+    "deselected": 50,
+    "errors": 0
+  },
+  "wall_seconds": 7.79597806930542,
+  "witness": "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_actual_selected_level_roster_reaches_current_factory",
+  "cause": "ActualrealUniverseCompiler\u2192CompiledUniverse._derive_effective_run missingrequired declared_meter_names before downstream assertions. Fixthisprerequisitebeforebroadqualification.",
+  "empty_selection_attempt": "EarlierR0-kL0_testselected0/51(exit5), notRED/pass; correctedexactfunctiontargetprecollected1/51 beforethisexecution.",
+  "custody": "178source573config13protectedartifact/1process/index/import/threads14registry1availablePASS",
+  "log_sha256": "6bed29595d4f479ae856abe0bdaa5ad423fe3869b4edf292a06131c0a53dbaac",
+  "clearance": "SameboundedSolauthor mayimplement current1.42/actualroster/expectedview consistency incompiler/compiled only; all51testsretained"
+}

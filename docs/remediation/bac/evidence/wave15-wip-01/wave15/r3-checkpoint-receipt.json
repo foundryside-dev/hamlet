@@ -1,0 +1,384 @@
+{
+  "status": "COMPILED CURRENT POLICY AND FIXTURE BOUNDED HANDOFFS ACCEPTED; WIP INTEGRATION OPEN",
+  "candidate_sha": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+  "scope": "Compiledproducer5/3480actual of5/4700; independentfixture1/438 of1/550. OtheralreadyacceptedT21/DTOscopesunchanged.",
+  "inventories": {
+    "T21": [
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 323,
+        "sha256": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/effective_run.py",
+        "lines": 371,
+        "sha256": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "T21-DTO": [
+      {
+        "path": "src/townlet/training/state.py",
+        "lines": 263,
+        "sha256": "a6f22b0b26ca6422e6a0710f9268386e8d2b7162e1a5e9a43a2decdea4c9d3e3",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/static.py",
+        "lines": 64,
+        "sha256": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "T21-CU": [
+      {
+        "path": "src/townlet/universe/compiler.py",
+        "lines": 976,
+        "sha256": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+        "present": true
+      },
+      {
+        "path": "src/townlet/universe/compiled.py",
+        "lines": 1651,
+        "sha256": "0d994462f86e721ddd38ca32f286da05cc602d63a0e9e424e84a10320399c2dd",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_effective_run.py",
+        "lines": 323,
+        "sha256": "1685b2c09aa59c6687a49accebf62be591e64716f91469ef85e332d8b765cdd9",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py",
+        "lines": 365,
+        "sha256": "bd5a364931be94f2930c278ab5f21bf1a497814e727d93057f538da3bf7e2f38",
+        "present": true
+      },
+      {
+        "path": "src/townlet/universe/compilers/metadata.py",
+        "lines": 165,
+        "sha256": "811dc301202433253832f84743cba65823f0d7c273a73d65e376d35a5e2f6beb",
+        "present": true
+      }
+    ],
+    "T21-FIXTURE": [
+      {
+        "path": "tests/test_townlet/unit/training/test_token_checkpoint_gates.py",
+        "lines": 438,
+        "sha256": "6957a3ab973f9c993d16e110c276c03ff15d2e93d73a49481c48dd0ef4db8629",
+        "present": true
+      }
+    ]
+  },
+  "focused_commands": {
+    "job": "owned",
+    "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+    "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+    "exit_code": 0,
+    "counts": {
+      "passed": 51,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 100.88513851165771,
+    "source_guards": 179,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_commands": {
+    "compiled_Astra": {
+      "job": "astra-independent",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "exit_code": 0,
+      "counts": {
+        "passed": 26,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 103.91195702552795,
+      "source_guards": 179,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "fixture_Astra": {
+      "job": "fixture-independent",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+      "exit_code": 0,
+      "counts": {
+        "passed": 2,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 20.736103296279907,
+      "source_guards": 180,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "current_owner_commands": {
+    "job": "owners",
+    "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+    "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+    "exit_code": 0,
+    "counts": {
+      "passed": 153,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 69.84726667404175,
+    "source_guards": 180,
+    "process_identities": 4,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "current_joint_commands": {
+    "job": "joint-regressions",
+    "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+    "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+    "exit_code": 0,
+    "counts": {
+      "passed": 239,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 4.987726211547852,
+    "source_guards": 180,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "static_commands": [
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.25147008895874023,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-guards/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "manifest_sha256": "72cc8f5e7bed80912f0236ca5b60155dfbc274dc7b9d7f0b601e8c32eb77ad21",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 0,
+      "seconds": 8.458293676376343,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-guards/mypy.log",
+      "sha256": "202660a8e685a052903d919ce2638f56fc88d4f0db7902d85b06a98746abe585",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "manifest_sha256": "72cc8f5e7bed80912f0236ca5b60155dfbc274dc7b9d7f0b601e8c32eb77ad21",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.0405642986297607,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-guards/no-defaults.log",
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "manifest_sha256": "72cc8f5e7bed80912f0236ca5b60155dfbc274dc7b9d7f0b601e8c32eb77ad21",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 1.9850375652313232,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-guards/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "manifest_sha256": "72cc8f5e7bed80912f0236ca5b60155dfbc274dc7b9d7f0b601e8c32eb77ad21",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 49.72201633453369,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-guards/black.log",
+      "sha256": "d6eb9f5feefb843b3fd12cf24d8bb5e6999660bbfe3d49b26f628c4900b603f5",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "manifest_sha256": "72cc8f5e7bed80912f0236ca5b60155dfbc274dc7b9d7f0b601e8c32eb77ad21",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 147.28692960739136,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/validate_compiler_cli.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-compiler-cli/compiler-cli.log",
+      "sha256": "567e31926668b57afce1f30e278b131adf8d2a98030dc8bd434b30bdc3b935c6",
+      "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+      "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+      "manifest_sha256": "72cc8f5e7bed80912f0236ca5b60155dfbc274dc7b9d7f0b601e8c32eb77ad21",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  ],
+  "static_identity": "All6globalguards executedatR2e18e8577. R3src/config/scripts andall5CUhashesidentical; ONLYonefixturecallchangedandownedRuff/Blackpassed. UnfilteredR3globalguardrerun notclaimed; completefinalglobalgate stillowed.",
+  "source_equivalence": {
+    "prior_tested_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+    "final_candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+    "same_execution_subtrees": {
+      "src": "0de5fe5ad9cf62a0fcd31b36aa168b164482d969",
+      "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+      "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e"
+    },
+    "same_5_CU_source_hashes": true,
+    "only_change": [
+      "tests/test_townlet/unit/training/test_token_checkpoint_gates.py"
+    ],
+    "newfixture_evidence": "Targeted2PASS+independentAstra2PASS; freshbroader153PASS, no assertionremoved"
+  },
+  "review_records": [
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave15-preparation/COMPILED-ROSTER-independent-review-r1.md",
+      "sha256": "ad645afbc51e49fff39bf3f8eb59a6d318e2366a41930a09d8ee106f1c28b155"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave15-preparation/TOKEN-FIXTURE-independent-review.md",
+      "sha256": "94f9c13fcd7ce69fbed8f099ad3009842d02a60d347ff758a6bf5b432411e326"
+    }
+  ],
+  "review_disposition": "SAMEAstrafix1D1D2D3ADDRESSEDafteractual26caseexecution; one-sourceAstrafixturequality/specandindependent2PASS. NoownedP1/P2remain.",
+  "repairs": [
+    "Currentcompilednative1.42/directoldversionrefusal withimmutableoriginal15artifact/digestcontrol",
+    "Actualselectedbars tuple forwardedtoEFv2/staticpolicy/factory, no currentmissingargtypeerrors",
+    "Distinctbars/declarationsandglobalenvironment/metadatacolumnorderauthorities, exactmembership/indices/selectedsummaryvalidation",
+    "Actualouter-world fullcanonicalEFcomparisonbeforeload/clone/export, self-consistentforeignrosterrefusal",
+    "NestedstaticpolicyrequiredmappingValueErrorbeforeconstruction/decode",
+    "Exactrecursiveall-container/scalar/tensordtype/device/layout/shape/contentstatecomparison,nodroppedorapproximateassertions",
+    "SharedcurrentStaticfixtureexplicitkwargs, alloptimizer/target/RND/annealingassertionspreserved"
+  ],
+  "preservation": "Allprovider/network/replaychoices, fiveoverrides,fulllevelreplacement,unknowninactiveNaNpreset/currenttransport,seededweights,brainhashrecipesandcurrentauthoredcachemiss/stale/corruptrecoveryretained. Metadata producerunchanged; stableglobalcolumnsnotforcedtobarsorder.",
+  "negative_evidence": "R0emptyselector0/51exit5explicitlynotRED; correctedonecompileprerequisite1FAIL50deselected;R1actual6FAIL45PASSclassifiedorderfalse-rejection2/testtensorcomparison3/KeyErrornormalization1;R2owner2FAIL151PASSoldsharedconstructorbeforeassertions;allpreservedwithsourcepatches/hashes.",
+  "reconstructability": "Everywave15r0..r3snapshot hasfullbinary-safe patchfromremote f22d77af; no newcheckout/sourceworktreecreated",
+  "full_suite_status": "NOT RUN/NOT GREEN for wholecurrentmigration; required earlierfullgate beforeintegratedrelease remainsowed",
+  "full_suite_reason": "Sharedpublicconfig/native/currentcallbackcontracts changed; boundedproduceracceptanceanddurableWIPperamendment donotwaivecoherentwhole-repository/fullparent/native/learning gates.",
+  "unrun_checks": [
+    "Unfiltereddefaultrepositorysuite,finalcoverage>=70%,slow/applicablehardwareandallfinalguardrepeats",
+    "Actualworldroster/cursors/lifecycle/VFSdirectconsumer,bank/controllercompletionretry/epsilon andall-lanephysics",
+    "Fullcurrentparentnative/replay/provider/world restore, serving/transfer/restart andrealordinaryrunnerintegration",
+    "FiniteT40+12learning/E2E/strictprivateupdate/spectator/RNG/sharedQfeedback scenarios",
+    "54acceptancerequirements/22freshlenses+synthesis atonefinalsource andexact-tipCI"
+  ],
+  "next_delivery": "Implementapprovedworldidentityproducer tests-first: ENV-ownedacceptedcursors/single reset/quarantine/batchbindinghistory, explicit run-roster declaration, INITIAL/COMPLETEDworld-lifecycle-v3 preserving save_initial; thenrequiredserialEF/VFS/bank/runnerconsumers andoriginalprerequisites.",
+  "world_design": "SAMEAstra/SolR4approved; no worldimplementationclaimed. RPsourceconfirmsprivatecapacitylocal1 andKDFexcludesN/order; backendconstruction/schedulingactualproofremainsPW04/PW05/T18d.",
+  "curiosity_scope": "No newprivate-bank/realcuriosityupdate qualification claimed; sharedalternative preserved",
+  "curiosity_origin": "RP/WSfactreceipt only, no provider-spend/hardwareclaims",
+  "world_binding": "Compiledactualmeterroster/expectedouterworldview are notstableworldinstance IDs; actualdeclaredrunroster/lifecycle is nextowner",
+  "guarantee": "Boundedcurrentcompiledpolicy transport/serialization/admission/cache andretainedlivecompactreader fixture behavior; notsimulatorworld/wholeBACcompletion",
+  "local_clock_units": "Authoredactual10eligible-transitioncompletion yieldsstage2target.25,rate.01\u2192.1 and.1\u2192.25,stage_bandrateinactive;managercurrentnative2 retained",
+  "mode_limitations": "Current1.42compiled familyonly, oldformatsfaildirectly; mutableauthoredcachecanrecoverbycurrentrecompile. Fieldmetadataapplicationunqualifieduntilrealmechanicsowner.",
+  "optional_P3": "EarlierStaticunsupportedrewardlabeltiminganddirectDTOrawvalidationcoverage notesseparate; no arbitrarynewfeaturerequiredforclosure. No unresolved ownedblockingfinding.",
+  "qualified_progress": "28/66 originalscopedreleases unchanged; T20/T21 coherentintegratedrelease stillopen",
+  "resources": "Measured4CPU16GiB/~.9GiBidle. Full51(2workers)+CLI(1)+independent26(1) raninparallel; finalbroader153(3)+joint239(1) filledquota. AllTorch/OMP/MKL/BLAS/Rayonthreads1. No CPUscarcitydefaultserialization.",
+  "custody": "180source573config13protectedartifacts;14registry/MAIN1available/13historicaltmpunavailable. Original15compiledcacheloopandhashesalsoexecuted. No creation/prune/delete; privatehistorybundleexcluded. CUDAunavailable/unqualified.",
+  "publication": "ExistingbranchonlyauthorizedWIPsource/evidence/docs durability; no PR/merge/newbranch/worktree orroutinehalt; exactSHA/CI observedafterpush",
+  "status_paragraph": "Current compiled-roster transport now has bounded source/spec/quality acceptance and executable compile\u2192effective-policy\u2192factory/native evidence. Fixed compiled source passed **51 owned cases**, independent Astra **26 cases**, and all six global guards including compiler CLI and zero-error mypy. A one-file current-constructor fixture repair preserved every reset assertion; the final candidate `92d2c81503908cd4f9f7c345d8c9729acb652058` then passed **153 broader compiler/direct-owner cases** and **239 curriculum/factory regressions**, plus independent fixture checks. These groups are recorded separately, not added as a synthetic total. [Checkpoint evidence](evidence/wave15-wip-01.json) proves source equivalence and preserves original failures. [Current compiled policy contract](CURRENT-COMPILED-POLICY-CONTRACT.md) documents native1.42, actual bars policy order versus global metadata column order, full expected-world validation and preserved authored cache recovery. No original artifact was converted or deleted. **WIP \u2014 NOT INTEGRATED-QUALIFIED \u2014 NOT RELEASED:** ordinary runner/world lifecycle/bank/current parent-native/learning/E2E/full repository/final acceptance remain open. The reviewed next world-lifecycle design explicitly preserves initial saves as INITIAL state, distinct from COMPLETED; implementation follows this durable checkpoint. Planned delivery continues without a routine halt."
+}

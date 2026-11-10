@@ -1,0 +1,19 @@
+{
+  "status": "OWNER_FIXTURE_PREREQUISITE_RED",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "candidate_tree": "e18e85776f16b507040c1671310b17595fb26b21",
+  "counts": {
+    "failed": 2,
+    "passed": 151,
+    "errors": 0
+  },
+  "wall_seconds": 113.51625967025757,
+  "failure_nodes": [
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestCrossUniverseLoadResets::test_resets_optimizer_target_and_rnd",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestReviewRound1Pins::test_adaptive_wrapper_annealing_state_resets"
+  ],
+  "cause": "Single shared old StaticCurriculum constructor helper blocks2 realoptimizer/target/RND/annealing assertions; no production failure inferred beforefixedfixture",
+  "custody": "Locked runner completed outerexit0 with full source/tree/postrunquietcheck BEFORE fixturewriterclearance;5workeridentities match. Standaloneaudit later verifiesallguardedsource/config/artifacts/index unchanged except EXACT registeredfixtureconstructor afterclosedrun, oldindexedb5d5...vsnew6957...recorded. Fixedcandidatefreshfullownerrecheck owed.",
+  "postcheck_ordering": "Fixture edit was cleared after sealed wrapper completion and before standalone negative audit; not retrospectively claiming currentworktreequiet at this later audit.",
+  "log_sha256": "b77bee6305fb0fae190ca9e67487c6ab1205c5f1e379484fcccc0bc26d8d105e"
+}

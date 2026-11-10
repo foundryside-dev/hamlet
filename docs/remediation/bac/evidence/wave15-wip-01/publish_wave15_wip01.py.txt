@@ -1,0 +1,91 @@
+"""Durable current-policy checkpoint, explicitly separate from integrated release."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *a: subprocess.check_output(['git', *a], cwd=R, text=True).strip()
+m = json.loads((W / 'wave15/r3-candidate.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree']
+assert not git('diff', '--name-only')
+for group in ('source_files', 'configs', 'artifacts'):
+    for name, expected in m[group].items():
+        assert sha(R / name) == expected, name
+execution = {name: git('rev-parse', m['candidate_tree'] + ':' + name)
+             for name in ('src', 'tests', 'configs', 'scripts')}
+out = D / 'evidence/wave15-wip-01'
+assert not out.exists()
+out.mkdir()
+artifacts = {}
+
+def copy(source, destination):
+    assert not destination.exists()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(source.read_bytes())
+    assert sha(source) == sha(destination)
+    artifacts[destination.relative_to(R).as_posix()] = {
+        'sha256': sha(destination), 'original': str(source)}
+
+for folder in sorted(Q.glob('wave15-r*')):
+    if folder.is_dir():
+        for p in sorted(folder.rglob('*')):
+            if p.is_file() and p.suffix in ('.json', '.log'):
+                copy(p, out / 'qualification' / folder.name / p.relative_to(folder))
+for p in sorted(Q.glob('wave15-r*.json')):
+    copy(p, out / 'qualification' / p.name)
+for folder in ('wave15', 'wave15-preparation'):
+    for p in sorted((W / folder).glob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt'):
+            copy(p, out / folder / p.name)
+for name in ('capture_wave14_round.py', 'capture_wave14_round-r4.py.txt',
+             'verify_bac_run.py', 'run_bac_packet_checks_locked.py',
+             'bac_source_identity.py', 'publish_wave15_wip01.py'):
+    copy(Q / name, out / (name if name.endswith('.txt') else name + '.txt'))
+for name in ('CURRENT-STATE.json', 'progress.md'):
+    copy(W / name, out / ('execution-' + name))
+copy(W / 'wave15-preparation/CURRENT-COMPILED-POLICY-CONTRACT.md', D / 'CURRENT-COMPILED-POLICY-CONTRACT.md')
+for name in ('WORLD-IDENTITY-DESIGN-HANDOFF.md', 'WORLD-IDENTITY-DESIGN-REVIEW-R4.md', 'WORLD-IDENTITY-SERVICE-CONTEXT-NOTE.md', 'QUALIFICATION-HELPER-REVIEW.md'):
+    copy(W / 'wave14-preparation' / name, out / 'updated-world-and-custody' / name)
+source = W / 'wave15-preparation/CURRENT-CURRICULUM-POLICY-UPDATED.md'
+destination = D / 'CURRENT-CURRICULUM-POLICY.md'
+prior = subprocess.check_output(['git', 'show', m['base_commit'] + ':docs/remediation/bac/CURRENT-CURRICULUM-POLICY.md'], cwd=R)
+assert destination.read_bytes() == prior
+destination.write_bytes(source.read_bytes())
+artifacts[destination.relative_to(R).as_posix()] = {'sha256': sha(destination), 'original': str(source)}
+receipt = json.loads((W / 'wave15/r3-checkpoint-receipt.json').read_text())
+manifest = {
+    'status': 'WIP — BOUNDED HANDOFFS ACCEPTED — NOT INTEGRATED-QUALIFIED — NOT RELEASED',
+    'packet': 'Current native1.42 compiled roster transport and live-token caller fixture',
+    'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+    'execution_subtrees': execution, 'inventories': m['inventories'],
+    'source_files': m['source_files'], 'config_changes': m['config_changes'],
+    'receipt': receipt, 'artifacts': artifacts,
+    'qualified_progress': '28/66 original scoped releases; current T20/T21 integrated release remains open',
+    'publication': 'Authorized existing remote branch, continued programme; no branch/worktree creation, PR or merge.',
+    'custody': '14 registry records/MAIN1 available;13 historical tmp paths unavailable. No recreation/prune/delete. Private Git backup excluded.',
+}
+p = D / 'evidence/wave15-wip-01.json'
+p.write_text(json.dumps(manifest, indent=2) + '\n')
+p = D / 'STATUS.md'
+p.write_text(p.read_text() + '\n\n' + receipt['status_paragraph'] + '\n')
+paths = [*artifacts, 'docs/remediation/bac/evidence/wave15-wip-01.json',
+         'docs/remediation/bac/STATUS.md']
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for name, expected in execution.items():
+    assert git('rev-parse', tree + ':' + name) == expected, name
+assert sha(R / '.defaults-ratchet') == m['source_files']['.defaults-ratchet']
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave15-wip-01/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'],
+          'publication_tree': tree, 'source_equivalence': 'PASS',
+          'artifact_count': len(artifacts),
+          'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave15-wip-01-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

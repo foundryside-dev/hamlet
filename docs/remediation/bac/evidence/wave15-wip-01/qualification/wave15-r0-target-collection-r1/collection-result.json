@@ -1,0 +1,28 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 4.6953699588775635,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py",
+    "tests/test_townlet/regressions/bac/test_effective_run.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r0-owned-target-r1",
+    "-k",
+    "test_actual_selected_level_roster_reaches_current_factory",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r0-target-collection-r1/collection.log",
+  "sha256": "f9d1ddf6c4decef7bedda8ec8fc227ba95539750bb5d422fbe55867b087d3937",
+  "candidate_tree": "9b024043e7fdb39f2ad06dba7612679471c87ff0",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "manifest_sha256": "f8b8f750b66c684285aed650dba06b7a322820a5fc0d374d3e3918743f347537",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

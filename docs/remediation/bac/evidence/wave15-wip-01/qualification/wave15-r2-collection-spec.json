@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave15/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave15-r2-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py",
+        "tests/test_townlet/regressions/bac/test_effective_run.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q",
+        "-k",
+        "test_actual_selected_level_roster_reaches_current_factory or test_authored_roster_edit_moves_static_identity_and_cache_fingerprint or test_authored_compiled_modes_rates_and_owned_native_future or (test_current_effective_payload_tampering_refuses and missing_policy)"
+      ]
+    }
+  ]
+}

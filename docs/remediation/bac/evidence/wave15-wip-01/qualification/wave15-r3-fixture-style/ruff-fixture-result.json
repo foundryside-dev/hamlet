@@ -1,0 +1,18 @@
+{
+  "name": "ruff-fixture",
+  "exit_code": 0,
+  "seconds": 0.38800501823425293,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave15-r3-fixture-style/ruff-fixture.log",
+  "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+  "base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+  "manifest_sha256": "1c2ae7f9cc0ba7782ed86fd8343e655dfb4d18e8e8f0982359279ff55a706095",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,114 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [153 items]
+
+...........................F..F......................................... [ 47%]
+........................................................................ [ 94%]
+.........                                                                [100%]
+=================================== FAILURES ===================================
+_______ TestCrossUniverseLoadResets.test_resets_optimizer_target_and_rnd _______
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+self = <test_token_checkpoint_gates.TestCrossUniverseLoadResets object at 0x7f6c1f11c690>
+
+    def test_resets_optimizer_target_and_rnd(self) -> None:
+        torch.manual_seed(11)
+>       population = self._population(spec_with_items())
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/training/test_token_checkpoint_gates.py:357: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_token_checkpoint_gates.TestCrossUniverseLoadResets object at 0x7f6c1f11c690>
+spec = TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'position_2', 'positi...0.0, 0.0)), effect_catalog_contexts=())), position_rank=2, transport_version='compact-1', encoding_version='token-1.1')
+
+    def _population(self, spec: TokenSpec) -> VectorizedPopulation:
+        """Construct the live compact token reader through its public runtime seam."""
+        device = torch.device("cpu")
+        env = SimpleNamespace(
+            token_spec=spec,
+            attach_runtime_registry=lambda registry: None,
+            set_exploration_module=lambda module: None,
+        )
+        population = VectorizedPopulation(
+            env=env,
+>           curriculum=StaticCurriculum(difficulty_level=0.5),
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            exploration=RNDExploration(obs_dim=spec.total_dims, embed_dim=8, device=device),
+            agent_ids=["agent_0"],
+            device=device,
+            brain_config=_token_brain_config(),
+            obs_dim=spec.total_dims,
+            train_frequency=1,
+            batch_size=2,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=5,
+        )
+E       TypeError: StaticCurriculum.__init__() missing 4 required keyword-only arguments: 'commit_mode', 'reward_mode', 'active_meters', and 'depletion_multiplier'
+
+tests/test_townlet/unit/training/test_token_checkpoint_gates.py:340: TypeError
+______ TestReviewRound1Pins.test_adaptive_wrapper_annealing_state_resets _______
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+self = <test_token_checkpoint_gates.TestReviewRound1Pins object at 0x7f6c1f11ca50>
+
+    def test_adaptive_wrapper_annealing_state_resets(self) -> None:
+        """Cross-universe load resets the AdaptiveIntrinsicExploration WRAPPER's
+        annealing/survival statistics, not just the inner RND (task-9 review I1)."""
+        torch.manual_seed(13)
+>       population = TestCrossUniverseLoadResets()._population(spec_with_items())
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/training/test_token_checkpoint_gates.py:421: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_token_checkpoint_gates.TestCrossUniverseLoadResets object at 0x7f6c1ec88e90>
+spec = TokenSpec(types=(TokenTypeSchema(type_name='self', payload_features=('position_0', 'position_1', 'position_2', 'positi...0.0, 0.0)), effect_catalog_contexts=())), position_rank=2, transport_version='compact-1', encoding_version='token-1.1')
+
+    def _population(self, spec: TokenSpec) -> VectorizedPopulation:
+        """Construct the live compact token reader through its public runtime seam."""
+        device = torch.device("cpu")
+        env = SimpleNamespace(
+            token_spec=spec,
+            attach_runtime_registry=lambda registry: None,
+            set_exploration_module=lambda module: None,
+        )
+        population = VectorizedPopulation(
+            env=env,
+>           curriculum=StaticCurriculum(difficulty_level=0.5),
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            exploration=RNDExploration(obs_dim=spec.total_dims, embed_dim=8, device=device),
+            agent_ids=["agent_0"],
+            device=device,
+            brain_config=_token_brain_config(),
+            obs_dim=spec.total_dims,
+            train_frequency=1,
+            batch_size=2,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=5,
+        )
+E       TypeError: StaticCurriculum.__init__() missing 4 required keyword-only arguments: 'commit_mode', 'reward_mode', 'active_meters', and 'depletion_multiplier'
+
+tests/test_townlet/unit/training/test_token_checkpoint_gates.py:340: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestCrossUniverseLoadResets::test_resets_optimizer_target_and_rnd
+FAILED tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestReviewRound1Pins::test_adaptive_wrapper_annealing_state_resets
+================== 2 failed, 151 passed in 108.85s (0:01:48) ===================

@@ -1,0 +1,11 @@
+{
+  "status": "NO RED; zero tests selected",
+  "candidate_tree": "9b024043e7fdb39f2ad06dba7612679471c87ff0",
+  "exit_code": 5,
+  "counts": {
+    "selected": 0,
+    "deselected": 51
+  },
+  "cause": "Root -k mistakenly included L0_test but the function loops levels internally, no parameter node has that label.",
+  "repair": "Exact function selector pre-collected before any production clearance; source unchanged."
+}

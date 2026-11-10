@@ -1,0 +1,190 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 153 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Package unit>
+        <Dir universe>
+          <Module test_brain_level_override.py>
+            <Function test_level_without_brain_yaml_inherits_pack_brain>
+            <Function test_level_brain_yaml_replaces_pack_brain_and_moves_the_hash>
+            <Function test_adding_level_brain_yaml_changes_config_hash>
+            <Function test_identical_level_brain_yaml_is_not_a_hash_fork>
+          <Module test_compiler_declaration_origins.py>
+            <Function test_metadata_refusals_name_relocated_declaration[version]>
+            <Function test_metadata_refusals_name_relocated_declaration[day_length]>
+            <Function test_optimization_refusals_name_relocated_entry[cascade]>
+            <Function test_optimization_refusals_name_relocated_entry[modulation_bar]>
+            <Function test_optimization_refusals_name_relocated_entry[modulation_affordance]>
+          <Module test_declaration_input_shapes.py>
+            <Function test_canonical_variable_bad_shapes_are_structured[variables: {}\nthis_is_a_typo: 10\n]>
+            <Function test_canonical_variable_bad_shapes_are_structured[variables: [oops]\n]>
+            <Function test_canonical_variable_bad_shapes_are_structured[variables: {bad: 1}\n]>
+            <Function test_canonical_variable_bad_shapes_are_structured[variables: {version: '1.0', extents: 7, item_profiles: [], declarations: []}\n]>
+            <Function test_numeric_label_collision_is_refused_before_coercion>
+            <Function test_labels_have_one_explicit_integer_identifier_shape>
+            <Function test_integer_labels_are_consumed>
+            <Function test_preflight_path_refusals_have_source_and_code[False]>
+            <Function test_preflight_path_refusals_have_source_and_code[True]>
+          <Module test_declaration_store.py>
+            <Function test_drive_can_move_to_nested_arbitrary_filename>
+            <Function test_multiple_yaml_documents_can_share_one_file>
+            <Function test_unknown_document_is_refused_with_origin>
+            <Function test_duplicate_drive_names_both_origins>
+            <Function test_missing_drive_names_declaration_instead_of_filename>
+            <Function test_original_items_smoke_refuses_every_ignored_file>
+            <Function test_clock_period_reference_preserves_compiled_semantics>
+        <Dir training>
+          <Module test_token_checkpoint_gates.py>
+            <Class TestAttachStampsTokenHashes>
+              <Function test_both_hashes_stamped>
+              <Function test_the_provenance_fields_all_stay>
+            <Class TestCompactReplayArtifactCut>
+              <Function test_checkpoint_format_moves_past_the_full_payload_abi>
+              <Function test_full_payload_v4_checkpoint_refuses_before_any_state_is_read>
+              <Function test_outer_v4_refuses_before_exact_keys_or_nested_state_are_read>
+              <Function test_outer_version_requires_an_exact_integer[5.0]>
+              <Function test_outer_version_requires_an_exact_integer[True]>
+            <Class TestTokenNetGate>
+              <Function test_matching_type_schema_hash_passes>
+              <Function test_mismatch_produces_the_banner>
+              <Function test_missing_hash_refuses>
+              <Function test_action_dim_still_gated_on_the_token_path>
+              <Function test_both_token_native_architectures_ignore_layout_variation[token_set]>
+              <Function test_both_token_native_architectures_ignore_layout_variation[recurrent]>
+              <Function test_live_identity_gate_threads_the_compiled_token_set_type>
+            <Class TestFlatNetLayoutGate>
+              <Function test_matching_layout_passes>
+              <Function test_layout_mismatch_refuses_for_flat_nets>
+              <Function test_missing_layout_hash_refuses>
+              <Function test_the_default_path_is_the_flat_path>
+            <Class TestLoadByTypeKey>
+              <Function test_intersection_loads_shared_types_only>
+              <Function test_report_is_loud>
+              <Function test_payload_schema_mismatch_refuses>
+              <Function test_action_dim_mismatch_cold_starts_q_head>
+              <Function test_identical_roster_loads_clean>
+              <Function test_refuses_non_token_networks>
+            <Class TestCrossUniverseLoadResets>
+              <Function test_resets_optimizer_target_and_rnd>
+              <Function test_refuses_non_token_population>
+            <Class TestReviewRound1Pins>
+              <Function test_target_only_modules_are_reported_cold>
+              <Function test_adaptive_wrapper_annealing_state_resets>
+          <Module test_brain_lineage_legibility.py>
+            <Function test_unforked_universe_has_matching_lineage_hashes>
+            <Function test_forked_universe_carries_the_fork>
+            <Function test_checkpoint_stamps_lineage_and_loader_states_the_fork>
+            <Function test_checkpoint_without_lineage_stamp_is_refused>
+        <Dir universe>
+          <Module test_compiled_universe_serialization.py>
+            <Function test_compiled_universe_serializes_vfs_profiles>
+            <Function test_compiled_universe_deserializes_vfs_profiles>
+            <Function test_compiled_universe_serializes_effect_catalog>
+            <Function test_compiled_universe_deserializes_effect_catalog>
+            <Function test_compiled_universe_serializes_runtime_action_space>
+            <Function test_compiled_universe_deserializes_runtime_action_space>
+            <Function test_compiled_universe_cache_round_trip_preserves_effect_commands>
+            <Function test_compiled_universe_round_trip_serialization>
+            <Function test_presentation_survives_msgpack_round_trip>
+            <Function test_items_appearance_survives_msgpack_round_trip>
+            <Function test_artifact_without_items_appearance_refuses>
+            <Function test_cache_served_compile_spawns_the_same_items_as_fresh>
+            <Function test_cache_served_compile_preserves_spawn_predicates>
+            <Function test_compiled_universe_clone_preserves_new_fields>
+            <Function test_compiled_universe_serializes_vfs_evaluation_marks>
+            <Function test_compiled_universe_deserializes_vfs_evaluation_marks>
+          <Module test_compiled_token_coherence.py>
+            <Function test_load_rejects_token_rank_tampering_against_persisted_grid2d_substrate>
+            <Function test_load_rejects_meter_binding_tampering_even_with_recomputed_hashes[reference]>
+            <Function test_load_rejects_meter_binding_tampering_even_with_recomputed_hashes[order]>
+            <Function test_load_rejects_meter_binding_tampering_even_with_recomputed_hashes[context]>
+            <Function test_load_rejects_meter_binding_tampering_even_with_recomputed_hashes[capacity]>
+            <Function test_load_rejects_affordance_binding_tampering_even_with_recomputed_hashes[reference]>
+            <Function test_load_rejects_affordance_binding_tampering_even_with_recomputed_hashes[order]>
+            <Function test_load_rejects_affordance_binding_tampering_even_with_recomputed_hashes[context]>
+            <Function test_load_rejects_affordance_binding_tampering_even_with_recomputed_hashes[capacity]>
+            <Function test_load_rejects_effect_catalog_tampering_used_by_affordance>
+            <Function test_load_rejects_self_binding_tampering_even_with_recomputed_hashes[reference]>
+            <Function test_load_rejects_self_binding_tampering_even_with_recomputed_hashes[capacity]>
+            <Function test_load_rejects_agent_capacity_tampering_even_with_recomputed_hashes>
+            <Function test_load_rejects_item_capacity_tampering_even_with_recomputed_hashes>
+            <Function test_load_rejects_nonzero_item_binding_tampering_even_with_recomputed_hashes[reference]>
+            <Function test_load_rejects_nonzero_item_binding_tampering_even_with_recomputed_hashes[order]>
+            <Function test_load_rejects_nonzero_item_binding_tampering_even_with_recomputed_hashes[capacity]>
+            <Function test_load_rejects_effect_binding_tampering_even_with_recomputed_hashes[reference]>
+            <Function test_load_rejects_effect_binding_tampering_even_with_recomputed_hashes[capacity]>
+            <Function test_load_rejects_effect_budget_change_against_stale_bindings>
+            <Function test_load_rejects_effect_scope_block_order_tampering_even_with_recomputed_hashes>
+            <Function test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes[reference]>
+            <Function test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes[order]>
+            <Function test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes[context]>
+            <Function test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes[capacity]>
+            <Function test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes[scope]>
+            <Function test_effect_catalog_budget_round_trips_exactly>
+            <Function test_load_rejects_effect_catalog_missing_required_budget>
+            <Function test_load_rejects_malformed_effect_catalog_budget[None-must be a mapping when effects are present]>
+            <Function test_load_rejects_malformed_effect_catalog_budget[budget1-must be a mapping]>
+            <Function test_load_rejects_malformed_effect_catalog_budget[budget2-must contain exactly]>
+            <Function test_load_rejects_malformed_effect_catalog_budget[budget3-must contain exactly]>
+            <Function test_load_rejects_malformed_effect_catalog_budget[budget4-max_active_effects\\.global.*non-negative integer]>
+            <Function test_load_rejects_malformed_effect_catalog_budget[budget5-max_active_effects\\.global.*non-negative integer]>
+            <Function test_load_rejects_effect_budget_when_catalog_is_empty>
+            <Function test_load_rejects_incomplete_token_type_roster_even_with_recomputed_hashes>
+            <Function test_load_rejects_stale_per_level_derived_hash[token_type_schema_hash]>
+            <Function test_load_rejects_stale_per_level_derived_hash[layout_hash]>
+            <Function test_load_rejects_stale_per_level_derived_hash[observation_schema_hash]>
+            <Function test_load_rejects_stale_per_level_derived_hash[vfs_hash]>
+            <Function test_valid_compiled_token_artifact_still_round_trips>
+            <Function test_load_refuses_bidirectional_ordinary_policy_disagreement[readable_by-registry]>
+            <Function test_load_refuses_bidirectional_ordinary_policy_disagreement[readable_by-profile]>
+            <Function test_load_refuses_bidirectional_ordinary_policy_disagreement[writable_by-registry]>
+            <Function test_load_refuses_bidirectional_ordinary_policy_disagreement[writable_by-profile]>
+            <Function test_load_refuses_ordinary_profile_roster_loss[registry]>
+            <Function test_load_refuses_ordinary_profile_roster_loss[profile]>
+            <Function test_load_refuses_hidden_item_policy_with_stale_hash[readable_by]>
+            <Function test_load_refuses_hidden_item_policy_with_stale_hash[writable_by]>
+            <Function test_load_refuses_item_profile_key_identity_disagreement>
+            <Function test_load_refuses_hidden_item_policy_even_if_variable_hash_is_refreshed>
+            <Function test_load_requires_profile_policy_fields[readable_by-agent_profile]>
+            <Function test_load_requires_profile_policy_fields[readable_by-global_profile]>
+            <Function test_load_requires_profile_policy_fields[readable_by-item_profiles]>
+            <Function test_load_requires_profile_policy_fields[writable_by-agent_profile]>
+            <Function test_load_requires_profile_policy_fields[writable_by-global_profile]>
+            <Function test_load_requires_profile_policy_fields[writable_by-item_profiles]>
+            <Function test_load_refuses_duplicate_profile_variable_identity[agent_profile]>
+            <Function test_load_refuses_duplicate_profile_variable_identity[item_profiles]>
+            <Function test_load_does_not_accept_deleted_whole_item_profile_with_stale_identity>
+            <Function test_load_refuses_same_entity_profile_metadata_disagreement[type-registry]>
+            <Function test_load_refuses_same_entity_profile_metadata_disagreement[type-profile]>
+            <Function test_load_refuses_same_entity_profile_metadata_disagreement[lifetime-registry]>
+            <Function test_load_refuses_same_entity_profile_metadata_disagreement[lifetime-profile]>
+            <Function test_load_refuses_same_entity_profile_metadata_disagreement[normalization-registry]>
+            <Function test_load_refuses_same_entity_profile_metadata_disagreement[normalization-profile]>
+            <Function test_load_refuses_same_entity_profile_dimension_disagreement[registry]>
+            <Function test_load_refuses_same_entity_profile_dimension_disagreement[profile]>
+            <Function test_load_refuses_same_entity_profile_tensor_shape_disagreement[registry]>
+            <Function test_load_refuses_same_entity_profile_tensor_shape_disagreement[profile]>
+            <Function test_load_accepts_scalar_expression_spelling_and_lowered_tensor_initializer>
+      <Package integration>
+        <Module test_token_transfer_contract.py>
+          <Class TestFixtureRosters>
+            <Function test_pack_a_has_variable_element_and_no_items>
+            <Function test_pack_b_has_items_and_no_variable_element>
+            <Function test_pack_c_is_core_only>
+            <Function test_no_token_advisories>
+            <Function test_type_schema_hash_is_engine_wide_layout_is_not>
+          <Class TestTransferContract>
+            <Function test_train_step_on_a_then_load_by_type_and_forward_on_b>
+            <Function test_token_gate_passes_across_universes_flat_gate_refuses>
+            <Function test_flat_view_forward_feedforward_and_dueling>
+            <Function test_payload_schema_mismatch_on_pack_c_refuses_loudly>
+
+========================= 153 tests collected in 0.20s =========================

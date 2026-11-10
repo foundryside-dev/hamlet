@@ -1,0 +1,231 @@
+ src/townlet/universe/compiled.py                   | 24 +++++++++++-----
+ .../bac/test_curriculum_compiled_roster.py         | 33 +++++++++++++++++++---
+ 2 files changed, 46 insertions(+), 11 deletions(-)
+
+diff --git a/src/townlet/universe/compiled.py b/src/townlet/universe/compiled.py
+index 6912966f..1fa8c622 100644
+--- a/src/townlet/universe/compiled.py
++++ b/src/townlet/universe/compiled.py
+@@ -391,37 +391,45 @@ class CompiledUniverse:
+             self.brain,
+             level.training,
+             primary_level=self.metadata.primary_level,
+             origins=origins,
+             drive_intrinsic=level.drive.intrinsic,
+             declared_meter_names=declared_meter_names,
+         )
+ 
+     def _validate_meter_rosters(self) -> tuple[str, ...]:
+         """Keep authored bars, compiled declarations and public summaries aligned."""
++        environment_names = tuple(meter.name for meter in self.environment.environment.meters)
++        if any(not isinstance(name, str) or not name.strip() for name in environment_names) or len(set(environment_names)) != len(
++            environment_names
++        ):
++            raise ValueError("Compiled universe environment meter roster must contain unique nonblank strings")
+         for level_name, level in self.all_levels.items():
+             names = tuple(meter.name for meter in level.bars.meters)
+             if any(not isinstance(name, str) or not name.strip() for name in names) or len(set(names)) != len(names):
+                 raise ValueError(f"Compiled universe meter roster for {level_name!r} must contain unique nonblank strings")
+             if tuple(meter.name for meter in level.meter_declarations) != names:
+                 raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter declarations")
+-            if tuple(meter.name for meter in level.meter_metadata.meters) != names:
+-                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter metadata")
+-            if tuple(meter.index for meter in level.meter_metadata.meters) != tuple(range(len(names))):
++            if set(names) != set(environment_names):
++                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with environment vocabulary")
++            if tuple(meter.name for meter in level.meter_metadata.meters) != environment_names:
++                raise ValueError(f"Compiled universe meter metadata for {level_name!r} disagrees with environment declaration order")
++            if tuple(meter.index for meter in level.meter_metadata.meters) != tuple(range(len(environment_names))):
+                 raise ValueError(f"Compiled universe meter roster for {level_name!r} has inconsistent meter indices")
+ 
+         selected = self.get_level(self.metadata.primary_level)
+         selected_names = tuple(meter.name for meter in selected.bars.meters)
++        metadata_names = tuple(meter.name for meter in selected.meter_metadata.meters)
+         if (
+-            tuple(self.metadata.meter_names) != selected_names
+-            or self.metadata.meter_count != len(selected_names)
+-            or self.metadata.meter_name_to_index != {name: index for index, name in enumerate(selected_names)}
++            tuple(self.metadata.meter_names) != metadata_names
++            or self.metadata.meter_count != len(metadata_names)
++            or self.metadata.meter_name_to_index != {meter.name: meter.index for meter in selected.meter_metadata.meters}
+         ):
+             raise ValueError("Compiled universe selected meter roster disagrees with public metadata summary")
+         return selected_names
+ 
+     def _validate_effective_run(self, run: EffectiveRunConfig) -> EffectiveRunConfig:
+         """Compare the complete transported view with independently resolved inputs."""
+         expected = self._resolve_effective_run(run.origins)
+         expected.validate_payload(run.to_dict())
+         return expected
+ 
+@@ -582,20 +590,22 @@ class CompiledUniverse:
+         }
+ 
+     @classmethod
+     def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
+         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
+         _validate_compiled_schema_version(payload, source="dictionary")
+         known_fields = REQUIRED_COMPILED_UNIVERSE_FIELDS
+         _refuse_unknown_fields(payload, known_fields, field_name="compiled universe")
+         for field_name in known_fields:
+             _required_field(payload, field_name)
++        effective_payload = _required_mapping(payload, "effective_run")
++        _required_mapping(effective_payload, "effective_run.static_policy")
+ 
+         # The profiles deserialize before the levels: each level's transition schedule
+         # inlines the expression variables its writes and rules read (VFS round-2 S4).
+         raw_vfs_profiles = _required_field(payload, "compiled_vfs_profiles")
+         compiled_vfs_profiles: CompiledVFSProfiles | None
+         expression_profiles: tuple[CompiledGlobalProfile | None, ...]
+         if raw_vfs_profiles is None:
+             compiled_vfs_profiles = None
+             expression_profiles = ()
+         else:
+@@ -720,21 +730,21 @@ class CompiledUniverse:
+             experiment_hash=_required_field(payload, "experiment_hash"),
+             stratum_hash=_required_field(payload, "stratum_hash"),
+             environment_hash=_required_field(payload, "environment_hash"),
+             actions_hash=_required_field(payload, "actions_hash"),
+             items_hash=_required_field(payload, "items_hash"),
+             variables_hash=_required_field(payload, "variables_hash"),
+             effects_hash=_required_field(payload, "effects_hash"),
+             all_levels=all_levels,
+         )
+         _validate_compiled_token_coherence(compiled)
+-        run = EffectiveRunConfig.from_dict(_required_mapping(payload, "effective_run"))
++        run = EffectiveRunConfig.from_dict(effective_payload)
+         expected = compiled._validate_effective_run(run)
+         object.__setattr__(compiled, "effective_run", expected)
+         return compiled
+ 
+     def save_to_cache(self, path: Path) -> None:
+         """Serialize compiled universe to MessagePack file."""
+         data = self.to_dict()
+         packed = msgpack.packb(data, use_bin_type=True)
+         path.write_bytes(packed)
+ 
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py b/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py
+index b0085f25..7fa10a82 100644
+--- a/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py
++++ b/tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py
+@@ -1,15 +1,16 @@
+ """Real authored compilation binds the current curriculum view to selected bars."""
+ 
+ import hashlib
+ import json
+ import shutil
++from collections.abc import Mapping
+ from copy import deepcopy
+ from pathlib import Path
+ 
+ import msgpack
+ import pytest
+ import torch
+ import yaml
+ 
+ from townlet.config.effective_run import EffectiveRunConfig, resolve_effective_run
+ from townlet.curriculum.factory import build_curriculum
+@@ -26,20 +27,41 @@ def pack(tmp_path):
+     shutil.copytree(ROOT / "configs/test/token_set_smoke", destination, ignore=shutil.ignore_patterns(".compiled"))
+     return destination
+ 
+ 
+ def edit(path, update):
+     payload = yaml.safe_load(path.read_text())
+     update(payload)
+     path.write_text(yaml.safe_dump(payload, sort_keys=False))
+ 
+ 
++def assert_exact_tree(actual, expected):
++    """Compare every native-state leaf without invoking tensor truth conversion."""
++    assert type(actual) is type(expected)
++    if isinstance(actual, torch.Tensor):
++        assert actual.dtype == expected.dtype
++        assert actual.device == expected.device
++        assert actual.layout == expected.layout
++        assert actual.shape == expected.shape
++        assert torch.equal(actual, expected)
++    elif isinstance(actual, Mapping):
++        assert actual.keys() == expected.keys()
++        for key in actual:
++            assert_exact_tree(actual[key], expected[key])
++    elif isinstance(actual, list | tuple):
++        assert len(actual) == len(expected)
++        for actual_item, expected_item in zip(actual, expected, strict=True):
++            assert_exact_tree(actual_item, expected_item)
++    else:
++        assert actual == expected
++
++
+ def compile_pack(pack, *, level="L0_test", cache=False):
+     return UniverseCompiler().compile(pack, primary_level=level, use_cache=cache)
+ 
+ 
+ def roster(compiled):
+     return tuple(meter.name for meter in compiled.get_level(compiled.metadata.primary_level).bars.meters)
+ 
+ 
+ def resolve_for(compiled, *, names, training=None):
+     run = compiled.effective_run
+@@ -60,30 +82,33 @@ def manager_for(compiled):
+         run.training,
+         curriculum_options=run.options.curriculum,
+         static_policy=run.static_policy,
+         device=torch.device("cpu"),
+     )
+     manager.initialize_population(run.training.population.size)
+     return manager
+ 
+ 
+ def test_actual_selected_level_roster_reaches_current_factory(pack):
++    environment = yaml.safe_load((pack / "environment.yaml").read_text())
++    metadata_order = tuple(meter["name"] for meter in environment["environment"]["meters"])
+     edit(pack / "levels/L1_attention/bars.yaml", lambda p: p["bars"]["meters"].reverse())
+     first = compile_pack(pack)
+     selected = compile_pack(pack, level="L1_attention")
+     expected = roster(selected)
+     assert expected == tuple(reversed(roster(first)))
+     assert selected.metadata.primary_level == "L1_attention"
+     assert selected.effective_run.primary_level == "L1_attention"
+     assert selected.effective_run.static_policy.active_meters == expected
+     assert tuple(m.name for m in selected.get_level("L1_attention").meter_declarations) == expected
+-    assert tuple(m.name for m in selected.get_level("L1_attention").meter_metadata.meters) == expected
++    assert tuple(m.name for m in selected.get_level("L1_attention").meter_metadata.meters) == metadata_order
++    assert selected.metadata.meter_names == metadata_order
+     assert selected.effective_run.options.curriculum.commit_mode == "completion"
+     assert selected.effective_run.options.curriculum.difficulty_mode == "stage_band"
+     manager = manager_for(selected)
+     decisions = manager.get_batch_decisions(None, [f"lane-{i}" for i in range(selected.effective_run.training.population.size)])
+     assert all(decision.difficulty_level == 0.5 for decision in decisions)
+     assert all(decision.reward_mode == "shaped" for decision in decisions)
+     assert all(decision.depletion_multiplier == 1.0 for decision in decisions)
+     assert all(decision.active_meters == list(expected) for decision in decisions)
+     decisions[0].active_meters.clear()
+     assert manager.get_batch_decisions(None, [f"lane-{i}" for i in range(len(decisions))])[0].active_meters == list(expected)
+@@ -318,23 +343,23 @@ def test_authored_compiled_modes_rates_and_owned_native_future(pack, mode, rate,
+     assert compiled.effective_run.training.curriculum.adversarial.adaptation_rate == rate
+     manager = manager_for(compiled)
+     ids = [f"lane-{i}" for i in range(compiled.effective_run.training.population.size)]
+     outcome = completion(compiled, sequence=0)
+     manager.commit_episode_outcomes([outcome])
+     assert manager.get_batch_decisions(None, ids)[0].difficulty_level == pytest.approx(expected)
+     state = manager.checkpoint_state()
+     assert set(state) == {"version", "strategy", "completion"}
+     assert state["version"] == 2
+     manager.commit_episode_outcomes([outcome])
+-    assert manager.checkpoint_state() == state
++    assert_exact_tree(manager.checkpoint_state(), state)
+     restored = manager_for(CompiledUniverse.from_dict(compiled.to_dict()))
+     restored.validate_checkpoint_state(state)
+     restored.load_state(state)
+     owned = deepcopy(state)
+     state.clear()
+-    assert restored.checkpoint_state() == owned
++    assert_exact_tree(restored.checkpoint_state(), owned)
+     future = completion(compiled, sequence=1)
+     manager.commit_episode_outcomes([future])
+     prepared = restored.prepare_episode_outcomes([future])
+     restored.commit_prepared_episode_outcomes(prepared)
+-    assert restored.checkpoint_state() == manager.checkpoint_state()
++    assert_exact_tree(restored.checkpoint_state(), manager.checkpoint_state())
+     assert restored.get_batch_decisions(None, ids) == manager.get_batch_decisions(None, ids)

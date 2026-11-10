@@ -168,9 +168,9 @@ from townlet.world.expression.references import ENTITY_NAMES
 # `effects_hash` (canonical content of the `effects` declaration, None without one) and each
 # level's `items_appearance_hash` (canonical spawn rules, None without a declaration). Both
 # are required on load; a 1.39 artifact lacks them and is refused as stale.
-# 1.41 adds a validated current effective view. Known 1.40 payloads contain the
-# complete selected base/training/drive inputs and derive that view on access.
-COMPILED_SCHEMA_VERSION = "1.41"
+# 1.42 requires the current roster-bound effective view. Older native formats
+# describe a different policy contract and must be recompiled from authoring.
+COMPILED_SCHEMA_VERSION = "1.42"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS: tuple[str, ...] = (
     "compiled_schema_version",
@@ -197,10 +197,9 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS: tuple[str, ...] = (
     "variables_hash",
     "effects_hash",
     "all_levels",
+    "effective_run",
 )
 """Every top-level key ``to_dict`` writes. A payload with a key outside this set is a foreign or stale artifact."""
-V1_40_COMPILED_UNIVERSE_FIELDS = REQUIRED_COMPILED_UNIVERSE_FIELDS
-REQUIRED_COMPILED_UNIVERSE_FIELDS += ("effective_run",)
 
 COMPILED_LEVEL_FIELDS = (
     "level_name",
@@ -382,18 +381,57 @@ class CompiledUniverse:
         self._derive_effective_run({"capture_origin": "current compiled configuration"})
 
     def _derive_effective_run(self, origins: Mapping[str, str]) -> None:
+        object.__setattr__(self, "effective_run", self._resolve_effective_run(origins))
+
+    def _resolve_effective_run(self, origins: Mapping[str, str]) -> EffectiveRunConfig:
+        """Resolve a candidate from actual compiled inputs without installing it."""
+        declared_meter_names = self._validate_meter_rosters()
         level = self.get_level(self.metadata.primary_level)
-        object.__setattr__(
-            self,
-            "effective_run",
-            resolve_effective_run(
-                self.brain,
-                level.training,
-                primary_level=self.metadata.primary_level,
-                origins=origins,
-                drive_intrinsic=level.drive.intrinsic,
-            ),
+        return resolve_effective_run(
+            self.brain,
+            level.training,
+            primary_level=self.metadata.primary_level,
+            origins=origins,
+            drive_intrinsic=level.drive.intrinsic,
+            declared_meter_names=declared_meter_names,
         )
+
+    def _validate_meter_rosters(self) -> tuple[str, ...]:
+        """Keep authored bars, compiled declarations and public summaries aligned."""
+        environment_names = tuple(meter.name for meter in self.environment.environment.meters)
+        if any(not isinstance(name, str) or not name.strip() for name in environment_names) or len(set(environment_names)) != len(
+            environment_names
+        ):
+            raise ValueError("Compiled universe environment meter roster must contain unique nonblank strings")
+        for level_name, level in self.all_levels.items():
+            names = tuple(meter.name for meter in level.bars.meters)
+            if any(not isinstance(name, str) or not name.strip() for name in names) or len(set(names)) != len(names):
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} must contain unique nonblank strings")
+            if tuple(meter.name for meter in level.meter_declarations) != names:
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with meter declarations")
+            if set(names) != set(environment_names):
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} disagrees with environment vocabulary")
+            if tuple(meter.name for meter in level.meter_metadata.meters) != environment_names:
+                raise ValueError(f"Compiled universe meter metadata for {level_name!r} disagrees with environment declaration order")
+            if tuple(meter.index for meter in level.meter_metadata.meters) != tuple(range(len(environment_names))):
+                raise ValueError(f"Compiled universe meter roster for {level_name!r} has inconsistent meter indices")
+
+        selected = self.get_level(self.metadata.primary_level)
+        selected_names = tuple(meter.name for meter in selected.bars.meters)
+        metadata_names = tuple(meter.name for meter in selected.meter_metadata.meters)
+        if (
+            tuple(self.metadata.meter_names) != metadata_names
+            or self.metadata.meter_count != len(metadata_names)
+            or self.metadata.meter_name_to_index != {meter.name: meter.index for meter in selected.meter_metadata.meters}
+        ):
+            raise ValueError("Compiled universe selected meter roster disagrees with public metadata summary")
+        return selected_names
+
+    def _validate_effective_run(self, run: EffectiveRunConfig) -> EffectiveRunConfig:
+        """Compare the complete transported view with independently resolved inputs."""
+        expected = self._resolve_effective_run(run.origins)
+        expected.validate_payload(run.to_dict())
+        return expected
 
     @property
     def available_levels(self) -> list[str]:
@@ -468,11 +506,14 @@ class CompiledUniverse:
             items_hash=self.items_hash,
             effects_hash=self.effects_hash,
         )
-        object.__setattr__(cloned, "effective_run", EffectiveRunConfig.from_dict(self.effective_run.to_dict()))
+        run = EffectiveRunConfig.from_dict(self.effective_run.to_dict())
+        expected = cloned._validate_effective_run(run)
+        object.__setattr__(cloned, "effective_run", expected)
         return cloned
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to a serialization-friendly dictionary."""
+        expected = self._validate_effective_run(self.effective_run)
         return {
             "compiled_schema_version": COMPILED_SCHEMA_VERSION,
             "metadata": _dataclass_to_plain(self.metadata),
@@ -481,7 +522,7 @@ class CompiledUniverse:
             "environment": self.environment.model_dump(),
             "actions": self.actions.model_dump(),
             "brain": self.brain.model_dump(),
-            "effective_run": self.effective_run.to_dict(),
+            "effective_run": expected.to_dict(),
             "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
             "presentation": self.presentation.model_dump() if self.presentation is not None else None,
             "compiled_vfs_profiles": (
@@ -553,11 +594,11 @@ class CompiledUniverse:
         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
         _validate_compiled_schema_version(payload, source="dictionary")
         known_fields = REQUIRED_COMPILED_UNIVERSE_FIELDS
-        if payload["compiled_schema_version"] == "1.40":
-            known_fields = V1_40_COMPILED_UNIVERSE_FIELDS
         _refuse_unknown_fields(payload, known_fields, field_name="compiled universe")
         for field_name in known_fields:
             _required_field(payload, field_name)
+        effective_payload = _required_mapping(payload, "effective_run")
+        _required_mapping(effective_payload, "effective_run.static_policy")
 
         # The profiles deserialize before the levels: each level's transition schedule
         # inlines the expression variables its writes and rules read (VFS round-2 S4).
@@ -696,14 +737,9 @@ class CompiledUniverse:
             all_levels=all_levels,
         )
         _validate_compiled_token_coherence(compiled)
-        if payload["compiled_schema_version"] == "1.40":
-            compiled._derive_effective_run(
-                {"capture_origin": "current derivation from known compiled schema 1.40; not historically captured"}
-            )
-        else:
-            run = EffectiveRunConfig.from_dict(_required_mapping(payload, "effective_run"))
-            compiled._derive_effective_run(run.origins)
-            compiled.effective_run.validate_payload(run.to_dict())
+        run = EffectiveRunConfig.from_dict(effective_payload)
+        expected = compiled._validate_effective_run(run)
+        object.__setattr__(compiled, "effective_run", expected)
         return compiled
 
     def save_to_cache(self, path: Path) -> None:
@@ -833,7 +869,7 @@ def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[st
 
 def _validate_compiled_schema_version(payload: Mapping[str, Any], *, source: str) -> None:
     schema_version = _required_field(payload, "compiled_schema_version")
-    if schema_version not in ("1.40", COMPILED_SCHEMA_VERSION):
+    if schema_version != COMPILED_SCHEMA_VERSION:
         raise ValueError(
             f"Compiled universe schema mismatch for {source}: "
             f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "

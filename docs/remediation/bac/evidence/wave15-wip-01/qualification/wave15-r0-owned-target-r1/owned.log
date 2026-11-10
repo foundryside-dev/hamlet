@@ -1,0 +1,58 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 51 items / 50 deselected / 1 selected
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py F  [100%]
+
+=================================== FAILURES ===================================
+__________ test_actual_selected_level_roster_reaches_current_factory ___________
+
+pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave15-r0-owned-target-r1/test_actual_selected_level_ros0/authored-pack')
+
+    def test_actual_selected_level_roster_reaches_current_factory(pack):
+        edit(pack / "levels/L1_attention/bars.yaml", lambda p: p["bars"]["meters"].reverse())
+>       first = compile_pack(pack)
+                ^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py:37: in compile_pack
+    return UniverseCompiler().compile(pack, primary_level=level, use_cache=cache)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/universe/compiler.py:266: in compile
+    compiled = self._stage_8_emit_artifact(
+src/townlet/universe/compiler.py:641: in _stage_8_emit_artifact
+    compiled = CompiledUniverse(
+<string>:26: in __init__
+    ???
+src/townlet/universe/compiled.py:382: in __post_init__
+    self._derive_effective_run({"capture_origin": "current compiled configuration"})
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'CompiledUniverse' object has no attribute 'effective_run'") raised in repr()] CompiledUniverse object at 0x7fd9115bbe00>
+origins = {'capture_origin': 'current compiled configuration'}
+
+    def _derive_effective_run(self, origins: Mapping[str, str]) -> None:
+        level = self.get_level(self.metadata.primary_level)
+        object.__setattr__(
+            self,
+            "effective_run",
+>           resolve_effective_run(
+                self.brain,
+                level.training,
+                primary_level=self.metadata.primary_level,
+                origins=origins,
+                drive_intrinsic=level.drive.intrinsic,
+            ),
+        )
+E       TypeError: resolve_effective_run() missing 1 required keyword-only argument: 'declared_meter_names'
+
+src/townlet/universe/compiled.py:389: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py::test_actual_selected_level_roster_reaches_current_factory
+======================= 1 failed, 50 deselected in 3.27s =======================

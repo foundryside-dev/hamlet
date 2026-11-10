@@ -206,25 +206,18 @@ def test_materialized_provider_defaults_are_not_authored_overrides(pack):
     assert CompiledUniverse.from_dict(universe.to_dict()).effective_run.to_dict() == run.to_dict()
 
 
-def test_known_v1_40_compiled_cache_derives_current_effective_view_without_rehashing(pack):
+@pytest.mark.parametrize("version", ["1.40", "1.41", "1.39", "9.99"])
+def test_obsolete_compiled_cache_refuses_without_rewriting_payload(pack, version):
     current = compile_pack(pack)
     payload = current.to_dict()
-    payload["compiled_schema_version"] = "1.40"
-    payload.pop("effective_run", None)
+    payload["compiled_schema_version"] = version
     original = deepcopy(payload)
-    loaded = CompiledUniverse.from_dict(payload)
-    assert hasattr(loaded, "effective_run"), "known 1.40 caches need a truthful derived current view"
-    assert payload == original
-    assert loaded.brain_hash == original["brain_hash"]
-    assert loaded.pack_brain_hash == original["pack_brain_hash"]
-    assert loaded.execution_hash == current.execution_hash
-    assert "1.40" in loaded.effective_run.derivations["capture_origin"]
-    payload["compiled_schema_version"] = "1.39"
     with pytest.raises(ValueError, match="schema mismatch"):
         CompiledUniverse.from_dict(payload)
+    assert payload == original
 
 
-def test_original_historical_compiled_caches_stay_readable():
+def test_original_historical_compiled_caches_refuse_and_keep_original_bytes():
     manifest = json.loads((HISTORY / "portable-manifest.json").read_text())
     checked = 0
     for artifact in manifest["canonical_artifacts"]:
@@ -237,11 +230,8 @@ def test_original_historical_compiled_caches_stay_readable():
             assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
             payload = msgpack.unpackb(path.read_bytes(), raw=False, strict_map_key=False)
             assert payload["compiled_schema_version"] == "1.40"
-            loaded = CompiledUniverse.load_from_cache(path)
-            assert hasattr(loaded, "effective_run"), "original historic cache must remain readable"
-            assert loaded.brain_hash == payload["brain_hash"]
-            assert loaded.pack_brain_hash == payload["pack_brain_hash"]
-            assert "1.40" in loaded.effective_run.derivations["capture_origin"]
+            with pytest.raises(ValueError, match="schema mismatch"):
+                CompiledUniverse.load_from_cache(path)
             assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
             checked += 1
     assert checked == 15
@@ -249,8 +239,8 @@ def test_original_historical_compiled_caches_stay_readable():
     path = HISTORY / "sequence-pack/.compiled/universe-L1_full_observability.msgpack"
     before = path.read_bytes()
     assert hashlib.sha256(before).hexdigest() == "5a654e72b714e771f7f9326b93647d71d804e48ff5fffd48d0f76d6d360c415a"
-    loaded = CompiledUniverse.load_from_cache(path)
-    assert loaded.effective_run.effective_brain.architecture.type == "recurrent"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        CompiledUniverse.load_from_cache(path)
     assert path.read_bytes() == before
 
 
@@ -286,6 +276,7 @@ def test_shadowed_base_fields_remain_authored_presets(pack):
         primary_level=run.primary_level,
         origins=run.origins,
         drive_intrinsic=universe.get_level("L0_test").drive.intrinsic,
+        declared_meter_names=tuple(meter.name for meter in universe.get_level("L0_test").bars.meters),
     )
     assert changed.authored_brain_hash != run.authored_brain_hash
     assert changed.authored_identity != run.authored_identity
@@ -308,6 +299,7 @@ def test_selected_provider_activity_is_schema_owned(pack, strategy):
         primary_level=run.primary_level,
         origins=run.origins,
         drive_intrinsic=universe.get_level("L0_test").drive.intrinsic,
+        declared_meter_names=tuple(meter.name for meter in universe.get_level("L0_test").bars.meters),
     )
     assert changed.authored_identity != run.authored_identity
     assert (changed.execution_hash != run.execution_hash) == (strategy in ("rnd", "adaptive_rnd", "icm"))
@@ -323,6 +315,7 @@ def test_selected_provider_activity_is_schema_owned(pack, strategy):
             primary_level=run.primary_level,
             origins=run.origins,
             drive_intrinsic=universe.get_level("L0_test").drive.intrinsic,
+            declared_meter_names=tuple(meter.name for meter in universe.get_level("L0_test").bars.meters),
         )
         assert preset.authored_identity != run.authored_identity
         assert preset.execution_hash == run.execution_hash

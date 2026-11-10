@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "source_index_config_artifact_registry_custody": "PASS",
+  "source_guards": 797,
+  "configs": 573,
+  "artifacts": 13,
+  "registry": 14,
+  "candidate_tree": "8362228ed09b26b2b58e5d7c748d42a052f45689",
+  "seconds": 161.13750314712524,
+  "scope": "Non-pytest compiler wrapper with exact source/index/config/artifact before-after custody. Child compiler processes were not instrumented with pytest identity hook; no child-specific import identity claim."
+}

@@ -1,0 +1,23 @@
+{
+  "name": "full-collection",
+  "exit_code": 2,
+  "seconds": 0.0921623706817627,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/bac-review-2026-11-01/qualification/exec_default_uv_pytest.py",
+    "tests",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r5-full-collection/full-collection.log",
+  "sha256": "b64ea10530a298d1d04048e84ebee9cf09ebdd35846f7d20e186e65713e32588",
+  "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "5ed95655a99a1d293a52fda1d9d097219ce89e5ec78a4b56dbe08b73ca46a38b",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

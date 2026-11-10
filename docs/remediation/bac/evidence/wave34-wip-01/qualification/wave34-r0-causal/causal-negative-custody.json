@@ -1,0 +1,14 @@
+{
+  "status": "EXPECTED_CAUSAL_RED",
+  "candidate_tree": "bdb8f480c4dc9fec403d13b7691a9e9f2d14611a",
+  "failed": 2,
+  "cause": "Actual runtime factory lookup absent; collection144 and17genuineRig/HCcontrols pass independently",
+  "negative_custody": "PASS",
+  "sources": 356,
+  "configs": 573,
+  "artifacts": 13,
+  "pytest_processes": 3,
+  "registry": 14,
+  "available": 1,
+  "wall_seconds": 11.024471282958984
+}

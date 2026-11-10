@@ -1,0 +1,24 @@
+{
+  "prior_qualified_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "prior_qualified_candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+  "current_runtime_candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+  "changed_implementation_or_test_sources": [
+    "src/townlet/config/exploration_policy.py",
+    "tests/test_townlet/regressions/bac/test_exploration_factory.py"
+  ],
+  "previous_publication_documentation_change": {
+    "path": "docs/remediation/bac/STATUS.md",
+    "sha256": "abfcee931e6b94d972f502552c4479a2c3f148037765003119053277836557aa",
+    "provenance": "Exactalready-published47commitSTATUS; previousprepublicationcandidatehashdifferslegitimately."
+  },
+  "unchanged_core_source_hashes": {
+    "src/townlet/exploration/curiosity_checkpoint.py": "4de4c481eca21fb3d7fa9aea8804c2b2875c63df6077046e7e286470b6faeb5a",
+    "src/townlet/exploration/scoped_curiosity.py": "294ef0f8d9f11e74869567e21f2ca44b623fe1cd54ca5c3eb59819c80681a05f",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py": "672a1441520b69cfda5045220a29d2abf891afa7fbad8d461c5e22c91adab893",
+    "tests/test_townlet/regressions/bac/test_none_scale.py": "646797d6f256c6396f57b0203413614bb0c4b7b2786b764ed62c425b45e53a13"
+  },
+  "configs_unchanged": 573,
+  "protected_artifacts_unchanged": 13,
+  "unchanged_prior_guarded_paths": 353,
+  "scope": "Source equivalence only; new RP/runtime andstrictcurrentparser qualify inownfive-file4582context; CP/BANK/native core/source fixtures unchanged from qualified47, provenanceSTATUSchangeisnotproductiondifference."
+}

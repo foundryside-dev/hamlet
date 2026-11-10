@@ -1,0 +1,19 @@
+{
+  "candidate_tree": "b40a2869633f4ffe0c36bf9a13083998a99d6f02",
+  "passed": 131,
+  "failed": 19,
+  "wall_seconds": 30.51738929748535,
+  "negative_custody": "PASS",
+  "sources": 356,
+  "configs": 573,
+  "artifacts": 13,
+  "pytest_processes": 5,
+  "registry": 14,
+  "available": 1,
+  "classifications": {
+    "outer_allocation_report_misattributed_to_nested_guard": 11,
+    "helper_source_argument_wrong_type": 6,
+    "adaptive_weight_threshold_recipe_unresolved": 2
+  },
+  "review_scope": "Two testcall/baseline problems confirmed/sourceAPIcapsule pending; adaptive legitimate-change controls need actualproviderfacts beforedisposition; no repeatedbroadqualification beforecausalrepair."
+}

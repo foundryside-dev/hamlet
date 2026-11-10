@@ -1,7 +1,7 @@
-"""One authored exploration boundary; provider construction belongs to T18d.
+"""Authored exploration policy and the current delegated runtime boundary.
 
 Execution identity hashes resolved active behavior only. Authored identity retains
-presets and provenance separately. No compiler, environment or provider is imported.
+presets and provenance separately. Runtime producers are imported at construction.
 """
 
 from __future__ import annotations
@@ -9,10 +9,13 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections.abc import Mapping
-from dataclasses import dataclass, fields
+from collections.abc import Callable, Mapping
+from copy import deepcopy
+from dataclasses import dataclass, fields, replace
+from functools import wraps
+from threading import RLock
 from types import MappingProxyType
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, cast
 
 import torch
 from torch import Tensor
@@ -20,6 +23,9 @@ from torch import Tensor
 from townlet.config.bac_options import BaCOptions, CuriosityScopeOptions, resolve_bac_options, resolve_curiosity_scope
 from townlet.config.drive_as_code import IntrinsicStrategyConfig
 from townlet.config.training_v2_config import TrainingV2Config
+
+if TYPE_CHECKING:
+    from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 
 Strategy = Literal["none", "rnd", "adaptive_rnd", "count_based", "icm"]
 STRATEGIES = ("none", "rnd", "adaptive_rnd", "count_based", "icm")
@@ -31,14 +37,6 @@ SCOPE_UNITS = {
     "scope_origin": "declaration_origin",
     "scope_guarantee": "ownership_guarantee",
 }
-# Exact supported pre-scope policy field set, not a generic missing-tag fallback.
-LEGACY_POLICY_FIELDS = frozenset(
-    "strategy epsilon_start epsilon_end epsilon_decay rnd_feature_dim rnd_learning_rate predictor_batch_size "
-    "initial_intrinsic_weight min_intrinsic_weight variance_threshold min_survival_fraction max_episode_length survival_window "
-    "decay_rate drive_base_weight modifier_names provider_parameters reward_observation_phase predictor_observation_phase "
-    "predictor_input_kind field_roles service_mode max_updates_per_tick max_pending_rows overflow_policy "
-    "provider_parameter_source raw_provider_parameters authored_parameters parameter_units".split()
-)
 
 
 def _scope_values(options: CuriosityScopeOptions | None) -> dict[str, str]:
@@ -50,30 +48,6 @@ def _scope_values(options: CuriosityScopeOptions | None) -> dict[str, str]:
         "scope_origin": origin,
         "scope_guarantee": "world_id_owned_state" if selected.scope == "per_world" else "shared_population_state",
     }
-
-
-def is_legacy_policy_payload(payload: Mapping[str, Any]) -> bool:
-    """Recognize only complete old authoring without any new scope markers."""
-    if set(payload) != LEGACY_POLICY_FIELDS:
-        return False
-    authored = payload["authored_parameters"]
-    if not isinstance(authored, Mapping):
-        return False
-    if "training" in authored:
-        training = authored["training"]
-    else:
-        training = {}
-    if not isinstance(training, Mapping):
-        return False
-    for options in (authored.get("bac_options"), training.get("bac_options")):
-        if isinstance(options, Mapping) and "curiosity_scope" in options:
-            return False
-    for metadata in ("field_roles", "parameter_units"):
-        if not isinstance(payload[metadata], Mapping):
-            return False
-        if any(key in SCOPE_FIELDS or str(key).startswith("bac_options.curiosity_scope") for key in payload[metadata]):
-            return False
-    return True
 
 
 def _freeze(value: Any) -> Any:
@@ -321,30 +295,11 @@ class ResolvedExplorationPolicy:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> ResolvedExplorationPolicy:
+        if not isinstance(payload, Mapping) or set(payload) != {field.name for field in fields(cls)}:
+            raise ValueError("exploration policy requires the complete current field set")
         values = dict(payload)
-        if is_legacy_policy_payload(payload):
-            values.update(_scope_values(None))
-            values["parameter_units"] = {**payload["parameter_units"], **SCOPE_UNITS}
-            values["field_roles"] = dict(payload["field_roles"])
-            for name in SCOPE_FIELDS:
-                values["field_roles"][name] = {"status": "derived", "origin": "bac-options-v1", "reason": "known pre-scope shared policy"}
-        elif set(payload) != LEGACY_POLICY_FIELDS | SCOPE_FIELDS:
-            raise ValueError("exploration policy requires a complete current or known pre-scope field set")
         values["field_roles"] = {key: FieldRole(**value) for key, value in values["field_roles"].items()}
         return cls(**values)
-
-    def legacy_shared_payload(self) -> dict[str, Any]:
-        """Exact old projection used only to validate a known old effective view."""
-        if self.curiosity_scope != "shared" or self.scope_origin != "bac-options-v1":
-            raise ValueError("only implicitly shared policies have a pre-scope projection")
-        payload = self.to_dict()
-        for name in SCOPE_FIELDS:
-            payload.pop(name)
-            payload["field_roles"].pop(name, None)
-            payload["parameter_units"].pop(name)
-        for name in ("bac_options.curiosity_scope", "bac_options.curiosity_scope.scope", "bac_options.curiosity_scope.seed_policy"):
-            payload["field_roles"].pop(name, None)
-        return payload
 
 
 @dataclass(frozen=True, init=False)
@@ -765,4 +720,560 @@ def resolve_exploration_policy(
         raw_provider_parameters=raw,
         authored_parameters=authored,
         parameter_units=units,
+    )
+
+
+def _runtime_require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ValueError(message)
+
+
+def _runtime_keys(value: Any, names: tuple[str, ...], location: str) -> None:
+    _runtime_require(isinstance(value, Mapping) and set(value) == set(names), f"{location}: exact current fields required")
+
+
+def _runtime_operation(method: Callable[..., Any]) -> Callable[..., Any]:
+    @wraps(method)
+    def invoke(self: ExplorationRuntime, *args: Any, **kwargs: Any) -> Any:
+        with self._lock:
+            if self._operation_active:
+                raise RuntimeError("reentrant runtime operation")
+            self._operation_active = True
+            try:
+                return method(self, *args, **kwargs)
+            finally:
+                self._operation_active = False
+
+    return invoke
+
+
+class _ParentCommit(TypedDict):
+    batch_episode: int
+    completion_content: tuple[tuple[str, str], ...]
+    epsilon_before: float
+    epsilon_after: float
+
+
+class _ParentCadence(TypedDict):
+    schema: Literal["parent-global-epsilon-cadence-v1"]
+    last_committed: _ParentCommit | None
+
+
+class PreparedExplorationRestore:
+    """Identity-only receiver capability; all publication data stays in its owner."""
+
+    __slots__ = ()
+
+
+@dataclass(frozen=True)
+class _ExplorationPublication:
+    revision: int
+    bank_revision: int
+    bank_handle: Any
+    state: tuple[EpsilonGreedyExploration, _ParentCadence]
+    mode: str
+    accepted: Any
+    parent_restore: Any
+    next_revision: int
+    empty_handles: dict[PreparedExplorationRestore, Any]
+
+
+class ExplorationRuntime:
+    """One BANK and one global selector, with separate authenticated parent cadence.
+
+    Parent callbacks are required integration contracts, not implementations of
+    POP/runner authority. Issuer callbacks retain the real BANK owner; those
+    external references and unrelated action RNG users require parent quiescence.
+    Historical available payloads are not executable current runtime transports.
+    """
+
+    def __init__(
+        self,
+        *,
+        policy: ResolvedExplorationPolicy,
+        descriptor: Any,
+        device: torch.device | str,
+        validate_accepted_episode: Callable[..., None],
+        issuer_factory: Callable[..., Any],
+        report_allocation: Callable[..., None],
+        validate_committed_batch: Callable[..., None],
+        validate_parent_cadence: Callable[..., None],
+    ):
+        # BANK/PF import policy types from this module: defer their imports.
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+        from townlet.exploration.provider_factory import make_policy_selector
+        from townlet.exploration.scoped_curiosity import CuriosityBank, allocation_estimate
+
+        _runtime_require(isinstance(policy, ResolvedExplorationPolicy), "actual resolved exploration policy required")
+        _runtime_require(callable(validate_committed_batch) and callable(validate_parent_cadence), "parent cadence callbacks required")
+        self._lock = RLock()
+        self._operation_active = True
+        self._revision = 0
+        self._restores: dict[PreparedExplorationRestore, _ExplorationPublication] = {}
+        self._codec = checkpoint
+        self._policy = ResolvedExplorationPolicy.from_dict(policy.to_dict())
+        self._validate_committed_batch = validate_committed_batch
+        self._validate_parent_cadence = validate_parent_cadence
+        self._report = report_allocation
+        try:
+            self._bank = CuriosityBank(
+                policy=self._policy,
+                descriptor=descriptor,
+                device=device,
+                validate_accepted_episode=validate_accepted_episode,
+                issuer_factory=issuer_factory,
+                report_allocation=report_allocation,
+            )
+            self._estimate = allocation_estimate(policy=self._policy, descriptor=self._bank.descriptor, device=self._bank.device)
+            self._state: tuple[EpsilonGreedyExploration, _ParentCadence] = (
+                make_policy_selector(self._policy),
+                {"schema": "parent-global-epsilon-cadence-v1", "last_committed": None},
+            )
+        finally:
+            self._operation_active = False
+
+    def _invalidate(self) -> None:
+        self._revision += 1
+        self._restores.clear()
+
+    def _bank_call(self, method: str, **kwargs: Any) -> Any:
+        revision = self._bank.mutation_revision
+        try:
+            return getattr(self._bank, method)(**kwargs)
+        finally:
+            if self._bank.mutation_revision != revision:
+                self._invalidate()
+
+    @property
+    def epsilon(self) -> float:
+        """The sole harmless reentrant observation; never reads a provider."""
+        with self._lock:
+            return self._state[0].epsilon
+
+    def _epsilon_tensor(self, batch_size: int, device: torch.device | str) -> Tensor:
+        _runtime_require(type(batch_size) is int and batch_size >= 0, "epsilon batch_size must be a nonnegative integer")
+        selected = torch.device(device)
+        _runtime_require(selected == self._bank.device, "epsilon tensor device differs from selected runtime")
+        return torch.full((batch_size,), self._state[0].epsilon, dtype=torch.float32, device=selected)
+
+    @_runtime_operation
+    def epsilon_tensor(self, *, batch_size: int, device: torch.device | str) -> Tensor:
+        return self._epsilon_tensor(batch_size, device)
+
+    @_runtime_operation
+    def select_actions(self, q_values: Tensor, agent_states: Any, action_masks: Tensor | None) -> Tensor:
+        from townlet.training.state import BatchedAgentState
+
+        _runtime_require(isinstance(agent_states, BatchedAgentState), "actual BatchedAgentState required")
+        _runtime_require(
+            isinstance(q_values, Tensor)
+            and q_values.layout == torch.strided
+            and q_values.ndim == 2
+            and q_values.is_floating_point()
+            and q_values.shape[1] == self._bank.descriptor.action_dim
+            and q_values.device == self._bank.device
+            and bool(torch.isfinite(q_values).all()),
+            "Q values must be finite selected-device [N,A] floating tensors",
+        )
+        count = q_values.shape[0]
+        observations = agent_states.observations
+        _runtime_require(
+            isinstance(observations, Tensor)
+            and observations.layout == torch.strided
+            and observations.shape == (count, self._bank.descriptor.observation_dim)
+            and observations.device == q_values.device,
+            "selection observation geometry mismatch",
+        )
+        for name in ("actions", "rewards", "dones", "epsilons", "intrinsic_rewards", "survival_times"):
+            value = getattr(agent_states, name)
+            _runtime_require(
+                isinstance(value, Tensor) and value.layout == torch.strided and value.shape == (count,) and value.device == q_values.device,
+                f"selection {name} geometry mismatch",
+            )
+        _runtime_require(torch.device(agent_states.device) == q_values.device, "selection state device mismatch")
+        if action_masks is not None:
+            _runtime_require(
+                isinstance(action_masks, Tensor)
+                and action_masks.layout == torch.strided
+                and action_masks.dtype == torch.bool
+                and action_masks.shape == q_values.shape
+                and action_masks.device == q_values.device
+                and bool(action_masks.any(dim=1).all()),
+                "selection masks must be bool [N,A] with a legal action per presented row",
+            )
+        if count == 0:
+            return torch.empty(0, dtype=torch.int64, device=q_values.device)
+        view = BatchedAgentState(
+            observations=observations,
+            actions=agent_states.actions,
+            rewards=agent_states.rewards,
+            dones=agent_states.dones,
+            epsilons=self._epsilon_tensor(count, q_values.device),
+            intrinsic_rewards=agent_states.intrinsic_rewards,
+            survival_times=agent_states.survival_times,
+            device=q_values.device,
+            info=agent_states.info,
+        )
+        # A selection can consume ambient action RNG even when its result fails.
+        try:
+            actions = self._state[0].select_actions(q_values, view, action_masks)
+            _runtime_require(
+                isinstance(actions, Tensor)
+                and actions.dtype == torch.int64
+                and actions.shape == (count,)
+                and actions.device == q_values.device
+                and bool(((actions >= 0) & (actions < q_values.shape[1])).all()),
+                "selector returned invalid actions",
+            )
+            return actions
+        finally:
+            self._invalidate()
+
+    @_runtime_operation
+    def begin_episode(self, *, accepted: Any) -> Any:
+        return self._bank_call("begin_episode", accepted=accepted)
+
+    @_runtime_operation
+    def prepare_step_stamp(self, *, accepted: Any, world_ids: tuple[str, ...], active_on_entry: Tensor, vector_tick: int) -> Any:
+        return self._bank_call(
+            "prepare_step_stamp", accepted=accepted, world_ids=world_ids, active_on_entry=active_on_entry, vector_tick=vector_tick
+        )
+
+    @_runtime_operation
+    def reward(self, *, context: IntrinsicTransitionContext, stamp: Any, accepted: Any, update_stats: bool) -> Any:
+        return self._bank_call("reward", context=context, stamp=stamp, accepted=accepted, update_stats=update_stats)
+
+    @_runtime_operation
+    def admit_and_service(self, *, context: IntrinsicTransitionContext, stamp: Any, accepted: Any) -> Any:
+        return self._bank_call("admit_and_service", context=context, stamp=stamp, accepted=accepted)
+
+    @_runtime_operation
+    def prepare_completion(
+        self,
+        *,
+        accepted: Any,
+        boundary_key: int,
+        completion_content: Any,
+        outcomes: tuple[Any, ...],
+        participated_world_ids: tuple[str, ...],
+    ) -> Any:
+        return self._bank_call(
+            "prepare_completion",
+            accepted=accepted,
+            boundary_key=boundary_key,
+            completion_content=completion_content,
+            outcomes=outcomes,
+            participated_world_ids=participated_world_ids,
+        )
+
+    @_runtime_operation
+    def commit_completion(self, *, prepared: Any) -> Any:
+        return self._bank_call("commit_completion", prepared=prepared)
+
+    @_runtime_operation
+    def prepare_empty_episode_evidence(self, *, accepted: Any) -> Any:
+        return self._bank_call("prepare_empty_episode_evidence", accepted=accepted)
+
+    @_runtime_operation
+    def quarantine_episode(self, *, accepted: Any, reason: str) -> None:
+        self._bank_call("quarantine_episode", accepted=accepted, reason=reason)
+
+    @_runtime_operation
+    def snapshot_world(self, *, world_id: str) -> dict[str, Any]:
+        result = self._bank_call("snapshot_world", world_id=world_id)
+        if not isinstance(result, dict) or any(not isinstance(key, str) for key in result):
+            raise TypeError("BANK snapshot must be a dictionary with string keys")
+        return cast(dict[str, Any], result)
+
+    def _report_extra(self, operation: str, canonical_bytes: int, tensor_bytes: int) -> None:
+        self._report(
+            replace(
+                self._estimate,
+                operation=operation,
+                known_tensor_bytes=tensor_bytes,
+                components=(("runtime_owned_input_and_callback_views", tensor_bytes),),
+                assumptions=(f"canonical outcome payload bytes={canonical_bytes}; immutable scalar/string metadata",),
+                unknown_components=("runtime Python objects and callback-retained copies", "caller input and prior prepared states"),
+            )
+        )
+
+    def _fresh(self, revision: int, bank_revision: int) -> None:
+        _runtime_require(
+            self._revision == revision and self._bank.mutation_revision == bank_revision,
+            "runtime or BANK changed during callback/preparation",
+        )
+
+    @_runtime_operation
+    def commit_batch_episode(self, *, batch_episode: int, outcomes: tuple[Any, ...]) -> None:
+        from townlet.training.episode import LaneOutcome, freeze_lane_outcome
+
+        _runtime_require(type(batch_episode) is int and batch_episode >= 0, "parent batch key must be a nonnegative integer")
+        _runtime_require(
+            type(outcomes) is tuple and all(isinstance(event, LaneOutcome) for event in outcomes), "actual parent outcomes required"
+        )
+        _runtime_require(
+            all(type(event.batch_episode) is int and event.batch_episode == batch_episode for event in outcomes),
+            "parent outcome batch mismatch",
+        )
+        indexes = tuple(event.outcome.agent_idx for event in outcomes)
+        _runtime_require(all(type(index) is int and index >= 0 for index in indexes), "invalid parent outcome lane")
+        _runtime_require(len(set(indexes)) == len(indexes), "duplicate parent outcome lane")
+        revision, bank_revision = self._revision, self._bank.mutation_revision
+        # Report before owning tensors; BANK's separate completion has no role here.
+        outcome_bytes = sum(
+            tensor.numel() * tensor.element_size()
+            for event in outcomes
+            for tensor in (event.outcome.final_observation, event.outcome.final_meters)
+        )
+        self._report_extra("runtime_parent_commit", outcome_bytes, 2 * outcome_bytes)
+        owned = deepcopy(outcomes)
+        canonical = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, owned))
+        view = deepcopy(owned)
+        result = self._validate_committed_batch(batch_episode=batch_episode, outcomes=view)
+        _runtime_require(result is None, "parent committed-batch validator must return None")
+        observed = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, view))
+        _runtime_require(self._codec.same(observed, canonical), "parent callback changed outcome view")
+        self._fresh(revision, bank_revision)
+        selector, cadence = self._state
+        last = cadence["last_committed"]
+        if last is not None:
+            _runtime_require(batch_episode >= last["batch_episode"], "stale parent batch key")
+            if batch_episode == last["batch_episode"]:
+                _runtime_require(self._codec.same(last["completion_content"], canonical), "changed committed parent outcome content")
+                return
+        before = selector.epsilon
+        after = max(self._policy.epsilon_end, before * self._policy.epsilon_decay)
+        next_cadence: _ParentCadence = {
+            "schema": "parent-global-epsilon-cadence-v1",
+            "last_committed": {
+                "batch_episode": batch_episode,
+                "completion_content": canonical,
+                "epsilon_before": before,
+                "epsilon_after": after,
+            },
+        }
+        next_state = (selector, next_cadence)
+        selector.epsilon = after
+        self._state = next_state
+        self._invalidate()
+
+    def _validate_selector_cadence(self, policy: ResolvedExplorationPolicy, selector: Any, cadence: Any) -> None:
+        _runtime_keys(selector, ("epsilon", "epsilon_decay", "epsilon_min"), "selector")
+        for key, value in selector.items():
+            _number(value, f"selector.{key}", False, 0)
+        _runtime_require(policy.epsilon_end <= selector["epsilon"] <= policy.epsilon_start, "selector epsilon outside selected schedule")
+        _runtime_require(
+            selector["epsilon_decay"] == policy.epsilon_decay and selector["epsilon_min"] == policy.epsilon_end,
+            "selector schedule differs from policy",
+        )
+        _runtime_keys(cadence, ("schema", "last_committed"), "cadence")
+        _runtime_require(cadence["schema"] == "parent-global-epsilon-cadence-v1", "unsupported parent cadence schema")
+        record = cadence["last_committed"]
+        if record is None:
+            _runtime_require(selector["epsilon"] == policy.epsilon_start, "uncommitted parent cadence requires initial epsilon")
+            return
+        _runtime_keys(record, ("batch_episode", "completion_content", "epsilon_before", "epsilon_after"), "last parent commit")
+        _runtime_require(type(record["batch_episode"]) is int and record["batch_episode"] >= 0, "invalid retained parent batch key")
+        for key in ("epsilon_before", "epsilon_after"):
+            _number(record[key], f"cadence.{key}", False, 0)
+            _runtime_require(policy.epsilon_end <= record[key] <= policy.epsilon_start, "retained epsilon outside policy bounds")
+        _runtime_require(
+            record["epsilon_after"] == max(policy.epsilon_end, record["epsilon_before"] * policy.epsilon_decay)
+            and selector["epsilon"] == record["epsilon_after"],
+            "selector and parent cadence recurrence disagree",
+        )
+        content = record["completion_content"]
+        _runtime_require(type(content) is tuple, "canonical parent completion content must be a tuple")
+        for item in content:
+            _runtime_require(
+                type(item) is tuple and len(item) == 2 and all(type(value) is str and bool(value) for value in item),
+                "parent content requires complete canonical payload and fingerprint pairs",
+            )
+            try:
+                payload = bytes.fromhex(item[0])
+            except ValueError as error:
+                raise ValueError("parent outcome payload must be canonical hex") from error
+            _runtime_require(payload.hex() == item[0], "parent outcome payload must be canonical hex")
+
+    def _parse(self, state: Any, *, initialization: bool) -> tuple[Any, dict[str, Any], _ParentCadence]:
+        _runtime_keys(state, ("schema", "policy", "bank", "selector", "cadence"), "exploration runtime")
+        _runtime_require(state["schema"] == "exploration-runtime-state-v1", "unsupported exploration runtime schema")
+        policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+        _runtime_require(self._codec.same(policy.to_dict(), state["policy"]), "runtime policy must roundtrip completely")
+        if not initialization:
+            _runtime_require(self._codec.same(policy.to_dict(), self._policy.to_dict()), "complete receiving runtime policy mismatch")
+        _runtime_require(isinstance(state["bank"], Mapping), "current BANK transport required")
+        _runtime_require(self._codec.same(state["bank"].get("policy"), policy.to_dict()), "runtime and BANK policy disagree")
+        self._validate_selector_cadence(policy, state["selector"], state["cadence"])
+        if initialization:
+            _runtime_require(
+                (policy.epsilon_start, policy.epsilon_end, policy.epsilon_decay)
+                == (self._policy.epsilon_start, self._policy.epsilon_end, self._policy.epsilon_decay),
+                "private initialization must preserve the global epsilon schedule",
+            )
+        record = state["cadence"]["last_committed"]
+        if record is None:
+            size = 0
+        else:
+            size = sum(len(item[0]) // 2 for item in record["completion_content"])
+        self._report_extra("runtime_prepare", size, self._codec.tensor_bytes(state))
+        owned = self._codec.owned(state)
+        # The report callback precedes allocation. Check the owned metadata too,
+        # so a callback cannot change authoring after preflight unnoticed. BANK
+        # still exclusively validates the complete owned native subtree.
+        _runtime_keys(owned, ("schema", "policy", "bank", "selector", "cadence"), "exploration runtime")
+        _runtime_require(owned["schema"] == "exploration-runtime-state-v1", "runtime schema changed during allocation reporting")
+        _runtime_require(self._codec.same(owned["policy"], policy.to_dict()), "runtime policy changed during allocation reporting")
+        _runtime_require(
+            isinstance(owned["bank"], Mapping) and self._codec.same(owned["bank"].get("policy"), policy.to_dict()),
+            "runtime and owned BANK policy disagree",
+        )
+        self._validate_selector_cadence(policy, owned["selector"], owned["cadence"])
+        return owned["bank"], owned["selector"], cast(_ParentCadence, owned["cadence"])
+
+    def _correlate_cadence(self, cadence: _ParentCadence, *, mode: str, accepted: Any, parent_restore: Any) -> None:
+        revision, bank_revision = self._revision, self._bank.mutation_revision
+        view = self._codec.owned(cadence)
+        result = self._validate_parent_cadence(cadence=view, mode=mode, accepted=accepted, parent_restore=parent_restore)
+        _runtime_require(result is None, "parent cadence validator must return None")
+        _runtime_require(self._codec.same(view, cadence), "parent callback changed cadence view")
+        self._fresh(revision, bank_revision)
+
+    @_runtime_operation
+    def checkpoint_state(self) -> dict[str, Any]:
+        selector, cadence = self._state
+        owned_cadence = self._codec.owned(cadence)
+        selector_state = selector.checkpoint_state()
+        self._validate_selector_cadence(self._policy, selector_state, owned_cadence)
+        bank_state = self._bank_call("checkpoint_state")
+        return dict(
+            schema="exploration-runtime-state-v1",
+            policy=self._policy.to_dict(),
+            bank=bank_state,
+            selector=selector_state,
+            cadence=owned_cadence,
+        )
+
+    def _retain(
+        self,
+        *,
+        bank_handle: Any,
+        selector_state: dict[str, Any],
+        cadence: _ParentCadence,
+        mode: str,
+        accepted: Any,
+        parent_restore: Any,
+        revision: int,
+        bank_revision: int,
+    ) -> PreparedExplorationRestore:
+        from townlet.exploration.provider_factory import make_policy_selector
+
+        selector = make_policy_selector(self._policy)
+        # Strict separate-global validation happened off-side; native BANK data
+        # never passes through this selector's permissive loader.
+        selector.load_state(selector_state)
+        state = (selector, cadence)
+        token = PreparedExplorationRestore()
+        publication = _ExplorationPublication(revision, bank_revision, bank_handle, state, mode, accepted, parent_restore, revision + 1, {})
+        self._correlate_cadence(cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
+        self._fresh(revision, bank_revision)
+        self._restores[token] = publication
+        return token
+
+    @_runtime_operation
+    def prepare_restore(
+        self, *, state: Any, mode: str, accepted: Any, parent_restore: Any, validate_parent_restore: Any
+    ) -> PreparedExplorationRestore:
+        revision, bank_revision = self._revision, self._bank.mutation_revision
+        bank_state, selector, cadence = self._parse(state, initialization=False)
+        self._correlate_cadence(cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
+        self._fresh(revision, bank_revision)
+        handle = self._bank_call(
+            "prepare_restore",
+            state=bank_state,
+            mode=mode,
+            accepted=accepted,
+            parent_restore=parent_restore,
+            validate_parent_restore=validate_parent_restore,
+        )
+        return self._retain(
+            bank_handle=handle,
+            selector_state=selector,
+            cadence=cadence,
+            mode=mode,
+            accepted=accepted,
+            parent_restore=parent_restore,
+            revision=revision,
+            bank_revision=bank_revision,
+        )
+
+    @_runtime_operation
+    def prepare_private_initialization(
+        self, *, state: Any, initialization: str, parent_restore: Any, validate_parent_restore: Any
+    ) -> PreparedExplorationRestore:
+        revision, bank_revision = self._revision, self._bank.mutation_revision
+        bank_state, selector, cadence = self._parse(state, initialization=True)
+        if bank_state.get("bank_phase") == "initial":
+            mode = "initial"
+        else:
+            mode = "private_initialized"
+        self._correlate_cadence(cadence, mode=mode, accepted=None, parent_restore=parent_restore)
+        self._fresh(revision, bank_revision)
+        handle = self._bank_call(
+            "prepare_private_initialization",
+            state=bank_state,
+            initialization=initialization,
+            parent_restore=parent_restore,
+            validate_parent_restore=validate_parent_restore,
+        )
+        return self._retain(
+            bank_handle=handle,
+            selector_state=selector,
+            cadence=cadence,
+            mode=mode,
+            accepted=None,
+            parent_restore=parent_restore,
+            revision=revision,
+            bank_revision=bank_revision,
+        )
+
+    @_runtime_operation
+    def install_restore(self, *, prepared: PreparedExplorationRestore) -> None:
+        _runtime_require(type(prepared) is PreparedExplorationRestore and prepared in self._restores, "foreign or consumed runtime restore")
+        publication = self._restores[prepared]
+        self._fresh(publication.revision, publication.bank_revision)
+        self._correlate_cadence(
+            publication.state[1], mode=publication.mode, accepted=publication.accepted, parent_restore=publication.parent_restore
+        )
+        self._fresh(publication.revision, publication.bank_revision)
+        # Guard stays active inside BANK's final accepted-token authentication.
+        # Its own handle/freshness checks remain authoritative. No fallible work,
+        # callback, loader, allocation or corrective check follows its publish.
+        self._bank.install_restore(prepared=publication.bank_handle)
+        self._state = publication.state
+        self._revision = publication.next_revision
+        self._restores = publication.empty_handles
+
+
+def build_exploration(
+    *,
+    policy: ResolvedExplorationPolicy,
+    descriptor: Any,
+    device: torch.device | str,
+    validate_accepted_episode: Callable[..., None],
+    issuer_factory: Callable[..., Any],
+    report_allocation: Callable[..., None],
+    validate_committed_batch: Callable[..., None],
+    validate_parent_cadence: Callable[..., None],
+) -> ExplorationRuntime:
+    """Construct the current selected runtime; all owner dependencies are explicit."""
+    return ExplorationRuntime(
+        policy=policy,
+        descriptor=descriptor,
+        device=device,
+        validate_accepted_episode=validate_accepted_episode,
+        issuer_factory=issuer_factory,
+        report_allocation=report_allocation,
+        validate_committed_batch=validate_committed_batch,
+        validate_parent_cadence=validate_parent_cadence,
     )

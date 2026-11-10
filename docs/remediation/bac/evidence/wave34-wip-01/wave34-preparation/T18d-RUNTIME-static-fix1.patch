@@ -1,0 +1,144 @@
+--- a/src/townlet/config/exploration_policy.py
++++ b/src/townlet/config/exploration_policy.py
+@@ -15,7 +15,7 @@
+ from functools import wraps
+ from threading import RLock
+ from types import MappingProxyType
+-from typing import Any, Literal
++from typing import TYPE_CHECKING, Any, Literal, TypedDict, cast
+ 
+ import torch
+ from torch import Tensor
+@@ -24,6 +24,9 @@
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+ from townlet.config.training_v2_config import TrainingV2Config
+ 
++if TYPE_CHECKING:
++    from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
++
+ Strategy = Literal["none", "rnd", "adaptive_rnd", "count_based", "icm"]
+ STRATEGIES = ("none", "rnd", "adaptive_rnd", "count_based", "icm")
+ SCOPE_FIELDS = frozenset(("curiosity_scope", "seed_policy", "service_clock_unit", "scope_origin", "scope_guarantee"))
+@@ -744,6 +747,18 @@
+     return invoke
+ 
+ 
++class _ParentCommit(TypedDict):
++    batch_episode: int
++    completion_content: tuple[tuple[str, str], ...]
++    epsilon_before: float
++    epsilon_after: float
++
++
++class _ParentCadence(TypedDict):
++    schema: Literal["parent-global-epsilon-cadence-v1"]
++    last_committed: _ParentCommit | None
++
++
+ class PreparedExplorationRestore:
+     """Identity-only receiver capability; all publication data stays in its owner."""
+ 
+@@ -755,7 +770,7 @@
+     revision: int
+     bank_revision: int
+     bank_handle: Any
+-    state: tuple[Any, dict[str, Any]]
++    state: tuple[EpsilonGreedyExploration, _ParentCadence]
+     mode: str
+     accepted: Any
+     parent_restore: Any
+@@ -810,7 +825,7 @@
+                 report_allocation=report_allocation,
+             )
+             self._estimate = allocation_estimate(policy=self._policy, descriptor=self._bank.descriptor, device=self._bank.device)
+-            self._state = (
++            self._state: tuple[EpsilonGreedyExploration, _ParentCadence] = (
+                 make_policy_selector(self._policy),
+                 {"schema": "parent-global-epsilon-cadence-v1", "last_committed": None},
+             )
+@@ -965,7 +980,10 @@
+ 
+     @_runtime_operation
+     def snapshot_world(self, *, world_id: str) -> dict[str, Any]:
+-        return self._bank_call("snapshot_world", world_id=world_id)
++        result = self._bank_call("snapshot_world", world_id=world_id)
++        if not isinstance(result, dict) or any(not isinstance(key, str) for key in result):
++            raise TypeError("BANK snapshot must be a dictionary with string keys")
++        return cast(dict[str, Any], result)
+ 
+     def _report_extra(self, operation: str, canonical_bytes: int, tensor_bytes: int) -> None:
+         self._report(
+@@ -1025,10 +1043,15 @@
+                 return
+         before = selector.epsilon
+         after = max(self._policy.epsilon_end, before * self._policy.epsilon_decay)
+-        next_cadence = dict(
+-            schema="parent-global-epsilon-cadence-v1",
+-            last_committed=dict(batch_episode=batch_episode, completion_content=canonical, epsilon_before=before, epsilon_after=after),
+-        )
++        next_cadence: _ParentCadence = {
++            "schema": "parent-global-epsilon-cadence-v1",
++            "last_committed": {
++                "batch_episode": batch_episode,
++                "completion_content": canonical,
++                "epsilon_before": before,
++                "epsilon_after": after,
++            },
++        }
+         next_state = (selector, next_cadence)
+         selector.epsilon = after
+         self._state = next_state
+@@ -1072,7 +1095,7 @@
+                 raise ValueError("parent outcome payload must be canonical hex") from error
+             _runtime_require(payload.hex() == item[0], "parent outcome payload must be canonical hex")
+ 
+-    def _parse(self, state: Any, *, initialization: bool) -> tuple[Any, dict[str, Any], dict[str, Any]]:
++    def _parse(self, state: Any, *, initialization: bool) -> tuple[Any, dict[str, Any], _ParentCadence]:
+         _runtime_keys(state, ("schema", "policy", "bank", "selector", "cadence"), "exploration runtime")
+         _runtime_require(state["schema"] == "exploration-runtime-state-v1", "unsupported exploration runtime schema")
+         policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+@@ -1089,7 +1112,10 @@
+                 "private initialization must preserve the global epsilon schedule",
+             )
+         record = state["cadence"]["last_committed"]
+-        size = 0 if record is None else sum(len(item[0]) // 2 for item in record["completion_content"])
++        if record is None:
++            size = 0
++        else:
++            size = sum(len(item[0]) // 2 for item in record["completion_content"])
+         self._report_extra("runtime_prepare", size, self._codec.tensor_bytes(state))
+         owned = self._codec.owned(state)
+         # The report callback precedes allocation. Check the owned metadata too,
+@@ -1103,9 +1129,9 @@
+             "runtime and owned BANK policy disagree",
+         )
+         self._validate_selector_cadence(policy, owned["selector"], owned["cadence"])
+-        return owned["bank"], owned["selector"], owned["cadence"]
++        return owned["bank"], owned["selector"], cast(_ParentCadence, owned["cadence"])
+ 
+-    def _correlate_cadence(self, cadence: dict[str, Any], *, mode: str, accepted: Any, parent_restore: Any) -> None:
++    def _correlate_cadence(self, cadence: _ParentCadence, *, mode: str, accepted: Any, parent_restore: Any) -> None:
+         revision, bank_revision = self._revision, self._bank.mutation_revision
+         view = self._codec.owned(cadence)
+         result = self._validate_parent_cadence(cadence=view, mode=mode, accepted=accepted, parent_restore=parent_restore)
+@@ -1133,7 +1159,7 @@
+         *,
+         bank_handle: Any,
+         selector_state: dict[str, Any],
+-        cadence: dict[str, Any],
++        cadence: _ParentCadence,
+         mode: str,
+         accepted: Any,
+         parent_restore: Any,
+@@ -1187,7 +1213,10 @@
+     ) -> PreparedExplorationRestore:
+         revision, bank_revision = self._revision, self._bank.mutation_revision
+         bank_state, selector, cadence = self._parse(state, initialization=True)
+-        mode = "initial" if bank_state.get("bank_phase") == "initial" else "private_initialized"
++        if bank_state.get("bank_phase") == "initial":
++            mode = "initial"
++        else:
++            mode = "private_initialized"
+         self._correlate_cadence(cadence, mode=mode, accepted=None, parent_restore=parent_restore)
+         self._fresh(revision, bank_revision)
+         handle = self._bank_call(

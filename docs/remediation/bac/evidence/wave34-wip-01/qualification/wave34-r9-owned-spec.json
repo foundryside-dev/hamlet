@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave34/r9-candidate.json",
+  "workers": 1,
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave34-r9-owned",
+  "jobs": [
+    {
+      "name": "owned",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/curriculum/test_curriculums.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r9-curriculum"
+      ]
+    }
+  ]
+}

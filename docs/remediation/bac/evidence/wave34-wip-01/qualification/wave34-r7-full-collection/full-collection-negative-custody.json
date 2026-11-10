@@ -1,0 +1,19 @@
+{
+  "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+  "status": "FULL_COLLECTION_PREREQUISITE_FAILED",
+  "collected": 8496,
+  "deselected_perf": 1,
+  "selected_before_error": 8495,
+  "collection_errors": 1,
+  "error": "tests/test_townlet/unit/curriculum/test_curriculums.py:27 obsolete PerformanceTracker import",
+  "executed_test_cases": 0,
+  "negative_custody": "PASS",
+  "source_guards": 797,
+  "configs": 573,
+  "artifacts": 13,
+  "pytest_processes": 1,
+  "registry": 14,
+  "available": 1,
+  "wall_seconds": 9.195586442947388,
+  "scope": "Required earlier full gate unrun until causal collection prerequisite repaired. No source failure dismissed; no full repository green or dependent release."
+}

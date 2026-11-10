@@ -1,0 +1,299 @@
+{
+  "status": "updated_same_page_and_read_back",
+  "title": "BAC Work Completed and Remaining",
+  "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "created_at": "2026-11-10T14:07:57.502017Z",
+  "idempotency_key": "bac-work-tracker-2026-11-11-a7c4cd0b",
+  "drive_scope": "personal",
+  "parent": null,
+  "space_id": null,
+  "publication": "Created authorized private native editable text Page; no sharing changes, new Space, messages or automations.",
+  "verification": {
+    "readback_success": true,
+    "body_preserved_normalizing_whitespace": true,
+    "native_blocks": 32,
+    "completed_packet_ids": 28,
+    "remaining_packet_ids": 38,
+    "exact_packet_coverage": true,
+    "title_verified": true,
+    "headings_verified": true,
+    "visual_preview": "No rendered preview exposed by Page tools; visual layout not independently inspected.",
+    "latest_update": {
+      "readback_success": true,
+      "title_verified": true,
+      "changed_blocks_exact": true,
+      "all_untouched_blocks_preserved": true,
+      "block_order_preserved": true,
+      "native_blocks": 32,
+      "completed_packet_ids": 28,
+      "remaining_packet_ids": 38,
+      "exact_packet_coverage": true,
+      "all_applied": true,
+      "atomic_nonpatch_operations": 8,
+      "edit_receipt_sequence": 4,
+      "rendered_preview": "No rendered preview tool exposed; visual layout not independently inspected."
+    }
+  },
+  "source_checkpoint": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "source_set": [
+    "BAC-TRACKING-SNAPSHOT.json",
+    "../CURRENT-STATE.json",
+    "../progress.md",
+    "/workspace/hamlet/docs/remediation/bac/STATUS.md",
+    "/workspace/hamlet/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md"
+  ],
+  "source_total_lines": 3534,
+  "root_update_incorporated": "T18d runtime component passed fresh independent whole-source/spec review, 150 independent tests and coherent root1123PASS3CUDA skips; staged/unpublished. Remote47d82 unchanged. Full repository collection stopped on obsolete PerformanceTracker import; bounded original curriculum test repair active. T18e read-only preparation only. Original28/38/66 and full acceptance remain unchanged.",
+  "draft_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave29-preparation/BAC-TRACKING-DRAFT.md",
+  "implementation_files_read_or_changed": false,
+  "runtime_or_git_mutations": false,
+  "subagents_spawned": false,
+  "updated_at": "2026-11-10T18:28:06Z",
+  "latest_source_snapshot_utc": "2026-11-10T18:27:05Z",
+  "latest_status": "T18d runtime component passed fresh independent whole-source/spec review, 150 independent tests and coherent root1123PASS3CUDA skips; staged/unpublished. Remote47d82 unchanged. Full repository collection stopped on obsolete PerformanceTracker import; bounded original curriculum test repair active. T18e read-only preparation only. Original28/38/66 and full acceptance remain unchanged.",
+  "latest_edit_receipt": {
+    "new_sequence": 4,
+    "through_sequence": 4,
+    "operation_results": [
+      {
+        "operation_index": 0,
+        "preceding_block_id": null,
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+          "relative_position_base64": "AL+M+KELhAFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+            "hash": "a36bb694257ef8044c21ffd2938ff84d08714ada5a7b654b33c3d3a5d70e5de8"
+          }
+        ]
+      },
+      {
+        "operation_index": 1,
+        "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+          "relative_position_base64": "AL+M+KELkw5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "hash": "36e8b73d3e391d42a693cc4f1ec33c45e8aef02507efeba4627adb6e2e5792c8"
+          }
+        ]
+      },
+      {
+        "operation_index": 2,
+        "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+          "relative_position_base64": "AL+M+KELhxJB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+            "hash": "b227fdaefd3aaf574a283aaf055986c0deb03170d3bafea2e1bd1a9a0a31c74f"
+          }
+        ]
+      },
+      {
+        "operation_index": 3,
+        "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+          "relative_position_base64": "AL+M+KELxydB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+            "hash": "c0094b93c6dca6cae10ee1fabf829b6727b800a73b7c844c9813525112811ee4"
+          }
+        ]
+      },
+      {
+        "operation_index": 4,
+        "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+          "relative_position_base64": "AL+M+KELxT5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+            "hash": "2ad320c2d3402a1ed9dc25f1125ce4ea193a3ce603d782b0f264ca16f231525e"
+          }
+        ]
+      },
+      {
+        "operation_index": 5,
+        "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+          "relative_position_base64": "AL+M+KELqkFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "hash": "eb72e57dd18ebe1510f751f34d387c6ad172d3e0a3f59fde5c6526d8905a346f"
+          }
+        ]
+      },
+      {
+        "operation_index": 6,
+        "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+          "relative_position_base64": "AL+M+KELn0JB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "hash": "e3af76949191d5c2c987137fde7e44dc40bfc9c78a567c332aa375250b82c71b"
+          }
+        ]
+      },
+      {
+        "operation_index": 7,
+        "preceding_block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+          "relative_position_base64": "AL+M+KELkldB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+            "hash": "03238f12460f56cedd872d0256603ad1fc3e73ebe3ad1193953db8e9f933409d"
+          }
+        ]
+      }
+    ]
+  },
+  "update_history": [
+    {
+      "updated_at": "2026-11-10T16:26:35.094098Z",
+      "latest_source_snapshot_utc": "2026-11-10T17:00:17Z",
+      "latest_status": "Zero-scale producer/current checkpoint cache prerequisite accepted and pushed; root22 and independentAstra22 PASS, coherent973PASS3CUDA skips. Next T18d runtime approved design/tests-first active; implementation not started. Original28/66 and38remaining unchanged. Newtip CI all in progress; nine mypy blockers and full acceptance remain open.",
+      "latest_edit_receipt": {
+        "new_sequence": 3,
+        "through_sequence": 3,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "197507d0527bd755ca1875b839874c90d5345770d23cbea708015921b6070d56"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "a79cc1fe73b18b09951d2d8154ee4158d1434fb2223a0b1f1057f626dcdbf7b1"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+              "relative_position_base64": "AL+M+KELhxJB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+                "hash": "f827a9a5fc40465dfe41a2cf742647214fafa758f3da23df458b497366678bee"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+              "relative_position_base64": "AL+M+KELxydB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+                "hash": "256b0f29a9c9c49d7820af298a11ec7c1007c4eb1e288c6583ce3f910f777c38"
+              }
+            ]
+          },
+          {
+            "operation_index": 4,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "09a714d9360b248f01570e93dc65775f8fe21e73149f1847f604e8be17835980"
+              }
+            ]
+          },
+          {
+            "operation_index": 5,
+            "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+              "relative_position_base64": "AL+M+KELqkFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+                "hash": "283c2b5394556cc354204ed824fd6af04cae3265f9d29766ea2b06d7b263db9c"
+              }
+            ]
+          },
+          {
+            "operation_index": 6,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "21cf4be368e2e55eb97a125b8571d507b28842d9b1bf079cb065a45699263b3f"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+  "guards": {
+    "black": {
+      "exit_code": 0,
+      "seconds": 57.536051750183105,
+      "sha256": "c70adb0aa0f75ec497b0f1b69e3598e334cc70ef9f4f0e6409f28d6930084ce0"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.113530158996582,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 2.1977412700653076,
+      "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.9656741619110107,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.08815860748291016,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  },
+  "mypy": "Same exact9oraclePOP/197sources, zeroRPerrors",
+  "defaults": 601
+}

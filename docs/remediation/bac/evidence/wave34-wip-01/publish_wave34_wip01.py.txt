@@ -1,0 +1,92 @@
+"""Assemble an explicitly unreleased durable current-runtime WIP checkpoint."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave34/r9-candidate.json').read_text())
+receipt = json.loads((W / 'wave34/r9-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert 'UNRELEASED' in receipt['status'] and 'UNRUN' in receipt['full_suite_status']
+for group in ('source_files', 'configs', 'artifacts'):
+    for p, h in m[group].items():
+        assert sha(R / p) == h, p
+for p, h in m['auxiliary_harness'].items():
+    assert sha(Path(p)) == h, p
+assert receipt['runtime_component']['independent']['counts']['passed'] == 150
+assert receipt['runtime_component']['coherent']['counts']['passed'] == 1123
+assert receipt['current_consumer_repair']['owning_and_event']['counts']['passed'] == 227
+assert receipt['compiler_cli']['process_identities'] == 35
+assert receipt['compiler_cli']['all_child_import_source_threads_identity'] == 'PASS'
+assert sha(W / 'wave34-preparation/T18d-RUNTIME-DOC-TRUTH-REVIEW.md') == receipt['documentation']['truth_review_sha256']
+for name, h in receipt['documentation']['contracts'].items():
+    assert sha(W / 'wave34-preparation' / name) == h
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p) for p in ('src', 'tests', 'configs', 'scripts')}
+out = D / 'evidence/wave34-wip-01'
+assert not out.exists()
+out.mkdir()
+artifacts = {}
+def copy(source, dest):
+    assert source.is_file() and not dest.exists(), str(dest)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(source.read_bytes())
+    assert sha(source) == sha(dest)
+    artifacts[dest.relative_to(R).as_posix()] = {'sha256': sha(dest), 'original': str(source)}
+
+for folder in sorted(Q.glob('wave34-r*')):
+    if folder.is_dir():
+        for p in sorted(folder.rglob('*')):
+            if p.is_file() and p.suffix in ('.json', '.log'):
+                copy(p, out / 'qualification' / folder.name / p.relative_to(folder))
+for p in sorted(Q.glob('wave34-*.json')):
+    copy(p, out / 'qualification' / p.name)
+for folder in ('wave34', 'wave34-preparation', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'run_bac_packet_checks_locked.py', 'bac_source_identity.py', 'exec_default_uv_pytest.py', 'exec_current_uv_pytest.py', 'exec_identity_compiler_cli.py', 'publish_wave34_wip01.py'):
+    copy(Q / name, out / (name + '.txt'))
+copy(Q / 'compiler_identity_startup/sitecustomize.py', out / 'compiler-identity-sitecustomize.py.txt')
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+for name, h in receipt['documentation']['contracts'].items():
+    target = D / name
+    target.write_bytes((W / 'wave34-preparation' / name).read_bytes())
+    assert sha(target) == h
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': h, 'original': str(W / 'wave34-preparation' / name)}
+manifest = {'status': receipt['status'], 'packet': 'Original T18d current runtime component, plus current curriculum unit-consumer collection repair; WIP only', 'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'], 'execution_subtrees': execution, 'inventories': m['inventories'], 'source_files': m['source_files'], 'config_changes': m['config_changes'], 'receipt': receipt, 'artifacts': artifacts, 'qualified_progress': '28/66 original released packages unchanged,38remaining. Not actual parent integration or package/full BAC release.', 'publication': 'Existing authorized remote branch only. No new project branch/worktree/repository/source copy/PR/merge/deletion. Private backup bundle excluded.', 'next': 'Capture immutable WIP source, run required earlier full repository execution, causally repair failures before dependent boundary green; then continue finite T18e canonical reward integration.'}
+mp = D / 'evidence/wave34-wip-01.json'
+assert not mp.exists()
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+p = D / 'STATUS.md'
+p.write_text(p.read_text() + '''
+
+Original T18d now has a locally qualified current exploration runtime component. One real curiosity BANK and one separate global epsilon selector preserve raw novelty and runtime scales, exact action epsilon tensors, independently authenticated parent-global cadence, and owned current prepare/install and explicit initialization. Current policy decoding rejects obsolete fields directly. The actual environment/population/runner cadence, canonical reward composition, native parent resume and historical selected-current state admission remain required integrations. The [runtime contract](CURRENT-EXPLORATION-RUNTIME-CONTRACT.md) and [checkpoint evidence](evidence/wave34-wip-01.json) state this boundary.
+
+Independent whole-source/spec review approves the runtime component with zero material component findings; independent150 and coherent1123 cases pass, with three unavailable-CUDA skips. A stale curriculum unit-test import was migrated to the current completed-event contract, preserving all42 original identities and adding meaningful current controls. Its52 expanded cases and175 accepted-event regressions pass; independent repair review approves causal low-survival and configured-threshold controls. Full repository collection passes8547/8548 cases with one default perf deselection. Compiler CLI validation passes34 packs with all35 process source/import/thread identities checked. Runtime source is unchanged between its original component evidence and this later test-consumer candidate; both identities are explicit in the receipt. Documentation passed independent source-truth review.
+
+**This is an unreleased durability checkpoint. Required earlier full repository execution is still owed before dependent boundary release**, because removing the obsolete policy decoder triggers the approved cadence addendum. The four cheap repository guards pass with defaults601; the same nine oracle/POP mypy errors remain. Prior47 CI has Config PASS, Lint FAIL at those nine errors, and Tests FAIL; its test log was unavailable, so no cause is inferred. Current-tip CI has not yet been observed. Original28/66 releases and38remaining are unchanged. Actual parent/ENV/POP/runner/replay/learning interfaces, T18e canonical composition, T26, final54requirements/22fresh lenses, full/default/coverage≥70/slow/applicable hardware/learning/CI remain owed. CUDA is unavailable and unqualified. K01 simulator-continuation scope is unchanged. Continue the planned programme.
+''')
+paths = [*artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md']
+assert all('.bundle' not in p and 'git-backups' not in p for p in paths)
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for p, h in execution.items():
+    assert git('rev-parse', tree + ':' + p) == h, p
+for p, row in artifacts.items():
+    assert sha(R / p) == row['sha256'], p
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.', ':(glob,exclude)docs/remediation/bac/evidence/wave34-wip-01/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree, 'source_equivalence': 'PASS', 'artifact_count': len(artifacts), 'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave34-wip-01-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

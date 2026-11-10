@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave34/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave34-r2-focused",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "focused",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "factory_constructs_selected_provider or selection_uses_owned_training_tensor_and_real_masks",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r2-focused"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+error: Failed to initialize cache at `/home/agent/.cache/uv`
+  cause: failed to open file `/home/agent/.cache/uv/CACHEDIR.TAG`: Read-only file system (os error 30)

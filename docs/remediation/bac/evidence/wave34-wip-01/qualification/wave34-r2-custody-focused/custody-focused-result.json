@@ -1,0 +1,30 @@
+{
+  "name": "custody-focused",
+  "exit_code": 0,
+  "seconds": 15.645162105560303,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "committed_cadence_local_correlation_refusal or live_install_retained_validator_rejects_runtime_cadence_reentry",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r2-custody-focused"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r2-custody-focused/custody-focused.log",
+  "sha256": "c0433d417283574f3c9a330cd50679003a84a4ac53cd755d37dd5e30412de5aa",
+  "candidate_tree": "b40a2869633f4ffe0c36bf9a13083998a99d6f02",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "97c4db0c314c16dad25c991e8b49e5b0fecd4364d5e36311d1259327671e86ca",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

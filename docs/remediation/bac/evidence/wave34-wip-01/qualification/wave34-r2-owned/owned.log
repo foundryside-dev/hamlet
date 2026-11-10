@@ -1,0 +1,1566 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [150 items]
+
+..............................................................F......... [ 48%]
+F.....................F..F.F..F..FF..F..F.FF.F..F.....F.....F....F...... [ 96%]
+FF....                                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_adaptive_completion_changes_only_owned_history_once[shared] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331acee660>
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_adaptive_completion_changes_only_owned_history_once(compiled, monkeypatch, scope):
+        case = _make(compiled, monkeypatch, "adaptive_rnd", scope, "paced_fifo")
+        original_epsilon = case.runtime.epsilon
+        for episode in range(5):
+            _begin(case, episode)
+            for tick in range(5):
+                _step(case, monkeypatch, 5 * episode + tick, (True, False))
+            before = fx.live(case.rig.bank)
+            _close(case, monkeypatch)
+            after = fx.live(case.rig.bank)
+            fx.equal(after["native"]["rnd_state"], before["native"]["rnd_state"])
+            fx.equal(after["gradients"], before["gradients"])
+            fx.equal(after["refs"], before["refs"])
+            assert after["provider_id"] == before["provider_id"]
+            assert after["native"]["survival_history"] != before["native"]["survival_history"]
+>       assert after["native"]["current_intrinsic_weight"] < 0.4
+E       assert 0.4 < 0.4
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:875: AssertionError
+_____ test_adaptive_completion_changes_only_owned_history_once[per_world] ______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f330f54cd00>
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_adaptive_completion_changes_only_owned_history_once(compiled, monkeypatch, scope):
+        case = _make(compiled, monkeypatch, "adaptive_rnd", scope, "paced_fifo")
+        original_epsilon = case.runtime.epsilon
+        for episode in range(5):
+            _begin(case, episode)
+            for tick in range(5):
+                _step(case, monkeypatch, 5 * episode + tick, (True, False))
+            before = fx.live(case.rig.bank)
+            _close(case, monkeypatch)
+            after = fx.live(case.rig.bank)
+            fx.equal(after["native"]["rnd_state"], before["native"]["rnd_state"])
+            fx.equal(after["gradients"], before["gradients"])
+            fx.equal(after["refs"], before["refs"])
+            assert after["provider_id"] == before["provider_id"]
+            assert after["native"]["survival_history"] != before["native"]["survival_history"]
+>       assert after["native"]["current_intrinsic_weight"] < 0.4
+E       assert 0.4 < 0.4
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:875: AssertionError
+_____________ test_guard_covers_all_bank_forwarding_entries[begin] _____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331acef770>
+operation = 'begin'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330ea90a50>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330ea90a50> = <test_exploration_factory.RuntimeRig object at 0x7f330f056a50>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+_____________ test_guard_covers_all_bank_forwarding_entries[stamp] _____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331acef380>
+operation = 'stamp'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330eb18c30>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330eb18c30> = <test_exploration_factory.RuntimeRig object at 0x7f330ead0f50>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+____________ test_guard_covers_all_bank_forwarding_entries[reward] _____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331acefe00>
+operation = 'reward'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330eb1bbb0>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330eb1bbb0> = <test_exploration_factory.RuntimeRig object at 0x7f330ead39d0>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+____________ test_guard_covers_all_bank_forwarding_entries[service] ____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331acefee0>
+operation = 'service'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330ea7f9d0>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330ea7f9d0> = <test_exploration_factory.RuntimeRig object at 0x7f330ead12d0>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+______ test_guard_covers_all_bank_forwarding_entries[prepare_completion] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c130>
+operation = 'prepare_completion'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330eaedd10>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330eaedd10> = <test_exploration_factory.RuntimeRig object at 0x7f331ab01cd0>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+_______ test_guard_covers_all_bank_forwarding_entries[commit_completion] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c050>
+operation = 'commit_completion'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e7dd4f0>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e7dd4f0> = <test_exploration_factory.RuntimeRig object at 0x7f330e6840d0>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+_____________ test_guard_covers_all_bank_forwarding_entries[empty] _____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c280>
+operation = 'empty'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e8a1a90>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e8a1a90> = <test_exploration_factory.RuntimeRig object at 0x7f330e63de50>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+__________ test_guard_covers_all_bank_forwarding_entries[quarantine] ___________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c3d0>
+operation = 'quarantine'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e925a90>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e925a90> = <test_exploration_factory.RuntimeRig object at 0x7f330e537dd0>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+_ test_explicit_runtime_private_initialization_preserves_global_cadence[fresh_private-rnd] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb6890c11d0>
+family = 'rnd', choice = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", ("fresh_private", "clone_learned_archive_pending"))
+    def test_explicit_runtime_private_initialization_preserves_global_cadence(compiled, monkeypatch, family, choice):
+        source = _make(compiled, monkeypatch, family, "shared", "paced_fifo")
+        source.rig.original = fx.live(source.rig.bank)
+        _train(source, monkeypatch, 5 if family == "adaptive_rnd" else 1)
+        _commit_parent(source, 70)
+        source_live = fx.live(source.rig.bank)
+        state = source.runtime.checkpoint_state()
+        source.rig.saved = deepcopy(state["bank"])
+        target = _make(compiled, monkeypatch, family, "per_world", "paced_fifo")
+        parent, validate = target.rig.prepare_parent(source.rig)
+        target.parent.cadence = deepcopy(state["cadence"])
+        prepared = target.runtime.prepare_private_initialization(
+            state=state, initialization=choice, parent_restore=parent, validate_parent_restore=validate
+        )
+        target.runtime.install_restore(prepared=prepared)
+        target.rig.install_parent()
+        saved = target.runtime.checkpoint_state()
+        assert saved["bank"]["bank_phase"] == "private_initialized"
+        assert saved["bank"]["curiosity_epoch"] == state["bank"]["curiosity_epoch"] + 1
+        origin = saved["bank"]["initialization_origin"]
+        assert origin["initialization"] == choice
+        fx.equal(origin["source_checkpoint"], state["bank"])
+        fx.equal(saved["selector"], state["selector"])
+        fx.equal(saved["cadence"], state["cadence"])
+        for world in fx.IDS:
+            snapshot = target.runtime.snapshot_world(world_id=world)
+            fx.assert_future(snapshot, family, 0, 0)
+>           fx.assert_baseline(target.rig.bank, source.rig, choice, world, 0, 0)
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7fb67c7edd10>
+source = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7fb67d9dba10>
+choice = 'fresh_private', world = 'A', local_admitted = 0, local_updates = 0
+
+    def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
+        """Derive the native ledger independently of the production diagnostic deltas."""
+        snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
+        origin = snapshot["initialization_origin"]
+        if family not in TRAINABLE:
+            assert origin["inherited_baseline"] is None
+            return
+>       old, _ = native_ledger(source["shared_backend"]["native"], family)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'Rig' object is not subscriptable
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:476: TypeError
+________ test_guard_covers_all_bank_forwarding_entries[prepare_restore] ________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c4b0>
+operation = 'prepare_restore'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e444af0>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e444af0> = <test_exploration_factory.RuntimeRig object at 0x7f330e4b3150>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+____________ test_guard_covers_all_bank_forwarding_entries[install] ____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c600>
+operation = 'install'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e3a0690>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e3a0690> = <test_exploration_factory.RuntimeRig object at 0x7f330e6cfdd0>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+__________ test_guard_covers_all_bank_forwarding_entries[initialize] ___________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f331ab0c750>
+operation = 'initialize'
+
+    @pytest.mark.parametrize(
+        "operation",
+        (
+            "begin",
+            "stamp",
+            "reward",
+            "service",
+            "prepare_completion",
+            "commit_completion",
+            "empty",
+            "quarantine",
+            "prepare_restore",
+            "install",
+            "initialize",
+        ),
+    )
+    def test_guard_covers_all_bank_forwarding_entries(compiled, monkeypatch, operation):
+        case = _make(compiled, monkeypatch, "none", "per_world", "paced_fifo")
+        _begin(case, 0)
+        context, stamp, _, _ = _step(case, monkeypatch, 0, (True, False))
+        _close(case, monkeypatch)
+        outcomes = _parent_outcomes(case, 100)
+        case.parent.record(100, outcomes)
+        bank_outcomes, bank_token = case.completions[-1]
+        arguments = dict(context=context, stamp=stamp, accepted=case.rig.accepted)
+        saved = case.runtime.checkpoint_state()
+        unread = UnreadGuardState(saved)
+        # Some arguments are intentionally inapplicable after completion. Neither
+        # ordinary preflight refusal nor a child refusal is accepted as guard proof:
+        # require the distinct guard error and fail outside REFUSAL on any prework.
+        actions = {
+            "begin": lambda: case.runtime.begin_episode(accepted=case.rig.accepted),
+            "stamp": lambda: case.runtime.prepare_step_stamp(
+                accepted=case.rig.accepted,
+                world_ids=case.rig.accepted.world_ids,
+                active_on_entry=context.active_on_entry,
+                vector_tick=context.vector_tick,
+            ),
+            "reward": lambda: case.runtime.reward(**arguments, update_stats=True),
+            "service": lambda: case.runtime.admit_and_service(**arguments),
+            "prepare_completion": lambda: case.runtime.prepare_completion(
+                accepted=case.rig.accepted,
+                boundary_key=case.rig.accepted.batch_episode,
+                completion_content=_content(bank_outcomes),
+                outcomes=bank_outcomes,
+                participated_world_ids=tuple(event.world_id for event in bank_outcomes),
+            ),
+            "commit_completion": lambda: case.runtime.commit_completion(prepared=bank_token),
+            "empty": lambda: case.runtime.prepare_empty_episode_evidence(accepted=case.rig.accepted),
+            "quarantine": lambda: case.runtime.quarantine_episode(accepted=case.rig.accepted, reason="runtime_failure"),
+            "prepare_restore": lambda: case.runtime.prepare_restore(
+                state=unread, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+            ),
+            "install": lambda: case.runtime.install_restore(prepared=object()),
+            "initialize": lambda: case.runtime.prepare_private_initialization(
+                state=unread, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+        }
+        revision = case.rig.bank.mutation_revision
+        reports = len(case.rig.reports)
+        rng = torch.get_rng_state().clone()
+        restores = len(case.parent.restore_calls)
+        reached = []
+    
+        def child_prework(*args, **kwargs):
+            reached.append(operation)
+            raise GuardPreworkReachedError("runtime dispatched to BANK before rejecting reentry")
+    
+        boundary = {
+            "begin": "begin_episode",
+            "stamp": "prepare_step_stamp",
+            "reward": "reward",
+            "service": "admit_and_service",
+            "prepare_completion": "prepare_completion",
+            "commit_completion": "commit_completion",
+            "empty": "prepare_empty_episode_evidence",
+            "quarantine": "quarantine_episode",
+            "prepare_restore": "prepare_restore",
+            "install": "install_restore",
+            "initialize": "prepare_private_initialization",
+        }
+        case.parent.commit_action = actions[operation]
+        with monkeypatch.context() as patch:
+            patch.setattr(case.rig.bank, boundary[operation], child_prework)
+            with pytest.raises(RuntimeError, match="reentrant runtime operation"):
+                case.runtime.commit_batch_episode(batch_episode=100, outcomes=outcomes)
+        assert not reached
+        assert case.rig.bank.mutation_revision == revision
+>       assert len(case.rig.reports) == reports
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len([AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))])
+E        +    where [AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='construct', scope='per_world', device='cpu',... unknown_components=('runtime Python objects and callback-retained copies', 'caller input and prior prepared states'))] = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e48c0f0>.reports
+E        +      where <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f330e48c0f0> = <test_exploration_factory.RuntimeRig object at 0x7f330e602250>.rig
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:1033: AssertionError
+_ test_explicit_runtime_private_initialization_preserves_global_cadence[fresh_private-adaptive_rnd] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb67cf8f700>
+family = 'adaptive_rnd', choice = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", ("fresh_private", "clone_learned_archive_pending"))
+    def test_explicit_runtime_private_initialization_preserves_global_cadence(compiled, monkeypatch, family, choice):
+        source = _make(compiled, monkeypatch, family, "shared", "paced_fifo")
+        source.rig.original = fx.live(source.rig.bank)
+        _train(source, monkeypatch, 5 if family == "adaptive_rnd" else 1)
+        _commit_parent(source, 70)
+        source_live = fx.live(source.rig.bank)
+        state = source.runtime.checkpoint_state()
+        source.rig.saved = deepcopy(state["bank"])
+        target = _make(compiled, monkeypatch, family, "per_world", "paced_fifo")
+        parent, validate = target.rig.prepare_parent(source.rig)
+        target.parent.cadence = deepcopy(state["cadence"])
+        prepared = target.runtime.prepare_private_initialization(
+            state=state, initialization=choice, parent_restore=parent, validate_parent_restore=validate
+        )
+        target.runtime.install_restore(prepared=prepared)
+        target.rig.install_parent()
+        saved = target.runtime.checkpoint_state()
+        assert saved["bank"]["bank_phase"] == "private_initialized"
+        assert saved["bank"]["curiosity_epoch"] == state["bank"]["curiosity_epoch"] + 1
+        origin = saved["bank"]["initialization_origin"]
+        assert origin["initialization"] == choice
+        fx.equal(origin["source_checkpoint"], state["bank"])
+        fx.equal(saved["selector"], state["selector"])
+        fx.equal(saved["cadence"], state["cadence"])
+        for world in fx.IDS:
+            snapshot = target.runtime.snapshot_world(world_id=world)
+            fx.assert_future(snapshot, family, 0, 0)
+>           fx.assert_baseline(target.rig.bank, source.rig, choice, world, 0, 0)
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7fb67c9a6210>
+source = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7fb67c8a9010>
+choice = 'fresh_private', world = 'A', local_admitted = 0, local_updates = 0
+
+    def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
+        """Derive the native ledger independently of the production diagnostic deltas."""
+        snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
+        origin = snapshot["initialization_origin"]
+        if family not in TRAINABLE:
+            assert origin["inherited_baseline"] is None
+            return
+>       old, _ = native_ledger(source["shared_backend"]["native"], family)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'Rig' object is not subscriptable
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:476: TypeError
+_ test_explicit_runtime_private_initialization_preserves_global_cadence[fresh_private-icm] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb6890c17f0>
+family = 'icm', choice = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", ("fresh_private", "clone_learned_archive_pending"))
+    def test_explicit_runtime_private_initialization_preserves_global_cadence(compiled, monkeypatch, family, choice):
+        source = _make(compiled, monkeypatch, family, "shared", "paced_fifo")
+        source.rig.original = fx.live(source.rig.bank)
+        _train(source, monkeypatch, 5 if family == "adaptive_rnd" else 1)
+        _commit_parent(source, 70)
+        source_live = fx.live(source.rig.bank)
+        state = source.runtime.checkpoint_state()
+        source.rig.saved = deepcopy(state["bank"])
+        target = _make(compiled, monkeypatch, family, "per_world", "paced_fifo")
+        parent, validate = target.rig.prepare_parent(source.rig)
+        target.parent.cadence = deepcopy(state["cadence"])
+        prepared = target.runtime.prepare_private_initialization(
+            state=state, initialization=choice, parent_restore=parent, validate_parent_restore=validate
+        )
+        target.runtime.install_restore(prepared=prepared)
+        target.rig.install_parent()
+        saved = target.runtime.checkpoint_state()
+        assert saved["bank"]["bank_phase"] == "private_initialized"
+        assert saved["bank"]["curiosity_epoch"] == state["bank"]["curiosity_epoch"] + 1
+        origin = saved["bank"]["initialization_origin"]
+        assert origin["initialization"] == choice
+        fx.equal(origin["source_checkpoint"], state["bank"])
+        fx.equal(saved["selector"], state["selector"])
+        fx.equal(saved["cadence"], state["cadence"])
+        for world in fx.IDS:
+            snapshot = target.runtime.snapshot_world(world_id=world)
+            fx.assert_future(snapshot, family, 0, 0)
+>           fx.assert_baseline(target.rig.bank, source.rig, choice, world, 0, 0)
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7fb67c96a710>
+source = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7fb67ce31610>
+choice = 'fresh_private', world = 'A', local_admitted = 0, local_updates = 0
+
+    def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
+        """Derive the native ledger independently of the production diagnostic deltas."""
+        snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
+        origin = snapshot["initialization_origin"]
+        if family not in TRAINABLE:
+            assert origin["inherited_baseline"] is None
+            return
+>       old, _ = native_ledger(source["shared_backend"]["native"], family)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'Rig' object is not subscriptable
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:476: TypeError
+_ test_explicit_runtime_private_initialization_preserves_global_cadence[clone_learned_archive_pending-adaptive_rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1f6b6e5b00>
+family = 'adaptive_rnd', choice = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", ("fresh_private", "clone_learned_archive_pending"))
+    def test_explicit_runtime_private_initialization_preserves_global_cadence(compiled, monkeypatch, family, choice):
+        source = _make(compiled, monkeypatch, family, "shared", "paced_fifo")
+        source.rig.original = fx.live(source.rig.bank)
+        _train(source, monkeypatch, 5 if family == "adaptive_rnd" else 1)
+        _commit_parent(source, 70)
+        source_live = fx.live(source.rig.bank)
+        state = source.runtime.checkpoint_state()
+        source.rig.saved = deepcopy(state["bank"])
+        target = _make(compiled, monkeypatch, family, "per_world", "paced_fifo")
+        parent, validate = target.rig.prepare_parent(source.rig)
+        target.parent.cadence = deepcopy(state["cadence"])
+        prepared = target.runtime.prepare_private_initialization(
+            state=state, initialization=choice, parent_restore=parent, validate_parent_restore=validate
+        )
+        target.runtime.install_restore(prepared=prepared)
+        target.rig.install_parent()
+        saved = target.runtime.checkpoint_state()
+        assert saved["bank"]["bank_phase"] == "private_initialized"
+        assert saved["bank"]["curiosity_epoch"] == state["bank"]["curiosity_epoch"] + 1
+        origin = saved["bank"]["initialization_origin"]
+        assert origin["initialization"] == choice
+        fx.equal(origin["source_checkpoint"], state["bank"])
+        fx.equal(saved["selector"], state["selector"])
+        fx.equal(saved["cadence"], state["cadence"])
+        for world in fx.IDS:
+            snapshot = target.runtime.snapshot_world(world_id=world)
+            fx.assert_future(snapshot, family, 0, 0)
+>           fx.assert_baseline(target.rig.bank, source.rig, choice, world, 0, 0)
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f1f5f0eed50>
+source = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f1f5f49e7b0>
+choice = 'clone_learned_archive_pending', world = 'A', local_admitted = 0
+local_updates = 0
+
+    def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
+        """Derive the native ledger independently of the production diagnostic deltas."""
+        snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
+        origin = snapshot["initialization_origin"]
+        if family not in TRAINABLE:
+            assert origin["inherited_baseline"] is None
+            return
+>       old, _ = native_ledger(source["shared_backend"]["native"], family)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'Rig' object is not subscriptable
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:476: TypeError
+_ test_explicit_runtime_private_initialization_preserves_global_cadence[clone_learned_archive_pending-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1f5f7d14e0>
+family = 'icm', choice = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", ("fresh_private", "clone_learned_archive_pending"))
+    def test_explicit_runtime_private_initialization_preserves_global_cadence(compiled, monkeypatch, family, choice):
+        source = _make(compiled, monkeypatch, family, "shared", "paced_fifo")
+        source.rig.original = fx.live(source.rig.bank)
+        _train(source, monkeypatch, 5 if family == "adaptive_rnd" else 1)
+        _commit_parent(source, 70)
+        source_live = fx.live(source.rig.bank)
+        state = source.runtime.checkpoint_state()
+        source.rig.saved = deepcopy(state["bank"])
+        target = _make(compiled, monkeypatch, family, "per_world", "paced_fifo")
+        parent, validate = target.rig.prepare_parent(source.rig)
+        target.parent.cadence = deepcopy(state["cadence"])
+        prepared = target.runtime.prepare_private_initialization(
+            state=state, initialization=choice, parent_restore=parent, validate_parent_restore=validate
+        )
+        target.runtime.install_restore(prepared=prepared)
+        target.rig.install_parent()
+        saved = target.runtime.checkpoint_state()
+        assert saved["bank"]["bank_phase"] == "private_initialized"
+        assert saved["bank"]["curiosity_epoch"] == state["bank"]["curiosity_epoch"] + 1
+        origin = saved["bank"]["initialization_origin"]
+        assert origin["initialization"] == choice
+        fx.equal(origin["source_checkpoint"], state["bank"])
+        fx.equal(saved["selector"], state["selector"])
+        fx.equal(saved["cadence"], state["cadence"])
+        for world in fx.IDS:
+            snapshot = target.runtime.snapshot_world(world_id=world)
+            fx.assert_future(snapshot, family, 0, 0)
+>           fx.assert_baseline(target.rig.bank, source.rig, choice, world, 0, 0)
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f1f5efb3250>
+source = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7f1f5f3e0a50>
+choice = 'clone_learned_archive_pending', world = 'A', local_admitted = 0
+local_updates = 0
+
+    def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
+        """Derive the native ledger independently of the production diagnostic deltas."""
+        snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
+        origin = snapshot["initialization_origin"]
+        if family not in TRAINABLE:
+            assert origin["inherited_baseline"] is None
+            return
+>       old, _ = native_ledger(source["shared_backend"]["native"], family)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'Rig' object is not subscriptable
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:476: TypeError
+_ test_explicit_runtime_private_initialization_preserves_global_cadence[clone_learned_archive_pending-rnd] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb67ccedda0>
+family = 'rnd', choice = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", ("fresh_private", "clone_learned_archive_pending"))
+    def test_explicit_runtime_private_initialization_preserves_global_cadence(compiled, monkeypatch, family, choice):
+        source = _make(compiled, monkeypatch, family, "shared", "paced_fifo")
+        source.rig.original = fx.live(source.rig.bank)
+        _train(source, monkeypatch, 5 if family == "adaptive_rnd" else 1)
+        _commit_parent(source, 70)
+        source_live = fx.live(source.rig.bank)
+        state = source.runtime.checkpoint_state()
+        source.rig.saved = deepcopy(state["bank"])
+        target = _make(compiled, monkeypatch, family, "per_world", "paced_fifo")
+        parent, validate = target.rig.prepare_parent(source.rig)
+        target.parent.cadence = deepcopy(state["cadence"])
+        prepared = target.runtime.prepare_private_initialization(
+            state=state, initialization=choice, parent_restore=parent, validate_parent_restore=validate
+        )
+        target.runtime.install_restore(prepared=prepared)
+        target.rig.install_parent()
+        saved = target.runtime.checkpoint_state()
+        assert saved["bank"]["bank_phase"] == "private_initialized"
+        assert saved["bank"]["curiosity_epoch"] == state["bank"]["curiosity_epoch"] + 1
+        origin = saved["bank"]["initialization_origin"]
+        assert origin["initialization"] == choice
+        fx.equal(origin["source_checkpoint"], state["bank"])
+        fx.equal(saved["selector"], state["selector"])
+        fx.equal(saved["cadence"], state["cadence"])
+        for world in fx.IDS:
+            snapshot = target.runtime.snapshot_world(world_id=world)
+            fx.assert_future(snapshot, family, 0, 0)
+>           fx.assert_baseline(target.rig.bank, source.rig, choice, world, 0, 0)
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7fb67c7ecb90>
+source = <tests.test_townlet.regressions.bac.test_pw_scope_conversion.Rig object at 0x7fb67d9da8d0>
+choice = 'clone_learned_archive_pending', world = 'A', local_admitted = 0
+local_updates = 0
+
+    def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
+        """Derive the native ledger independently of the production diagnostic deltas."""
+        snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
+        origin = snapshot["initialization_origin"]
+        if family not in TRAINABLE:
+            assert origin["inherited_baseline"] is None
+            return
+>       old, _ = native_ledger(source["shared_backend"]["native"], family)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'Rig' object is not subscriptable
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:476: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_adaptive_completion_changes_only_owned_history_once[shared]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_adaptive_completion_changes_only_owned_history_once[per_world]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[begin]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[stamp]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[reward]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[service]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[prepare_completion]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[commit_completion]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[empty]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[quarantine]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_explicit_runtime_private_initialization_preserves_global_cadence[fresh_private-rnd]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[prepare_restore]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[install]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_guard_covers_all_bank_forwarding_entries[initialize]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_explicit_runtime_private_initialization_preserves_global_cadence[fresh_private-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_explicit_runtime_private_initialization_preserves_global_cadence[fresh_private-icm]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_explicit_runtime_private_initialization_preserves_global_cadence[clone_learned_archive_pending-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_explicit_runtime_private_initialization_preserves_global_cadence[clone_learned_archive_pending-icm]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_explicit_runtime_private_initialization_preserves_global_cadence[clone_learned_archive_pending-rnd]
+======================= 19 failed, 131 passed in 26.61s ========================

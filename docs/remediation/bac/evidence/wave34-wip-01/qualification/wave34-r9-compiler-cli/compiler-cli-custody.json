@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "source_index_config_artifact_registry_custody": "PASS",
+  "source_guards": 797,
+  "configs": 573,
+  "artifacts": 13,
+  "registry": 14,
+  "available": 1,
+  "packs": 34,
+  "process_identities": 35,
+  "all_child_import_source_threads_identity": "PASS",
+  "seconds": 154.08259677886963,
+  "negative_fixture_errors": "All three expected VFS invalid packs refused, wrapper asserted each expected refusal",
+  "commands": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py"
+  ],
+  "log_sha256": "614ef7d6e54c7b2cd7911f7f6a965868f084db322058d7534a9e6a4880c7c88b"
+}

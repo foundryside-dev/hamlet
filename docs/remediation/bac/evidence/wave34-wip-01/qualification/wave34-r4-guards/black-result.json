@@ -1,0 +1,22 @@
+{
+  "name": "black",
+  "exit_code": 0,
+  "seconds": 45.807347774505615,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src",
+    "tests",
+    "scripts",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r4-guards/black.log",
+  "sha256": "c70adb0aa0f75ec497b0f1b69e3598e334cc70ef9f4f0e6409f28d6930084ce0",
+  "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "b9227ee22f5ec99b8e4dd94c280362baf0735eb1eb8261507a368a76a331cd98",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

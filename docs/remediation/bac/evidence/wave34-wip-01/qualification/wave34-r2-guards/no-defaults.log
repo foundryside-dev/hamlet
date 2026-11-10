@@ -1,0 +1,10 @@
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+
+=== Non-Whitelisted Violations ===
+src/townlet/config/exploration_policy.py:1092:15: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/config/exploration_policy.py:1190:15: ASG002: Ternary expression used as a default (x = a if cond else b)
+
+2 violation(s) found.
+(601 violation(s) whitelisted)

@@ -1,0 +1,30 @@
+{
+  "name": "focused",
+  "exit_code": 0,
+  "seconds": 16.176039457321167,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "factory_constructs_selected_provider or selection_uses_owned_training_tensor_and_real_masks",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r2-focused"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r2-focused/focused.log",
+  "sha256": "560b774d7a91e5f17808736d94e2df2ea88054e8927398703534764475b7582c",
+  "candidate_tree": "b40a2869633f4ffe0c36bf9a13083998a99d6f02",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "97c4db0c314c16dad25c991e8b49e5b0fecd4364d5e36311d1259327671e86ca",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

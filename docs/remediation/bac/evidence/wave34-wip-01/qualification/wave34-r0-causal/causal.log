@@ -1,0 +1,112 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [2 items]
+
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_factory_constructs_selected_provider[shared-none] ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f146f83cd60>
+family = 'none', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_factory_constructs_selected_provider(compiled, monkeypatch, family, scope):
+>       case = _make(compiled, monkeypatch, family, scope, "paced_fifo")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:300: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_exploration_factory.py:142: in _make
+    rig = fx.Rig(compiled, selected)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:131: in __init__
+    self.bank = CuriosityBank(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def construct(*, policy, descriptor, device, validate_accepted_episode, issuer_factory, report_allocation):
+        owners = []
+        gate = AcceptedGate(validate_accepted_episode)
+    
+        def issue(owner):
+            owners.append(owner)
+            return issuer_factory(owner)
+    
+        # This is the intended causal missing-operation failure, not collection.
+>       runtime = rp.build_exploration(
+                  ^^^^^^^^^^^^^^^^^^^^
+            policy=policy,
+            descriptor=descriptor,
+            device=device,
+            validate_accepted_episode=gate,
+            issuer_factory=issue,
+            report_allocation=report_allocation,
+            validate_committed_batch=parent.validate_committed_batch,
+            validate_parent_cadence=parent.validate_parent_cadence,
+        )
+E       AttributeError: module 'townlet.config.exploration_policy' has no attribute 'build_exploration'
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:125: AttributeError
+__________ test_factory_constructs_selected_provider[per_world-none] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6b32034d60>
+family = 'none', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_factory_constructs_selected_provider(compiled, monkeypatch, family, scope):
+>       case = _make(compiled, monkeypatch, family, scope, "paced_fifo")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:300: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_exploration_factory.py:142: in _make
+    rig = fx.Rig(compiled, selected)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:131: in __init__
+    self.bank = CuriosityBank(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def construct(*, policy, descriptor, device, validate_accepted_episode, issuer_factory, report_allocation):
+        owners = []
+        gate = AcceptedGate(validate_accepted_episode)
+    
+        def issue(owner):
+            owners.append(owner)
+            return issuer_factory(owner)
+    
+        # This is the intended causal missing-operation failure, not collection.
+>       runtime = rp.build_exploration(
+                  ^^^^^^^^^^^^^^^^^^^^
+            policy=policy,
+            descriptor=descriptor,
+            device=device,
+            validate_accepted_episode=gate,
+            issuer_factory=issue,
+            report_allocation=report_allocation,
+            validate_committed_batch=parent.validate_committed_batch,
+            validate_parent_cadence=parent.validate_parent_cadence,
+        )
+E       AttributeError: module 'townlet.config.exploration_policy' has no attribute 'build_exploration'
+
+tests/test_townlet/regressions/bac/test_exploration_factory.py:125: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_factory_constructs_selected_provider[shared-none]
+FAILED tests/test_townlet/regressions/bac/test_exploration_factory.py::test_factory_constructs_selected_provider[per_world-none]
+============================== 2 failed in 7.44s ===============================

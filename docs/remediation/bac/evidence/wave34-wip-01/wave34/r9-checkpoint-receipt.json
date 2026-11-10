@@ -1,0 +1,215 @@
+{
+  "status": "WIP CURRENT RUNTIME COMPONENT AND CONSUMER REPAIR QUALIFIED; EARLIER FULL EXECUTION OWED; UNRELEASED",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+  "scope": "Original T18d current runtime facade/global epsilon+cadence/current prepare-install ownership; separate current-only curriculum unit-consumer prerequisite. Not actual parent integration or whole original package release.",
+  "runtime_component": {
+    "evidence_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+    "current_bytes_equivalence": "All356runtime evidence guarded paths unchanged at R9; only separately owned old curriculum unit source added/changed outside that runtime evidence guard.",
+    "independent": {
+      "job": "independent",
+      "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+      "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+      "exit_code": 0,
+      "counts": {
+        "passed": 150,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 83.66714191436768,
+      "source_guards": 356,
+      "process_identities": 2,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "coherent": {
+      "job": "coherent",
+      "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+      "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1123,
+        "skipped": 3,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 206.1946313381195,
+      "source_guards": 356,
+      "process_identities": 4,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "review_sha256": "294047cb14afa35d1833781f2e0470d846de892c9622b335ab536ae514d17396",
+    "source_context": "5 whole files4582lines<=4977ceilings",
+    "actual_poison_child_custody": {
+      "status": "PASS",
+      "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+      "receipt": "/workspace/bac-review-2026-11-01/qualification/wave34-r4-coherent/coherent/subprocess-custody-poisoning-114366.json",
+      "sha256": "5978f16fed6db138ce4efaac2858b0309db0947a6708842e48a7a2ff74944582",
+      "sources": 356,
+      "imports": 48,
+      "python": "3.13.5",
+      "torch": "2.11.0+cu130",
+      "threads": 1,
+      "interop_threads": 5,
+      "actual_poisoning_assertions": "PASS"
+    }
+  },
+  "current_consumer_repair": {
+    "test_sha256": "c414386e87ab43d11bfbae86cb5264102b9cb8985f2fcf618157cf0519e278da",
+    "context": "5wholefiles1478<=3100ceilings",
+    "collection": {
+      "job": "collection",
+      "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+      "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.77728533744812,
+      "source_guards": 797,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owning_and_event": {
+      "job": "owned",
+      "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+      "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+      "exit_code": 0,
+      "counts": {
+        "passed": 227,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 9.32458782196045,
+      "source_guards": 797,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "review_sha256": "a08dabf5e245be441db2648f1e90ba5d0c1e84c2f45d70dd9d35a281a526447d",
+    "fix1": "P2 independent low-survival OR causal witness and finite P3 configuredthreshold controls addressed;0newscopedfindings"
+  },
+  "compiler_cli": {
+    "status": "PASS",
+    "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+    "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+    "source_index_config_artifact_registry_custody": "PASS",
+    "source_guards": 797,
+    "configs": 573,
+    "artifacts": 13,
+    "registry": 14,
+    "available": 1,
+    "packs": 34,
+    "process_identities": 35,
+    "all_child_import_source_threads_identity": "PASS",
+    "seconds": 154.08259677886963,
+    "negative_fixture_errors": "All three expected VFS invalid packs refused, wrapper asserted each expected refusal",
+    "commands": [
+      "/workspace/hamlet/.venv/bin/python",
+      "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py"
+    ],
+    "log_sha256": "614ef7d6e54c7b2cd7911f7f6a965868f084db322058d7534a9e6a4880c7c88b"
+  },
+  "full_suite_status": "COLLECTION PASS8547/8548 oneperf deselection; FULL EXECUTION UNRUN AT WIP CHECKPOINT",
+  "full_suite_reason": "Approved EXECUTION-ADDENDUM section3 early trigger applies to removal of obsolete policy-loader compatibility; full execution before dependent boundary green/release. WIP publication preserves incomplete work durably, not package release.",
+  "full_collection": {
+    "job": "full-collection",
+    "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+    "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+    "exit_code": 0,
+    "counts": {
+      "passed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 7.710124731063843,
+    "source_guards": 797,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "next_full_gate": "Capture imminent immutable published checkpoint/source and run standing four-worker full repository gate before dependent integration",
+  "static_commands": {
+    "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+    "guards": {
+      "mypy": {
+        "exit_code": 1,
+        "seconds": 0.7346725463867188,
+        "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+      },
+      "ruff": {
+        "exit_code": 0,
+        "seconds": 0.09389138221740723,
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      "expression-doc": {
+        "exit_code": 0,
+        "seconds": 2.1454007625579834,
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      },
+      "black": {
+        "exit_code": 0,
+        "seconds": 45.807347774505615,
+        "sha256": "c70adb0aa0f75ec497b0f1b69e3598e334cc70ef9f4f0e6409f28d6930084ce0"
+      },
+      "no-defaults": {
+        "exit_code": 0,
+        "seconds": 1.111717700958252,
+        "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+      }
+    },
+    "mypy": "Same exact9oraclePOP/197sources, zeroRPerrors",
+    "defaults": 601,
+    "repeat_note": "Coordinator accidentally relaunched same guard spec while preparing compiler CLI gate. Both checks against identical candidate; all five log hashes identical. First measured summary preserved separately; current raw result/log files are second actual invocation. No source/test or invariant changed; no cancellation."
+  },
+  "static_equivalence": "RP/src and other356guard bytes unchanged; oldunitchanged only, its full scoped Black/Ruff pass author report; globalBlack/Ruff existing otherfiles unchanged. No mypy ignore/ratchet/whitelist relaxation.",
+  "documentation": {
+    "contracts": {
+      "CURRENT-EXPLORATION-RUNTIME-CONTRACT.md": "df11a032f4f5d4243c9ab0bc12140c6c0e4a8ece2b044dc940ccb8da53de110c",
+      "CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md": "5a291efeedb9248e146e1ff6c10868f026486128057f589a2e9b36d47b21b4b3",
+      "CURRENT-CURIOSITY-BANK-CONTRACT.md": "2c1adde08dcbdff182906e227f394d82b560674190deaa8f3605346ab80e146b"
+    },
+    "truth_review_sha256": "3054c309ef46772c9072c1e95fddeaf8c3a4e4b46a85068f01a02c0736f963ad",
+    "status": "Source truth APPROVED0P1P2; gate/provenanceclarification separately readback-approved"
+  },
+  "unrun_checks": [
+    "Required early full repository execution",
+    "Current actual parent/env/runner/canonicalreward/historicaladmission/replaylearning interfaces",
+    "Final54requirements22freshlenses/learningE2E/coverage>=70/slow/applicablehardware/exacttipCI"
+  ],
+  "known_failures": "Globalmypy same9oracle/POP errors197sources; prior47CI ConfigPASS,LintFAILsame9,TestsFAILcauseunknown(logTransportclosed). CUDA unavailable, not passed.",
+  "progress": "28of66 original releases unchanged;38remaining; no capability reduced or acceptance waived; no new project branch/worktree/checkout"
+}

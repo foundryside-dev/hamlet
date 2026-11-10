@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave34/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave34-r2-custody-focused",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "custody-focused",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "committed_cadence_local_correlation_refusal or live_install_retained_validator_rejects_runtime_cadence_reentry",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r2-custody-focused"
+      ]
+    }
+  ]
+}

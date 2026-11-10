@@ -1,0 +1,96 @@
+diff --git a/tests/test_townlet/unit/curriculum/test_curriculums.py b/tests/test_townlet/unit/curriculum/test_curriculums.py
+index c7ee5d2b..87d0c17b 100644
+--- a/tests/test_townlet/unit/curriculum/test_curriculums.py
++++ b/tests/test_townlet/unit/curriculum/test_curriculums.py
+@@ -305,11 +305,27 @@ class TestAdversarialCurriculumStageRetreat:
+ 
+     def test_should_retreat_with_low_survival(self, adversarial_policy):
+         curriculum = adaptive(adversarial_policy, 1)
+-        reach_stage(curriculum, 0, 3)
+-        curriculum.commit_episode_outcomes([completion(0, 3, 100, 500, 1.0, 100.0)])
+-        assert curriculum.get_stage_info(0)["current_stage"] == 2
+-        assert curriculum.transition_events[-1]["reason"] == "retreat"
++        reach_stage(curriculum, 0, 4)
++        curriculum.commit_episode_outcomes([completion(0, 4, 100, 1000, 1.0, 100.0)])
++        assert curriculum.get_stage_info(0)["current_stage"] == 3
++        assert curriculum.get_stage_info(0)["survival_rate"] == 0.1
+         assert curriculum.get_stage_info(0)["steps_at_stage"] == 0
++        assert curriculum.get_stage_info(0)["episodes_at_stage"] == 0
++        curriculum.commit_episode_outcomes([completion(0, 5, 200, 1000, 1.0, 100.0)])
++        info = curriculum.get_stage_info(0)
++        assert info["current_stage"] == 2
++        assert info["survival_rate"] == 0.2
++        assert info["learning_progress"] == pytest.approx(0.1)
++        assert info["policy_entropy"] == 1.0
++        assert info["steps_at_stage"] == 0
++        assert info["episodes_at_stage"] == 0
++        transition = curriculum.transition_events[-1]
++        assert transition["from_stage"] == 3
++        assert transition["to_stage"] == 2
++        assert transition["reason"] == "retreat"
++        assert transition["survival_rate"] == 0.2
++        assert transition["learning_progress"] == pytest.approx(0.1)
++        assert transition["steps_at_stage"] == 200
+ 
+     def test_should_retreat_with_negative_learning(self, adversarial_policy):
+         curriculum = adaptive(adversarial_policy, 1)
+@@ -419,6 +435,59 @@ class TestAdversarialCurriculumBatchDecisions:
+         curriculum.commit_episode_outcomes([completion(0, 5, 50, 200, 0.8, 0.0)])
+         assert curriculum.get_stage_info(0)["current_stage"] == 1
+ 
++        # Sufficient dwell isolates the authored .75 threshold from default .7.
++        advance = adaptive(policy, 1)
++        advance.commit_episode_outcomes([completion(0, 1, 720, 1000, 0.3, 0.0)])
++        assert advance.get_stage_info(0)["current_stage"] == 1
++        assert advance.get_stage_info(0)["survival_rate"] == 0.72
++        assert advance.get_stage_info(0)["learning_progress"] == 0.72
++        assert advance.get_stage_info(0)["steps_at_stage"] == 720
++        assert advance.transition_events == []
++        advance.commit_episode_outcomes([completion(0, 2, 800, 1000, 0.3, 0.0)])
++        assert advance.get_stage_info(0)["current_stage"] == 2
++        assert advance.transition_events[-1]["reason"] == "advance"
++
++        # High survival and low entropy isolate dwell200 from default100.
++        dwell = adaptive(policy, 1)
++        dwell.commit_episode_outcomes([completion(0, 1, 150, 160, 0.3, 0.0)])
++        assert dwell.get_stage_info(0)["current_stage"] == 1
++        assert dwell.get_stage_info(0)["survival_rate"] == 0.9375
++        assert dwell.get_stage_info(0)["learning_progress"] == 0.9375
++        assert dwell.get_stage_info(0)["steps_at_stage"] == 150
++        assert dwell.transition_events == []
++        dwell.commit_episode_outcomes([completion(0, 2, 160, 160, 0.3, 0.0)])
++        assert dwell.get_stage_info(0)["current_stage"] == 2
++        assert dwell.transition_events[-1]["reason"] == "advance"
++        assert dwell.transition_events[-1]["steps_at_stage"] == 310
++
++        # Positive progress on either side isolates configured retreat .25.
++        retreat = adaptive(policy, 1)
++        for batch, steps in [(1, 400), (2, 425), (3, 450)]:
++            retreat.commit_episode_outcomes([completion(0, batch, steps, 500, 0.3, 0.0)])
++        assert retreat.get_stage_info(0)["current_stage"] == 4
++        retreat.commit_episode_outcomes([completion(0, 4, 200, 2000, 1.0, 0.0)])
++        assert retreat.get_stage_info(0)["current_stage"] == 3
++        retreat.transition_events.clear()
++        retreat.commit_episode_outcomes([completion(0, 5, 540, 2000, 1.0, 0.0)])
++        assert retreat.get_stage_info(0)["survival_rate"] == 0.27
++        assert retreat.get_stage_info(0)["learning_progress"] == pytest.approx(0.17)
++        assert retreat.get_stage_info(0)["current_stage"] == 3
++        assert retreat.get_stage_info(0)["steps_at_stage"] == 540
++        assert retreat.get_stage_info(0)["episodes_at_stage"] == 1
++        assert retreat.transition_events == []
++        retreat.commit_episode_outcomes([completion(0, 6, 200, 2000, 1.0, 0.0)])
++        assert retreat.get_stage_info(0)["current_stage"] == 2
++        retreat.commit_episode_outcomes([completion(0, 7, 480, 2000, 1.0, 0.0)])
++        assert retreat.get_stage_info(0)["survival_rate"] == 0.24
++        assert retreat.get_stage_info(0)["learning_progress"] == pytest.approx(0.14)
++        assert retreat.get_stage_info(0)["current_stage"] == 1
++        assert retreat.get_stage_info(0)["steps_at_stage"] == 0
++        assert retreat.get_stage_info(0)["episodes_at_stage"] == 0
++        assert retreat.transition_events[-1]["from_stage"] == 2
++        assert retreat.transition_events[-1]["to_stage"] == 1
++        assert retreat.transition_events[-1]["reason"] == "retreat"
++        assert retreat.transition_events[-1]["steps_at_stage"] == 480
++
+     def test_adversarial_curriculum_difficulty_mapping_from_config(self, adversarial_policy):
+         curriculum = adaptive({**adversarial_policy, "min_difficulty": 0.2, "max_difficulty": 0.6}, 5)
+         for lane, stage in enumerate(range(1, 6)):

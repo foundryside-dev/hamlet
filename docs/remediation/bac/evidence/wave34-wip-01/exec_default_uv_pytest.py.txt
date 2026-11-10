@@ -1,0 +1,7 @@
+"""Execute the approved repository pytest gate in its existing uv environment."""
+import os
+import sys
+
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["UV_CACHE_DIR"] = "/workspace/bac-review-2026-11-01/qualification/scratch/uv-cache"
+os.execvp("uv", ["uv", "run", "--no-sync", "pytest", *sys.argv[1:]])

@@ -1,0 +1,30 @@
+{
+  "name": "focused39",
+  "exit_code": 0,
+  "seconds": 21.039263248443604,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "factory_constructs_selected_provider or selection_uses_owned_training_tensor_and_real_masks or committed_cadence_local_correlation_refusal or live_install_retained_validator_rejects_runtime_cadence_reentry or adaptive_completion_changes_only_owned_history_once or guard_covers_all_bank_forwarding_entries or (explicit_runtime_private_initialization and (rnd or icm))",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r4-focused39"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r4-focused39/focused39.log",
+  "sha256": "1dc79602c5bdac2aebdad86f21cb30f42fef30d0c552d3d7e0b679b5176b85f5",
+  "candidate_tree": "157f141a03570f341e7f67e9a265c11277d56aa5",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "b9227ee22f5ec99b8e4dd94c280362baf0735eb1eb8261507a368a76a331cd98",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

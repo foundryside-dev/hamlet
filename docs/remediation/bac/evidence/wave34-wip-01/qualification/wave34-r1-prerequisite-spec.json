@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave34/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave34-r1-prerequisite",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "prerequisite",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "runtime_fixture_prerequisite or protected_historical_artifact_archive_query_export or actual_current_replay_preserved_in_explicit_hc_component_wrapper",
+        "-q",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r1-prerequisite"
+      ]
+    }
+  ]
+}

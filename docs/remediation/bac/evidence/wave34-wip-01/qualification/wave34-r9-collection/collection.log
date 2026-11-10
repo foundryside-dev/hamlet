@@ -1,0 +1,81 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 52 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Package unit>
+        <Dir curriculum>
+          <Module test_curriculums.py>
+            <Class TestStaticCurriculum>
+              <Function test_returns_same_decision_for_all_agents>
+              <Function test_respects_different_difficulty_levels>
+              <Function test_checkpoint_state_returns_all_config>
+              <Function test_load_state_restores_configuration>
+              <Function test_checkpoint_restore_roundtrip>
+            <Class TestPerformanceTracker>
+              <Function test_update_step_accumulates_rewards_and_steps>
+              <Function test_update_step_resets_on_done>
+              <Function test_get_survival_rate_calculation>
+              <Function test_get_learning_progress_positive>
+              <Function test_get_learning_progress_negative>
+              <Function test_update_baseline_stores_current_average>
+            <Class TestAdversarialCurriculumStageAdvancement>
+              <Function test_should_not_advance_without_minimum_steps>
+              <Function test_should_not_advance_from_stage_5>
+              <Function test_should_advance_with_all_conditions_met>
+              <Function test_should_not_advance_with_low_survival>
+              <Function test_should_not_advance_with_negative_learning>
+              <Function test_should_not_advance_with_high_entropy>
+              <Function test_stage_transition_logs_reason>
+            <Class TestAdversarialCurriculumStageRetreat>
+              <Function test_should_not_retreat_from_stage_1>
+              <Function test_should_not_retreat_without_minimum_steps>
+              <Function test_should_retreat_with_low_survival>
+              <Function test_should_retreat_with_negative_learning>
+            <Class TestAdversarialCurriculumEntropyCalculation>
+              <Function test_entropy_zero_for_deterministic_policy>
+              <Function test_entropy_high_for_uniform_policy>
+              <Function test_entropy_batch_processing>
+            <Class TestAdversarialCurriculumBatchDecisions>
+              <Function test_get_batch_decisions_advances_stage>
+              <Function test_get_batch_decisions_retreats_stage>
+              <Function test_get_batch_decisions_maps_stage_to_difficulty>
+              <Function test_stage_5_is_sparse_rewards>
+              <Function test_adversarial_curriculum_thresholds_from_config>
+              <Function test_adversarial_curriculum_difficulty_mapping_from_config>
+            <Class TestAdversarialCurriculumStatePersistence>
+              <Function test_checkpoint_state_includes_all_tracker_state>
+              <Function test_load_state_restores_all_state>
+            <Class TestCurriculumSignalPurity>
+              <Function test_curriculum_has_canonical_checkpoint_methods>
+              <Function test_curriculum_state_preserves_agent_stages>
+            <Class TestAdversarialCurriculumFullStateRoundtrip>
+              <Function test_checkpoint_state_includes_all_tracker_tensors>
+              <Function test_load_state_restores_every_tensor_exactly>
+              <Function test_resume_continues_episode_counter>
+            <Class TestAdversarialCurriculumLoadStateStrictness>
+              <Function test_load_state_raises_on_missing_key[version]>
+              <Function test_load_state_raises_on_missing_key[strategy]>
+              <Function test_load_state_raises_on_missing_key[completion]>
+              <Function test_load_state_raises_on_num_agents_mismatch>
+            <Class TestCurriculumCheckpointValidators>
+              <Function test_static_validator_requires_exact_typed_schema_without_mutation>
+              <Function test_adversarial_validator_requires_exact_tensor_contract_without_mutation>
+            <Class TestCurrentCompletionControls>
+              <Function test_rate_has_declared_effect[0.01-0.1]>
+              <Function test_rate_has_declared_effect[0.1-0.25]>
+              <Function test_singleton_band[stage_band]>
+              <Function test_singleton_band[rate_limited]>
+              <Function test_prepare_is_pure_and_commits_owned_content_once>
+              <Function test_later_invalid_lane_refuses_entire_batch>
+              <Function test_dwell_counts_ten_transitions_and_retains_completed_fraction>
+              <Function test_reward_components_cannot_contaminate_stage_or_progress>
+
+========================= 52 tests collected in 0.12s ==========================

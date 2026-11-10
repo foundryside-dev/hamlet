@@ -1,0 +1,16 @@
+{
+  "name": "compiler-probe",
+  "exit_code": 0,
+  "seconds": 11.304003715515137,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py",
+    "configs/test/bac_remediation/dueling"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r9-compiler-probe/compiler-probe.log",
+  "sha256": "9cc1b8c8ab653e7ff1c7efe58e62a702ac3fd401014adc4a1224fe5abf4a3ea0",
+  "candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "4137f5be07e4d10a0ab1c3f54d33f055cf91f531e78e63ead620824d0b069f12",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

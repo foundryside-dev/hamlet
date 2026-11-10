@@ -1,0 +1,30 @@
+{
+  "name": "prerequisite",
+  "exit_code": 0,
+  "seconds": 17.60594868659973,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "runtime_fixture_prerequisite or protected_historical_artifact_archive_query_export or actual_current_replay_preserved_in_explicit_hc_component_wrapper",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r1-prerequisite"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r1-prerequisite/prerequisite.log",
+  "sha256": "79210aa8754f8afac9e7050be94fdf9304c859c5faacf75d82fd67b3257a28d1",
+  "candidate_tree": "aee534c9d5f5efeaa4026fda5055548fdee8c02c",
+  "base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+  "manifest_sha256": "48acf510d4a632b9bc6cef6bb8383a4890495dd21757ebad839160b9f709dc19",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

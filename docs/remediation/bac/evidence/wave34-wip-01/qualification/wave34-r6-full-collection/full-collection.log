@@ -1,0 +1,11 @@
+   Building townlet @ file:///workspace/hamlet
+error: Failed to build `townlet @ file:///workspace/hamlet`
+  cause: Failed to resolve requirements from `build-system.requires`
+  cause: No solution found when resolving: `hatchling`
+  cause: Request failed after 3 retries in 12.8s
+  cause: Failed to fetch: https://pypi.org/simple/hatchling/
+  cause: error sending request for url (https://pypi.org/simple/hatchling/)
+  cause: client error (Connect)
+  cause: tunnel error: failed to create underlying connection
+  cause: tcp open error
+  cause: Operation not permitted (os error 1)

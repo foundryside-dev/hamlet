@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_affordance_gate_program_uses_selected_level_order",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_affordance_gate_program_u0')\nconfig_pack_factory = <function config_pack_factory.<locals>._build at 0x7f7ef2672c00>\ncompile_universe = <function compile_universe.<locals>._compile at 0x7f7ef2700ea0>\ncpu_device = device(type='cpu')\n\n    def test_affordance_gate_program_uses_selected_level_order(tmp_path, config_pack_factory, compile_universe, cpu_device):\n        \"\"\"Temporal gates must compile from the selected level, not the primary level.\"\"\"\n    \n        compiled = _compile_two_level_pack(tmp_path, config_pack_factory, compile_universe)\n        level0 = compiled.get_level(\"L0_test\")\n        level1 = compiled.get_level(\"L1_alt\")\n    \n        level0_affordances = [aff.name for aff in level0.affordances.affordances]\n        level1_affordances = [aff.name for aff in level1.affordances.affordances]\n        assert level0_affordances != level1_affordances  # Sanity: order actually differs\n    \n>       env = compiled.create_environment(num_agents=1, level_name=\"L1_alt\", device=cpu_device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py:128: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

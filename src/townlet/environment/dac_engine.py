@@ -15,7 +15,7 @@ Design:
 - Intrinsic weight modulation for crisis suppression
 
 Formula:
-    total_reward = extrinsic + (intrinsic * effective_intrinsic_weight) + shaping
+    total_reward = extrinsic + (intrinsic * runtime_intrinsic_scale * effective_intrinsic_weight) + shaping
 
 Where:
     effective_intrinsic_weight = base_weight * modifier1 * modifier2 * ...
@@ -50,6 +50,7 @@ class DACEngine:
         ...     dones=dones,
         ...     meters=meters,
         ...     intrinsic_raw=intrinsic_raw,
+        ...     runtime_intrinsic_scale=runtime_intrinsic_scale,
         ... )
     """
 
@@ -851,17 +852,20 @@ class DACEngine:
         dones: torch.Tensor,
         meters: torch.Tensor,
         intrinsic_raw: torch.Tensor,
+        *,
+        runtime_intrinsic_scale: torch.Tensor,
         **kwargs,
     ) -> tuple[torch.Tensor, torch.Tensor, dict[str, torch.Tensor]]:
         """Calculate total rewards with DAC.
 
-        Composes: extrinsic + (intrinsic × modifiers) + shaping
+        Composes: extrinsic + (provider raw × runtime scale × drive base × modifiers) + shaping
 
         Args:
             step_counts: [num_agents] current step count
             dones: [num_agents] agent death flags
             meters: [num_agents, meter_count] normalized meter values
             intrinsic_raw: [num_agents] raw intrinsic curiosity values
+            runtime_intrinsic_scale: [num_agents] finite nonnegative float32 runtime factors on the engine device
             **kwargs: Additional context (positions, affordance states, etc.)
                 - agent_positions: torch.Tensor (num_agents, ndims)
                 - affordance_positions: dict[str, torch.Tensor]
@@ -872,12 +876,22 @@ class DACEngine:
 
         Returns:
             total_rewards: [num_agents] final rewards
-            intrinsic_weights: [num_agents] effective intrinsic weights after modifiers
-            components: dict of reward components (extrinsic, intrinsic, shaping)
+            intrinsic_weights: [num_agents] authored modifier product, excluding runtime scale and drive base
+            components: reward terms plus owned provider raw and runtime scale provenance;
+                intrinsic_raw retains raw × drive base before modifiers, runtime scale and done masking
 
         Raises:
             RuntimeError: If input tensors are on different device than DACEngine
+            TypeError: If runtime_intrinsic_scale is not a float32 tensor
+            ValueError: If runtime_intrinsic_scale has invalid shape or values
         """
+
+        if not isinstance(runtime_intrinsic_scale, torch.Tensor):
+            raise TypeError("runtime_intrinsic_scale must be a torch.Tensor")
+        if runtime_intrinsic_scale.shape != (self.num_agents,):
+            raise ValueError(f"runtime_intrinsic_scale must have shape ({self.num_agents},), got {tuple(runtime_intrinsic_scale.shape)}")
+        if runtime_intrinsic_scale.dtype != torch.float32:
+            raise TypeError("runtime_intrinsic_scale must have dtype torch.float32")
 
         # Validate device consistency (ENV-007)
         # Compare device types robustly - cuda:0 == cuda (default device)
@@ -904,16 +918,21 @@ class DACEngine:
             raise RuntimeError(
                 f"Dones tensor on {dones.device} but DACEngine on {self.device}. " f"Ensure all tensors are on the same device."
             )
+        if not _same_device(runtime_intrinsic_scale.device, self.device):
+            raise RuntimeError(f"runtime_intrinsic_scale on {runtime_intrinsic_scale.device} but DACEngine on {self.device}")
+        if not torch.isfinite(runtime_intrinsic_scale).all() or (runtime_intrinsic_scale < 0).any():
+            raise ValueError("runtime_intrinsic_scale must contain only finite nonnegative values")
 
         # 1. Compute extrinsic reward
         extrinsic = self.extrinsic_fn(meters=meters, dones=dones)
 
         # 2. Compute intrinsic reward with modifiers
         intrinsic_raw_copy = intrinsic_raw.clone()
+        runtime_scale = runtime_intrinsic_scale.clone()
 
-        # Apply base_weight first
+        # Apply the runtime factor exactly once, independently of the authored drive base.
         base_weight = self.dac_config.intrinsic.base_weight
-        intrinsic = intrinsic_raw_copy * base_weight
+        intrinsic = intrinsic_raw_copy * runtime_scale * base_weight
 
         # Apply modifiers (only those listed in apply_modifiers)
         intrinsic_weight = torch.ones(self.num_agents, device=self.device)
@@ -943,13 +962,15 @@ class DACEngine:
 
         # 5. Build components dict for logging
         # intrinsic_raw: before modifier application (base_weight applied, not modifiers)
-        # intrinsic: after modifier application (base_weight × modifiers × raw)
+        # intrinsic: runtime-scaled, drive-weighted and terminal-masked contribution
         intrinsic_raw_weighted = intrinsic_raw_copy * base_weight
 
         components = {
             "extrinsic": extrinsic,
             "intrinsic": intrinsic,
             "intrinsic_raw": intrinsic_raw_weighted,  # Before modifiers, after base_weight
+            "provider_intrinsic_raw": intrinsic_raw_copy,
+            "runtime_intrinsic_scale": runtime_scale,
             "shaping": shaping_total,
         }
 

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_selected_non_primary_level_carries_its_own_meter_runtime_declarations",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_selected_non_primary_leve0')\nconfig_pack_factory = <function config_pack_factory.<locals>._build at 0x7f7ef2671800>\ncompile_universe = <function compile_universe.<locals>._compile at 0x7f7ef2700ea0>\ncpu_device = device(type='cpu')\n\n    def test_selected_non_primary_level_carries_its_own_meter_runtime_declarations(\n        tmp_path,\n        config_pack_factory,\n        compile_universe,\n        cpu_device,\n    ):\n        compiled = _compile_two_level_pack(tmp_path, config_pack_factory, compile_universe)\n        primary = compiled.get_level(\"L0_test\")\n        selected = compiled.get_level(\"L1_alt\")\n>       env = compiled.create_environment(num_agents=1, level_name=\"L1_alt\", device=cpu_device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py:144: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

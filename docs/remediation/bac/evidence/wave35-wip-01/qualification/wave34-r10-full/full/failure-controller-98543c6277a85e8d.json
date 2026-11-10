@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_compiled_effects_usage.py::test_env_uses_compiled_effect_catalog",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_env_uses_compiled_effect_catalog():\n        \"\"\"VectorizedHamletEnv should use compiled effect catalog from CompiledUniverse.\"\"\"\n        # Setup: Compile universe with effects\n        config_dir = Path(__file__).parent.parent.parent.parent.parent / \"configs\" / \"test\" / \"effects_smoke\"\n    \n        compiler = UniverseCompiler()\n        compiled = compiler.compile(config_dir, primary_level=\"L0_effects\", use_cache=False)\n    \n        # Verify: Compiled catalog exists\n        assert compiled.compiled_effect_catalog is not None\n        assert len(compiled.compiled_effect_catalog.effects) > 0\n    \n        # Exercise: Create environment\n>       env = compiled.create_environment(\n            num_agents=4,\n            level_name=\"L0_effects\",\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_compiled_effects_usage.py:23: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

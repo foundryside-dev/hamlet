@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/test_utilities_validation.py::test_assert_valid_observation_success",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "basic_env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7ef2c8c180>\n\n    def test_assert_valid_observation_success(basic_env):\n        \"\"\"Test assert_valid_observation passes for valid observation.\"\"\"\n>       obs = basic_env.reset()\n              ^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.reset() missing 1 required keyword-only argument: 'reservation'\n\ntests/test_townlet/unit/test_utilities_validation.py:174: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

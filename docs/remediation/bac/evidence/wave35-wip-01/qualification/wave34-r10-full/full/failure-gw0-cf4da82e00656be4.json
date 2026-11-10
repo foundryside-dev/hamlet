@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_n4_positive_control_finite_bounds_produce_finite_observations",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_n4_positive_control_finit0')\n\n    def test_n4_positive_control_finite_bounds_produce_finite_observations(tmp_path: Path) -> None:\n        pack = _pack(tmp_path, CONTINUOUS[0])\n        universe = _compile(pack, CONTINUOUS[1])\n>       env = universe.create_environment(num_agents=2, level_name=CONTINUOUS[1], device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/universe/test_rereview_compiler_refusals.py:227: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

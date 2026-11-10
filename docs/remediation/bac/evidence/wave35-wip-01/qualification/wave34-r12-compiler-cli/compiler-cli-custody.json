@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+  "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "source_index_config_artifact_registry_custody": "PASS",
+  "source_guards": 798,
+  "configs": 573,
+  "artifacts": 13,
+  "registry": 14,
+  "available": 1,
+  "packs": 34,
+  "process_identities": 35,
+  "all_child_import_source_threads_identity": "PASS",
+  "seconds": 171.42234134674072,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py"
+  ],
+  "log_sha256": "8374c2b6e16a61250bda7227d65364ad6ad4a687266a0243d205bdd5aa1c55ca",
+  "scope": "CurrentcomposerCLIonly;fullgateFAILED/unreleased integration unchanged"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_agent_scope_read_decides_per_world",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_agent_scope_read_decides_0')\n\n    def test_agent_scope_read_decides_per_world(tmp_path):\n        \"\"\"S1: each world's spawn follows its own agent's value; there is no all-worlds reduction.\"\"\"\n        pack = _pack(tmp_path, \"bar.energy > 0.5\")\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL)\n>       env = universe.create_environment(num_agents=2, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py:170: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

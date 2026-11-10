@@ -1,0 +1,35 @@
+{
+  "status": "FourguardPASS;globalmypyFAIL10;unreleasedcoherentintegrationrequired",
+  "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+  "results": {
+    "ruff-owned": {
+      "exit_code": 0,
+      "seconds": 0.06574463844299316,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "black-owned": {
+      "exit_code": 0,
+      "seconds": 1.1976318359375,
+      "sha256": "45a468fa6205768496f23f1716ebb7575e9b723449d2099b88bf2afef60b721f"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 2.8824987411499023,
+      "sha256": "2557740c4a3d042b7bf8e6beea810148c9851dfdc007070fb9568a9085ad33f5"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 1.5530517101287842,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 1.8839337825775146,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    }
+  },
+  "mypy": "9existingoracle/POP+1newRWCmissingrequiredruntime_intrinsic_scale; owningVTC/DACnoerrors. RWCmigrationmandatory; no default/fallback or ignoreused.",
+  "defaults": 601,
+  "source_guards": 798,
+  "scope": "ScopedBlack/Ruffonall3changedfiles;globalmypy/no-defaults/generatedexpression. Notglobalgreen."
+}

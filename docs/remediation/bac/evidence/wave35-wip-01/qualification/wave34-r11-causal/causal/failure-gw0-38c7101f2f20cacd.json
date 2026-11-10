@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_full_population_scale_and_terminal_diagnostics[True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "terminal = True\n\n    @pytest.mark.parametrize(\"terminal\", [False, True])\n    def test_full_population_scale_and_terminal_diagnostics(terminal):\n        inputs = _inputs()\n        inputs[\"runtime_intrinsic_scale\"] = torch.tensor([0.5, 0.0])\n        inputs[\"dones\"][1] = terminal\n>       total, weights, components = VTCRewardProgram().apply(reward_backend=_engine(0.25, 2.0), reward_context={}, **inputs)\n                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VTCRewardProgram.apply() got an unexpected keyword argument 'runtime_intrinsic_scale'\n\ntests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py:87: TypeError",
+  "candidate_tree": "403e9d839e59584d27e8aae44ccda1700b3f27fe"
+}

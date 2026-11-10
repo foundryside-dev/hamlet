@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_item_vfs_integration.py::test_item_profile_switch_updates_vfs_layout",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_item_profile_switch_updates_vfs_layout():\n        \"\"\"Switching item profile should update VFS storage layout.\n    \n        Tests profile-based VFS allocation:\n        - Spawn item with profile A (food: 1 var)\n        - Despawn and spawn different item type with profile B (medical: 1 var)\n        - Verify storage uses profile B layout\n        \"\"\"\n        # Setup: Config with multiple item profiles\n        config_dir = Path(\"configs/test/items_smoke\")\n    \n        compiler = UniverseCompiler()\n        compiled = compiler.compile(config_dir, primary_level=\"L0_smoke\", use_cache=False)\n    \n>       env = VectorizedHamletEnv(\n            universe=compiled,\n            level_name=\"L0_smoke\",\n            num_agents=1,\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_item_vfs_integration.py:202: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

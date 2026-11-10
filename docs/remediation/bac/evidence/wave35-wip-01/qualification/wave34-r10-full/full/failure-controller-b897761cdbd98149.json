@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_l5_multi_agent_config.py::test_l5_config_compiles_and_steps_as_independent_worlds",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_l5_config_compiles_and_steps_as_independent_worlds() -> None:\n        config_dir = Path(\"configs/L5_multi_agent\")\n    \n        compiled = UniverseCompiler().compile(config_dir, primary_level=\"L5_multi_agent\", use_cache=False)\n    \n        variables = {variable.id: variable for variable in compiled.get_level(\"L5_multi_agent\").vfs_variables}\n        assert variables[\"deficit_energy\"].scope == \"agent\"\n        assert variables[\"deficit_energy\"].exposed_to == [\"agent\"]\n    \n>       env = compiled.create_environment(num_agents=3, level_name=\"L5_multi_agent\", device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_l5_multi_agent_config.py:24: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestExplorationCheckpointing::test_exploration_checkpoint_preserves_epsilon_decay",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "self = <tests.test_townlet.integration.test_checkpointing.TestExplorationCheckpointing object at 0x7f555f1a8e10>\ncpu_device = device(type='cpu')\nbasic_env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f555b340150>\n\n    def test_exploration_checkpoint_preserves_epsilon_decay(self, cpu_device, basic_env):\n        \"\"\"Epsilon decay progression should be preserved across checkpoint cycle.\"\"\"\n>       exploration1 = AdaptiveIntrinsicExploration(\n            obs_dim=basic_env.observation_dim,\n            embed_dim=128,\n            epsilon_start=1.0,\n            epsilon_min=0.1,\n            epsilon_decay=0.99,\n            device=cpu_device,\n        )\nE       TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/integration/test_checkpointing.py:746: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

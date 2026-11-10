@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_done_masks_nonzero_intrinsic_without_erasing_diagnostics",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "def test_done_masks_nonzero_intrinsic_without_erasing_diagnostics():\n        inputs = _inputs()\n        inputs[\"dones\"][1] = True\n>       total, weights, components = VTCRewardProgram().apply(reward_backend=_engine(0.25, 2.0), reward_context={}, **inputs)\n                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VTCRewardProgram.apply() got an unexpected keyword argument 'runtime_intrinsic_scale'\n\ntests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py:102: TypeError",
+  "candidate_tree": "403e9d839e59584d27e8aae44ccda1700b3f27fe"
+}

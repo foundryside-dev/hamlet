@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/universe/test_effects_schema_completeness.py::test_meters_locals_and_tick_are_served",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "def test_meters_locals_and_tick_are_served():\n>       _, env = _env(\"test/effects_smoke\", \"L0_effects\")\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/universe/test_effects_schema_completeness.py:40: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npack = 'test/effects_smoke', level = 'L0_effects'\n\n    def _env(pack: str, level: str):\n        universe = UniverseCompiler().compile(CONFIGS / pack, primary_level=level, use_cache=False)\n>       return universe, universe.create_environment(num_agents=1, level_name=level, device=\"cpu\")\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/universe/test_effects_schema_completeness.py:23: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_affordance_history_tracking_last_action",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compile_universe = <function compile_universe.<locals>._compile at 0x7f555c549440>\ntest_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')\ncpu_device = device(type='cpu')\n\n    def test_affordance_history_tracking_last_action(compile_universe, test_config_pack_path, cpu_device):\n        \"\"\"_get_last_action_affordances should reflect last interact per agent.\"\"\"\n        universe = compile_universe(test_config_pack_path)\n>       env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL_NAME, num_agents=2, device=cpu_device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_dac_integration.py:85: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_effects_compiled_catalog.py::test_effects_use_compiled_catalog_end_to_end",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "def test_effects_use_compiled_catalog_end_to_end():\n        \"\"\"Effects should use compiled catalog from compilation through execution.\"\"\"\n        # Setup: Compile effects_smoke config\n        config_dir = Path(__file__).parent.parent.parent.parent / \"configs\" / \"test\" / \"effects_smoke\"\n    \n        compiler = UniverseCompiler()\n        compiled = compiler.compile(config_dir, primary_level=\"L0_effects\", use_cache=False)\n    \n        # Verify: Catalog compiled\n        assert compiled.compiled_effect_catalog is not None\n        assert \"energy_regen\" in compiled.compiled_effect_catalog.effects\n    \n        # Exercise: Create environment and trigger effect\n>       env = compiled.create_environment(\n            num_agents=4,\n            level_name=\"L0_effects\",\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_effects_compiled_catalog.py:23: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

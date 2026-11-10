@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_wp17_s5_one_spelling.py::test_profile_expression_canonical_spelling_computes",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_profile_expression_canoni0')\n\n    def test_profile_expression_canonical_spelling_computes(tmp_path: Path) -> None:\n        pack = _pack(tmp_path, declarations=[_decl(\"double_energy\", expression=\"bar.energy * 2.0 + tick * 0.0\")])\n>       env = _env(_compile(pack))\n              ^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/vfs/test_wp17_s5_one_spelling.py:294: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nuniverse = CompiledUniverse(metadata=UniverseMetadata(universe_name='Static Epistemic Access', schema_version='1.0', primary_leve...l:L0_simple:training', 'drive': 'level:L0_simple:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nlevel = 'L0_simple', num_agents = 2\n\n    def _env(universe: CompiledUniverse, level: str = LEVEL, num_agents: int = 2) -> VectorizedHamletEnv:\n>       env = VectorizedHamletEnv.from_universe(universe, level_name=level, num_agents=num_agents, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_wp17_s5_one_spelling.py:156: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

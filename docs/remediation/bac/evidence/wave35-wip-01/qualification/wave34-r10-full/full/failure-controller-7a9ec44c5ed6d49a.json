@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/universe/test_no_full_token_observation_abi.py::test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f01a4893770>\n\n    def test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation(\n        monkeypatch: pytest.MonkeyPatch,\n    ) -> None:\n        initial = UniverseCompiler().compile(PACK, primary_level=LEVEL, use_cache=False)\n        spec = initial.get_level(LEVEL).token_spec\n        fixed_width = spec.fixed_total_dims\n        assert fixed_width == fixed_width_for(spec.census)\n    \n        for name in (\"zeros\", \"full\", \"zeros_like\"):\n            allocator = getattr(torch, name)\n            monkeypatch.setattr(torch, name, _guard_allocator(name, allocator, fixed_width))\n    \n        universe = UniverseCompiler().compile(PACK, primary_level=LEVEL, use_cache=False)\n>       env = VectorizedHamletEnv(universe=universe, level_name=LEVEL, num_agents=4, device=CPU)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/universe/test_no_full_token_observation_abi.py:101: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -2132,6 +2132,7 @@ class VTCRewardProgram:
         dones: torch.Tensor,
         meters: torch.Tensor,
         intrinsic_raw: torch.Tensor,
+        runtime_intrinsic_scale: torch.Tensor,
         reward_context: Mapping[str, Any],
     ) -> tuple[torch.Tensor, torch.Tensor, dict[str, torch.Tensor]]:
         """Run the reward phase through the DAC backend and validate declared component outputs."""
@@ -2140,6 +2141,7 @@ class VTCRewardProgram:
             dones=dones,
             meters=meters,
             intrinsic_raw=intrinsic_raw,
+            runtime_intrinsic_scale=runtime_intrinsic_scale,
             **dict(reward_context),
         )
         self._validate_tensor("total_rewards", total_rewards, dones)

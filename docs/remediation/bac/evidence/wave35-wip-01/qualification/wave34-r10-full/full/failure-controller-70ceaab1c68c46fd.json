@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_wp14_history.py::test_a_cycle_closed_only_by_lag_sorts_and_evaluates",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_a_cycle_closed_only_by_la0')\n\n    def test_a_cycle_closed_only_by_lag_sorts_and_evaluates(tmp_path: Path) -> None:\n        pack = _pack(tmp_path, [_decl(\"a\", expression=\"lag(b, 1) + 1.0\"), _decl(\"b\", expression=\"a * 2.0\")])\n>       env = _env(_compile(pack))\n              ^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/vfs/test_wp14_history.py:295: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nuniverse = CompiledUniverse(metadata=UniverseMetadata(universe_name='Static Epistemic Access', schema_version='1.0', primary_leve...l:L0_simple:training', 'drive': 'level:L0_simple:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nnum_agents = 2, level = 'L0_simple'\n\n    def _env(universe, num_agents: int = 2, level: str = LEVEL):\n>       env = universe.create_environment(num_agents=num_agents, level_name=level, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_wp14_history.py:75: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_wp14_history.py::test_l5_time_since_last_sleep_counts_ticks_since_energy_last_rose",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_l5_time_since_last_sleep_counts_ticks_since_energy_last_rose() -> None:\n        universe = _compile(L5, level=L5_LEVEL)\n        assert universe.vfs_history_spec == {\"bar.energy\": 1, \"vfs.time_since_last_sleep\": 1}\n>       env = _env(universe, level=L5_LEVEL)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/vfs/test_wp14_history.py:453: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nuniverse = CompiledUniverse(metadata=UniverseMetadata(universe_name='L5 Multi-Agent VFS Scenario', schema_version='1.0', primary_..._agent:training', 'drive': 'level:L5_multi_agent:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nnum_agents = 2, level = 'L5_multi_agent'\n\n    def _env(universe, num_agents: int = 2, level: str = LEVEL):\n>       env = universe.create_environment(num_agents=num_agents, level_name=level, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_wp14_history.py:75: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

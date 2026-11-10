@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_wp15_scope_surface.py::test_l5_compiles_with_no_constant_exposed_variable",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_l5_compiles_with_no_constant_exposed_variable() -> None:\n        \"\"\"r16: two exposed tick-lifetime variables were written by nothing, so their tokens were\n        constant zero. Every exposed variable now tracks state: deficit_energy rises as energy\n        drains below its 0.5 target, and is observed with full-range normalization;\n        time_since_last_sleep (WP14) counts the ticks since energy last rose.\"\"\"\n        universe = UniverseCompiler().compile(L5, primary_level=L5_LEVEL, use_cache=False)\n        level = universe.get_level(L5_LEVEL)\n        exposed = [variable for variable in level.vfs_variables if \"agent\" in variable.exposed_to]\n        assert [variable.id for variable in exposed] == [\"deficit_energy\", \"time_since_last_sleep\"]\n        assert level.token_spec.census[\"variable_element\"] == len(exposed)\n    \n>       env = universe.create_environment(num_agents=2, level_name=L5_LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_wp15_scope_surface.py:219: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

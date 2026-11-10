@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_wp13_per_world_global.py::test_the_engine_tick_is_the_same_instant_in_every_world",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_the_engine_tick_is_the_sa0')\n\n    def test_the_engine_tick_is_the_same_instant_in_every_world(tmp_path: Path) -> None:\n>       env = _env(_pack(tmp_path), num_agents=3)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/vfs/test_wp13_per_world_global.py:145: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_the_engine_tick_is_the_sa0/pack')\nnum_agents = 3\n\n    def _env(pack: Path, num_agents: int = 2):\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n>       env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_wp13_per_world_global.py:82: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

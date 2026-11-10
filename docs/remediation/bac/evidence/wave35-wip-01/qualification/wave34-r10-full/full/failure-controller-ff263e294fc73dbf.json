@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_static_epistemic_access.py::test_witness_public_observation_hidden_named_reward_and_immutable_state[True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw2/test_witness_public_observatio1')\ncached = True\n\n    @pytest.mark.parametrize(\"cached\", [False, True])\n    def test_witness_public_observation_hidden_named_reward_and_immutable_state(tmp_path, cached):\n        universe = UniverseCompiler().compile(PACK, primary_level=LEVEL, use_cache=False)\n        if cached:\n            artifact = tmp_path / \"world.msgpack\"\n            universe.save_to_cache(artifact)\n            universe = CompiledUniverse.load_from_cache(artifact)\n>       env = universe.create_environment(num_agents=2, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_static_epistemic_access.py:31: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

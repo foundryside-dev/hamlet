@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_golden_path_smoke.py::test_env_step_deterministic_sequence",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_env_step_deterministic_sequence():\n        \"\"\"Stage C: stepping five WAIT actions produces well-shaped, finite\n        rewards/dones and does not crash. WAIT is chosen so the test does not\n        depend on substrate-specific movement validity.\"\"\"\n        universe = _compile_rescue_universe()\n>       env = VectorizedHamletEnv.from_universe(\n            universe,\n            level_name=LEVEL_NAME,\n            num_agents=NUM_AGENTS,\n            device=\"cpu\",\n        )\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_golden_path_smoke.py:78: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

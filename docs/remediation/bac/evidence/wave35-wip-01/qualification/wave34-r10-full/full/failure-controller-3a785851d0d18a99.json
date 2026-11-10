@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/effects/test_per_agent_command_semantics.py::test_if_on_a_per_agent_condition_penalises_only_the_low_agent",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_if_on_a_per_agent_conditi0')\n\n    def test_if_on_a_per_agent_condition_penalises_only_the_low_agent(tmp_path: Path) -> None:\n        \"\"\"probe_b.py F: health [1.0, 0.1, 1.0]; only agent 1 loses 0.5 energy.\"\"\"\n        pack = _pack(tmp_path, [{\"if\": \"bar.health < 0.5\", \"then\": [{\"modify\": \"bar.energy\", \"value\": \"bar.energy - 0.5\"}], \"else\": []}])\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n>       env = universe.create_environment(num_agents=3, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/effects/test_per_agent_command_semantics.py:296: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

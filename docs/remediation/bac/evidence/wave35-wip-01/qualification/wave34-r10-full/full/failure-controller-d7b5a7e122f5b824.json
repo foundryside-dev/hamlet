@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_environment_metadata_matches_selected_non_primary_level",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_environment_metadata_matc0')\ncpu_device = device(type='cpu')\n\n    def test_environment_metadata_matches_selected_non_primary_level(tmp_path, cpu_device):\n        pack_dir = tmp_path / \"default_curriculum\"\n        shutil.copytree(Path(\"configs/default_curriculum\"), pack_dir)\n        stratum_path = pack_dir / \"stratum.yaml\"\n        stratum_data = yaml.safe_load(stratum_path.read_text())\n        stratum_path.write_text(yaml.safe_dump(stratum_data, sort_keys=False))\n    \n        compiled = UniverseCompiler().compile(\n            pack_dir,\n            primary_level=\"L1_full_observability\",\n            use_cache=False,\n        )\n    \n>       env = compiled.create_environment(num_agents=1, level_name=\"L2_partial_observability\", device=cpu_device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py:178: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

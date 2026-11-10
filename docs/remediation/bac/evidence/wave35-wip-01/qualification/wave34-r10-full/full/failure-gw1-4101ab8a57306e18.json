@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/effects/test_wp12_item_effect_target.py::test_item_effect_writes_its_item_through_target",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_item_effect_writes_its_it0')\n\n    def test_item_effect_writes_its_item_through_target(tmp_path: Path) -> None:\n        universe = _compile(_pack(tmp_path, {\"modify\": \"item.condition\", \"value\": \"item.condition - 10.0\"}))\n>       env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL, num_agents=2, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/effects/test_wp12_item_effect_target.py:95: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

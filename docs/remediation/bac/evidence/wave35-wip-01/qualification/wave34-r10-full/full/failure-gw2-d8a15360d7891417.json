@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_compact_token_runtime.py::test_l1_compact_vertical_trace",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "def test_l1_compact_vertical_trace() -> None:\n        device = torch.device(\"cpu\")\n        universe = UniverseCompiler().compile(\n            Path(\"configs/default_curriculum\"),\n            primary_level=\"L1_full_observability\",\n            use_cache=False,\n        )\n>       env = VectorizedHamletEnv(\n            universe=universe,\n            level_name=\"L1_full_observability\",\n            num_agents=2,\n            device=device,\n        )\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_compact_token_runtime.py:25: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

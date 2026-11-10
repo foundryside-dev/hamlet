@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_agent_ref_world_local.py::test_a_null_reference_initial_value_compiles[None]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_a_null_reference_initial_0')\ninitial = None\n\n    @pytest.mark.parametrize(\"initial\", [None, -1])\n    def test_a_null_reference_initial_value_compiles(tmp_path: Path, initial: int | None) -> None:\n        pack = _pack_with(\n            tmp_path,\n            {\n                \"id\": \"buddy\",\n                \"scope\": \"agent\",\n                \"type\": \"agent_ref\",\n                \"lifetime\": \"episode\",\n                \"semantic_type\": \"custom\",\n                \"readable_by\": [\"engine\"],\n                \"writable_by\": [\"engine\"],\n                \"exposed_to\": [],\n                \"initial_value\": initial,\n            },\n        )\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n>       env = universe.create_environment(num_agents=3, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_agent_ref_world_local.py:149: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

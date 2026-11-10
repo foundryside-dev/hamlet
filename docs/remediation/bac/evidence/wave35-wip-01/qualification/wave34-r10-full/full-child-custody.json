@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "actual_nonpytest_child": "/workspace/bac-review-2026-11-01/qualification/wave34-r10-full/full/subprocess-custody-poisoning-119788.json",
+  "sha256": "a7ac9bab7cabae17f01f4f41d14f1c2c6d43cca3ab11f144a388f92350657a90",
+  "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9",
+  "source_hashes": 797,
+  "actual_import_paths": 48,
+  "python": "3.13.5",
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop": 5,
+  "actual_poisoning_assertions": true,
+  "scope": "Separate actual child verification; fullrepository gate overallFAILED, not waived."
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_a_bare_bar_write_from_an_item_effect_is_its_items_world_only",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "items_universe = CompiledUniverse(metadata=UniverseMetadata(universe_name='Items Smoke Test', schema_version='1.0', primary_level='L0_s...vel:L0_smoke:training', 'drive': 'level:L0_smoke:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_a_bare_bar_write_from_an_item_effect_is_its_items_world_only(items_universe) -> None:\n>       env = _items_env(items_universe, num_agents=3)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/effects/test_effects_per_world.py:489: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nuniverse = CompiledUniverse(metadata=UniverseMetadata(universe_name='Items Smoke Test', schema_version='1.0', primary_level='L0_s...vel:L0_smoke:training', 'drive': 'level:L0_smoke:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nnum_agents = 3, seed = 7\n\n    def _items_env(universe, num_agents: int = N, seed: int = 7):\n        seed_all(seed)\n>       env = universe.create_environment(num_agents=num_agents, level_name=ITEMS_LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/effects/test_effects_per_world.py:449: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,59 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave34/r12-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave34-r12-static",
+  "workers": 3,
+  "jobs": [
+    {
+      "name": "ruff-owned",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "src/townlet/vfs/vtc.py",
+        "src/townlet/environment/dac_engine.py",
+        "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py"
+      ]
+    },
+    {
+      "name": "black-owned",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/vfs/vtc.py",
+        "src/townlet/environment/dac_engine.py",
+        "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py",
+        "--workers",
+        "1"
+      ]
+    },
+    {
+      "name": "mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    },
+    {
+      "name": "no-defaults",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ]
+    },
+    {
+      "name": "expression-doc",
+      "args": [
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ]
+    }
+  ]
+}

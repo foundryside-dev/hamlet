@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/effects/test_effect_time_and_position.py::test_tick_compiles_in_an_effect_and_reads_the_engine_tick",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_tick_compiles_in_an_effec0')\n\n    def test_tick_compiles_in_an_effect_and_reads_the_engine_tick(tmp_path: Path) -> None:\n        \"\"\"A global effect copies the engine tick into a global variable every tick.\"\"\"\n        pack = _pack(tmp_path, _effect(\"clock\", scope=\"global\", on_tick=[{\"modify\": \"day_count\", \"value\": \"tick\"}]))\n>       env = _env(pack, num_agents=2)\n              ^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/effects/test_effect_time_and_position.py:109: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_tick_compiles_in_an_effec0/pack')\nnum_agents = 2\n\n    def _env(pack: Path, num_agents: int):\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n>       env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/effects/test_effect_time_and_position.py:71: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

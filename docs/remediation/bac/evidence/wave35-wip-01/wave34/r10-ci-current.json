@@ -1,0 +1,30 @@
+{
+  "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "observed_utc": "2026-11-10 19:21:31 UTC",
+  "runs": [
+    {
+      "id": 42878013511,
+      "name": "Config Validation",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013511"
+    },
+    {
+      "id": 42878013632,
+      "name": "Lint",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013632"
+    },
+    {
+      "id": 42878013277,
+      "name": "Tests",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013277"
+    }
+  ]
+}

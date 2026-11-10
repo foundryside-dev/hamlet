@@ -1,0 +1,151 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "candidate_tree": "403e9d839e59584d27e8aae44ccda1700b3f27fe",
+  "unique_node_phase_failures": 29,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: VTCRewardProgram.apply() got an unexpected keyword argument 'runtime_intrinsic_scale'",
+      "count": 12,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_real_vtc_dac_composes_independent_factors[2.0-0.0-0.25-2.0-0.0-1.1-0.5]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_real_vtc_dac_composes_independent_factors[1.0-0.5-0.25-2.0-0.25-1.35-0.25]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_inputs_and_provenance_components_have_owned_storage[runtime_intrinsic_scale]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_runtime_scaling_preserves_autograd_and_terminal_mask",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_full_population_scale_and_terminal_diagnostics[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_real_vtc_dac_composes_independent_factors[2.0-1.0-0.25-2.0-1.0-2.1-0.5]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_real_vtc_dac_composes_independent_factors[2.0-0.5-0.25-2.0-0.5-1.6-0.5]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_inputs_and_provenance_components_have_owned_storage[provider_intrinsic_raw]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_real_vtc_dac_composes_independent_factors[2.0-0.5-0.5-2.0-1.0-2.1-1.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_done_masks_nonzero_intrinsic_without_erasing_diagnostics",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_full_population_scale_and_terminal_diagnostics[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_real_vtc_dac_composes_independent_factors[2.0-0.5-0.25-1.0-0.25-1.35-0.5]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 8,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[rank-two]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[positive-infinity]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[short]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[negative]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[long]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[rank-zero]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[negative-infinity]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[nan]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Failed: DID NOT RAISE <class 'TypeError'>",
+      "count": 8,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[bool]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_scale_is_required_at_both_composer_entries[dac]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[integer]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[python-scalar]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[python-list]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[float64]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_scale_is_required_at_both_composer_entries[vtc]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Failed: DID NOT RAISE <class 'RuntimeError'>",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py::test_dac_rejects_malformed_runtime_scale[wrong-device]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

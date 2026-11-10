@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py::test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_rebuild",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7ef2871a20>\n\n    def test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_rebuild(monkeypatch: pytest.MonkeyPatch) -> None:\n        \"\"\"Runtime action-space construction should not re-read substrate defaults.\"\"\"\n        compiled = UniverseCompiler().compile(Path(\"configs/test/action_space/grid2d\"), primary_level=\"L0\", use_cache=False)\n        runtime_action_space = compiled.get_level(\"L0\").runtime_action_space\n    \n        def fail_get_default_actions(self: Grid2DSubstrate):  # type: ignore[override]\n            raise AssertionError(\"Runtime must consume compiled runtime_action_space instead of substrate defaults\")\n    \n        monkeypatch.setattr(Grid2DSubstrate, \"get_default_actions\", fail_get_default_actions)\n    \n>       env = compiled.create_environment(num_agents=1, level_name=\"L0\", device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_vectorized_env_runtime.py:172: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

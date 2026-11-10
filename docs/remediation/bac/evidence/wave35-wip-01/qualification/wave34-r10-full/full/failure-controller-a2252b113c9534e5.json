@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_intrinsic_rewards_integration",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compile_universe = <function compile_universe.<locals>._compile at 0x7f555c549440>\ntest_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')\ncpu_device = device(type='cpu')\n\n    def test_intrinsic_rewards_integration(compile_universe, test_config_pack_path, cpu_device):\n        \"\"\"Intrinsic rewards from exploration module should flow into reward components.\"\"\"\n        from townlet.exploration.rnd import RNDExploration\n    \n        universe = compile_universe(test_config_pack_path)\n>       env = VectorizedHamletEnv.from_universe(universe, level_name=LEVEL_NAME, num_agents=4, device=cpu_device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_dac_integration.py:51: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestCustomActionExecution::test_execute_actions_does_not_apply_legacy_runtime_costs_or_effects",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "self = <test_vectorized_env.TestCustomActionExecution object at 0x7f7f051c1d10>\ncompile_universe = <function compile_universe.<locals>._compile at 0x7f7ef2700ea0>\ncpu_device = device(type='cpu')\n\n    def test_execute_actions_does_not_apply_legacy_runtime_costs_or_effects(self, compile_universe, cpu_device):\n        universe = compile_universe(Path(\"configs/default_curriculum\"), primary_level=\"L0_0_minimal\")\n        universe = _with_runtime_action_surface(\n            universe,\n            \"L0_0_minimal\",\n            \"REST\",\n            costs={\"mood\": 0.1},\n            effects={\"energy\": 0.2},\n            writes=(),\n        )\n>       env = vectorized_env_module.VectorizedHamletEnv.from_universe(\n            universe,\n            level_name=\"L0_0_minimal\",\n            num_agents=2,\n            device=cpu_device,\n        )\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_vectorized_env.py:1051: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

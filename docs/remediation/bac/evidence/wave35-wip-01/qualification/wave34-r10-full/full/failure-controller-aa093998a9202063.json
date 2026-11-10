@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_affordance_scope_per_world.py::test_a_done_worlds_affordance_state_is_frozen",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "universe = CompiledUniverse(metadata=UniverseMetadata(universe_name='Static Epistemic Access', schema_version='1.0', primary_leve...l:L0_simple:training', 'drive': 'level:L0_simple:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_a_done_worlds_affordance_state_is_frozen(universe) -> None:\n>       env = universe.create_environment(num_agents=N, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_affordance_scope_per_world.py:176: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

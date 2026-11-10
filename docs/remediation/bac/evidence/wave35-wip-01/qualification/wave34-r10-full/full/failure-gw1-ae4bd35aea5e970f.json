@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_rejected_initial_spawn_retries_on_its_declared_period",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_rejected_initial_spawn_re0')\n\n    def test_rejected_initial_spawn_retries_on_its_declared_period(tmp_path):\n        \"\"\"A predicate false at reset arms the respawn timer, so the rule retries every period;\n        it fires on the first period boundary after the predicate turns true (tick 7 -> tick 10).\"\"\"\n        bloom = _global(\"bloom\", initial=0.0, expression=\"tick >= 7.0\")\n        bloom[\"type\"] = \"bool\"\n        bloom[\"initial_value\"] = False\n        pack = _pack(tmp_path, \"bloom\", (bloom,))\n        items_path = pack / \"levels\" / LEVEL / \"items.yaml\"\n        items = yaml.safe_load(items_path.read_text())\n        for rule in items[\"items\"]:\n            if rule[\"item_type\"] == \"apple\":\n                rule[\"schedule\"] = {\"type\": \"periodic\", \"period\": 5}\n        items_path.write_text(yaml.safe_dump(items, sort_keys=False))\n    \n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL)\n>       env = universe.create_environment(num_agents=1, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py:195: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

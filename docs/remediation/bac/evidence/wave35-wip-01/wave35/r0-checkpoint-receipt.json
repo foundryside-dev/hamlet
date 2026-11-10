@@ -1,0 +1,212 @@
+{
+  "status": "UNRELEASED WIP: composer arithmetic component PASS; full repository FAILED and current direct consumer integration OPEN",
+  "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+  "scope": "Original T18e primitive only: required explicit runtime scale, one real DAC multiplication, independent raw/scale provenance, preserved diagnostic/terminal/autograd behavior. No parent/ENV integration release.",
+  "source_context": [
+    {
+      "path": "src/townlet/vfs/vtc.py",
+      "lines": 3510,
+      "sha256": "a2d14e8bf9d7363e36f5778182395a4e5110052ca5591efacb1c98d63dad4390",
+      "present": true
+    },
+    {
+      "path": "src/townlet/environment/dac_engine.py",
+      "lines": 977,
+      "sha256": "b129d7ac5cdbf7e6ed27dd6cd5f9529dc9e7d2e0154b43a4db028d7aef78e317",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py",
+      "lines": 195,
+      "sha256": "0ad34fdfb781a5679762a2eacfa4ff2d86a026967e5039fe514e81a2fce0e745",
+      "present": true
+    }
+  ],
+  "root": {
+    "job": "owned",
+    "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+    "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+    "exit_code": 0,
+    "counts": {
+      "passed": 29,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 8.128313541412354,
+    "source_guards": 798,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent": {
+    "job": "independent",
+    "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+    "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+    "exit_code": 0,
+    "counts": {
+      "passed": 29,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 7.560001373291016,
+    "source_guards": 798,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "tests": "Same29cases root+independent, overlap not58unique. ActualpriorRED29 atR11 verifiedmissingnewABI/validation, not import/fixture failures.",
+  "source_spec_quality_review_sha256": "6bcceb4b93ac4e35e4c6f59eb25951ba18b0dd086104a4e862b298d2c8283669",
+  "public_contract": {
+    "source": "wave35-preparation/T18e-COMPOSER-SCALE-API.md",
+    "sha256": "3859debca8e7dbe1a2b8543ce4ac4107b845787b3a774e453462d98ea7f505f0",
+    "source_truth": "IndependentAstraAPPROVED0materialcorrections"
+  },
+  "static": {
+    "status": "FourguardPASS;globalmypyFAIL10;unreleasedcoherentintegrationrequired",
+    "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+    "results": {
+      "ruff-owned": {
+        "exit_code": 0,
+        "seconds": 0.06574463844299316,
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      "black-owned": {
+        "exit_code": 0,
+        "seconds": 1.1976318359375,
+        "sha256": "45a468fa6205768496f23f1716ebb7575e9b723449d2099b88bf2afef60b721f"
+      },
+      "mypy": {
+        "exit_code": 1,
+        "seconds": 2.8824987411499023,
+        "sha256": "2557740c4a3d042b7bf8e6beea810148c9851dfdc007070fb9568a9085ad33f5"
+      },
+      "no-defaults": {
+        "exit_code": 0,
+        "seconds": 1.5530517101287842,
+        "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+      },
+      "expression-doc": {
+        "exit_code": 0,
+        "seconds": 1.8839337825775146,
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      }
+    },
+    "mypy": "9existingoracle/POP+1newRWCmissingrequiredruntime_intrinsic_scale; owningVTC/DACnoerrors. RWCmigrationmandatory; no default/fallback or ignoreused.",
+    "defaults": 601,
+    "source_guards": 798,
+    "scope": "ScopedBlack/Ruffonall3changedfiles;globalmypy/no-defaults/generatedexpression. Notglobalgreen."
+  },
+  "compiler_cli": {
+    "status": "PASS",
+    "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+    "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+    "source_index_config_artifact_registry_custody": "PASS",
+    "source_guards": 798,
+    "configs": 573,
+    "artifacts": 13,
+    "registry": 14,
+    "available": 1,
+    "packs": 34,
+    "process_identities": 35,
+    "all_child_import_source_threads_identity": "PASS",
+    "seconds": 171.42234134674072,
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py"
+    ],
+    "log_sha256": "8374c2b6e16a61250bda7227d65364ad6ad4a687266a0243d205bdd5aa1c55ca",
+    "scope": "CurrentcomposerCLIonly;fullgateFAILED/unreleased integration unchanged"
+  },
+  "full_suite_status": {
+    "immutable_prior_source": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+    "actual_failed_result": {
+      "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+      "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9",
+      "exit_code": 1,
+      "counts": {
+        "failed": 1010,
+        "passed": 7285,
+        "skipped": 21,
+        "errors": 231,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 40
+      },
+      "summary": "= 1010 failed, 7285 passed, 21 skipped, 40 warnings, 231 errors in 1997.59s (0:33:17) =",
+      "wall_seconds": 2003.7498877048492,
+      "source_guards": 797,
+      "process_identities": 5,
+      "configs": 573,
+      "artifacts": 13,
+      "registry": 14,
+      "available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "unique_node_phase_failures": 1241,
+      "affected_files": 160,
+      "signature_groups": 15,
+      "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+    },
+    "actual_child_custody": {
+      "status": "PASS",
+      "actual_nonpytest_child": "/workspace/bac-review-2026-11-01/qualification/wave34-r10-full/full/subprocess-custody-poisoning-119788.json",
+      "sha256": "a7ac9bab7cabae17f01f4f41d14f1c2c6d43cca3ab11f144a388f92350657a90",
+      "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9",
+      "source_hashes": 797,
+      "actual_import_paths": 48,
+      "python": "3.13.5",
+      "torch": "2.11.0+cu130",
+      "threads": 1,
+      "interop": 5,
+      "actual_poisoning_assertions": true,
+      "scope": "Separate actual child verification; fullrepository gate overallFAILED, not waived."
+    },
+    "current_source": "Not rerun while knowncausalprereqsremain; currentmypy10includesnewmandatoryRWCrequiredscaleconsumer. No priorpassapprovesnewcode; no fullgreenclaim."
+  },
+  "current_ci": {
+    "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+    "observed_utc": "2026-11-10 19:21:31 UTC",
+    "runs": [
+      {
+        "id": 42878013511,
+        "name": "Config Validation",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+        "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013511"
+      },
+      {
+        "id": 42878013632,
+        "name": "Lint",
+        "status": "completed",
+        "conclusion": "failure",
+        "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+        "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013632"
+      },
+      {
+        "id": 42878013277,
+        "name": "Tests",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+        "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013277"
+      }
+    ]
+  },
+  "remaining": "RequiredcurrentENV/RWC and actualparentstep/runtimebinding/canonicalreplay/service/completeledger/nativeHC/T26 integration, sourcebounded160oldcallerfiles/prereqs, currentdocs/examples/README, finite54req22lenses/learningE2E/finalfullcoverage>=70/slow/applicablehardware/exacttipCI. Original28qualified38remaining66total unchanged. CUDAunavailableunqualified.",
+  "next": "Currentparentstep/handofftests-first withactualconstructor/geometryfacts; no backwardcompat defaults/adapters, no capabilityscope reduction; no broaderfullrepeatuntilknownprereqsreachintendedassertions."
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_spatial_expression_variables.py::test_moving_the_agent_changes_the_observed_distance",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "spatial_universe = CompiledUniverse(metadata=UniverseMetadata(universe_name='Static Epistemic Access', schema_version='1.0', primary_leve...l:L0_simple:training', 'drive': 'level:L0_simple:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_moving_the_agent_changes_the_observed_distance(spatial_universe) -> None:\n        seed_all(3)\n>       env = spatial_universe.create_environment(num_agents=N, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_spatial_expression_variables.py:156: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

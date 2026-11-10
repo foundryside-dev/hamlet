@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_vfs_runtime_evaluation.py::test_vfs_expression_dependency_chain",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "def test_vfs_expression_dependency_chain():\n        \"\"\"VFS variables with complex dependency chains should evaluate correctly.\n    \n        Tests:\n        - Multi-level dependencies (a \u2192 b \u2192 c)\n        - Expression reuse across variables\n        - Marked expressions pull their static inputs at the current runtime value\n        \"\"\"\n        # Setup: Use vfs_dependency_chain which has dependency chains\n        config_dir = Path(__file__).parent.parent.parent.parent / \"configs\" / \"test\" / \"vfs_dependency_chain\"\n    \n        compiler = UniverseCompiler()\n        compiled = compiler.compile(config_dir, primary_level=\"L0_deps\", use_cache=False)\n    \n        # Create environment\n>       env = compiled.create_environment(\n            num_agents=4,\n            level_name=\"L0_deps\",\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_vfs_runtime_evaluation.py:98: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

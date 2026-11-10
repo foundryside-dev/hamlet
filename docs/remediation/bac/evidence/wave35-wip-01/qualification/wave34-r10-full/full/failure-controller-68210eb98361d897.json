@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_token_set_runtime.py::test_declared_attention_reaches_the_built_network",
+  "phase": "setup",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "@pytest.fixture\n    def attention_setup():\n>       return _build(\"L1_attention\")\n               ^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/integration/test_token_set_runtime.py:59: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nlevel = 'L1_attention'\n\n    def _build(level: str):\n        universe = UniverseCompiler().compile(PACK, primary_level=level, use_cache=False)\n        device = torch.device(\"cpu\")\n>       env = VectorizedHamletEnv(universe=universe, level_name=level, num_agents=NUM_AGENTS, device=device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_token_set_runtime.py:33: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

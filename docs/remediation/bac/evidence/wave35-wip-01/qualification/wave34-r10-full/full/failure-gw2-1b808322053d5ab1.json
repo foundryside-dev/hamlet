@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_pack_smoke.py::test_pack_compiles_constructs_resets_and_steps[token_set-L0_5_dual_resource]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "pack = PosixPath('/workspace/hamlet/configs/test/bac_remediation/token_set')\nlevel = 'L0_5_dual_resource'\n\n    @pytest.mark.parametrize((\"pack\", \"level\"), _cases(), ids=lambda v: v.name if isinstance(v, Path) else v)\n    def test_pack_compiles_constructs_resets_and_steps(pack: Path, level: str) -> None:\n        universe = UniverseCompiler().compile(pack, primary_level=level, use_cache=False)\n>       env = VectorizedHamletEnv(universe=universe, level_name=level, num_agents=NUM_AGENTS, device=torch.device(\"cpu\"))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_pack_smoke.py:49: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

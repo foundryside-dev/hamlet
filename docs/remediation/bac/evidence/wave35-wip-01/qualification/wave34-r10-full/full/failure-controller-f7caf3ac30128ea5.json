@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_engine_tick_runtime.py::test_tick_is_engine_writable_only",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_tick_is_engine_writable_o0')\n\n    def test_tick_is_engine_writable_only(tmp_path):\n>       env = _make_env(tmp_path)\n              ^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/unit/environment/test_engine_tick_runtime.py:61: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_tick_is_engine_writable_o0')\nnum_agents = 2\n\n    def _make_env(tmp_path, num_agents=2):\n        u = UniverseCompiler().compile(prepare_config_dir(tmp_path), primary_level=PRIMARY_LEVEL_NAME)\n>       env = u.create_environment(num_agents=num_agents, level_name=PRIMARY_LEVEL_NAME, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_engine_tick_runtime.py:14: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

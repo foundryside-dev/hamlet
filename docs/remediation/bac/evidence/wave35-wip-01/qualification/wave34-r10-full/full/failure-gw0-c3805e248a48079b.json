@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py::test_scope_surface_cut_bumps_exact_artifact_schema",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "def test_scope_surface_cut_bumps_exact_artifact_schema() -> None:\n>       assert COMPILED_SCHEMA_VERSION == \"1.41\"\nE       AssertionError: assert '1.42' == '1.41'\nE         \nE         - 1.41\nE         ?    ^\nE         + 1.42\nE         ?    ^\n\ntests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py:155: AssertionError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

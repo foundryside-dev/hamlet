@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_items_smoke_pack_compiles_required_declarations",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "def test_items_smoke_pack_compiles_required_declarations():\n        \"\"\"The shipped item pack supplies complete scoped declarations and a usable catalog.\"\"\"\n        config_dir = Path(\"configs/test/items_smoke\")\n        declarations = DeclarationStore.discover(config_dir)\n        for family in (\"experiment\", \"stratum\", \"environment\", \"actions\", \"brain\", \"variables\", \"items\"):\n            assert declarations.get(family, None) is not None, f\"Missing pack-scope {family} declaration\"\n        for family in (\"curriculum\", \"bars\", \"affordances\", \"training\", \"drive\", \"items_appearance\"):\n            assert declarations.get(family, \"L0_smoke\") is not None, f\"Missing L0_smoke {family} declaration\"\n    \n        universe = UniverseCompiler().compile(config_dir, primary_level=\"L0_smoke\", use_cache=False)\n        assert universe.items_catalog is not None\n        assert {item.id for item in universe.items_catalog.item_types} == {\"apple\", \"medkit\", \"coin\"}\n>       env = universe.create_environment(num_agents=1, level_name=\"L0_smoke\", device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_items_integration.py:24: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

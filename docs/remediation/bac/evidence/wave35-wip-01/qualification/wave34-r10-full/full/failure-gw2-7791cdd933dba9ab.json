@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_affordance_interaction_gating_runtime.py::test_engine_refuses_agents_that_cannot_pay",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw2/test_engine_refuses_agents_tha0')\n\n    def test_engine_refuses_agents_that_cannot_pay(tmp_path: Path) -> None:\n        \"\"\"The engine asserts the precondition rather than trusting the caller.\"\"\"\n        pack = _pack(tmp_path, \"refuse\", sleep_energy_cost=0.9)\n>       env = _env(pack)\n              ^^^^^^^^^^\n\ntests/test_townlet/integration/test_affordance_interaction_gating_runtime.py:144: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw2/test_engine_refuses_agents_tha0/refuse')\nnum_agents = 2\n\n    def _env(pack: Path, num_agents: int = 2) -> VectorizedHamletEnv:\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n>       env = VectorizedHamletEnv(universe=universe, level_name=LEVEL, num_agents=num_agents, device=torch.device(\"cpu\"))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_affordance_interaction_gating_runtime.py:54: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

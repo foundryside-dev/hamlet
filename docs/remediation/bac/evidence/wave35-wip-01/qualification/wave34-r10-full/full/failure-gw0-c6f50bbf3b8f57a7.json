@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_occupancy_wiring.py::test_each_world_claims_its_own_bed",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "temp_config_pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_each_world_claims_its_own0/config_pack')\n\n    def test_each_world_claims_its_own_bed(temp_config_pack: Path) -> None:\n        \"\"\"Both worlds claim SLEEP in the same tick: each world's own row records its agent;\n        neither claim reaches the other world, and no other affordance row moves.\"\"\"\n        _declare_claim_action(temp_config_pack)\n    \n        universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)\n>       env = VectorizedHamletEnv.from_universe(\n            universe,\n            level_name=PRIMARY_LEVEL,\n            num_agents=2,\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_occupancy_wiring.py:95: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

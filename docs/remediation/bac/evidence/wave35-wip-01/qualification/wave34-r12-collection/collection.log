@@ -1,0 +1,46 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 29 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_intrinsic_scale_composer.py>
+            <Function test_real_vtc_dac_composes_independent_factors[2.0-0.5-0.25-2.0-0.5-1.6-0.5]>
+            <Function test_real_vtc_dac_composes_independent_factors[2.0-0.0-0.25-2.0-0.0-1.1-0.5]>
+            <Function test_real_vtc_dac_composes_independent_factors[2.0-1.0-0.25-2.0-1.0-2.1-0.5]>
+            <Function test_real_vtc_dac_composes_independent_factors[2.0-0.5-0.5-2.0-1.0-2.1-1.0]>
+            <Function test_real_vtc_dac_composes_independent_factors[2.0-0.5-0.25-1.0-0.25-1.35-0.5]>
+            <Function test_real_vtc_dac_composes_independent_factors[1.0-0.5-0.25-2.0-0.25-1.35-0.25]>
+            <Function test_full_population_scale_and_terminal_diagnostics[False]>
+            <Function test_full_population_scale_and_terminal_diagnostics[True]>
+            <Function test_done_masks_nonzero_intrinsic_without_erasing_diagnostics>
+            <Function test_scale_is_required_at_both_composer_entries[vtc]>
+            <Function test_scale_is_required_at_both_composer_entries[dac]>
+            <Function test_dac_rejects_malformed_runtime_scale[python-scalar]>
+            <Function test_dac_rejects_malformed_runtime_scale[python-list]>
+            <Function test_dac_rejects_malformed_runtime_scale[none]>
+            <Function test_dac_rejects_malformed_runtime_scale[rank-zero]>
+            <Function test_dac_rejects_malformed_runtime_scale[short]>
+            <Function test_dac_rejects_malformed_runtime_scale[long]>
+            <Function test_dac_rejects_malformed_runtime_scale[rank-two]>
+            <Function test_dac_rejects_malformed_runtime_scale[float64]>
+            <Function test_dac_rejects_malformed_runtime_scale[integer]>
+            <Function test_dac_rejects_malformed_runtime_scale[bool]>
+            <Function test_dac_rejects_malformed_runtime_scale[nan]>
+            <Function test_dac_rejects_malformed_runtime_scale[positive-infinity]>
+            <Function test_dac_rejects_malformed_runtime_scale[negative-infinity]>
+            <Function test_dac_rejects_malformed_runtime_scale[negative]>
+            <Function test_dac_rejects_malformed_runtime_scale[wrong-device]>
+            <Function test_inputs_and_provenance_components_have_owned_storage[provider_intrinsic_raw]>
+            <Function test_inputs_and_provenance_components_have_owned_storage[runtime_intrinsic_scale]>
+            <Function test_runtime_scaling_preserves_autograd_and_terminal_mask>
+
+========================= 29 tests collected in 0.03s ==========================

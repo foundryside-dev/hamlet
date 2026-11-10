@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/demo/test_runner_seeding.py::test_runner_refuses_malformed_curriculum_before_population_mutation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_runner_refuses_malformed_0')\n\n    def test_runner_refuses_malformed_curriculum_before_population_mutation(tmp_path: Path) -> None:\n        runner = _make_runner(tmp_path)\n        try:\n            population = _initialize_checkpoint_components(runner)\n>           curriculum = StaticCurriculum()\n                         ^^^^^^^^^^^^^^^^^^\nE           TypeError: StaticCurriculum.__init__() missing 5 required keyword-only arguments: 'commit_mode', 'difficulty_level', 'reward_mode', 'active_meters', and 'depletion_multiplier'\n\ntests/test_townlet/unit/demo/test_runner_seeding.py:218: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

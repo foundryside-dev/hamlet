@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_reference_model_pack.py::test_reference_model_pack_constructs_and_steps",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_reference_model_pack_constructs_and_steps() -> None:\n        \"\"\"The reference pack's whole claim: it compiles AND runs (hamlet-5a87550adb).\"\"\"\n        compiled = UniverseCompiler().compile(CONFIG_DIR, primary_level=PRIMARY_LEVEL, use_cache=False)\n>       env = VectorizedHamletEnv(universe=compiled, level_name=PRIMARY_LEVEL, num_agents=2, device=torch.device(\"cpu\"))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_reference_model_pack.py:42: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

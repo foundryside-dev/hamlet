@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_gridnd_action_support.py::TestGridNDActions::test_execute_actions_supports_high_dim_movements",
+  "phase": "setup",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "gridnd_4d_config_pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_execute_actions_supports_0/gridnd_4d_support')\ncpu_device = device(type='cpu')\n\n    @pytest.fixture\n    def gridnd_env(\n        gridnd_4d_config_pack: Path,\n        cpu_device: torch.device,\n    ) -> VectorizedHamletEnv:\n        \"\"\"Instantiate a 4D GridND environment for action support tests.\"\"\"\n        from townlet.universe.compiler import UniverseCompiler\n    \n        universe = UniverseCompiler().compile(gridnd_4d_config_pack, primary_level=\"L0_test\", use_cache=False)\n>       return VectorizedHamletEnv.from_universe(\n            universe,\n            level_name=\"L0_test\",\n            num_agents=1,\n            device=cpu_device,\n        )\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_gridnd_action_support.py:44: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

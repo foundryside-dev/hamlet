@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/universe/test_scoping_enforcement.py::test_item_free_pack_supports_absent_optional_item_catalog",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "config_dir = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_item_free_pack_supports_a0/scoping_pack')\n\n    def test_item_free_pack_supports_absent_optional_item_catalog(config_dir: Path) -> None:\n        \"\"\"No item catalog is needed to construct a deliberately item-free world.\"\"\"\n        (config_dir / \"items.yaml\").unlink()\n    \n        compiled = UniverseCompiler().compile(config_dir, primary_level=\"L0_test\", use_cache=False)\n    \n        assert compiled.items_catalog is None\n>       env = compiled.create_environment(level_name=\"L0_test\", num_agents=1, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/universe/test_scoping_enforcement.py:46: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

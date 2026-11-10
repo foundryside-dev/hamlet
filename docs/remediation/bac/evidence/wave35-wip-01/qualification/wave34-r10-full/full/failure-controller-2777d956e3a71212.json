@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_scope_extents.py::test_affordance_scope_rows_come_from_the_level",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "temp_config_pack = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw0/test_affordance_scope_rows_com0/config_pack')\n\n    def test_affordance_scope_rows_come_from_the_level(temp_config_pack: Path) -> None:\n        \"\"\"findings_vfs F4: an affordance-scope variable needs no authored extent; its\n        registry rows are the level's affordance count, the one authority, in every world (S1).\"\"\"\n        _add_variable(temp_config_pack, AFFORDANCE_VARIABLE)\n    \n        universe = UniverseCompiler().compile(temp_config_pack, primary_level=PRIMARY_LEVEL, use_cache=False)\n>       env = VectorizedHamletEnv.from_universe(\n            universe,\n            level_name=PRIMARY_LEVEL,\n            num_agents=2,\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/vfs/test_scope_extents.py:81: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

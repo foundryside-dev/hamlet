@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_determinism.py::test_different_seed_produces_different_trace",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "universe = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_different_seed_produces_different_trace(universe: CompiledUniverse) -> None:\n>       assert _trace_hash(universe, 42) != _trace_hash(universe, 43)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/integration/test_determinism.py:66: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nuniverse = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nseed = 42, steps = 40, device = 'cpu'\n\n    def _trace_hash(universe: CompiledUniverse, seed: int, steps: int = 40, device: str = \"cpu\") -> str:\n        seed_all(seed)\n>       env = VectorizedHamletEnv(universe=universe, level_name=L0, num_agents=4, device=torch.device(device))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_determinism.py:46: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

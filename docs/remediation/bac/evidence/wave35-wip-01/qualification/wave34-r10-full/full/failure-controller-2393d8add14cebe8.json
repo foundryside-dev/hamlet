@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_drop_slot_action_spawns_item_in_world",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_drop_slot_action_spawns_item_in_world():\n        \"\"\"DROP_SLOT_N spawns item back into world at agent position.\"\"\"\n        compiler = UniverseCompiler()\n        universe = compiler.compile(Path(\"configs/test/items_smoke\"), primary_level=\"L0_smoke\", use_cache=False)\n    \n>       env = VectorizedHamletEnv(\n            universe=universe,\n            level_name=\"L0_smoke\",\n            num_agents=1,\n            device=\"cpu\",\n        )\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_items_integration.py:208: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

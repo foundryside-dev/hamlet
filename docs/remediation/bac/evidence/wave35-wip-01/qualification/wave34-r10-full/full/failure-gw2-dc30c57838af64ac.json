@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestExplorationCheckpointing::test_adaptive_intrinsic_exploration_checkpoint_completeness",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "self = <tests.test_townlet.integration.test_checkpointing.TestExplorationCheckpointing object at 0x7f555f1a8cd0>\ncpu_device = device(type='cpu')\nbasic_env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f555bd2b650>\n\n    def test_adaptive_intrinsic_exploration_checkpoint_completeness(self, cpu_device, basic_env):\n        \"\"\"AdaptiveIntrinsicExploration should save all required state for restoration.\"\"\"\n>       exploration = AdaptiveIntrinsicExploration(\n            obs_dim=basic_env.observation_dim,\n            embed_dim=128,\n            initial_intrinsic_weight=1.0,\n            variance_threshold=100.0,\n            survival_window=50,\n            epsilon_start=0.8,\n            epsilon_min=0.05,\n            epsilon_decay=0.99,\n            device=cpu_device,\n        )\nE       TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/integration/test_checkpointing.py:707: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

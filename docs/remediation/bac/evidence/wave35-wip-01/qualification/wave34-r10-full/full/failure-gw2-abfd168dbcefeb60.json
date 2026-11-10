@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_vfs_runtime_evaluation.py::test_vfs_expressions_access_bars",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "def test_vfs_expressions_access_bars():\n        \"\"\"VFS expressions should be able to read bar values.\n    \n        Tests:\n        - VFS variable depends on bar.energy\n        - Bar values change during step\n        - VFS expression reflects updated bar values\n        \"\"\"\n        # Setup: Use config with VFS var that reads bar.energy\n        config_dir = Path(__file__).parent.parent.parent.parent / \"configs\" / \"test\" / \"vfs_bar_access\"\n    \n        compiler = UniverseCompiler()\n        compiled = compiler.compile(config_dir, primary_level=\"L0_bars\", use_cache=False)\n    \n        # Create environment\n>       env = compiled.create_environment(\n            num_agents=4,\n            level_name=\"L0_bars\",\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_vfs_runtime_evaluation.py:141: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

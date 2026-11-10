@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_lifetime_and_derived_state_do_not_depend_on_transport[True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw2/test_lifetime_and_derived_stat1')\ncached = True\n\n    @pytest.mark.parametrize(\"cached\", [False, True])\n    def test_lifetime_and_derived_state_do_not_depend_on_transport(tmp_path: Path, cached: bool) -> None:\n        derived = _variable(\"derived\", initial=4.0)\n        derived[\"expression\"] = \"tick + 4.0\"\n        declarations = [\n            _variable(\"per_tick\", lifetime=\"tick\", initial=1.0),\n            _variable(\"per_episode\", lifetime=\"episode\", initial=2.0),\n            _variable(\"persistent\", lifetime=\"persistent\", initial=3.0),\n            derived,\n        ]\n        universe = _compile(_pack(tmp_path, declarations))\n        if cached:\n            universe = CompiledUniverse.from_dict(universe.to_dict())\n>       env = universe.create_environment(num_agents=2, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_canonical_variable_runtime.py:122: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

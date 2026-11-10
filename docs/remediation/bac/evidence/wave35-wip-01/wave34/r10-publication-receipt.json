@@ -1,0 +1,35 @@
+{
+  "status": "PUSHED_EXACT_SHA_TREE_VERIFIED_UNRELEASED_WIP",
+  "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9",
+  "branch": "project-recovery-bac-2026-11-01",
+  "ci": [
+    {
+      "id": 42878013632,
+      "name": "Lint",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013632"
+    },
+    {
+      "id": 42878013277,
+      "name": "Tests",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013277"
+    },
+    {
+      "id": 42878013511,
+      "name": "Config Validation",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42878013511"
+    }
+  ],
+  "ci_observed_utc": "2026-11-10 18:44:10 UTC",
+  "full_execution": "owed before boundary release; imminent exact committed-source run",
+  "no_new_project_branch_worktree_checkout": true
+}

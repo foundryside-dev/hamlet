@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestCurriculumCheckpointing::test_curriculum_checkpoint_preserves_performance_history",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "self = <tests.test_townlet.integration.test_checkpointing.TestCurriculumCheckpointing object at 0x7f555f1a8b90>\ncpu_device = device(type='cpu')\n\n    def test_curriculum_checkpoint_preserves_performance_history(self, cpu_device):\n        \"\"\"Curriculum should preserve episode performance history across checkpoint cycle.\"\"\"\n>       curriculum1 = AdversarialCurriculum(\n            max_steps_per_episode=100,\n            survival_advance_threshold=0.7,\n            survival_retreat_threshold=0.3,\n        )\nE       TypeError: AdversarialCurriculum.__init__() got an unexpected keyword argument 'max_steps_per_episode'\n\ntests/test_townlet/integration/test_checkpointing.py:661: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/oracle/test_harness.py::test_scripted_self_comparison_agrees_and_replays_actions",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_scripted_self_comparison_0')\n\n    def test_scripted_self_comparison_agrees_and_replays_actions(tmp_path: Path) -> None:\n        \"\"\"Self-comparison in scripted mode: new side replays old's recorded actions;\n        the actions stream matches by construction and the verdict is AGREE.\"\"\"\n        cell = _small_cell()\n        verdict = run_cell(\n            repo_root=REPO_ROOT,\n            old_src=REPO_ROOT / \"src\",\n            old_pack_root=REPO_ROOT,\n            new_src=REPO_ROOT / \"src\",\n            cell=cell,\n            run_dir=tmp_path,\n            run_cuda=False,\n            scripted=True,\n        )\n>       assert verdict.kind == \"AGREE\", verdict.detail\nE       AssertionError: {'failure_kind': 'crashed', 'side': 'old', 'stderr': 'Traceback (most recent call last):\nE           File \"/workspace/hamlet/sr...v.__init__() missing 3 required keyword-only arguments: \\'world_roster\\', \\'training_seed\\', and \\'lane_world_ids\\'\nE         '}\nE       assert 'OLD_SIDE_ERROR' == 'AGREE'\nE         \nE         - AGREE\nE         + OLD_SIDE_ERROR\n\ntests/test_townlet/unit/oracle/test_harness.py:875: AssertionError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

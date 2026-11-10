@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_a_dead_agents_world_is_frozen_and_its_persistent_global_carries_no_posthumous_advance",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_a_dead_agents_world_is_fr0')\n\n    def test_a_dead_agents_world_is_frozen_and_its_persistent_global_carries_no_posthumous_advance(tmp_path: Path) -> None:\n        ticker = _effect(\n            \"ticker\",\n            \"agent\",\n            [{\"modify\": \"g_eff\", \"value\": \"g_eff + 1.0\"}, {\"modify\": \"g_persist\", \"value\": \"g_persist + 1.0\"}],\n            duration=100,\n        )\n        pack = _epistemic_pack(\n            tmp_path,\n            declarations=[_declaration(\"g_eff\"), _declaration(\"g_persist\", lifetime=\"persistent\")],\n            effects=[ticker],\n            spawns=[\"ticker\"],\n            budget={\"global\": 0, \"agent\": 1, \"item\": 0, \"affordance\": 0},\n        )\n        universe = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n>       env = universe.create_environment(num_agents=2, level_name=LEVEL, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/effects/test_effects_per_world.py:353: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

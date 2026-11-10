@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/items/test_item_arena_capacity.py::test_items_on_the_ground_with_no_inventory_compile_and_spawn",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_items_on_the_ground_with_0')\n\n    def test_items_on_the_ground_with_no_inventory_compile_and_spawn(tmp_path: Path) -> None:\n        \"\"\"F3's reproduction: `max_items_per_agent: 0`, `max_items_in_world: 10`.\"\"\"\n        pack = _items_smoke_with(tmp_path, max_items_per_agent=0)\n    \n        compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)\n    \n        assert compiled.items_catalog is not None\n        assert compiled.items_catalog.max_items_per_agent == 0\n        assert compiled.items_hash is not None\n        assert compiled.get_level(LEVEL).items_appearance is not None\n    \n>       env = VectorizedHamletEnv.from_universe(compiled, level_name=LEVEL, num_agents=2, device=\"cpu\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/items/test_item_arena_capacity.py:54: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

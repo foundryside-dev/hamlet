@@ -1,0 +1,3627 @@
+{
+  "status": "LIVE PARTIAL FAILURE DATA, NOT FINAL GATE RESULT",
+  "observed_utc": "2026-11-10T18:57:03.849881+00:00",
+  "sha": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "source_index_frozen": true,
+  "unique_node_phase_failures": 750,
+  "affected_file_metadata": [
+    {
+      "path": "tests/test_townlet/integration/test_action_costs.py",
+      "lines": 168,
+      "sha256": "646b82f02069b9f44f5fb44ebc152c4c5b645bbc4aaea079c86b8ae59dfecdb1"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_affordance_interaction_gating_runtime.py",
+      "lines": 184,
+      "sha256": "688d1e3fde6d04d44af35f65408b0d5ecac5fb69a7727d2f8e8c6872696211f4"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_authored_episode_lanes.py",
+      "lines": 66,
+      "sha256": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py",
+      "lines": 139,
+      "sha256": "9b1ee9ce81eb9ff626d4694026a7535c46c9d0cb85384541770da69d142f9c39"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_canonical_variable_runtime.py",
+      "lines": 139,
+      "sha256": "59a248081cffede730e75ae915d5f001628dc37fc31f9e7381d93b26c781a64d"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_checkpoint_substrate.py",
+      "lines": 53,
+      "sha256": "2015d554ac92ed76b5a1c51aadcd2238916c7273c97f900236abe6af32245006"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_checkpointing.py",
+      "lines": 1662,
+      "sha256": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_compact_token_acceptance.py",
+      "lines": 868,
+      "sha256": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_compact_token_runtime.py",
+      "lines": 69,
+      "sha256": "213bfafcf025b735a21807b3d097312a2e38e1c3056ee6ce22599671caca6fec"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_compile_time_wiring.py",
+      "lines": 54,
+      "sha256": "3b8250e2aabf7a7bad068284a65941d33279c7caea22400ed95d90babe7b8601"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_content_hash_checkpoint_guard.py",
+      "lines": 395,
+      "sha256": "0c62f4a302646ec38b88db0ed4a2d23e886cad28a5d4871a003c796f9c1471cf"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_curriculum_signal_purity.py",
+      "lines": 407,
+      "sha256": "30f786ddf0023cd27074103444255b9294052d11ae6a3bfbe888f4815081b0ac"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_curriculum_transfer.py",
+      "lines": 57,
+      "sha256": "1d7befe408d95d5158fc32dd7930f9959866218cec5d45b7e162912dc0e574b2"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_custom_actions.py",
+      "lines": 95,
+      "sha256": "52a6ddbc167543466680b0a64b576a5228b07993d2d46a2a736dee6044eae5ef"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_custom_item_verbs_integration.py",
+      "lines": 85,
+      "sha256": "1ba13ad6df302d41eaeba083bfe6f514f16d582348ea65068c97e155775fb7f0"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_dac_integration.py",
+      "lines": 173,
+      "sha256": "0eb7d7cc6d4b9a4c6fd1e51b0c81d836704a5a08ab835f284cdee768775437a9"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_data_flows.py",
+      "lines": 542,
+      "sha256": "1675557e440a67d431860378b2e2add805ea7ced7d193bd2cd127325c4e07a06"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_dead_agent_interaction_gating.py",
+      "lines": 146,
+      "sha256": "80b3277fcddbb42b262319d6f52e2cd822bb9f2573a89c2fbd23451824f1bf00"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_determinism.py",
+      "lines": 115,
+      "sha256": "9a4bf2280217b395a1ea2c852d9d0bd2793c80c53409137d575a3c9ef4981dc1"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_differential_harness.py",
+      "lines": 72,
+      "sha256": "2c98b4eab1db287dcb4f4089d24d2df94c84ccb8a6658a409adb569d266db7aa"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_double_dqn_training.py",
+      "lines": 250,
+      "sha256": "ff4be3b8e529abb0ef822c9cf4511d6aa70579346d4361ca7a98566e437ee562"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_effects_compiled_catalog.py",
+      "lines": 149,
+      "sha256": "eac3f7bc1a3f6b750685fff0354d49290e94a6cecbb16f84779f0417ed7e817b"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_effects_smoke.py",
+      "lines": 270,
+      "sha256": "f28190dadd6fdb83d6cf5d0176463000e65928222083e2d1543078aadd1a1d8c"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_env_substrate.py",
+      "lines": 248,
+      "sha256": "56df0289e683ee1ba0634f2fd23bb8af01c2b200bb1f510634c8a962f7b3abdd"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_episode_execution.py",
+      "lines": 342,
+      "sha256": "87688e97e16fb7be72fc0b3001f6269f2e5129b170c44231a5c4138b81f09b5f"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_golden_path_smoke.py",
+      "lines": 98,
+      "sha256": "be62547d9a0df3c7e85d1b18d64e68b4b7d2c311e8f0ce8eeca9244bfffe815c"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_intrinsic_exploration.py",
+      "lines": 374,
+      "sha256": "1e1deeda62ad0be432ea41cbb20e282e8f87caa2c684e9d35733e30c527e52e0"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_item_observations.py",
+      "lines": 29,
+      "sha256": "f88e1c94c987b74710ea012a27c4d4c0592a1ea6aa12741f1c3a010de3192bac"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_item_self_modification.py",
+      "lines": 62,
+      "sha256": "3322d125c7f26dc6013a5ca0d3d26d75cec83182d0b4fe77beaaed54a8e8bb28"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_item_vfs_integration.py",
+      "lines": 246,
+      "sha256": "8b514df043659258ca3fc1c9cfee4bde989bf23b9cd2852f7ff0779fdf00b65d"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_item_vfs_observations.py",
+      "lines": 244,
+      "sha256": "edcc0b922eaf1e91bf2e608f7380aa1c06b806ce409bbdc8f3f60aeb7cdb0e22"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_items_effects_cascade.py",
+      "lines": 85,
+      "sha256": "128acf2d293d3e90e5d6ec8828c622f5a88605c4ea0ab9851772a9666b92b787"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_items_integration.py",
+      "lines": 330,
+      "sha256": "8cffd43cbd2a7260b86821e422329ad63a2be76688a36bab4fd2a817a7005388"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_l5_multi_agent_config.py",
+      "lines": 34,
+      "sha256": "f15540b3e45f854a2302e84c77f45e55c7e45407f30e5aa5782ad1009ebcc5ff"
+    },
+    {
+      "path": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py",
+      "lines": 414,
+      "sha256": "98c7f8ce3030e039499bf0f190e54cd1354b4280e504a8ef900d2836eff835df"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_exploration_policy.py",
+      "lines": 447,
+      "sha256": "77ed751bb431c5203b6c38354b3f6f6e583d4c4a699df5d94d9bd89fd35eafc2"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+      "lines": 439,
+      "sha256": "7cd2aacc90e26bf97fbe3da4b599ccba77f8dce6caac5ae94e682c714c3f287e"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py",
+      "lines": 244,
+      "sha256": "851986aa7f17350c8c769b939a400207ac718c97acfaf23ed0e657e3f41bab67"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py",
+      "lines": 647,
+      "sha256": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+      "lines": 634,
+      "sha256": "920627d8ad09531838bfbe2b4ec8113cd40659249761fc1393f28928c4ec37d1"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_runner_readiness.py",
+      "lines": 529,
+      "sha256": "2352066710ef7d97de02efb498021f26f7ffc50e2ce2afe96ea6ba4bbee04ce4"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py",
+      "lines": 222,
+      "sha256": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_successor_producer.py",
+      "lines": 212,
+      "sha256": "c88043817f6996f02a1a7cb732e96b1afdc1a70c548b7b956c7da125eb605670"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_token_binding.py",
+      "lines": 640,
+      "sha256": "bdb25f6e33bae64ede392dfb8ed4fbe4b7521a6dc201184e547decaeabefe544"
+    },
+    {
+      "path": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py",
+      "lines": 424,
+      "sha256": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f"
+    },
+    {
+      "path": "tests/test_townlet/regressions/test_episode_lane_environment.py",
+      "lines": 151,
+      "sha256": "cf56aa5b31adf44df3289665b2156b17265ae09dbb8cf9dfd9f5dab68e2d62b4"
+    },
+    {
+      "path": "tests/test_townlet/regressions/test_episode_lane_learning.py",
+      "lines": 476,
+      "sha256": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c"
+    },
+    {
+      "path": "tests/test_townlet/regressions/test_episode_lane_population.py",
+      "lines": 413,
+      "sha256": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8"
+    },
+    {
+      "path": "tests/test_townlet/unit/demo/test_runner_environment_budget.py",
+      "lines": 88,
+      "sha256": "8134407e7e23e4029632041d318e9447752dbd5ac8a72be20d126450bda0e9ca"
+    },
+    {
+      "path": "tests/test_townlet/unit/demo/test_runner_seeding.py",
+      "lines": 234,
+      "sha256": "9cee2a6afa71936d32467a62432f20e82e26c14582eb5c78f7c5700998681eb2"
+    },
+    {
+      "path": "tests/test_townlet/unit/demo/test_runner_training_status.py",
+      "lines": 91,
+      "sha256": "a93f08e1a27b170b46316148e95ff83c05474f947d15066170dda9f44e1c7212"
+    },
+    {
+      "path": "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py",
+      "lines": 262,
+      "sha256": "782441b54df1967c0939a1e57cd9a8499f1afc50c9781873c0d01e0e817807b6"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_b3d_effect_budget_admission.py",
+      "lines": 107,
+      "sha256": "b209f70e2fd49f71d58f4ae855f8deab71fa7d4ae6f99d1dc69b78d62ef597a5"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_bare_vfs_write.py",
+      "lines": 231,
+      "sha256": "d21c8089727a0cd3ddb4a51c97cea9f29954878d7175ce5ee25b5904399d1be1"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_effect_time_and_position.py",
+      "lines": 186,
+      "sha256": "aa299d514d19db16c2e7156402d55c68504ea6c0f5d6aa1ac9a18065d900b0f6"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_effects_per_world.py",
+      "lines": 606,
+      "sha256": "64b562b670e840febd336313d9a586e54b25e755de0147e081b1ac0c0626db1a"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_per_agent_command_semantics.py",
+      "lines": 317,
+      "sha256": "2bb1f17b7dd633d7b44cd11dd8197639ca5814ce3b3df040bab19a9443c8eb9b"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_reset_agent_effect_carryover.py",
+      "lines": 46,
+      "sha256": "4d5177771bdff521bf78f9b591f5d147787c320f901aa27ca221900f4cd873a9"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_reset_global_effect_carryover.py",
+      "lines": 85,
+      "sha256": "c0b893f48f35efd6760d7c7e7c070cf23c3131fcd6d5bb09115036cf22af37c3"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_switch_authored_bodies.py",
+      "lines": 113,
+      "sha256": "9cfcf14dbd5349f59f891578c55e852ee2843d8feb72daf4aed8dcf2eee743b2"
+    },
+    {
+      "path": "tests/test_townlet/unit/effects/test_wp12_item_effect_target.py",
+      "lines": 137,
+      "sha256": "ef699a2e8361dc1331a4edbb8e03d2a9acacfc76c72c748b37c9feffbd6058eb"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_action_masking.py",
+      "lines": 777,
+      "sha256": "be0c4b23595b7d364f7e93ba131cc409e80fec3c22e2eaf8cd38f711905eb1ac"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_action_space.py",
+      "lines": 118,
+      "sha256": "c7a77a5d219503a44f873184aa43f88f7c02354ce94fbe05a06f69c5d9b8a4ef"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_affordances.py",
+      "lines": 194,
+      "sha256": "fed91d0330e356ca631e462ce76ec44c324f5951e10252812f2c50e475c8a739"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_checkpoint_validation.py",
+      "lines": 207,
+      "sha256": "77bdd84fa08a1f6e43264a3871a924c03f4c2b3a008cee3c997d094917e4c6f9"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_compiled_effects_usage.py",
+      "lines": 43,
+      "sha256": "e2ca4f766c893593cb7f2eaadc5c7b2efd231f37990df8b38af3c8d57fb6f394"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_engine_dynamic_sizing.py",
+      "lines": 55,
+      "sha256": "578d0b039ab910732e405823940e948da652c33c979d32b41dffa39e603d3f47"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_engine_tick_runtime.py",
+      "lines": 63,
+      "sha256": "a75deb971ae8c7b4a3dc5a8484fb48d2470d52fcb815552ad311b94b695dfa40"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_gridnd_action_support.py",
+      "lines": 100,
+      "sha256": "b53bcefa99e70ba66549a291b04479b1c25230b94132b42295058cfa8e39691b"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_meter_clamp_per_world.py",
+      "lines": 56,
+      "sha256": "96b889b173841c6ee34bd172eafaca3169786fe8a9d5790f673490ee74a48546"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_meters.py",
+      "lines": 363,
+      "sha256": "27a96229949fab9a477c6fd8793ee837656a06ad323b5e212891b0109e538c99"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_movement_deltas.py",
+      "lines": 80,
+      "sha256": "ad746ba9de1741c4b5a4faa9e88e12d887a5fe1b2ce044b9ad4049068fd45b14"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_movement_mask_bug.py",
+      "lines": 319,
+      "sha256": "3365e37e59157db25c5822cd956c03545b426fe6b1bace12c54fa99448b189e2"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py",
+      "lines": 301,
+      "sha256": "3ceb3b39acb802553016a02e54442112ee8b0d76337c9a7792d1c02a732431aa"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_temporal_pipeline.py",
+      "lines": 36,
+      "sha256": "1819e629ffd2ee355ee26f9296508e39aaf36d054a2b3a693a1207dcff793134"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_token_partial_observability.py",
+      "lines": 42,
+      "sha256": "dae400af315afa139e8b86cfb23bf25d6df0b8f4792f7d2ac7ee5e12fec5d6c4"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_vectorized_env.py",
+      "lines": 1352,
+      "sha256": "e63c15bf14beaf1409e502e9e5f50dfacce2fa66f6e0733016c3791d61ec4032"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py",
+      "lines": 242,
+      "sha256": "41e6dafdf6757dde8fc2c292c732e35fed6ac8f029c0a29e723efd3cd6f07b2f"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py",
+      "lines": 175,
+      "sha256": "85883ea67a9747f772283af9fc7bf5f51984906a0ae8bb346c5974196c598ace"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_vfs_integration.py",
+      "lines": 123,
+      "sha256": "e8881144cf28ab1c80095a5b737f8ccec9351b32bc51c09610d2576a27e84afb"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_wp11_item_visibility.py",
+      "lines": 251,
+      "sha256": "96a459ec5c0c5a629fa91fed860523449042c5936944834b589cc186e25f1f04"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py",
+      "lines": 196,
+      "sha256": "8bd563e1f92070bef0f051b0d121c7f442de5569777baf0a3d4692d1bdb09700"
+    },
+    {
+      "path": "tests/test_townlet/unit/environment/test_wp9_timing_bonus_hour.py",
+      "lines": 69,
+      "sha256": "d3164d086e326370b6fcef16fa3c96f39415a416fc7405b56e3c6fbd9b01bac2"
+    },
+    {
+      "path": "tests/test_townlet/unit/items/test_held_item_expiry_and_dead_world.py",
+      "lines": 103,
+      "sha256": "850990e04b6d700efc1cf31092698dc7ce6149ee6a1a410abf47d03672755362"
+    },
+    {
+      "path": "tests/test_townlet/unit/items/test_item_arena_capacity.py",
+      "lines": 99,
+      "sha256": "48a141600f4d4505d11a788689bf9507f9bb308f58fedad15831e8b750004ac8"
+    },
+    {
+      "path": "tests/test_townlet/unit/items/test_items_per_world.py",
+      "lines": 466,
+      "sha256": "9b1bb7d39d9b7387016525788f2456888ae2615bbb4503a8bd0010666ae359e4"
+    },
+    {
+      "path": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py",
+      "lines": 203,
+      "sha256": "d12024a4e54b017f87aab870cf73bc99f3fb38a9bc0d28a2c80003d39bb4e3b0"
+    },
+    {
+      "path": "tests/test_townlet/unit/oracle/test_driver.py",
+      "lines": 123,
+      "sha256": "f87b741fb124ccb3793b53e52049592c748d7a271e577272967355680f7dfa70"
+    },
+    {
+      "path": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py",
+      "lines": 393,
+      "sha256": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30"
+    },
+    {
+      "path": "tests/test_townlet/unit/oracle/test_harness.py",
+      "lines": 903,
+      "sha256": "142cb2cb63abb1037e0c8661a474e4bfd12d2cfa2a660d864d012a6615a85fe7"
+    },
+    {
+      "path": "tests/test_townlet/unit/population/test_action_selection.py",
+      "lines": 375,
+      "sha256": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1"
+    },
+    {
+      "path": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py",
+      "lines": 324,
+      "sha256": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a"
+    },
+    {
+      "path": "tests/test_townlet/unit/population/test_recurrent_training.py",
+      "lines": 573,
+      "sha256": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9"
+    },
+    {
+      "path": "tests/test_townlet/unit/population/test_vectorized_population.py",
+      "lines": 1884,
+      "sha256": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c"
+    },
+    {
+      "path": "tests/test_townlet/unit/substrate/test_distances.py",
+      "lines": 33,
+      "sha256": "02581016b48bd5f74a436763675399abdd2d1e5e2bd8b35af05cfe0769f6c1e7"
+    },
+    {
+      "path": "tests/test_townlet/unit/test_utilities_validation.py",
+      "lines": 369,
+      "sha256": "e1fe496e9c2dc45e56fbd3b8f97c76e30d769a40e0f19d108a38db7cd3528bdc"
+    },
+    {
+      "path": "tests/test_townlet/unit/training/test_token_checkpoint_gates.py",
+      "lines": 438,
+      "sha256": "6957a3ab973f9c993d16e110c276c03ff15d2e93d73a49481c48dd0ef4db8629"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_canonical_variable_compilation.py",
+      "lines": 207,
+      "sha256": "32014bc4228513ddc972eb25debb30b6fbfee4955043e3667f3244147d42498f"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py",
+      "lines": 285,
+      "sha256": "cd99a009b217cade1e9896fa4b0e926dadb6b4657ac41c05fd6f89760f963730"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_compiled_universe_serialization.py",
+      "lines": 306,
+      "sha256": "60625cc224b62b2f20963e2771100abc6097fd67b81b136de406b71a18ae0c25"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_effects_schema_completeness.py",
+      "lines": 115,
+      "sha256": "e74697bd89221383fd4538b1b025af152244a646ca499eade400fb231e4adb96"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_no_full_token_observation_abi.py",
+      "lines": 163,
+      "sha256": "55f1663a043e9aad3c1b3b21785b2dc4e26081f87c407cb94473c488e3ee63e3"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py",
+      "lines": 458,
+      "sha256": "b8f2b7091d172e843042458222f8635a5e47419884d2124987ba075de85aaf8a"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_scoping_enforcement.py",
+      "lines": 67,
+      "sha256": "7ba399b01432bfd4361b18b3dcb2d5408523d4d1811321d9975fcdb6b2a9f510"
+    },
+    {
+      "path": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py",
+      "lines": 634,
+      "sha256": "67f31a304570799f6fcf758146bb2d6d0d3afb7979df009947c70781f7177696"
+    }
+  ],
+  "signatures": [
+    {
+      "error": "E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 385,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic[uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestMultiAgentMeters::test_multi_agent_selective_death",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_action_costs.py::TestMovementCosts::test_movement_costs_per_meter_from_bars",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestExecuteActions::test_execute_actions_movement",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_authored_mean_can_bind_descriptor_value[token_set]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvInitialization::test_env_defaults_to_test_config_pack",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestEpsilonGreedyActionSelection::test_epsilon_greedy_mixes_exploration_exploitation",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestWaitAction::test_wait_masked_for_dead_agents",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_runner_training_status.py::test_budget_completion_records_completed",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_alive_agent_on_open_affordable_affordance",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[duplicate_handles]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[linear-mean-recurrent]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestAdaptiveIntrinsicExplorationIntegration::test_adaptive_exploration_updates_on_episode_end",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumUpdateFrequency::test_update_curriculum_tracker_exists",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_embedded_archive_is_standalone_and_detects_corruption[sequence-trained]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_double_dqn_training.py::TestDoubleDoubleTraining::test_training_with_double_dqn_enabled",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestHandleInteractions::test_handle_interactions_multi_tick_when_temporal_enabled",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskBuilderDelegation::test_get_action_masks_matches_builder_output",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestRandomizeAffordancePositions::test_randomize_affordance_positions_changes_positions",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestTimeBasedMasking::test_bed_available_24_7",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestWaitAction::test_wait_always_available_for_alive_agents",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_intrinsic_exploration.py::TestAdaptiveAnnealing::test_annealing_requires_low_variance",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_intrinsic_exploration.py::TestRNDIntrinsicRewards::test_intrinsic_rewards_combined_with_extrinsic",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvGoldenTick::test_golden_tick_delegates_through_components",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestPostTerminalMasking::test_all_actions_masked_after_energy_death",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestActionPipeline::test_exploration_epsilon_greedy_with_masking",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestRecurrentNetworkInitialization::test_recurrent_network_creates_sequential_buffer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestEnvironmentCheckpointing::test_environment_checkpoint_roundtrip_consistency",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestCustomActionExecution::test_execute_actions_does_not_apply_legacy_runtime_costs_or_effects",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_refuses_incomplete_population_payload_before_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestRunnerCheckpointing::test_runner_checkpoint_preserves_episode_number",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalInterpretability::test_short_episode_has_low_signal",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestSnapshotAndMetrics::test_update_curriculum_tracker_when_tracker_exists",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_aspatial_wait_should_not_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestCascadeIntegration::test_full_cascade_sequence",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_movement_clamped_at_boundaries",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_returns_correct_types",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[extra_priority_key]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestActionPipeline::test_qnetwork_qvalues_to_exploration",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestEnvironmentCheckpointing::test_environment_checkpoint_preserves_agent_state",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic[sequence-trained]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestPostTerminalMasking::test_all_actions_masked_after_health_death",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_reset_global_effect_carryover.py::test_global_effect_does_not_survive_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestBuildMovementDeltas::test_build_movement_deltas_creates_tensor",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_captured6_active_adapter_preserves_rows_and_derives_only_priority[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_accessible",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestRunnerCheckpointing::test_runner_checkpoint_includes_all_components",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvInitialization::test_init_initializes_state_tensors",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestHandleInteractions::test_handle_interactions_legacy_when_temporal_disabled",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[wrong_context]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_double_dqn_training.py::TestDoubleDoubleTraining::test_checkpoint_persists_double_dqn_flag",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_action_costs.py::TestWaitActionIsolation::test_wait_vs_movement_cost_difference",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_affordance_history_tracking_streaks",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestRecurrentNetworkInitialization::test_recurrent_network_initializes_hidden_states",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVFSWriteBackLoudness::test_agent_profile_write_back_raises_on_unknown_id",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_state_digest_is_independent_of_native_serialization[sequence-trained]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvReset::test_reset_randomizes_agent_positions",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestLSTMHiddenStateManagement::test_reset_hidden_state_zeros_specific_agent",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_timing_bonus_receives_time_of_day",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestRewardPipeline::test_environment_extrinsic_reward_to_population",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[mask_geometry]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestEpsilonGreedyActionSelection::test_epsilon_greedy_respects_masks",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_increments_time_of_day",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestCheckpointRoundTrip::test_checkpoint_roundtrip_multi_component_consistency",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_3d_wait_should_not_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_info_contains_metadata",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_info_contains_reward_components",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_dimensions[L1_full_observability-8]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_authored_mean_can_bind_descriptor_value[recurrent]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_interact_available_on_all_affordance_types",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_b3d_effect_budget_admission.py::test_an_overflowing_world_does_not_kill_the_batch",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_rejects_malformed_coordinates[position2-numeric]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_runner_training_status.py::test_training_error_records_failed",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestTimeBasedMasking::test_movement_unaffected_by_time",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_observation_dim_unchanged[L1_full_observability]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_gridnd_action_support.py::TestGridNDActions::test_interact_mask_uses_nd_index",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_randomizes_affordances_via_substrate",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetAffordancePositions::test_get_affordance_positions_has_correct_position_dim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_refuses_population_version_five_before_network_load",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_accepts_matching_checkpoint",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestTimeBasedMasking::test_job_closed_outside_business_hours",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_refuses_incompatible_captured6_geometry_atomically[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_held_item_expiry_and_dead_world.py::test_a_done_worlds_respawn_timers_do_not_fire",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_retirement_bonus",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestEpisodeBuffering::test_flush_episode_stores_and_finalizes",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestActionSelectionEdgeCases::test_all_movement_actions_valid_at_center",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumUpdateTiming::test_no_update_during_episode_steps",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpoint_substrate.py::test_checkpoint_validates_position_dim",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVFSWriteBackLoudness::test_global_profile_write_back_raises_on_unknown_id",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_action_masks_include_base_masking",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestMeterClamping::test_no_negative_values_after_depletion",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestCascadeEffects::test_high_satiation_no_penalty",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_checkpoint_validation.py::TestAffordancePositionSerialization::test_aspatial_affordance_positions_empty_list",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_intrinsic_exploration.py::TestRNDIntrinsicRewards::test_rnd_computes_novelty_for_observations",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvInitialization::test_init_sets_device_correctly",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_archive_failure_is_atomic[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp11_item_visibility.py::test_r3_full_observability_publishes_state_regardless_of_distance",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_refuses_network_action_shape_mismatch_before_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py::test_native_recurrent_inspection_archive_relocation[separate-new-legacy]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetAffordancePositions::test_get_affordance_positions_uses_exact_deployed_subset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalPurity::test_survival_signal_is_integer_steps",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_dimensions[L0_0_minimal-8]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_effects_auto_despawn_after_duration",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[raw_intrinsic]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[missing-action-dim]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalInterpretability::test_long_episode_has_high_signal",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestCalculateShapedRewards::test_calculate_shaped_rewards_returns_finite_values",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per[successive_without_replacement]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_interact_masked_when_not_on_affordance",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_compiled_universe_serialization.py::test_cache_served_compile_preserves_spawn_predicates",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestSnapshotAndMetrics::test_get_training_metrics_returns_dict",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetActionMasks::test_get_action_masks_returns_tensor",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumUpdateFrequency::test_update_curriculum_tracker_accepts_rewards_and_dones",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestEpisodeBuffering::test_store_episode_skips_empty_episodes",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[missing_priority_key]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestSnapshotAndMetrics::test_build_telemetry_snapshot_generates_runtime_data",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vfs_integration.py::TestVariableMeterVFSIntegration::test_12meter_universe_metadata_matches_env",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[sum]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_actual_replay_manager_and_observer_seek_back_reset_and_episode_reload",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_multiple_agents_independent_masking",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestPopulationCheckpointing::test_population_checkpoint_preserves_replay_buffer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_family_cadence_and_zero_gamma[dueling-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_boundary_behavior",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestPostTerminalMasking::test_masking_persists_after_step",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_dynamic_sizing.py::TestVectorizedEnvDynamicSizing::test_12meter_observation_dim_full_obs",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_down_masked_at_bottom_edge",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_up_masked_at_top_edge",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_deltas.py::TestMovementDeltasFromActionConfig::test_movement_deltas_from_action_config_grid2d",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestCalculateShapedRewards::test_calculate_shaped_rewards_returns_tensor",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_set_affordance_positions_validates_position_dim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_owned_sampling_identity[independent_with_replacement]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_configured_priority_incompatibility_is_early[alpha]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_state_digest_is_independent_of_native_serialization[uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[phantom]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_transfer.py::test_l0_and_l1_have_same_action_dim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_recurrent_per[independent_with_replacement]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[linear-attention-recurrent]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_window_diagnostic[adaptive_prefix]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpoint_substrate.py::test_checkpoint_includes_position_dim",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_executes_vtc_action_writes",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestPopulationCheckpointing::test_population_checkpoint_preserves_network_weights",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_affordances.py::TestOpeningHours::test_work_and_entertainment_hours",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_preserves_separate_inspection_transport_without_priority_downgrade[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_ordinary_two_episode_files_index_sql_and_tb_match_actual_eligible_ledger",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py::test_native_recurrent_inspection_archive_relocation[archive-only]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_items_per_world.py::test_a_carried_exclusive_item_has_a_token_and_a_state_row_at_its_holder",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_requires_exact_affordance_identity",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetAffordancePositions::test_get_affordance_positions_includes_all_affordances",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_all_movements_available_in_center",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_3d_vertical_movement_should_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[missing_component]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_affordance_history_tracking_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_sequence_archive_queries_preserve_partial_reward_component_coverage[sequence-trained]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvInitialization::test_init_loads_affordances_from_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetActionMasks::test_get_action_masks_temporal_mechanics_masks_closed_affordances",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_captured6_active_adapter_preserves_rows_and_derives_only_priority[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvReset::test_reset_initializes_meters_from_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_configured_priority_incompatibility_is_early[uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestObservationPipeline::test_partial_observability_5x5_window_correct",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestRandomizeAffordancePositions::test_static_affordance_positions_respected_when_randomization_disabled",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_intrinsic_exploration.py::TestAdaptiveAnnealing::test_intrinsic_weight_decreases_after_consistent_performance",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_refuses_outer_schema_change_before_mutation[unknown]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_3d_interact_should_not_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[beta_tick]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestEpsilonGreedyActionSelection::test_epsilon_one_is_random",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_aspatial_hygiene_satiation_only_pay_base_depletion",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_golden_path_smoke.py::test_env_instantiate_and_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000[recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_refuses_incompatible_captured6_geometry_atomically[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_wp12_item_effect_target.py::test_item_effect_writes_its_item_through_target",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestCheckpointRoundTrip::test_checkpoint_roundtrip_training_resumption",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_affordance_history_tracking_unique_count",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_custom_item_verbs_integration.py::test_custom_item_verbs_flow_from_config_to_runtime",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestExecuteActions::test_execute_actions_interact_preserves_position",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_depletes_meters",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_interact_available_on_bed",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_rejects_malformed_coordinates[position5-bounds]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population6_priority7_relocation_resave_and_bounded_greedy_use[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_refuses_filename_payload_episode_mismatch_before_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestHandleInteractions::test_handle_interactions_returns_empty_when_no_interact",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_observation_dim_unchanged[L0_5_dual_resource]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_checkpoint_includes_meter_metadata",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetActionMasks::test_get_action_masks_some_actions_available",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestCascadeEffects::test_low_satiation_affects_both_primaries",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_checkpoint_validation.py::TestCheckpointValidation::test_checkpoint_rejected_missing_position_dim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_warmup1000[feedforward]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[schema]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestRewardPipeline::test_exploration_intrinsic_reward_combined",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_gridnd_action_support.py::TestGridNDActions::test_execute_actions_supports_high_dim_movements",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestRandomizeAffordancePositions::test_randomize_affordance_positions_stays_in_bounds",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[reason]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_alive_agent_on_closed_affordance",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestTerminalConditions::test_both_primaries_above_zero_alive",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_observation_dim_unchanged[L3_temporal_mechanics]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[whole_schema]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_reset_global_effect_carryover.py::test_respawn_in_new_episode_starts_fresh",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetAffordancePositions::test_get_affordance_positions_converts_to_lists",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_rejects_malformed_coordinates[position4-bounds]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_mask_shape_consistency",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestRecurrentNetworkActionSelection::test_recurrent_epsilon_greedy_selection",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestMultiAgentMeters::test_agents_have_independent_meters",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestEpisodeBuffering::test_store_episode_and_reset_adds_to_buffer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_state_digest_is_independent_of_native_serialization[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestBaseDepletion::test_base_depletion_rates",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[nan]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_corner_masks_two_directions",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_family_cadence_and_zero_gamma[feedforward-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_action_costs.py::TestWaitActionIsolation::test_wait_only_pays_base_depletion",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_1d_movement_should_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_bad_late_position_causes_zero_state_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_returns_correct_shapes",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_step_increments_step_counts",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestTimeBasedMasking::test_bar_wraparound_midnight",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_compiled_universe_serialization.py::test_cache_served_compile_spawns_the_same_items_as_fresh",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vfs_integration.py::TestVariableMeterVFSIntegration::test_4meter_universe_metadata_matches_env",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[nonfinite_priority]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvReset::test_reset_clears_dones_flag",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_intrinsic_exploration.py::TestAdaptiveAnnealing::test_annealing_requires_survival_above_50_steps",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestSnapshotAndMetrics::test_recurrent_network_uses_the_compiled_token_schema",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_affordances.py::TestMultiTickVsInstant::test_bed_multi_tick_matches_instant_total",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_custom_actions.py::test_meditate_action_is_enabled",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_observation_dim_unchanged[L0_0_minimal]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpoint_substrate.py::test_checkpoint_requires_exact_layout",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_multi_agent_independent_masking",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_loading_checkpoint_validates_meter_count",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_1d_interact_should_not_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_aspatial_interact_should_not_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_window_diagnostic[fixed_full]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_golden_path_smoke.py::test_env_step_deterministic_sequence",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population6_priority7_relocation_resave_and_bounded_greedy_use[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_movement_actions_unaffected_by_affordance",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-mean-token_set]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_checkpoint_validation.py::TestActionLabelLoading::test_default_action_labels_when_no_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_space.py::TestEnvironmentActionSpace::test_env_action_dim_matches_compiled_metadata[grid2d]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestRecurrentNetworkActionSelection::test_recurrent_respects_masks_at_boundary",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[linear-attention-token_set]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_checkpoint_validation.py::TestCheckpointValidation::test_checkpoint_position_dim_mismatch_rejected",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvInitialization::test_init_creates_substrate_from_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_action_costs.py::TestMovementCosts::test_movement_applies_base_move_depletion",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestCascadeEffects::test_step_applies_threshold_cascades_through_vtc_rules",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[wrong-version]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_interact_available_on_hospital_when_broke",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestTimeBasedMasking::test_bar_open_after_6pm",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_configured_priority_incompatibility_is_early[origin]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestActionPipeline::test_actions_to_environment_execution",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_dimensions[L0_5_dual_resource-8]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestBaseDepletion::test_clamping_at_zero",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_affordability_doesnt_affect_masking",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestObservationPipeline::test_environment_builds_observation_correct_dims",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_runner_training_status.py::test_graceful_stop_before_budget_records_interrupted",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-attention-recurrent]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_preserves_separate_inspection_transport_without_priority_downgrade[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_environment_ticks_effects_each_step",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_items_per_world.py::test_every_world_spawns_its_own_level_start_items",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_environment_initializes_effect_manager",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[mismatched-action-dim]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestExecuteActions::test_execute_actions_returns_interaction_dict",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[rng_codec]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_custom_actions.py::test_rest_action_is_enabled",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-mean-recurrent]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalPurity::test_max_steps_survival_sends_done_signal",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_recurrent_training.py::TestRecurrentTraining::test_recurrent_training_path_via_step_population",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_refuses_malformed_curriculum_before_network_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestEpsilonGreedyActionSelection::test_epsilon_zero_is_greedy",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_at_least_one_action_always_available_for_alive",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_embedded_archive_is_standalone_and_detects_corruption[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_intrinsic_rewards_integration",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestGreedyActionSelection::test_greedy_selects_highest_q_value",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvReset::test_reset_returns_observations",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_effect_rows_appear_in_the_observation_when_an_effect_spawns",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestCustomActionExecution::test_action_id_lookup_returns_int_or_none",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_distance_metric",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_right_masked_at_right_edge",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_runner_environment_budget.py::test_runner_stops_before_partial_vector_step",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestCalculateShapedRewards::test_calculate_shaped_rewards_uses_meter_values",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay[sequence-trained]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_mask_bug.py::test_1d_wait_should_not_pay_movement_cost",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestBaseDepletion::test_depletion_uses_the_mask_step_captured_at_entry",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestTerminalConditions::test_energy_zero_death",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp11_item_visibility.py::test_r3_item_state_row_follows_item_token_under_partial_vision",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetAffordancePositions::test_get_affordance_positions_returns_dict",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_approved_import_preserves_archive_and_seeds_empty_replay[uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_dynamic_sizing.py::TestVectorizedEnvDynamicSizing::test_4meter_meters_tensor_size",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_held_item_expiry_and_dead_world.py::test_an_item_that_expires_while_held_leaves_its_slot_and_using_the_slot_is_harmless",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetActionMasks::test_get_action_masks_respect_training_enabled_actions",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_observation_dim_unchanged[L2_partial_observability]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_rejects_malformed_coordinates[position1-numeric]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_double_dqn_training.py::TestDoubleDoubleTraining::test_training_with_vanilla_dqn",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvReset::test_reset_initializes_step_counts",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvGoldenTick::test_get_action_masks_flows_through_builder",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestTerminalConditions::test_health_zero_death",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskBuilderDelegation::test_builder_is_pure_under_repeated_calls",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestEnvironmentCheckpointing::test_environment_checkpoint_preserves_affordance_layout",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_deltas.py::TestMovementDeltasFromActionConfig::test_non_movement_actions_have_zero_deltas",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_dynamic_sizing.py::TestVectorizedEnvDynamicSizing::test_4meter_observation_dim_full_obs",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_effect_modifies_bar_values",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_historical_dispatch.py::test_embedded_archive_is_standalone_and_detects_corruption[uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_movement_deltas.py::TestMovementDeltasFromActionConfig::test_all_movement_deltas_match_action_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestRecurrentNetworkActionSelection::test_recurrent_greedy_selection",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_held_item_expiry_and_dead_world.py::test_the_manager_owns_the_inventory_the_env_and_handler_use",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_dimensions[L2_partial_observability-8]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_item_arena_capacity.py::test_items_on_the_ground_with_no_inventory_compile_and_spawn",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_applies_movement_via_substrate",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_items_per_world.py::test_an_item_effect_in_world_0_never_touches_world_1",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestGreedyActionSelection::test_masked_actions_get_negative_infinity",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_merge_policy_stacks_intensity",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetActionMasks::test_get_action_masks_correct_shape",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_intrinsic_exploration.py::TestRNDIntrinsicRewards::test_combined_reward_stored_in_replay_buffer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestPostTerminalMasking::test_near_death_not_masked",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestWaitAction::test_wait_action_no_movement",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[domain_cardinality]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalPurity::test_survival_signal_not_contaminated_by_intrinsic_rewards",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_dac_engine_reward_calculation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[linear-mean-token_set]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[mismatched-observation-schema-hash]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskBuilderDelegation::test_env_owns_action_mask_builder",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestInteractMasking::test_interact_available_on_job",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumUpdateFrequency::test_curriculum_tracker_state_updated_after_single_call",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[row_geometry]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_affordance_history_tracking_last_action",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestCascadeEffects::test_low_mood_affects_energy",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestGetAffordancePositions::test_get_affordance_positions_preserves_continuous_coordinates",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalInterpretability::test_curriculum_stage_advancement_uses_survival_rate_not_rewards",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvGoldenTick::test_env_owns_extracted_runtime_components",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestMeterClamping::test_no_overflow_above_one",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestRunnerCheckpointing::test_runner_checkpoint_round_trip_preserves_training_state",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_dynamic_sizing.py::TestVectorizedEnvDynamicSizing::test_12meter_meters_tensor_size",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_checkpoint_validation.py::TestActionLabelLoading::test_custom_action_labels_from_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meters.py::TestBaseDepletion::test_step_uses_vtc_passive_depletion_not_meter_dynamics",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestRandomizeAffordancePositions::test_randomize_affordance_positions_maintains_affordance_count",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_reset_agent_effect_carryover.py::test_agent_effect_does_not_survive_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_transfer.py::test_l0_and_l1_share_global_vocabulary",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_rejects_malformed_coordinates[position0-coordinate sequence]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_items_per_world.py::test_a_shared_carried_item_reports_its_holders_position",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_checkpoint_validation.py::TestCheckpointValidation::test_checkpoint_loads_with_correct_position_dim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestBoundaryMasking::test_left_masked_at_left_edge",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalInterpretability::test_signal_purity_across_multiple_episodes_with_active_rnd",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestExecuteActions::test_execute_actions_wait_preserves_position",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumSignalInterpretability::test_signal_is_monotonic_with_survival_time",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[priority_version]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestBuildMovementDeltas::test_build_movement_deltas_correct_values_grid2d",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_loads_substrate_config",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestActionSelectionEdgeCases::test_single_agent_at_corner",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_refuses_outer_schema_change_before_mutation[missing]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_custom_actions.py::test_rest_action_without_vtc_write_only_runs_passive_step_dynamics",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_curriculum_signal_purity.py::TestCurriculumUpdateTiming::test_single_update_per_episode_on_death",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_population_checkpoint_refuses_foreign_or_incomplete_observation_identity[missing-observation-schema-hash]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_items_per_world.py::test_a_fixed_cell_inside_the_grid_compiles_and_spawns_there_in_every_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[epsilon_floor]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_both_real_exporters_use_same_run_and_actual_fourteen_transition_metadata",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_substrate_dimensions[L3_temporal_mechanics-8]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_episode_execution.py::TestEpisodeLifecycle::test_multi_agent_episode_with_partial_dones",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVFSWriteBackLoudness::test_commit_vtc_transition_state_raises_on_unknown_id",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_token_partial_observability.py::test_gridnd_4d_partial_observability_is_supported",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_held_item_expiry_and_dead_world.py::test_a_done_worlds_items_neither_age_nor_expire",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestActionMaskingIntegration::test_dead_agent_at_boundary",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_live_inference_checkpoint_identity.py::test_serving_path_uses_canonical_top_level_epsilon",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_data_flows.py::TestRewardPipeline::test_combined_reward_stored_in_replay_buffer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_loading_checkpoint_with_matching_meters_succeeds",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_owned_sampling_identity[successive_without_replacement]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_renew_policy_resets_duration_in_environment",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_set_affordance_positions_updates_affordances",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_family_cadence_and_zero_gamma[token_set-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_requires_exact_layout_keys",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_episode_execution.py::TestEpisodeLifecycle::test_single_episode_feedforward_network",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_space.py::TestEnvironmentActionSpace::test_env_action_dim_matches_compiled_metadata[continuous1d]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py::test_copied_real_artifact_corruption_is_refused_or_detected_against_ledger[consistent_phantom]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_readiness.py::test_real_runner_family_cadence_and_zero_gamma[recurrent-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvReset::test_reset_temporal_mechanics_initializes_time",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_action_costs.py::TestInteractionCosts::test_interact_applies_base_interaction_cost",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_per_native.py::test_raw_population_malformed_priority7_refuses_before_learned_mutation[wrong_kind]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestSetAffordancePositions::test_validate_affordance_positions_rejects_malformed_coordinates[position3-integer-compatible]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py::test_serving_a_checkpoint_restores_its_persistent_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_env_initializes_positions_via_substrate",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_episode_execution.py::TestEpisodeLifecycle::test_episode_observation_action_reward_cycle",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_runner_environment_budget.py::test_budget_counter_round_trips_and_prevents_resume_overshoot",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestPostTerminalMasking::test_multiple_dead_agents_all_masked",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_masking.py::TestPostTerminalMasking::test_dead_agent_masked_with_temporal_mechanics",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_smoke.py::test_on_spawn_commands_execute_immediately",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_token_binding.py::test_semantic_permutation_absence_and_memory[interaction_mlp-attention-token_set]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_env_substrate.py::test_vectorized_env_loads_composed_action_space",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_action_selection.py::TestGreedyActionSelection::test_greedy_selection_respects_masks",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_action_space.py::TestEnvironmentActionSpace::test_env_action_dim_matches_compiled_metadata[aspatial]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 138,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[POLISH-exclusive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[budget-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_authored_endings_freeze_counts_and_publish_owned_events[end_ticks1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-recurrent-2]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_population_negative_controls_fail_independent_conformance[post_step_eligibility]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_effects_cascade.py::TestItemsEffectsCascade::test_full_chain_item_to_cascade",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[budget-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[WAIT-exclusive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_effects_cascade.py::TestItemsEffectsCascade::test_item_pickup_spawns_effect",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_authored_terminal_drop_preserves_inventory",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_replay_matrix[sequential]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_scripted_actions_are_stepped_verbatim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_successor_producer.py::test_empty_mask_at_retirement_is_valid",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::test_runner_refuses_population_version_five_before_all_consumer_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_affordance_interaction_gating_runtime.py::test_declared_non_money_costs_gate_the_live_interaction[0.0-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_batch_256_recurrent_bptt",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_scripted_actions_out_of_range_refuses",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::test_current_checkpoint_closes_pending_lanes_once_and_resumes_fresh_episode[recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_determinism.py::test_spawn_placement_ignores_global_random_state",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_batch_256_architecture_matrix[token_attention]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_integration.py::test_item_vfs_profile_driven_end_to_end",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[DROP_SLOT_0-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks3-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-standard-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[shutdown-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-per-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_authored_endings_freeze_counts_and_publish_owned_events[end_ticks2]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_authored_endings_freeze_counts_and_publish_owned_events[end_ticks0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_terminal_causing_item_action_executes_once[USE_SLOT_0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_scripted_actions_wrong_shape_refuses",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_substrate_matrix[aspatial]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_integration.py::test_item_vfs_in_observations",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_substrate_matrix[grid3d]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[GET-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_death_wins_lifespan_coincidence_and_sticky_dead_rows_receive_no_bonus",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-recurrent-2]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_truncation_done_corruption_fails_actual_loss_target",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_effects_cascade.py::TestItemsEffectsCascade::test_effect_modifies_bars_triggers_cascade",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_authored_endings_freeze_counts_and_publish_owned_events[end_ticks3]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-recurrent-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_use_slot_action_executes_effects",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_driver_is_deterministic_for_same_seed",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-recurrent-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_population_negative_controls_fail_independent_conformance[repeated_completion]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_authored_episode_lanes.py::test_authored_population_survival_reports_the_seven_actual_transitions",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_periodic_item_respawning",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks2-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_movement_and_velocity_freeze_after_eligible_final_action[wait-authored]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_determinism.py::test_different_seed_produces_different_trace",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-per-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[USE_SLOT_0-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-standard-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-per-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_item_actions_are_auto_registered",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_successor_producer.py::test_truly_live_empty_successor_has_located_diagnostic",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks3-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dead_agent_interaction_gating.py::test_a_dead_agent_does_not_complete_an_instant_interaction",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_runtime.py::test_l1_compact_vertical_trace",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_terminal_causing_item_action_executes_once[GET]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[shutdown-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[DROP_SLOT_0-exclusive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_healthy_retirement_preserves_live_reward_and_components_once",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_affordance_interaction_gating_runtime.py::test_engine_refuses_agents_that_cannot_pay",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_no_full_token_observation_abi.py::test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-recurrent-2]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_observations.py::test_exposed_item_variable_publishes_through_the_item_arena",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks0-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-recurrent-2]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_substrate_matrix[grid2d]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[TOUCH-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks2-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_determinism.py::test_same_seed_produces_identical_trace",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-False-recurrent-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_batch_256_architecture_matrix[token_mean]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_successor_producer.py::test_mask_belongs_to_returned_successor",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_movement_and_velocity_freeze_after_eligible_final_action[move-retirement]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_self_modification.py::test_item_use_modifies_item_durability",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_integration.py::test_item_profile_switch_updates_vfs_layout",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[cap-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[cap-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[TOUCH-exclusive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[WAIT-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_terminal_causing_item_action_executes_once[TOUCH]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks2-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks1-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_intrinsic_normalization_ingests_only_identifiable_eligible_successors",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[cap-standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_drop_slot_action_spawns_item_in_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_integration.py::test_item_spawn_with_initial_state",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_one_episode_ingests_seven_owned_predecessors_and_normalizes_seven_successors[standard]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[GET-exclusive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py::test_persistent_state_survives_resume_exactly_and_episode_state_is_not_restored",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_environment.py::test_reward_forwarder_requires_explicit_entry_eligibility",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-per-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[budget-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_observations.py::test_item_durability_roundtrips_through_vfs_registry",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_env_with_items_initializes",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_scripted_actions_non_integer_dtype_refuses",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_replay_matches_independent_eligible_ledger_and_completes_once[end_ticks3-recurrent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dead_agent_interaction_gating.py::test_a_dead_agent_is_not_charged_the_interaction_cost",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-True-standard-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_scripted_actions_wrong_key_refuses",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[cap-True-recurrent-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_get_action_picks_up_item",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[USE_SLOT_0-exclusive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_learners_keep_terminal_and_truncation_targets[terminal-False-standard-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_two_five_replay_contains_seven_transitions_and_two_terminal_rows[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_inactive_item_intent_freezes_world_and_live_actions_work[POLISH-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_movement_and_velocity_freeze_after_eligible_final_action[move-authored]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_replay_matrix[standard]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dead_agent_interaction_gating.py::test_a_dead_agent_makes_no_multi_tick_progress_and_pays_nothing",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_population.py::test_pending_reset_refuses_before_mutation_and_explicit_cut_closes_once[shutdown-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_replay_matrix[prioritized]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_automatic_item_spawning_at_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_driver.py::test_driver_writes_a_loadable_trace",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_observations.py::test_spawn_and_pickup_helper_is_robust_to_colocated_items",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_successor_producer.py::test_external_cap_keeps_real_selectable_nonterminal_successor",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_terminal_causing_item_action_executes_once[DROP_SLOT_0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_terminal_causing_item_action_executes_once[POLISH]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py::test_movement_and_velocity_freeze_after_eligible_final_action[wait-retirement]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_affordance_interaction_gating_runtime.py::test_declared_non_money_costs_gate_the_live_interaction[0.9-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dead_agent_interaction_gating.py::test_a_live_agent_keeps_its_affordance_tracking_when_only_dead_agents_interact",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_batch_256_architecture_matrix[rnd]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_batch_256_architecture_matrix[dueling]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_wp16_persistent_resume.py::test_a_mismatched_pack_is_refused_before_any_state_is_applied",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_authored_episode_lanes.py::test_authored_pack_compiles",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/test_episode_lane_learning.py::test_real_population_negative_controls_fail_independent_conformance[ghost_admission]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compact_token_acceptance.py::test_batch_256_architecture_matrix[feedforward]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_successor_producer.py::test_terminal_and_inactive_rows_are_valid_empty_successors",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 120,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_n1_positive_control_fixed_positions_inside_the_grid_compile_and_step",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_selected_non_primary_level_carries_its_own_meter_runtime_declarations",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_a4_positive_control_opening_hours_on_a_24_tick_day_compile_and_step",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_tick_lifetime_expression_tracks_the_clock",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_persistent_expression_does_not_leak_previous_episode",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d1_keyword_prefixed_ids_declare_and_read_their_own_value",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_items_integration.py::test_items_smoke_pack_compiles_required_declarations",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_per_agent_command_semantics.py::test_if_on_a_per_agent_condition_penalises_only_the_low_agent",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_green_call_r2_large_float32_bounds_still_step",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effect_time_and_position.py::test_in_range_evaluates_in_an_effect",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d3_meter_rule_overshoot_does_not_drive_the_cascades[ingest_actions]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-scalar-argmax(bar.energy, bar.health)-1.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_a_bare_bar_write_from_an_item_effect_is_its_items_world_only",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_declared_mutation_and_named_reward_consume_the_same_state[True-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_bare_vfs_write.py::test_two_interactors_each_get_their_own_row",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-scalar-where(bar.energy > 0.5, 1.0, 0.0)-1.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_same_seed_is_the_same_run",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_compiled_effects_usage.py::test_env_uses_compiled_effect_catalog",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_temporal_pipeline.py::test_time_of_day_equals_tick_mod_day_length_on_temporal_pack",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_agent_static_is_never_clobbered",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_compiled_catalog.py::test_effects_can_reference_item_vfs",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_affordance_gate_program_uses_selected_level_order",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[global-bool-any(true, false)-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py::test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_declared_mutation_and_named_reward_consume_the_same_state[False-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_l5_multi_agent_config.py::test_l5_config_compiles_and_steps_as_independent_worlds",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effect_time_and_position.py::test_distance_to_affordance_evaluates_per_agent_in_an_effect",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_effects_schema_completeness.py::test_meters_locals_and_tick_are_served",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d1_notable_beside_able_reads_notable_not_not_able",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_spawn_at_self_from_a_carried_item_is_at_its_holder",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_each_world_gets_its_own_instance_and_its_own_random_stream",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_switch_authored_bodies.py::test_switch_bodies_run_in_an_effect",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_compiled_catalog.py::test_effects_cascade_with_item_vfs",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_bare_vfs_write.py::test_bare_write_lands_on_the_interacting_agent_only",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_served_reads_work_end_to_end[engine-clock]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meter_clamp_per_world.py::test_world0s_action_does_not_clamp_world1[INTERACT]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-bool-all(bar.energy > 0.5, true)-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_static_survives_engine_write_and_feeds_dependents_its_runtime_value",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_tick_runtime.py::test_tick_matches_value_seen_within_step",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_compile_schema_and_runtime_context_cannot_drift",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_ground_capacity_is_max_items_in_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_effects_schema_completeness.py::test_item_state_is_item_dot_name_of_the_bound_profile",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_n1_continuous_fixed_position_is_checked_against_bounds",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_spawn_predicate_reads_expression_value_evaluated_at_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-scalar-mean(bar.energy, 3.0)-1.995]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_rejected_initial_spawn_retries_on_its_declared_period",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_declared_mutation_and_named_reward_consume_the_same_state[True-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d3_meter_rule_overshoot_does_not_drive_the_cascades[apply_passive_depletion]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[modifier-False-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[modifier-False-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_served_reads_work_end_to_end[meter]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_world0s_effects_of_every_scope_leave_every_other_world_identical",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_timing_bonus_hour.py::test_timing_bonus_steps_and_rewards_the_acted_hour",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_trial_k_cold_winter_is_per_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_n3_positive_control_a_custom_action_with_writes_keeps_them",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_served_reads_work_end_to_end[agent-scope-variable]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_compiled_catalog.py::test_effects_use_compiled_catalog_end_to_end",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[variable_bonus-False-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[global-scalar-sum(2.0, 4.0)-6.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[variable_bonus-True-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_observations.py::test_qualified_item_policy_and_observation_cold_cache_two_resets[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_bare_vfs_write.py::test_global_bare_write_lands_in_each_interactors_own_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_a_variable_named_velocity_x_is_never_written_by_the_engine",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_effects_compiled_catalog.py::test_no_runtime_yaml_loading",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_temporal_pipeline.py::test_time_of_day_is_zero_without_temporal_mechanics",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py::test_vectorized_env_builds_the_command_namespace_from_the_compiled_roster",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-bool-threshold(0.5, bar.energy, 0.9)-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py::test_vectorized_env_uses_compiled_runtime_action_space_without_substrate_rebuild",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_tick_runtime.py::test_tick_counts_steps_and_resets",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_rereview_compiler_refusals.py::test_n4_positive_control_finite_bounds_produce_finite_observations",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-scalar-argmax(bar.energy, 3.0)-1.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_episode_expression_publishes_its_evaluated_value_at_reset",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_opening_hours_gate_the_hour_the_observation_shows",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d2_static_epistemic_access_runs_at_61_worlds",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-bool-all(bar.energy > 0.5, bar.health > 0.5)-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_bare_vfs_write.py::test_the_second_interactor_alone_writes_only_its_row",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_item_vfs_observations.py::test_qualified_item_policy_and_observation_cold_cache_two_resets[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_a_spawner_bound_to_no_world_spawns_one_global_instance_per_live_world",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[shaping-False-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[variable_bonus-True-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[modifier-True-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d3_meter_rule_overshoot_does_not_drive_the_cascades[apply_threshold_cascades]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_switch_authored_bodies.py::test_switch_bodies_run_in_an_interaction",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_engine_tick_runtime.py::test_tick_is_engine_writable_only",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effect_time_and_position.py::test_tick_compiles_in_an_effect_and_reads_the_engine_tick",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[modifier-True-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[shaping-True-agent]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_compile_time_wiring.py::test_command_namespace_includes_bars_and_globals",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_verify_r12_repairs.py::test_d2_off_grid_declared_position_is_never_used_under_randomize",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[global-scalar-argmin(2.0, 4.0)-0.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_an_item_effect_outliving_its_item_is_discarded_with_it",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[shaping-False-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_population_checkpoint_uses_selected_level_identity_before_loading_state",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-scalar-mean(bar.energy, bar.health)-0.9925]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_a_dead_agents_world_is_frozen_and_its_persistent_global_carries_no_posthumous_advance",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_agent_expression_evaluates_per_agent",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_expression_functions_produce_declared_state_shape[agent-scalar-count_where(bar.energy > 0.5, bar.health > 0.5)-2.0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_environment_metadata_matches_selected_non_primary_level",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_world0s_item_activity_and_random_draws_leave_every_other_world_identical",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/effects/test_effects_per_world.py::test_an_agent_scoped_spawn_into_another_world_is_refused",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_shipped_l3_clock_agrees_at_reset_and_every_step",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_level_action_metadata_respected",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[variable_bonus-False-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py::test_vectorized_env_avoids_runtime_yaml_reads[configs/default_curriculum/levels/L0_0_minimal]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_wp9_clock_truth.py::test_shipped_l3_second_episode_starts_at_hour_zero",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_lifetime_and_derived_state_do_not_depend_on_transport[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_runtime.py::test_vectorized_env_passes_its_command_symbols_to_item_manager",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_consumer_shapes.py::test_boolean_state_has_numeric_reward_consumer_semantics[shaping-True-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_scoping_enforcement.py::test_item_free_pack_supports_absent_optional_item_catalog",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_meter_clamp_per_world.py::test_world0s_action_does_not_clamp_world1[UP]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_global_expression_advances_under_mark_and_sweep_default",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_served_reads_work_end_to_end[r13-vfs-global-false]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_served_reads_work_end_to_end[r13-vfs-global-true]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_static_survives_engine_write_unclobbered",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_lifetime_and_derived_state_do_not_depend_on_transport[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_dac_bar_indices_come_from_selected_non_primary_level",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_canonical_variable_runtime.py::test_declared_mutation_and_named_reward_consume_the_same_state[False-global]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_profile_evaluation_liveness.py::test_agent_static_dependency_of_marked_expression_is_not_clobbered_by_write_back",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/items/test_wp12_spawn_predicate_reads.py::test_agent_scope_read_decides_per_world",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E       TypeError: AdversarialCurriculum.__init__() got an unexpected keyword argument 'max_steps_per_episode'",
+      "count": 79,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestDoubleDQNConfiguration::test_population_accepts_use_double_dqn_parameter",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_invalid_counter_before_any_population_mutation[total_steps]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_producer_emits_exact_current_key_sets",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_network_dtype_mismatch_before_any_population_mutation",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_invalid_counter_before_any_population_mutation[training_step_counter]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_restores_counters_and_exploration_exactly",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_optimizer_and_scheduler_invalid_configuration_refuses_whole_state_before_mutation[scheduler-gamma]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_optimizer_and_scheduler_invalid_configuration_refuses_whole_state_before_mutation[optimizer-negative-lr]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::test_brain_config_none_raises_valueerror",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py::TestDoubleDQNRecurrent::test_recurrent_double_dqn_uses_online_network_for_action_selection",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_universe_metadata_key[observation_schema_hash]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_universe_metadata_key[version]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_unknown_top_level_key",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_null_mandatory_state[exploration_state]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestSchedulerIntegration::test_scheduler_state_persists_across_checkpoint_save_load",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[total_steps]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_validator_is_public_non_mutating_and_refuses_network_shape_mismatch",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_population_version_requires_an_exact_integer_before_mutation[True]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[version]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestRewardComponentWiring::test_tensorboard_logging_called_when_components_present",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestBrainConfigIntegration::test_population_builds_network_from_brain_config",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_validator_refuses_boolean_optimizer_parameter_id",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestRewardComponentWiring::test_components_extracted_from_info_dict",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_checkpoint_rejects_missing_universe_metadata",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestCurriculumCheckpointing::test_curriculum_checkpoint_preserves_performance_history",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_null_mandatory_state[replay_buffer]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_immediately_previous_population_version_refuses_without_mutation",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py::TestDoubleDQNFeedforward::test_vanilla_dqn_uses_max_q_from_target_network",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_null_mandatory_state[target_network]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::test_token_spec_none_raises_valueerror",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::test_token_spec_missing_attribute_raises_valueerror",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[q_network]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_null_scheduler_when_current_scheduler_exists",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[training_step_counter]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py::TestDoubleDQNFeedforward::test_double_dqn_uses_online_network_for_action_selection",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestBrainConfigIntegration::test_brain_config_sets_q_learning_parameters",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_optimizer_and_scheduler_invalid_configuration_refuses_whole_state_before_mutation[optimizer-invalid-betas]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationExplorationTelemetry::test_exact_values_for_all_supported_strategies",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_validates_every_universe_metadata_value[meter-names]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestPopulationCheckpointing::test_population_checkpoint_contains_required_keys",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_nested_replay_and_runtime_width_refuse_before_any_population_mutation[current-env-width]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[target_network]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_population_materializes_replay_restore_exactly_once",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_scheduler_state_when_current_scheduler_is_absent",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_nested_replay_and_runtime_width_refuse_before_any_population_mutation[replay-width]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_universe_metadata_key[action_dim]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[exploration_state]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[scheduler]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_universe_metadata_key[obs_dim]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_per_wrong_kind_refuses_before_any_population_mutation",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestBrainConfigIntegration::test_population_builds_optimizer_from_brain_config",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_token_set_population_builds_from_selected_non_primary_level",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py::TestDoubleDQNRecurrent::test_recurrent_vanilla_vs_double_dqn_differ",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_double_dqn_algorithm.py::TestDoubleDQNFeedforward::test_double_dqn_differs_from_vanilla_dqn",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestRewardComponentWiring::test_reward_tensor_created_with_components",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_universe_metadata_key[meter_count]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_invalid_optimizer_before_network_mutation",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_nested_replay_and_runtime_width_refuse_before_any_population_mutation[replay-version]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_unknown_universe_metadata_key",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestRewardComponentWiring::test_episode_container_has_component_keys",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestSchedulerIntegration::test_population_unpacks_scheduler_from_optimizer_factory",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_optimizer_and_scheduler_invalid_configuration_refuses_whole_state_before_mutation[scheduler-step-size]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationExplorationTelemetry::test_unsupported_strategy_refuses_instead_of_falling_back",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_validates_every_universe_metadata_value[bar-version]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_exploration_configuration_mismatch_before_mutation",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestDoubleDQNConfiguration::test_population_defaults_to_vanilla_dqn_when_false",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestBrainConfigIntegration::test_configured_loss_function_is_used",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_universe_metadata_key[meter_names]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_nested_replay_and_runtime_width_refuse_before_any_population_mutation[replay-kind]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestBrainConfigIntegration::test_population_accepts_brain_config_parameter",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::test_device_mismatch_in_step_all_raises_runtime_error",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_population_version_requires_an_exact_integer_before_mutation[6.0]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[replay_buffer]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[universe_metadata]",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestSchedulerIntegration::test_population_has_no_scheduler_for_constant_schedule",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestCurriculumCheckpointing::test_curriculum_checkpoint_preserves_agent_stages",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestDoubleDQNConfiguration::test_population_stores_use_double_dqn_attribute",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestSchedulerIntegration::test_exponential_scheduler_support",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/population/test_vectorized_population.py::TestPopulationCheckpointSchema::test_loader_refuses_every_missing_top_level_key[optimizer]",
+          "phase": "setup"
+        }
+      ]
+    },
+    {
+      "error": "E           TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 8,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_observes_real_recorded_admission_on_bound_replay",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_content_hash_checkpoint_guard.py::test_bars_edit_is_caught",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[two-episodes-reset]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[authored-two-five]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py::test_producer_projects_eligible_selector_and_captures_actual_full_population_transport[budget-six]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_content_hash_checkpoint_guard.py::test_curriculum_edit_is_caught",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_content_hash_checkpoint_guard.py::test_affordances_edit_is_caught",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_content_hash_checkpoint_guard.py::test_training_edit_is_caught",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E       TypeError: VectorizedHamletEnv.reset() missing 1 required keyword-only argument: 'reservation'",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/test_utilities_validation.py::test_assert_valid_action_mask_success",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/substrate/test_distances.py::test_interaction_uses_substrate_distance",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/test_utilities_validation.py::test_assert_valid_observation_success",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/test_utilities_validation.py::test_assert_meters_in_range_success",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E           TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_canonical_variable_compilation.py::test_exposed_deterministic_tensor_lowers_to_one_literal_default[ones-shape1-expected_default1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_canonical_variable_compilation.py::test_exposed_deterministic_tensor_lowers_to_one_literal_default[zeros-shape0-expected_default0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_canonical_variable_compilation.py::test_exposed_deterministic_tensor_lowers_to_one_literal_default[eye-shape2-expected_default2]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E         + OLD_SIDE_ERROR",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/oracle/test_harness.py::test_scripted_self_comparison_agrees_and_replays_actions",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_differential_harness.py::test_self_comparison_agrees",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E       TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestExplorationCheckpointing::test_adaptive_intrinsic_exploration_checkpoint_completeness",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestExplorationCheckpointing::test_exploration_checkpoint_preserves_epsilon_decay",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E           TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env.py::TestVectorizedHamletEnvStep::test_vtc_action_effects_apply_all_curriculum_levels",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/integration/test_dac_integration.py::test_dac_engine_compiles_all_levels",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestCrossUniverseLoadResets::test_resets_optimizer_target_and_rnd",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/training/test_token_checkpoint_gates.py::TestReviewRound1Pins::test_adaptive_wrapper_annealing_state_resets",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E           ValueError: world episode must be accepted and activated before stepping",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/test_utilities_validation.py::test_assert_valid_dones_success",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/unit/test_utilities_validation.py::test_assert_valid_rewards_success",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E         ?              ^",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_exploration_policy.py::test_compiler_transport_preserves_authored_resolution",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E           TypeError: StaticCurriculum.__init__() missing 5 required keyword-only arguments: 'commit_mode', 'difficulty_level', 'reward_mode', 'active_meters', and 'depletion_multiplier'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/demo/test_runner_seeding.py::test_runner_refuses_malformed_curriculum_before_population_mutation",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "E         ?    ^",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/universe/test_compiled_artifact_required_fields.py::test_scope_surface_cut_bumps_exact_artifact_schema",
+          "phase": "call"
+        }
+      ]
+    }
+  ],
+  "disposition": "No broad rerun until causalcurrentconstructor/lifecycle/provider/curriculum/actualparent prereqs fixed. Currentcoherentfirstfullrun continues for completefailureinventory; codewriterNONE. Explicit sourcebacked fixturetriage and existing original integration packages, no backwardcompat restore/skips."
+}

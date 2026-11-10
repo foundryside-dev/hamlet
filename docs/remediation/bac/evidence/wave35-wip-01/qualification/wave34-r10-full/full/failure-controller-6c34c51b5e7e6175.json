@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_item_vfs_observations.py::test_spawn_and_pickup_helper_is_robust_to_colocated_items",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_spawn_and_pickup_helper_is_robust_to_colocated_items():\n        \"\"\"Regression: spawn_and_pickup_item must pick up its own spawn, not a co-located pre-existing item.\n    \n        The items_smoke level spawns 3 apples + 1 medkit at random positions via\n        ``spawn_initial_items``. When one of those happens to land on agent 0's\n        starting cell, the GET action picks the older item (insertion order),\n        so the test's freshly-spawned apple with a custom ``initial_state`` is\n        silently shadowed. This caused `test_item_vfs_masking_with_different_profiles`\n        to flake (~10-20% of full-suite runs).\n        \"\"\"\n        config_dir = Path(\"configs/test/items_smoke\")\n    \n        compiler = UniverseCompiler()\n        compiled = compiler.compile(config_dir, primary_level=\"L0_smoke\", use_cache=False)\n    \n>       env = VectorizedHamletEnv(\n            universe=compiled,\n            level_name=\"L0_smoke\",\n            num_agents=1,\n            device=torch.device(\"cpu\"),\n        )\nE       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/integration/test_item_vfs_observations.py:90: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py::test_level_action_metadata_respected",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw1/test_level_action_metadata_res0')\nconfig_pack_factory = <function config_pack_factory.<locals>._build at 0x7f7ef2f6a660>\ncompile_universe = <function compile_universe.<locals>._compile at 0x7f7ef2700ea0>\ncpu_device = device(type='cpu')\n\n    def test_level_action_metadata_respected(tmp_path, config_pack_factory, compile_universe, cpu_device):\n        \"\"\"MEDITATE should be disabled in L0_test but enabled in L1_alt via level metadata.\"\"\"\n    \n        compiled = _compile_two_level_pack(tmp_path, config_pack_factory, compile_universe)\n    \n>       env_l0 = compiled.create_environment(num_agents=1, level_name=\"L0_test\", device=cpu_device)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'\n\ntests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py:104: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

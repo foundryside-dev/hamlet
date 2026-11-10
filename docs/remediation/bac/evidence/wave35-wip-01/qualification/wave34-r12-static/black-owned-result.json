@@ -1,0 +1,22 @@
+{
+  "name": "black-owned",
+  "exit_code": 0,
+  "seconds": 1.1976318359375,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src/townlet/vfs/vtc.py",
+    "src/townlet/environment/dac_engine.py",
+    "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r12-static/black-owned.log",
+  "sha256": "45a468fa6205768496f23f1716ebb7575e9b723449d2099b88bf2afef60b721f",
+  "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+  "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "manifest_sha256": "cbb4c0b4aa1bf4aedbe56841e49aa296ed17f7fa26f11750b757378fe347117b",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

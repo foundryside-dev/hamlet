@@ -1,0 +1,92 @@
+"""Make the current composer WIP and failed full-gate evidence durable, without release."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave34/r12-candidate.json').read_text())
+receipt = json.loads((W / 'wave35/r0-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree'] and 'UNRELEASED' in receipt['status']
+for group in ('source_files', 'configs', 'artifacts'):
+    for p, h in m[group].items():
+        assert sha(R / p) == h, p
+assert receipt['root']['counts']['passed'] == receipt['independent']['counts']['passed'] == 29
+assert receipt['compiler_cli']['process_identities'] == 35
+assert receipt['full_suite_status']['actual_failed_result']['counts']['failed'] == 1010
+assert sha(W / 'wave35-preparation/T18e-COMPOSER-PRIMITIVE-INDEPENDENT-REVIEW.md') == receipt['source_spec_quality_review_sha256']
+api = W / receipt['public_contract']['source']
+assert sha(api) == receipt['public_contract']['sha256']
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p) for p in ('src', 'tests', 'configs', 'scripts')}
+out = D / 'evidence/wave35-wip-01'
+assert not out.exists()
+out.mkdir()
+artifacts = {}
+def copy(source, dest):
+    assert source.is_file() and not dest.exists(), str(dest)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(source.read_bytes())
+    assert sha(source) == sha(dest)
+    artifacts[dest.relative_to(R).as_posix()] = {'sha256': sha(dest), 'original': str(source)}
+
+for p in sorted(Q.glob('wave34-r1[012]*')):
+    if p.is_dir():
+        for f in sorted(p.rglob('*')):
+            if f.is_file() and f.suffix in ('.json', '.log'):
+                copy(f, out / 'qualification' / p.name / f.relative_to(p))
+    elif p.suffix == '.json':
+        copy(p, out / 'qualification' / p.name)
+for p in sorted((W / 'wave34').glob('r1[012]*')):
+    if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+        copy(p, out / 'wave34' / p.name)
+for folder in ('wave35', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch') and p.name != 'T18e-REPLAY-BATCH-API.md':
+            copy(p, out / folder / p.relative_to(W / folder))
+copy(W / 'wave34-preparation/ENV-FIXTURE-FULL-GATE-TRIAGE.md', out / 'ENV-FIXTURE-FULL-GATE-TRIAGE.md')
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'verify_bac_failed_run.py', 'run_bac_packet_checks_locked.py', 'bac_source_identity.py', 'exec_current_uv_pytest.py', 'exec_identity_compiler_cli.py', 'publish_wave35_wip01.py'):
+    copy(Q / name, out / (name + '.txt'))
+copy(Q / 'compiler_identity_startup/sitecustomize.py', out / 'compiler-identity-sitecustomize.py.txt')
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+target = D / 'CURRENT-INTRINSIC-SCALE-COMPOSER-CONTRACT.md'
+assert not target.exists()
+target.write_bytes(api.read_bytes())
+artifacts[target.relative_to(R).as_posix()] = {'sha256': sha(target), 'original': str(api)}
+manifest = {'status': receipt['status'], 'packet': 'Original T18e real scale composer primitive only; actual parent integration remains required', 'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'], 'execution_subtrees': execution, 'inventories': m['inventories'], 'source_files': m['source_files'], 'config_changes': m['config_changes'], 'receipt': receipt, 'artifacts': artifacts, 'qualified_progress': '28/66 original released packages unchanged;38remaining. This is explicitly not repository green, wholeT18e or BAC closure.', 'publication': 'Existing authorized remote branch only; no new project branch/worktree/checkout/copy/PR/merge/deletion. Private history backup bundle excluded. Active not-yet-final replay DTO prose deferred to next checkpoint.', 'next': 'Genuine actual parent step/runtime/ledger and ENV/RWC canonical integration, native/HC/T26 and bounded current-caller repairs; focused assertions before any wider full gate.'}
+mp = D / 'evidence/wave35-wip-01.json'
+assert not mp.exists()
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+p = D / 'STATUS.md'
+p.write_text(p.read_text() + '''
+
+The first full repository gate at immutable30a802a9 completed with **1010 failed,7285 passed,21 skipped,40 warnings and231 errors** (1997.59pytest/2003.7499wall). Exact797source/573config/13artifact/five-process/index/14registry MAIN1 custody passed, including the separately authenticated actual poisoning child. The1241 unique failed node/phase reports span160 files and15 terminal signatures, predominantly old world-constructor calls missing explicit identity inputs, then current reservation/activation, curriculum/provider constructors and stale schema/options expectations. These are required causal caller/owner repairs. No failure is waived and no broad repeat will substitute for repairing prerequisites and reaching the intended assertions. The [full result and actual failure index](evidence/wave35-wip-01.json) are now durable.
+
+Original T18e's real composer arithmetic seam is implemented: VTC explicitly forwards the required population runtime-scale tensor; DAC validates it and multiplies provider raw, runtime scale, authored base and real modifier product once. Existing terminal behavior, raw-times-base diagnostics and modifier-only weights remain, with separately owned provider-raw/runtime-scale provenance and preserved gradients. Real config/registry/VTC/DAC tests establish the1.6 total/.5 intrinsic control, independent factors, zero scale, heterogeneous/terminal rows, malformed inputs and tensor ownership. [Source-verified API](CURRENT-INTRINSIC-SCALE-COMPOSER-CONTRACT.md) and [exact scoped evidence](evidence/wave35-wip-01.json) describe this math component, not actual ENV/replay integration.
+
+The29 intended RED cases became29 PASS in both root and independent Astra execution (overlapping cases, not58 distinct). Fresh three-source4682-line/spec/quality and API-truth reviews approve the owning primitive with zero material owning findings. Four cheap guards pass and compiler CLI passes34 packs with all35 process source/import/thread identities checked. Global mypy now reports10 errors: the existing nine oracle/POP callers plus the explicitly required RWC migration to the new scale input. **The direct consumer and actual parent/ENV/runtime/replay/ledger/native integration remain open; this checkpoint is unreleased.** No default or compatibility fallback masks that new missing consumer.
+
+Astra medium's finite phase/clock design and independent review preserve the current single-successor context and RWC phase, reuse the existing total_steps+1 parent clock and sole POP service owner, and require actual owned step claims/handoffs and complete current ledger continuation. Three bounded builtin-read capsules close the source-purity prerequisite; genuine integrated equality/phase/retirement/service/replay proofs still remain. Current APIs must be frozen before the bounded caller migrations. Original28qualified/38remaining/66total, all final54requirements/22lenses, learning/E2E, full/default/coverage≥70/slow/applicable hardware and exact-tip CI remain unchanged. CUDA remains unavailable and unqualified. No wholeBAC, repository-green or successful-current-CI claim is made. Continue the finite programme.
+''')
+paths = [*artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md']
+assert all('.bundle' not in p and 'git-backups' not in p for p in paths)
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for p, h in execution.items():
+    assert git('rev-parse', tree + ':' + p) == h, p
+for p, row in artifacts.items():
+    assert sha(R / p) == row['sha256'], p
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.', ':(glob,exclude)docs/remediation/bac/evidence/wave35-wip-01/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree, 'source_equivalence': 'PASS', 'artifact_count': len(artifacts), 'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave35-wip-01-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

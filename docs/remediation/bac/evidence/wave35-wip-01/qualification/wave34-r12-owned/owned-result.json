@@ -1,0 +1,28 @@
+{
+  "name": "owned",
+  "exit_code": 0,
+  "seconds": 8.128313541412354,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r12-composer-green"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave34-r12-owned/owned.log",
+  "sha256": "4f557fb41009b8ab435d71ba93f3d86b58b048a2ba667ccfa1476e86d0b37b0e",
+  "candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+  "base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "manifest_sha256": "cbb4c0b4aa1bf4aedbe56841e49aa296ed17f7fa26f11750b757378fe347117b",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

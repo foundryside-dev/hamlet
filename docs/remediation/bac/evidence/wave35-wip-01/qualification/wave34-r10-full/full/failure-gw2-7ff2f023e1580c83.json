@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_checkpointing.py::TestVariableMeterCheckpoints::test_checkpoint_rejects_missing_universe_metadata",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "self = <tests.test_townlet.integration.test_checkpointing.TestVariableMeterCheckpoints object at 0x7f555f208140>\ncpu_device = device(type='cpu')\nbasic_env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f555bd7f750>\nminimal_brain_config = BrainConfig(version='1.0', description='Minimal brain config for testing', architecture=ArchitectureConfig(type='feedf...ReplayConfig(capacity=10000, prioritized=False, priority_alpha=None, priority_beta=None, priority_beta_annealing=None))\n\n    def test_checkpoint_rejects_missing_universe_metadata(self, cpu_device, basic_env, minimal_brain_config):\n        \"\"\"Checkpoints without universe_metadata should be strictly rejected (pre-release, 0 users).\"\"\"\n        # Create a real checkpoint first to get proper network state\n>       curriculum = AdversarialCurriculum(max_steps_per_episode=100)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: AdversarialCurriculum.__init__() got an unexpected keyword argument 'max_steps_per_episode'\n\ntests/test_townlet/integration/test_checkpointing.py:1518: TypeError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

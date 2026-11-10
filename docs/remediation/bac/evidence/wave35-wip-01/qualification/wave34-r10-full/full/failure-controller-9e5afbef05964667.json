@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/integration/test_differential_harness.py::test_self_comparison_agrees",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave34-r10-full/popen-gw2/test_self_comparison_agrees0')\n\n    def test_self_comparison_agrees(tmp_path: Path) -> None:\n        cell = Cell(\n            RunParams(\n                pack=\"configs/default_curriculum\",\n                level=\"L0_0_minimal\",\n                num_agents=4,\n                steps=10,\n                seed=42,\n                device=\"cpu\",\n            )\n        )\n        verdict = run_cell(\n            repo_root=REPO_ROOT,\n            old_src=REPO_ROOT / \"src\",\n            old_pack_root=REPO_ROOT,  # self-comparison: same code, same inputs\n            new_src=REPO_ROOT / \"src\",\n            cell=cell,\n            run_dir=tmp_path,\n            run_cuda=False,\n            scripted=False,\n        )\n>       assert verdict.kind == \"AGREE\", verdict.detail\nE       AssertionError: {'failure_kind': 'crashed', 'side': 'old', 'stderr': 'Traceback (most recent call last):\nE           File \"/workspace/hamlet/sr...v.__init__() missing 3 required keyword-only arguments: \\'world_roster\\', \\'training_seed\\', and \\'lane_world_ids\\'\nE         '}\nE       assert 'OLD_SIDE_ERROR' == 'AGREE'\nE         \nE         - AGREE\nE         + OLD_SIDE_ERROR\n\ntests/test_townlet/integration/test_differential_harness.py:46: AssertionError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

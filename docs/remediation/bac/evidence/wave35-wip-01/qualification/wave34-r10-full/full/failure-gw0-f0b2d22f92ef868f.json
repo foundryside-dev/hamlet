@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_options.py::test_old_options_remain_accepted",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "def test_old_options_remain_accepted():\n        options, resolve = api()\n        t = training()\n        resolved = resolve(t.bac_options, training=t)\n        assert resolved.options.replay.sampling_mode == \"successive_without_replacement\"\n        assert resolved.options.replay.uniform_sequence_adapter == \"legacy_episode_length_with_replacement\"\n        assert resolved.options.rnd.max_pending_rows == 32\n        assert resolved.options.providers.icm.hidden_dim == 256\n        assert resolved.options.providers.count_based.max_entries == 100000\n        assert resolved.options.evaluation.episode_cap == 1000\n        assert resolved.options.evaluation.seed == 42\n        assert resolved.options.checkpoint.save_initial is False\n        assert resolved.options.checkpoint.save_final is True\n>       assert all(entry.origin.startswith(\"bac-options-v1\") for entry in resolved.provenance)\nE       assert False\nE        +  where False = all(<generator object test_old_options_remain_accepted.<locals>.<genexpr> at 0x7f0197a22e90>)\n\ntests/test_townlet/regressions/bac/test_options.py:63: AssertionError",
+  "candidate_tree": "f0e630657a2c70197b7efc3f7b33b58f18e9f8e9"
+}

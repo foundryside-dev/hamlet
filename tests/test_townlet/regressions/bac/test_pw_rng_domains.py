@@ -9,6 +9,7 @@ import random
 import subprocess
 import sys
 import threading
+from collections import OrderedDict
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -36,6 +37,11 @@ def _equal(left, right):
         assert left.keys() == right.keys()
         for key in left:
             _equal(left[key], right[key])
+        if isinstance(left, OrderedDict):
+            assert list(left) == list(right)
+            assert hasattr(left, "_metadata") == hasattr(right, "_metadata")
+            if hasattr(left, "_metadata"):
+                _equal(left._metadata, right._metadata)
     elif isinstance(left, (list, tuple)):
         assert len(left) == len(right)
         for a, b in zip(left, right, strict=True):
@@ -204,14 +210,8 @@ def _rnd_state(state, kind):
 
 
 def _learning_snapshot(value):
-    # Native state_dict uses OrderedDict; owned checkpoints expose plain mappings.
-    # Normalize only mapping representation, retaining sequence and leaf types.
-    if isinstance(value, Mapping):
-        return {key: _learning_snapshot(child) for key, child in value.items()}
-    if isinstance(value, list):
-        return [_learning_snapshot(child) for child in value]
-    if isinstance(value, tuple):
-        return tuple(_learning_snapshot(child) for child in value)
+    # Preserve native mapping kinds, entry order and recursive Torch metadata,
+    # while independently owning the reference snapshot and its leaves.
     return copy.deepcopy(value)
 
 

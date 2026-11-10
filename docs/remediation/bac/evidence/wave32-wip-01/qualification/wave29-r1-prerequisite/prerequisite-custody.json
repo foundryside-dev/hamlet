@@ -1,0 +1,16 @@
+{
+  "candidate_tree": "bcbf81d7af4f035018d58555e91555b853f7f947",
+  "passed": 28,
+  "required_new_schema_RED": 3,
+  "call_errors": "KeyError: 'initialization_origin' at intended BANK-v2 export assertion",
+  "wall_seconds": 17.600476264953613,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 5,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "independent_disposition": "Sol bd958bbb confirms3mandatoryschemaRED, notfixturedefect/notmissingoperation/notPASS; keepstrictassertion.28actualfixture/native/shared/HC/compatibility/offset/drop controlsPASS.",
+  "scope": "Prerequisites only; broaderRED and implementation stillowed"
+}

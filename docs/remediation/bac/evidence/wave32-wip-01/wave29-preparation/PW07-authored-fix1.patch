@@ -1,0 +1,594 @@
+diff --git a/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py b/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
+index f3816a56..c0037d56 100644
+--- a/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
++++ b/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
+@@ -4,6 +4,7 @@ Real BANK/providers/ENV/HC/replay; local other-role receipts qualify only interf
+ Synthetic 3D curiosity inputs do not claim actual runner or sampler integration.
+ """
+ 
++from collections import OrderedDict
+ from collections.abc import Mapping
+ from copy import copy, deepcopy
+ from pathlib import Path
+@@ -20,7 +21,7 @@ from townlet.environment.vectorized_env import VectorizedHamletEnv, WorldReceipt
+ from townlet.exploration import curiosity_checkpoint as cp
+ from townlet.exploration.provider_factory import make_policy_selector
+ from townlet.exploration.scoped_curiosity import CuriosityBank
+-from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor
++from townlet.exploration.world_curiosity_state import OwnedWorldBackend, ServiceClock, WorldCuriosityDescriptor, WorldRNGState
+ from townlet.training.episode import EpisodeCompletion, LaneOutcome, freeze_lane_outcome
+ from townlet.training.replay_buffer import ReplayBuffer
+ from townlet.training.state import RewardTensor
+@@ -43,7 +44,9 @@ def equal(left, right):
+         assert left.dtype == right.dtype
+         np.testing.assert_array_equal(left, right)
+     elif isinstance(left, Mapping):
+-        assert list(left) == list(right)
++        assert left.keys() == right.keys()
++        if isinstance(left, OrderedDict):
++            assert list(left) == list(right)
+         for key in left:
+             equal(left[key], right[key])
+         if hasattr(left, "_metadata"):
+@@ -105,24 +108,24 @@ def policy(compiled, family, scope, mode):
+ class Rig:
+     """Actual ENV authority; other roles are explicitly local receipt interfaces."""
+ 
+-    def __init__(self, compiled, selected, ids=IDS):
+-        self.roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(IDS)})
++    def __init__(self, compiled, selected, ids=IDS, *, width=3, seed=701, membership=IDS):
++        self.roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(membership)})
+         self.env = VectorizedHamletEnv(
+             universe=compiled,
+             level_name="L0_test",
+-            num_agents=2,
++            num_agents=len(ids),
+             device="cpu",
+             world_roster=self.roster,
+-            training_seed=701,
++            training_seed=seed,
+             lane_world_ids=ids,
+         )
+         self.reports = []
+         descriptor = WorldCuriosityDescriptor.from_policy(
+             selected,
+             world_ids=ids,
+-            observation_dim=3,
++            observation_dim=width,
+             action_dim=2,
+-            training_seed=701,
++            training_seed=seed,
+         )
+         self.bank = CuriosityBank(
+             policy=selected,
+@@ -249,28 +252,28 @@ class Rig:
+         self.views = []
+ 
+         def validate(*, prepared, curiosity_state):
+-            assert prepared is self.parent
+             # Real ENV authority authenticates the retained record and native parent state.
+             boundary = self.issuer.issue(
+                 kind="restored_boundary", payload={"kind": "COMPLETED", "state": world_state, "prepared": prepared}
+             )
+             self.restored_release = self.authority.restored(restore=prepared, boundary=boundary)
++            assert prepared is self.parent
+             self.views.append(curiosity_state)
+ 
+         self.validate_parent = validate
+         return self.parent, validate
+ 
+     def install_parent(self):
+-        self.env.install_world_restore(prepared=self.parent, release=self.restored_release)
+-        self.release = self.restored_release
++        self.release = self.env.install_world_restore(prepared=self.parent, release=self.restored_release)
+ 
+ 
+ def service(bank, accepted, tick, active):
+-    predecessor = torch.arange(6, dtype=torch.float32).reshape(2, 3) * 0.07 + tick * 0.2
++    rows = len(accepted.world_ids)
++    predecessor = torch.arange(rows * 3, dtype=torch.float32).reshape(rows, 3) * 0.07 + tick * 0.2
+     context = IntrinsicTransitionContext(
+         predecessor=predecessor,
+         successor=predecessor + 0.11,
+-        actions=torch.tensor([0, 1]),
++        actions=torch.tensor([index % 2 for index in range(rows)]),
+         active_on_entry=torch.tensor(active),
+         vector_tick=tick,
+     )
+@@ -342,6 +345,10 @@ def live(bank, world="A"):
+     }
+     refs = tuple((id(p), p.data_ptr(), None if p.grad is None else p.grad.data_ptr()) for p in params)
+     storage_ids = {p.data_ptr() for p in params} | {p.grad.data_ptr() for p in params if p.grad is not None}
++    if family in ("rnd", "adaptive_rnd"):
++        rnd = provider.rnd if family == "adaptive_rnd" else provider
++        assert all(p.grad is None for p in rnd.fixed_network.parameters())
++        storage_ids.update(p.data_ptr() for p in rnd.fixed_network.parameters())
+     adam = provider.rnd.optimizer if family == "adaptive_rnd" else getattr(provider, "optimizer", None)
+     if adam is not None:
+         grouped = [p for group in adam.param_groups for p in group["params"]]
+@@ -416,6 +423,54 @@ def assert_future(snapshot, family, admissions, updates):
+     assert counters["mandatory_service_updates"] == (0 if family == "icm" else None)
+ 
+ 
++def assert_baseline(bank, source, choice, world, local_admitted, local_updates):
++    """Derive the native ledger independently of the production diagnostic deltas."""
++    snapshot, family = bank.snapshot_world(world_id=world), bank.policy.strategy
++    origin = snapshot["initialization_origin"]
++    if family not in TRAINABLE:
++        assert origin["inherited_baseline"] is None
++        return
++    old, _ = native_ledger(source["shared_backend"]["native"], family)
++    expected = {name: old[name] if choice == CHOICES[1] else 0 for name in ("consumed_rows", "dropped_rows", "optimizer_updates")}
++    expected["admitted_rows"] = expected["consumed_rows"] + expected["dropped_rows"]
++    expected["mandatory_service_updates"] = old["mandatory_service_updates"] if family == "icm" and choice == CHOICES[1] else 0
++    if family != "icm":
++        expected["mandatory_service_updates"] = None
++    equal(origin["inherited_baseline"], expected)
++    native = snapshot_native(snapshot)
++    actual, pending = native_ledger(native, family)
++    for key, delta in (("admitted_rows", local_admitted), ("consumed_rows", local_updates * 2), ("optimizer_updates", local_updates)):
++        assert actual[key] == expected[key] + delta
++    assert actual["dropped_rows"] == expected["dropped_rows"]
++    assert len(pending) == local_admitted - local_updates * 2
++    clock = native if family == "icm" else actual
++    assert clock["service_position"] == expected["admitted_rows"] + local_admitted
++    assert clock["service_clock_unit"] == "world_eligible_admission"
++
++
++def poison_shared_numeric(state, family):
++    """Mutate real transport storage, including each learned/pending ownership class."""
++    payload = state["shared_backend"]
++    native = payload["native"]
++    if family == "adaptive_rnd":
++        native["survival_history"][0] += 3
++        native = native["rnd_state"]
++    if family in TRAINABLE:
++        key = "encoder" if family == "icm" else "predictor_network"
++        next(iter(native[key].values())).add_(10)
++        if family != "icm":
++            next(iter(native["fixed_network"].values())).add_(12)
++        next(iter(native["optimizer"]["state"].values()))["exp_avg"].add_(2)
++        next(value for group in payload["gradients"].values() for value in group.values() if value is not None).add_(4)
++        tail = native["pending"] if family == "icm" else native["predictor_service"]["pending_observations"]
++        (tail[0]["predecessor"] if family == "icm" else tail[0]).add_(6)
++    elif family == "count_based":
++        native["counts"][next(iter(native["counts"]))] += 11
++        native["lru"].reverse()
++    else:
++        native["epsilon"] *= 0.5
++
++
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("mode", MODES)
+ def test_fixture_actual_shared_learning_and_completed_parent(compiled, family, mode):
+@@ -474,6 +529,7 @@ def test_fresh_private_and_clone_learned_origins(compiled, family, choice, mode)
+     source_live = live(source.bank)
+     target = destination(compiled, source)
+     fresh = {world: live(target.bank, world) for world in IDS}
++    fresh_rng = {world: target.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
+     selector = make_policy_selector(target.bank.policy)
+     selector_before = selector.checkpoint_state()
+     convert(target, source.saved, choice)
+@@ -488,6 +544,8 @@ def test_fresh_private_and_clone_learned_origins(compiled, family, choice, mode)
+     for world in IDS:
+         snapshot = target.bank.snapshot_world(world_id=world)
+         assert_future(snapshot, family, 0, 0)
++        assert_baseline(target.bank, source.saved, choice, world, 0, 0)
++        equal(snapshot["backend"]["rng"], fresh_rng[world])
+         cursor = snapshot["cursor"]
+         assert cursor["accepted_episode_seq"] == source.accepted.world_episode_seqs[IDS.index(world)]
+         assert cursor["eligible_seq"] == 0 and cursor["participated"] is False and cursor["disposition"] is None
+@@ -543,6 +601,7 @@ def test_fresh_private_and_clone_learned_origins(compiled, family, choice, mode)
+     equal(live(target.bank, "A"), settled)
+     target.step(102, (True, False))
+     assert_future(target.bank.snapshot_world(world_id="A"), family, 2, 1)
++    assert_baseline(target.bank, source.saved, choice, "A", 2, 1)
+     if family in TRAINABLE:
+         after = live(target.bank, "A")["native"]
+         previous = native_ledger(a["native"], family)[0]["optimizer_updates"]
+@@ -586,10 +645,12 @@ def test_shared_pending_is_archived_not_falsely_attributed(compiled, monkeypatch
+     source_live = live(source.bank)
+     target = destination(compiled, source)
+     caller_state = deepcopy(source.saved)
++    fresh = {world: live(target.bank, world) for world in IDS}
+     ambient = torch.get_rng_state().clone()
+     token = prepare(target, caller_state, choice)
+     equal(torch.get_rng_state(), ambient)
+     caller_state["worlds"][0]["cursor"]["eligible_seq"] = 999
++    poison_shared_numeric(caller_state, family)
+     for retained in target.views:
+         retained.clear()
+     target.bank.install_restore(prepared=token)
+@@ -597,9 +658,15 @@ def test_shared_pending_is_archived_not_falsely_attributed(compiled, monkeypatch
+     snapshot = target.bank.snapshot_world(world_id="A")
+     equal(snapshot["initialization_origin"]["source_checkpoint"], source.saved)
+     snapshot["initialization_origin"]["source_checkpoint"]["worlds"][0]["cursor"]["eligible_seq"] = 888
++    poison_shared_numeric(snapshot["initialization_origin"]["source_checkpoint"], family)
+     equal(target.bank.checkpoint_state()["initialization_origin"]["source_checkpoint"], source.saved)
++    for world in IDS:
++        expected = source_live if choice == CHOICES[1] else fresh[world]
++        equal(learned(live(target.bank, world)["native"], family), learned(expected["native"], family))
++        equal(live(target.bank, world)["gradients"], expected["gradients"])
+     provider = backend(target.bank)
+     observed = []
++    trained_batches = []
+     if family in TRAINABLE:
+         native, pending = native_ledger(provider.checkpoint_state(), family)
+         assert len(pending) == 0
+@@ -610,12 +677,21 @@ def test_shared_pending_is_archived_not_falsely_attributed(compiled, monkeypatch
+             return operation(payload, clock=clock)
+ 
+         monkeypatch.setattr(provider, "admit_and_service_at", service_spy)
++        model = provider.encoder if family == "icm" else (provider.rnd if family == "adaptive_rnd" else provider).predictor_network
++
++        def batch_spy(module, inputs):
++            if torch.is_grad_enabled():
++                trained_batches.append(inputs[0].detach().clone())
++
++        hook = model.register_forward_pre_hook(batch_spy)
+     before_b = live(target.bank, "B")
+     target.begin(source.accepted.batch_episode + 1)
+     first, _, _, _ = target.step(301, (True, False))
+     second, _, _, _ = target.step(302, (True, False))
+     if family in TRAINABLE:
+         equal(observed, [first.predecessor[:1], second.predecessor[:1]])
++        hook.remove()
++        equal(trained_batches[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
+         actual, pending = native_ledger(provider.checkpoint_state(), family)
+         baseline = native["optimizer_updates"]
+         assert actual["optimizer_updates"] == baseline + 1 and len(pending) == 0
+@@ -844,8 +920,11 @@ def test_allocation_refusal_is_before_publication_and_retryable(compiled, monkey
+     source = trained_source(compiled, "icm", "paced_fifo")
+     target = destination(compiled, source)
+     before = {world: live(target.bank, world) for world in IDS}
++    rng_before = {world: target.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
++    ambient = torch.get_rng_state().clone()
+     source_before, revision = live(source.bank), target.bank.mutation_revision
+     attached = []
++    boundaries = []
+     original_attach, original_allocate = cp.attach_gradients, cp._allocate_runtime_data
+ 
+     def attach(provider, values, family):
+@@ -853,7 +932,7 @@ def test_allocation_refusal_is_before_publication_and_retryable(compiled, monkey
+         attached.append(provider.checkpoint_state())
+ 
+     def allocation(*, section, value):
+-        if len(attached) >= 2:
++        if sum(item["service_clock_unit"] == "world_eligible_admission" for item in attached) >= 2:
+             raise MemoryError("actual late runtime allocation")
+         return original_allocate(section=section, value=value)
+ 
+@@ -864,14 +943,37 @@ def test_allocation_refusal_is_before_publication_and_retryable(compiled, monkey
+         patch.setattr(cp, "attach_gradients", attach)
+         if failure == "report":
+             patch.setattr(target.bank, "_report", refuse)
++
++            def boundary(name, operation):
++                def record(*args, **kwargs):
++                    boundaries.append(name)
++                    return operation(*args, **kwargs)
++
++                return record
++
++            patch.setattr(cp, "owned", boundary("owned_input", cp.owned))
++            patch.setattr(cp, "clone_provider", boundary("provider_copy", cp.clone_provider))
++            patch.setattr(cp, "validate_native", boundary("native_validation", cp.validate_native))
++            patch.setattr(target.bank, "_factory", boundary("candidate_factory", target.bank._factory))
++            create = boundary("rng_create", WorldRNGState.create)
++            construct = boundary("owner_construct", OwnedWorldBackend.construct)
++            patch.setattr(WorldRNGState, "create", classmethod(lambda cls, **kwargs: create(**kwargs)))
++            patch.setattr(OwnedWorldBackend, "construct", classmethod(lambda cls, **kwargs: construct(**kwargs)))
++            patch.setattr(OwnedWorldBackend, "prepare_restore", boundary("native_prepare", OwnedWorldBackend.prepare_restore))
+         else:
+             patch.setattr(cp, "_allocate_runtime_data", allocation)
+         with pytest.raises(MemoryError):
+             prepare(target, source.saved, CHOICES[1])
+-    assert len(attached) == (0 if failure == "report" else 2)
++    if failure == "report":
++        assert not attached and not boundaries
++    else:
++        assert len(attached) >= 2
++        assert sum(item["service_clock_unit"] == "world_eligible_admission" for item in attached) == 2
+     assert target.bank.mutation_revision == revision
+     for world in IDS:
+         equal(live(target.bank, world), before[world])
++        equal(target.bank.snapshot_world(world_id=world)["backend"]["rng"], rng_before[world])
++    equal(torch.get_rng_state(), ambient)
+     equal(live(source.bank), source_before)
+     convert(target, source.saved, CHOICES[1])
+ 
+@@ -935,3 +1037,294 @@ def test_origin_and_callback_corruption_cannot_publish(compiled, mutation):
+         )
+     for world in IDS:
+         equal(live(receiver.bank, world), before[world])
++
++
++def incompatible_target(compiled, mismatch):
++    selected = policy(compiled, "icm", "per_world", "paced_fifo")
++    if mismatch == "family":
++        selected = policy(compiled, "rnd", "per_world", "paced_fifo")
++    elif mismatch in ("learning_rate", "batch", "capacity"):
++        authored = selected.to_dict()["authored_parameters"]
++        options = authored["bac_options"]
++        key, value = {
++            "learning_rate": ("learning_rate", 0.002),
++            "batch": ("training_batch_size", 3),
++            "capacity": ("max_pending_transitions", 6),
++        }[mismatch]
++        options["providers"]["icm"][key] = value
++        selected = resolve_exploration_policy(
++            IntrinsicStrategyConfig.model_validate(authored["drive_intrinsic"]),
++            TrainingV2Config.model_validate(authored["training"]),
++            BaCOptions.model_validate(options),
++        )
++    options = {"width": 4} if mismatch == "geometry" else {"seed": 702} if mismatch == "seed" else {}
++    if mismatch == "membership":
++        options.update(ids=("A", "C"), membership=("A", "C"))
++    return Rig(compiled, selected, **options)
++
++
++@pytest.mark.parametrize("mismatch", ("family", "learning_rate", "batch", "capacity", "geometry", "seed", "membership"))
++def test_fixture_coherent_incompatible_targets(compiled, mismatch):
++    """Each mismatch is a real independently valid target, not corrupt source metadata."""
++    target = incompatible_target(compiled, mismatch)
++    for world in target.env.world_ids:
++        provider = backend(target.bank, world)
++        provider.validate_state(provider.checkpoint_state())
++    assert target.bank.checkpoint_state()["bank_phase"] == "initial"
++
++
++@pytest.mark.parametrize("mismatch", ("family", "learning_rate", "batch", "capacity", "geometry", "seed", "membership"))
++def test_coherent_incompatible_target_refuses(compiled, mismatch):
++    """Source validation alone cannot reject these separately valid target configurations."""
++    source = Rig(compiled, policy(compiled, "icm", "shared", "paced_fifo"))
++    state = source.bank.checkpoint_state()
++    backend(source.bank).validate_state(state["shared_backend"]["native"])
++    target = incompatible_target(compiled, mismatch)
++    before = {world: live(target.bank, world) for world in target.env.world_ids}
++    for world in target.env.world_ids:
++        backend(target.bank, world).validate_state(before[world]["native"])
++    with pytest.raises(ValueError):
++        target.bank.prepare_private_initialization(
++            state=state, initialization=CHOICES[1], parent_restore=None, validate_parent_restore=None
++        )
++    for world in target.env.world_ids:
++        equal(live(target.bank, world), before[world])
++    equal(source.bank.checkpoint_state(), state)
++    # A genuinely compatible current target accepts the exact same source.
++    compatible = Rig(compiled, policy(compiled, "icm", "per_world", "paced_fifo"))
++    token = compatible.bank.prepare_private_initialization(
++        state=state, initialization=CHOICES[1], parent_restore=None, validate_parent_restore=None
++    )
++    compatible.bank.install_restore(prepared=token)
++
++
++@pytest.mark.parametrize("fault", ("omitted_choice", "declared_profile", "foreign_parent", "stale_parent"))
++def test_explicit_choice_profile_and_parent_custody(compiled, fault):
++    """Catches a guessed choice, ignored profile, or unauthenticated real parent record."""
++    source = trained_source(compiled, "icm", "paced_fifo")
++    target = destination(compiled, source)
++    state = deepcopy(source.saved)
++    backend(source.bank).validate_state(state["shared_backend"]["native"])
++    for world in IDS:
++        backend(target.bank, world).validate_state(live(target.bank, world)["native"])
++    parent = target.parent
++    if fault == "declared_profile":
++        # CPU-host test of saved device provenance; native source itself stays validated/current.
++        state["source_device"] = "cuda:0"
++    elif fault == "foreign_parent":
++        parent = destination(compiled, source).parent
++    elif fault == "stale_parent":
++        target.validate_parent(prepared=parent, curiosity_state=deepcopy(state))
++        target.install_parent()
++        reservation = target.env.prepare_episode(batch_episode=source.accepted.batch_episode + 1, release=target.release)
++        target.env.validate_episode_reservation(reservation)
++        target.env.reset(reservation=reservation)
++    before = {world: live(target.bank, world) for world in IDS}
++    with pytest.raises(TypeError if fault == "omitted_choice" else ValueError):
++        if fault == "omitted_choice":
++            target.bank.prepare_private_initialization(state=state, parent_restore=parent, validate_parent_restore=target.validate_parent)
++        else:
++            target.bank.prepare_private_initialization(
++                state=state, initialization=CHOICES[1], parent_restore=parent, validate_parent_restore=target.validate_parent
++            )
++    for world in IDS:
++        equal(live(target.bank, world), before[world])
++    retry = destination(compiled, source)
++    convert(retry, source.saved, CHOICES[1])
++
++
++@pytest.mark.parametrize("origin", ("ordinary", "fresh_private", "clone_learned_archive_pending"))
++@pytest.mark.parametrize("family", TRAINABLE)
++def test_initial_and_live_private_continuation(compiled, family, origin):
++    """Catches converted INITIAL/live decoder gaps, lost RNG/gradients and foreign cached epochs."""
++    selected = policy(compiled, family, "per_world", "paced_fifo")
++    target = Rig(compiled, selected)
++    if origin != "ordinary":
++        source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"))
++        token = target.bank.prepare_private_initialization(
++            state=source.bank.checkpoint_state(), initialization=origin, parent_restore=None, validate_parent_restore=None
++        )
++        target.bank.install_restore(prepared=token)
++    initial = target.bank.checkpoint_state()
++    if origin == "ordinary":
++        assert initial["initialization_origin"] is None and initial["curiosity_epoch"] == 0
++    receiving = Rig(compiled, selected)
++    token = receiving.bank.prepare_restore(state=initial, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
++    receiving.bank.install_restore(prepared=token)
++    equal(receiving.bank.checkpoint_state(), initial)
++    receiving.begin(0)
++    receiving.step(1, (True, False))
++    receiving.step(2, (True, False))
++    context, stamp, _, receipts = receiving.step(3, (True, False))
++    live_state = receiving.bank.checkpoint_state()
++    before = {world: live(receiving.bank, world) for world in IDS}
++    rng = {world: receiving.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
++    corrupt = deepcopy(live_state)
++    corrupt["worlds"][0]["phase_cache"]["service"]["receipt"]["event_ids"][0]["curiosity_epoch"] += 1
++    with pytest.raises(ValueError):
++        receiving.bank.prepare_restore(
++            state=corrupt, mode="live_episode", accepted=receiving.accepted, parent_restore=None, validate_parent_restore=None
++        )
++    token = receiving.bank.prepare_restore(
++        state=live_state, mode="live_episode", accepted=receiving.accepted, parent_restore=None, validate_parent_restore=None
++    )
++    receiving.bank.install_restore(prepared=token)
++    for world in IDS:
++        equal(live(receiving.bank, world)["native"], before[world]["native"])
++        equal(live(receiving.bank, world)["gradients"], before[world]["gradients"])
++        equal(receiving.bank.snapshot_world(world_id=world)["backend"]["rng"], rng[world])
++    assert receiving.bank.admit_and_service(context=context, stamp=stamp, accepted=receiving.accepted) == receipts
++    receiving.step(4, (True, False))
++    assert receiving.bank.checkpoint_state()["curiosity_epoch"] == (0 if origin == "ordinary" else 1)
++    counters, pending = native_ledger(live(receiving.bank)["native"], family)
++    assert counters["optimizer_updates"] == 2 and len(pending) == 0
++
++
++@pytest.mark.parametrize("choice", CHOICES)
++def test_private_rng_is_owned_and_starts_at_same_id_factory_continuation(compiled, choice):
++    """Catches shared RNG ownership even if snapshot tensors themselves are copied."""
++    source = trained_source(compiled, "rnd", "paced_fifo")
++    target = destination(compiled, source)
++    independent = Rig(compiled, target.bank.policy)
++    convert(target, source.saved, choice)
++    b_before = target.bank.snapshot_world(world_id="B")["backend"]["rng"]
++    ambient = torch.get_rng_state().clone()
++
++    def draw(provider, sources):
++        return torch.rand(13)
++
++    first = target.bank._owners["A"].call(draw)
++    equal(first, independent.bank._owners["A"].call(draw))
++    equal(target.bank.snapshot_world(world_id="A")["backend"]["rng"], independent.bank.snapshot_world(world_id="A")["backend"]["rng"])
++    equal(target.bank.snapshot_world(world_id="B")["backend"]["rng"], b_before)
++    equal(torch.get_rng_state(), ambient)
++    assert not torch.equal(first, target.bank._owners["A"].call(draw))
++    equal(target.bank.snapshot_world(world_id="B")["backend"]["rng"], b_before)
++
++
++def offset_source(compiled, sign):
++    source = Rig(compiled, policy(compiled, "rnd", "shared", "paced_fifo"))
++    source.begin(0)
++    source.step(1)
++    source.step(2)
++    provider = backend(source.bank)
++    earlier = deepcopy(provider.optimizer.state_dict())
++    source.step(3)
++    source.step(4)
++    source.step(5, (True, False))
++    if sign == "positive":
++        # Genuine manual Adam update using the last real backward's residual gradients.
++        provider.optimizer.step()
++    else:
++        # Deliberate public Adam rewind: real earlier moments/steps, current learned model.
++        provider.optimizer.load_state_dict(earlier)
++    source.close()
++    source.saved = source.bank.checkpoint_state()
++    native = source.saved["shared_backend"]["native"]
++    provider.validate_state(native)
++    steps = {int(item["step"].item()) for item in provider.optimizer.state.values()}
++    assert len(steps) == 1
++    offset = next(iter(steps)) - native["predictor_service"]["optimizer_updates"]
++    assert offset == (1 if sign == "positive" else -2)
++    assert native["predictor_service"]["optimizer_step_offset"] == offset
++    return source
++
++
++def dropped_source(compiled, family):
++    ids = ("A", "B", "C", "D", "E")
++    source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"), ids, membership=ids)
++    source.begin(0)
++    for tick in range(1, 4):
++        source.step(tick, (True,) * 5)
++    source.close()
++    source.saved = source.bank.checkpoint_state()
++    native = source.saved["shared_backend"]["native"]
++    backend(source.bank).validate_state(native)
++    counters, tail = native_ledger(native, family)
++    assert counters["admitted_rows"] == 15 and counters["optimizer_updates"] >= 2
++    assert counters["dropped_rows"] > 0 and len(tail) >= 2
++    return source
++
++
++@pytest.mark.parametrize("sign", ("positive", "negative"))
++def test_fixture_real_signed_rnd_offset(compiled, sign):
++    """Prerequisite: signed-offset sources are accepted by the unchanged native validator."""
++    offset_source(compiled, sign)
++
++
++@pytest.mark.parametrize("family", ("rnd", "icm"))
++def test_fixture_genuine_drops_and_multirow_tail(compiled, family):
++    """Prerequisite: five real shared rows per tick genuinely overflow selected capacity."""
++    dropped_source(compiled, family)
++
++
++@pytest.mark.parametrize("sign", ("positive", "negative"))
++def test_signed_rnd_offset_survives_clone_and_next_real_update(compiled, sign):
++    """Catches reset/coercion of a valid signed offset while inherited Adam is retained."""
++    source = offset_source(compiled, sign)
++    target = destination(compiled, source)
++    before = live(source.bank)
++    convert(target, source.saved, CHOICES[1])
++    native = live(target.bank)["native"]
++    equal(native["optimizer"], before["native"]["optimizer"])
++    expected = 1 if sign == "positive" else -2
++    assert native["predictor_service"]["optimizer_step_offset"] == expected
++    assert_baseline(target.bank, source.saved, CHOICES[1], "A", 0, 0)
++    state = target.bank.checkpoint_state()
++    restored = destination(compiled, source)
++    token = restored.bank.prepare_restore(
++        state=state,
++        mode="private_initialized",
++        accepted=None,
++        parent_restore=restored.parent,
++        validate_parent_restore=restored.validate_parent,
++    )
++    restored.bank.install_restore(prepared=token)
++    restored.install_parent()
++    equal(live(restored.bank)["native"], live(target.bank)["native"])
++    equal(live(restored.bank)["gradients"], live(target.bank)["gradients"])
++    target = restored
++    target.begin(1)
++    target.step(51, (True, False))
++    target.step(52, (True, False))
++    actual = live(target.bank)["native"]
++    backend(target.bank).validate_state(actual)
++    assert actual["predictor_service"]["optimizer_step_offset"] == expected
++    assert_baseline(target.bank, source.saved, CHOICES[1], "A", 2, 1)
++    for key, value in actual["optimizer"]["state"].items():
++        assert value["step"].item() == native["optimizer"]["state"][key]["step"].item() + 1
++    assert_source(source, before, source.saved)
++
++
++@pytest.mark.parametrize("family", ("rnd", "icm"))
++@pytest.mark.parametrize("choice", CHOICES)
++def test_nonzero_drop_baseline_and_multirow_archive_exclusion(compiled, family, choice):
++    """Catches invented drop work, dropped inherited totals, and archived rows in a trained batch."""
++    source = dropped_source(compiled, family)
++    ids = source.env.world_ids
++    target = Rig(compiled, policy(compiled, family, "per_world", "paced_fifo"), ids, membership=ids)
++    target.prepare_parent(source)
++    before = live(source.bank)
++    convert(target, source.saved, choice)
++    assert_baseline(target.bank, source.saved, choice, "A", 0, 0)
++    b = live(target.bank, "B")
++    provider = backend(target.bank)
++    trained = []
++    model = provider.encoder if family == "icm" else provider.predictor_network
++
++    def observe(module, inputs):
++        if torch.is_grad_enabled():
++            trained.append(inputs[0].detach().clone())
++
++    hook = model.register_forward_pre_hook(observe)
++    target.begin(1)
++    first, _, _, receipts = target.step(71, (True, False, False, False, False))
++    assert receipts[0].clock == ServiceClock("world_eligible_admission", 1)
++    second, _, _, receipts = target.step(72, (True, False, False, False, False))
++    hook.remove()
++    equal(trained[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
++    assert receipts[0].clock == ServiceClock("world_eligible_admission", 2)
++    assert_baseline(target.bank, source.saved, choice, "A", 2, 1)
++    equal(live(target.bank, "B"), b)
++    equal(target.bank.checkpoint_state()["initialization_origin"]["source_checkpoint"], source.saved)
++    assert_source(source, before, source.saved)

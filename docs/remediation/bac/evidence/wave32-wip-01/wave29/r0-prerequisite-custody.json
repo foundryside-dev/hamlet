@@ -1,0 +1,16 @@
+{
+  "candidate_tree": "27e8391077d2dd9b050833b3ed70c5a974326704",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "child_exit_code": 1,
+  "passed": 12,
+  "failed": 5,
+  "wall_seconds": 17.492628574371338,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 5,
+  "registry": 14,
+  "available": 1,
+  "negative_run_custody": "PASS",
+  "diagnosis": "Five same-scope positive controls fail stale release before their intended assertion; no broad RED run or production defect qualification. Fixture plus authored peer findings next tests-only round1."
+}

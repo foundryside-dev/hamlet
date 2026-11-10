@@ -1,0 +1,796 @@
+{
+  "as_of_utc": "2026-11-10T14:39:40.418089+00:00",
+  "display_timezone": "Australia/Sydney",
+  "user_requested": "Astra prepares and publishes BAC work done/remaining tracking document in Spaces; implementation continues.",
+  "source_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "remote_verified_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "remote_verified_tree": "144355b6651aa49ce288bb42cf74a1675fc7de25",
+  "repository": "https://github.com/foundryside-dev/hamlet",
+  "branch": "project-recovery-bac-2026-11-01",
+  "count_meaning": "28 of original66 packages are qualified releases;38 original releases remain. Bounded producer checkpoints since then are separately evidenced and do not inflate release count. This is not percent of engineering effort.",
+  "current_phase": "PW07R2qualifiedcausalRED:150collect/5callbackwitness/33trueprereqsPASS;full33PASS117intendedRED31.8127/custody353/573/13/5processPASS. AllruntimeCLOSED; freshAstra soleactualCP/BANKproductionwriter nowauthorized, RP/testfrozen. FreshSol4sourcepreflight/reviewpending; no integratedrelease.",
+  "current_PW07": {
+    "design": "Independent SPEC/QUALITY approved exactABI f749261e; completed finite authored repair2 review147f5a54",
+    "authored": "1394lines; actual150casescollected/original145preserved;5actualprivatecallbackwitnesscontrolsPASS20.6770;33genuineprereqsPASS19.5511;full15033PASS117intendedRED31.8127 (114missingoperation+3requiredoriginfield), zero unrelatedfixture failures",
+    "repairs_closed": "Installed-release fixture; coherent source/target negatives; converted INITIAL/live controls; actual live numeric/gradient/fixed-target/RNG witnesses; genuine offset/drop/multirow trained-batch controls; preallocation witnesses. A returned-backend copying flaw was repaired and reverified, not counted as passing evidence.",
+    "current": "Astra production implementation CP/BANK now underway, unqualified and unpushed; four-source bounded context under5000. Fresh Sol actual-source/runtime reviewer prepared. No implementation GREEN or component acceptance yet.",
+    "next": "Freeze actual candidate, verify collection and real provider controls, full owned and covering GREEN, independent other-model actual design+source/runtime review, repair material findings, source-verified docs and remote checkpoint",
+    "source_identity": "R2authoredtest treef36a7fad819dd3786c306252e8834c2385066b65; production candidate not yet sealed. Last publishedcommit remainsa7c4cd0b."
+  },
+  "current_verified_components": {
+    "clock_stamps": "Typed events/local clocks and RNG-binding/factory qualified producer checkpoints",
+    "native_providers": "Actual RND/ICM/adaptive local service/native off-side state; real positive-LR updates; existing Count/none supported",
+    "bank": "Five-family private owned instance bank, learning/RNG isolation, transactional completion and failure custody qualified bounded producer",
+    "checkpoint": "Full same-scope state, gradients/Adam/RNG/phase/cache/dedup, strict IDs/parent correlation, replay component preservation qualified bounded producer",
+    "latest_checkpoint_evidence": "147rootPASS+147freshAstraPASS;635coveringPASS/3CUDA skips;353 guard now includes local newtest, published R4 qualification352 sourceguards;4cheapguardsPASS;globalmypy9oldcallererrors; finalintegratedfullsuiteNOT qualified"
+  },
+  "CI_at_published_SHA": {
+    "config": {
+      "run": 42824838530,
+      "job": 129859344399,
+      "result": "PASS"
+    },
+    "lint": {
+      "run": 42824838521,
+      "job": 129859344786,
+      "result": "FAIL",
+      "reason": "Actual downloaded log verifies same9 oracle/POP mypy errors; Ruff/Black passed"
+    },
+    "tests": {
+      "run": 42824838523,
+      "job": 129859344269,
+      "result": "IN_PROGRESS"
+    }
+  },
+  "decisions_pending": [],
+  "governing_owner_rulings": [
+    "No backwards compatibility/legacy adapters; update current producers/callers/tests/docs together",
+    "Strict per-world curiosity required; explicit shared alternative preserved",
+    "Historical maskless replay archived/readable/exportable; fresh qualified active replay, captured current replay preserved",
+    "Approved bounded test cadence retains final full/default/coverage/slow/applicablehardware/CI gates",
+    "No new local branches/worktrees/checkouts/sourcecopies; one approval never extra creations; all current-branch work may be pushed",
+    "K01 exact stochastic/mid-episode simulator continuation is existing qualified/deferred guarantee, not a new required simulator upgrade"
+  ],
+  "required_remaining_acceptance": [
+    "Current per-world shared-to-private conversion and required eval/transfer/serving behaviors",
+    "Actual population/runner/parent/native transport wiring and ordinary checkpoint smoke",
+    "Repair known oracle/POP callers, owner fixtures and actual runnable integration prerequisites",
+    "Replay/readiness/recurrent/legal-target and captured replay sampling integration",
+    "World/controller full-owner isolation proof through actual learning, lifecycle/reset/resume and private counter continuation",
+    "T26 durable intent/effect reentry, configuration/identity and reproducibility across supported boundaries",
+    "Finite original T40 learning protocol plus12 strict runs; supported end-to-end scenarios",
+    "Fresh final54requirement/22design+implementation lenses+synthesis;zero unresolved P1/P2/unapproved gaps",
+    "Required default fullrepo/coverage>=70/slow/applicablehardware/exactfinalremoteCI and source-verified docs"
+  ],
+  "hardware": "CUDA unavailable/unqualified; conditional skips are not passing GPU evidence",
+  "task_metadata_note": "Original packet records may predate later producer sub-slices; current state/progress override stale waiting/active labels. Do not call a producer checkpoint an integrated release.",
+  "packets": [
+    {
+      "id": "T01",
+      "title": "T01: Finite and constructible authored numerics \u2014 D06/D07/D08/G06",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": []
+    },
+    {
+      "id": "T02",
+      "title": "T02: Portable option schema and preserved presets",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T01"
+      ]
+    },
+    {
+      "id": "T18a",
+      "title": "T18a: Resolve every authored exploration field at one boundary \u2014 R1",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T02"
+      ]
+    },
+    {
+      "id": "T03",
+      "title": "T03: One effective run view and distinct identities \u2014 G08",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T02",
+        "T18a"
+      ]
+    },
+    {
+      "id": "T08",
+      "title": "T08: Transition and finite masked-target primitives \u2014 D01/D11 seam",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T02"
+      ]
+    },
+    {
+      "id": "T03a",
+      "title": "T03a: Approved archive/fresh-buffer import before storage schemas",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T03",
+        "T08"
+      ]
+    },
+    {
+      "id": "T04",
+      "title": "T04: Lossless sidecar lowering \u2014 D16",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T03"
+      ]
+    },
+    {
+      "id": "T05",
+      "title": "T05: Canonical launch resolution",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T04"
+      ]
+    },
+    {
+      "id": "T06",
+      "title": "T06: CLI and runner content transport \u2014 D20",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T05"
+      ]
+    },
+    {
+      "id": "T07",
+      "title": "T07: Preserve public loaders with canonical discovery \u2014 K03",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped source package at qualified07ce9755/tree42bf1b69,6407PASS16SKIP; documentation checkpoint active; final BAC acceptance owed",
+      "dependencies": [
+        "T05",
+        "T06"
+      ]
+    },
+    {
+      "id": "T08a",
+      "title": "Required small action-selection package T08a \u2014 D11",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T08"
+      ]
+    },
+    {
+      "id": "T09",
+      "title": "T09: Commit successor legality at the environment producer",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T08"
+      ]
+    },
+    {
+      "id": "T10",
+      "title": "T10: Uniform replay historical-mask lifecycle",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T03a",
+        "T08"
+      ]
+    },
+    {
+      "id": "T11",
+      "title": "T11: Prioritized replay historical-mask lifecycle",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T10"
+      ]
+    },
+    {
+      "id": "T18",
+      "title": "T18: Bounded RND service and tail state \u2014 G03/G04",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T02"
+      ]
+    },
+    {
+      "id": "PW01",
+      "title": "Scope, stable identity, seeds and effective contract",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T03",
+        "T18a",
+        "T08",
+        "T18"
+      ]
+    },
+    {
+      "id": "T12",
+      "title": "T12: Real short windows and capacity/readiness \u2014 D02/G02",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped source package at qualified07ce9755/tree42bf1b69,6407PASS16SKIP; documentation checkpoint active; final BAC acceptance owed",
+      "dependencies": [
+        "T11",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T13",
+      "title": "T13: Matching PER estimators and finite priorities \u2014 D10/candidate C01",
+      "qualified_original_release": true,
+      "recorded_task_status": "Predecessors qualified; root tests-first dispatch now authorized. No production authoring until actual causalRED clearance.",
+      "dependencies": [
+        "T12",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T14",
+      "title": "T14: Add recurrent PER \u2014 D21",
+      "qualified_original_release": true,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T13",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T09a",
+      "title": "Completed lanes execute no physical action",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T09"
+      ]
+    },
+    {
+      "id": "T15",
+      "title": "T15: Production collection, masked targets and learner readiness \u2014 D01/D02/D09/D21",
+      "qualified_original_release": true,
+      "recorded_task_status": "qualified_released",
+      "dependencies": [
+        "T08a",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T09a"
+      ]
+    },
+    {
+      "id": "T16",
+      "title": "T16: Propagate effective warmup/options through the real runner",
+      "qualified_original_release": true,
+      "recorded_task_status": "tests_first_authoring",
+      "dependencies": [
+        "T06",
+        "T15"
+      ]
+    },
+    {
+      "id": "T17",
+      "title": "T17: Descriptor/value interactions while retaining mean \u2014 G01",
+      "qualified_original_release": true,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T02",
+        "T16",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T18b",
+      "title": "T18b: Add finite count-based novelty for the accepted selector",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T18a",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T18c",
+      "title": "T18c: Add transition-based ICM for the accepted selector",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T18a",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T19",
+      "title": "T19: Owned completion envelopes and clock ledger \u2014 C07",
+      "qualified_original_release": true,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T17",
+        "T18"
+      ]
+    },
+    {
+      "id": "PW02",
+      "title": "Private RNG domains and quiescent lifecycle",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "PW01",
+        "T18",
+        "T18b",
+        "T18c"
+      ]
+    },
+    {
+      "id": "PW04",
+      "title": "Backend-local clocks and future native-consumer coherence",
+      "qualified_original_release": false,
+      "recorded_task_status": "Reviewed backend producerABI readytestsfirst afterclockcheckpoint; fullPW04actualPOP/ordinaryrunner/native qualification requiredOPEN",
+      "dependencies": [
+        "PW02",
+        "T18",
+        "T18c",
+        "T19"
+      ]
+    },
+    {
+      "id": "PW03",
+      "title": "Reusable backend and policy-selector factory",
+      "qualified_original_release": false,
+      "recorded_task_status": "Bounded factoryproducer handoff accepted currentR3; actualbank/runtime/wholequalification/integratedrelease requiredOPEN",
+      "dependencies": [
+        "PW04",
+        "T18b",
+        "T18c"
+      ]
+    },
+    {
+      "id": "PW05",
+      "title": "Scoped private-instance registry",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "PW02",
+        "PW03",
+        "PW04"
+      ]
+    },
+    {
+      "id": "PW06",
+      "title": "Strict scope checkpoint preparation",
+      "qualified_original_release": false,
+      "recorded_task_status": "production_implementation_active",
+      "dependencies": [
+        "PW05",
+        "T03a"
+      ]
+    },
+    {
+      "id": "PW07",
+      "title": "Explicit shared-to-private initialization",
+      "qualified_original_release": false,
+      "recorded_task_status": "design_approved_tests_authoring",
+      "dependencies": [
+        "PW06"
+      ]
+    },
+    {
+      "id": "T18d",
+      "title": "T18d: Construct all five selected providers and own continuation",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T18",
+        "T18b",
+        "T18c",
+        "T19",
+        "PW05",
+        "PW06",
+        "PW07"
+      ]
+    },
+    {
+      "id": "T18e",
+      "title": "T18e: Bind selected raw novelty and runtime scale into the existing composer",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T09",
+        "T18d",
+        "PW05",
+        "PW07",
+        "T09a"
+      ]
+    },
+    {
+      "id": "PW08a",
+      "title": "Stage scoped checkpoint consumer before population producer",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T18e",
+        "T19",
+        "PW07"
+      ]
+    },
+    {
+      "id": "PW08",
+      "title": "Population scope wiring and existing-validator coherence",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T18e",
+        "T19",
+        "PW07",
+        "PW08a"
+      ]
+    },
+    {
+      "id": "T18f",
+      "title": "T18f: Real runner/population exploration routing and authored contrast",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T16",
+        "T18e",
+        "T19",
+        "PW08"
+      ]
+    },
+    {
+      "id": "T20",
+      "title": "T20: Completion-driven curriculum and meaningful adaptation \u2014 D12/D13/D14/G05",
+      "qualified_original_release": false,
+      "recorded_task_status": "producer_handoff_accepted_integration_open",
+      "dependencies": [
+        "T19"
+      ]
+    },
+    {
+      "id": "T21",
+      "title": "T21: Curriculum factory and option provenance",
+      "qualified_original_release": false,
+      "recorded_task_status": "source_based_preparation",
+      "dependencies": [
+        "T20",
+        "PW01"
+      ]
+    },
+    {
+      "id": "T22",
+      "title": "T22: Per-world dynamics capability \u2014 D15 producer boundary",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T09",
+        "T18e",
+        "T21"
+      ]
+    },
+    {
+      "id": "T23",
+      "title": "T23: Joint curriculum routing through population and runner \u2014 D12/D15",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T16",
+        "T18f",
+        "T19",
+        "T20",
+        "T21",
+        "T22"
+      ]
+    },
+    {
+      "id": "T24",
+      "title": "T24: Checkpoint boundary/schema and numeric selection \u2014 D04/G09 seam",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T03",
+        "T23",
+        "PW08"
+      ]
+    },
+    {
+      "id": "PW09",
+      "title": "Top-level load scope and identity dispatch",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T24",
+        "PW07"
+      ]
+    },
+    {
+      "id": "T25",
+      "title": "T25: Population predictor/replay/clock restore seam \u2014 G03/G04/C10",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T18",
+        "T19",
+        "T23",
+        "T24",
+        "PW09"
+      ]
+    },
+    {
+      "id": "T26",
+      "title": "T26: One episode-end checkpoint transaction \u2014 D03/D19/K05",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T24",
+        "T25"
+      ]
+    },
+    {
+      "id": "T27",
+      "title": "T27: Explicit serving modes, run view and one reset \u2014 D04/D18/G07",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T17",
+        "T26"
+      ]
+    },
+    {
+      "id": "T28",
+      "title": "T28: Truthful partial transfer and atomic strict mode \u2014 D17",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T17",
+        "T27"
+      ]
+    },
+    {
+      "id": "T29",
+      "title": "T29: Artifact effective-identity coherence \u2014 G09 qualification",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T03",
+        "T28"
+      ]
+    },
+    {
+      "id": "T30",
+      "title": "T30: Schema-aware transfer and explicit target-state policy \u2014 G09",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T25",
+        "T28",
+        "T29"
+      ]
+    },
+    {
+      "id": "PW10",
+      "title": "Transfer and serving scope policies",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T27",
+        "T30",
+        "PW09"
+      ]
+    },
+    {
+      "id": "T31",
+      "title": "T31: Serving/evaluation isolation in shared training \u2014 G07/C12",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T27",
+        "T30",
+        "PW10"
+      ]
+    },
+    {
+      "id": "T32",
+      "title": "T32: Add a current all-family evaluator, preserve historical instrument \u2014 K03",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T07",
+        "T31"
+      ]
+    },
+    {
+      "id": "T33",
+      "title": "T33: Accepted recording work survives shutdown \u2014 D05",
+      "qualified_original_release": true,
+      "recorded_task_status": "FULLY_RELEASED scoped package at recorded qualified checkpoint; final common-source BAC acceptance remains owed",
+      "dependencies": [
+        "T04"
+      ]
+    },
+    {
+      "id": "T34",
+      "title": "T34: Runner cleanup owns recorder failure \u2014 C13",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T26",
+        "T33"
+      ]
+    },
+    {
+      "id": "PW12",
+      "title": "Complete named simulator-state probe inventory",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "PW01",
+        "T22"
+      ]
+    },
+    {
+      "id": "T35",
+      "title": "T35: Sink units and owned outcomes \u2014 C07/C13",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T19",
+        "T34",
+        "PW12"
+      ]
+    },
+    {
+      "id": "T36",
+      "title": "T36: Effective hyperparameters and honest intervention reporting",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T26",
+        "T35"
+      ]
+    },
+    {
+      "id": "PW13",
+      "title": "Actual-update private curiosity differential",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T18f",
+        "T23",
+        "PW12"
+      ]
+    },
+    {
+      "id": "PW14",
+      "title": "Reset, resume, conversion and old-history acceptance",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T26",
+        "PW10",
+        "PW12"
+      ]
+    },
+    {
+      "id": "PW11",
+      "title": "Truthful per-world diagnostics and preserved summaries",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T35",
+        "T36",
+        "PW10",
+        "PW13",
+        "PW14"
+      ]
+    },
+    {
+      "id": "PW15",
+      "title": "C09 ownership and shared-Q feedback differential",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T30",
+        "T23",
+        "PW12"
+      ]
+    },
+    {
+      "id": "T37",
+      "title": "T37: Joint authored learning support matrix \u2014 C01/C04\u2013C09",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T15",
+        "T16",
+        "T17",
+        "T18",
+        "T18a",
+        "T18b",
+        "T18c",
+        "T18d",
+        "T18e",
+        "T18f",
+        "T25",
+        "T30",
+        "T36",
+        "PW11",
+        "PW13",
+        "PW14",
+        "PW15"
+      ]
+    },
+    {
+      "id": "T38",
+      "title": "T38: Joint restart/transfer/serve/discovery matrix \u2014 C02/C03/C10\u2013C12",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T26",
+        "T27",
+        "T28",
+        "T29",
+        "T30",
+        "T31",
+        "T32",
+        "T36",
+        "PW11",
+        "PW13",
+        "PW14",
+        "PW15"
+      ]
+    },
+    {
+      "id": "T39",
+      "title": "T39: Joint persisted-output acceptance \u2014 C07/C13",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T34",
+        "T35",
+        "T36",
+        "PW11",
+        "PW13",
+        "PW14",
+        "PW15"
+      ]
+    },
+    {
+      "id": "PW16",
+      "title": "Strict/shared matrix, source-verified claims and finite cohort",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "PW11",
+        "PW13",
+        "PW14",
+        "PW15",
+        "T37",
+        "T38",
+        "T39"
+      ]
+    },
+    {
+      "id": "T40",
+      "title": "**T40 interfaces:** `test_learning_comparison.py` is an executable comparison harness using the current evaluator and explicit cohort manifest under `docs/remediation/bac/learning/`. Run only when implementation is later authorized; this planning work launches no campaign.",
+      "qualified_original_release": false,
+      "recorded_task_status": "waiting_on_reviewed_dependencies",
+      "dependencies": [
+        "T37",
+        "T38",
+        "T39",
+        "PW16"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "candidate_tree": "7b94a1d32a51616e3012109d013cddd7670260f7",
+  "passed": 4,
+  "genuine_RED": 12,
+  "classified": {
+    "actual_ordered_metadata_type_lost": 8,
+    "metadata_or_order_impurity_accepted": 4
+  },
+  "wall_seconds": 14.769198656082153,
+  "source_guards": 354,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 3,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "authored_review_sha256": "27cefde5d01dcdd1ce89a9be6e7481658c4ef2c00af254edd5722971a84823d8",
+  "scope": "Realfactory2controlsPASS;12intentionalcopy/equalityfailures, nofixtureerrors. WSproductionbatonnext; no producer/componentGREEN yet."
+}

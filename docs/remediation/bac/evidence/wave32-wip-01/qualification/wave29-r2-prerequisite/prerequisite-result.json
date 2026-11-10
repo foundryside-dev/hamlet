@@ -1,0 +1,30 @@
+{
+  "name": "prerequisite",
+  "exit_code": 0,
+  "seconds": 19.551141500473022,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "fixture_ or source_shared_and_live_same_scope_restore_remain_real",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave29-r2-prerequisite"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave29-r2-prerequisite/prerequisite.log",
+  "sha256": "73e44fd14991d9da60f2ad795f1b6c00ad9c757342e63ac6bd07176b9d90985b",
+  "candidate_tree": "f36a7fad819dd3786c306252e8834c2385066b65",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "manifest_sha256": "6de8b4eb66669057c5792de99995b9235ed3bd0cb94300b30e57cd26757dcbbf",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

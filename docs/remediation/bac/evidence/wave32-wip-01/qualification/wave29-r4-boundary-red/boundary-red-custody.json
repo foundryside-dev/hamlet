@@ -1,0 +1,13 @@
+{
+  "candidate_tree": "99acdf84bd1e1b6f42e80e01caa29bf4f8fd631e",
+  "genuine_Count_boundary_RED": 3,
+  "wall_seconds": 15.67594861984253,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 3,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "scope": "Actual valid Countnative and parent path reached expected-refusal assertion; current code wronglyaccepted all3. Productionfix1next; no fullGREEN claim."
+}

@@ -1,0 +1,18 @@
+{
+  "candidate_tree": "f36a7fad819dd3786c306252e8834c2385066b65",
+  "passed": 33,
+  "failed": 117,
+  "classified": {
+    "missing_operation_RED": 114,
+    "required_origin_schema_RED": 3
+  },
+  "wall_seconds": 31.812724590301514,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 5,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "scope": "All117intendedcallphaseRED, no unrelatedfixturefailures; not117distinctalgorithmdefects. Actualimplementationandindependentreview/qualificationstillowed."
+}

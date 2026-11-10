@@ -24,7 +24,7 @@ from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
 ENVELOPE = set(
     (
         "schema policy policy_identity descriptor source_device curiosity_epoch bank_phase "
-        "dispatch_identity worlds shared_backend step completion"
+        "dispatch_identity worlds shared_backend step completion initialization_origin"
     ).split()
 )
 CURSOR = set("accepted_episode_seq eligible_seq cumulative_service_position participated disposition".split())
@@ -170,14 +170,20 @@ def preflight(
     state: Any, *, policy: ResolvedExplorationPolicy, descriptor: WorldCuriosityDescriptor, device: torch.device, mode: str
 ) -> None:
     keys(state, ENVELOPE, "bank checkpoint")
-    require(type(state["schema"]) is str and state["schema"] == "curiosity-bank-state-v1", "bank schema")
+    require(type(state["schema"]) is str and state["schema"] == "curiosity-bank-state-v2", "bank schema")
     require(
-        type(mode) is str and mode in ("initial", "live_episode", "completed_boundary") and state["bank_phase"] == mode,
+        type(mode) is str
+        and mode in ("initial", "live_episode", "completed_boundary", "private_initialized")
+        and state["bank_phase"] == mode,
         "bank phase mismatch",
     )
     integer(state["curiosity_epoch"], 0, "curiosity epoch")
-    require(state["curiosity_epoch"] == 0, "ordinary resume requires epoch zero")
+    if state["initialization_origin"] is None:
+        require(state["curiosity_epoch"] == 0 and mode != "private_initialized", "ordinary origin requires epoch zero")
+    else:
+        require(descriptor.scope == "per_world", "only private state has initialization origin")
     restored_policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+    require(same(restored_policy.to_dict(), state["policy"]), "complete current policy required")
     require(
         restored_policy.to_dict() == policy.to_dict() and state["policy_identity"] == policy.policy_identity, "complete policy mismatch"
     )
@@ -214,14 +220,14 @@ def preflight(
         require(state["dispatch_identity"] is None, "history cannot be live dispatch")
     else:
         require(state["completion"] is None, "live/initial state cannot import completion")
-    if mode == "initial":
+    if mode in ("initial", "private_initialized"):
         require(state["dispatch_identity"] is None and state["step"] is None, "INITIAL has no dispatch/step")
 
 
 def check_mode(*, mode: str, accepted: Any, parent: Any, validate: Any) -> None:
     if mode == "live_episode":
         require(isinstance(accepted, WorldAcceptedEpisode) and parent is None and validate is None, "live restore needs actual token only")
-    elif mode == "completed_boundary":
+    elif mode in ("completed_boundary", "private_initialized"):
         require(
             accepted is None and isinstance(parent, WorldRecord) and callable(validate), "completed restore needs actual parent preparation"
         )
@@ -296,6 +302,232 @@ def list_value(value: Any) -> Any:
     return value
 
 
+def conversion_source(
+    state: Any, *, policy: ResolvedExplorationPolicy, descriptor: WorldCuriosityDescriptor, device: torch.device
+) -> tuple[ResolvedExplorationPolicy, WorldCuriosityDescriptor]:
+    """Validate source identity and selected behavior, without native allocation."""
+    keys(state, ENVELOPE, "initialization source")
+    require(state["initialization_origin"] is None, "source must have ordinary shared origin")
+    source_policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+    require(same(source_policy.to_dict(), state["policy"]), "complete current source policy required")
+    source_descriptor = WorldCuriosityDescriptor.from_dict(state["descriptor"])
+    require(source_policy.curiosity_scope == "shared" and policy.curiosity_scope == "per_world", "explicit shared-to-private only")
+    require(source_policy.scope_origin == policy.scope_origin == "authored", "explicit authored scope required")
+    require(state["bank_phase"] in ("initial", "completed_boundary"), "initialization requires a settled source boundary")
+    for name in ("observation_dim", "action_dim", "training_seed"):
+        require(getattr(source_descriptor, name) == getattr(descriptor, name), "source/target geometry or seed mismatch")
+    require(set(source_descriptor.world_ids) == set(descriptor.world_ids), "source/target membership mismatch")
+    preflight(state, policy=source_policy, descriptor=source_descriptor, device=device, mode=state["bank_phase"])
+    fields = set(
+        (
+            "strategy epsilon_start epsilon_end epsilon_decay provider_parameters "
+            "reward_observation_phase predictor_observation_phase predictor_input_kind"
+        ).split()
+    )
+    if policy.strategy != "none":
+        fields.update(("initial_intrinsic_weight", "drive_base_weight", "modifier_names"))
+    if policy.strategy in ("rnd", "adaptive_rnd"):
+        fields.add("provider_parameter_source")
+    if policy.strategy in ("rnd", "adaptive_rnd", "icm"):
+        fields.update(("service_mode", "max_updates_per_tick", "max_pending_rows", "overflow_policy"))
+    left, right = source_policy.to_dict(), policy.to_dict()
+    require(all(same(left[name], right[name]) for name in fields), "selected source/target behavior mismatch")
+    return source_policy, source_descriptor
+
+
+def native_ledger(native: dict[str, Any], family: str) -> tuple[dict[str, Any], dict[str, Any], list[Any] | torch.Tensor]:
+    if family == "adaptive_rnd":
+        native = native["rnd_state"]
+    if family == "icm":
+        return native["counters"], native, native["pending"]
+    service = native["predictor_service"]
+    return service, service, service["pending_observations"]
+
+
+def inherited_baseline(native: Any, *, family: str, initialization: str) -> dict[str, Any] | None:
+    if family not in ("rnd", "adaptive_rnd", "icm"):
+        return None
+    counters, _, _ = native_ledger(native, family)
+    values: dict[str, Any] = {}
+    for name in ("consumed_rows", "dropped_rows", "optimizer_updates", "mandatory_service_updates"):
+        if name == "mandatory_service_updates" and family != "icm":
+            values[name] = None
+        else:
+            integer(counters[name], 0, name)
+            if initialization == "clone_learned_archive_pending":
+                values[name] = counters[name]
+            else:
+                values[name] = 0
+    values["admitted_rows"] = values["consumed_rows"] + values["dropped_rows"]
+    return values
+
+
+def future_counters(native: Any, *, policy: ResolvedExplorationPolicy, origin: Any) -> dict[str, Any] | None:
+    family = policy.strategy
+    if family not in ("rnd", "adaptive_rnd", "icm"):
+        return None
+    counters, clock, pending = native_ledger(native, family)
+    baseline = inherited_baseline(native, family=family, initialization="fresh_private")
+    if origin is not None:
+        baseline = origin["inherited_baseline"]
+    assert baseline is not None
+    result: dict[str, Any] = {}
+    for name, initial in baseline.items():
+        if initial is None:
+            result[name] = None
+        else:
+            integer(counters[name], 0, name)
+            integer(initial, 0, "inherited " + name)
+            result[name] = counters[name] - initial
+            integer(result[name], 0, "future " + name)
+    result["pending_rows"] = len(pending)
+    require(result["admitted_rows"] == result["consumed_rows"] + result["dropped_rows"] + len(pending), "future admission conservation")
+    require(result["consumed_rows"] == result["optimizer_updates"] * policy.predictor_batch_size, "future update conservation")
+    if family == "icm":
+        require(result["mandatory_service_updates"] <= result["optimizer_updates"], "future mandatory updates")
+    position = clock["service_position"]
+    if position is None:
+        require(counters["admitted_rows"] == 0, "unstarted provider position")
+    else:
+        integer(position, 0, "private provider position")
+        require(position == counters["admitted_rows"], "private provider service position")
+    return result
+
+
+def clone_native(native: Any, *, policy: ResolvedExplorationPolicy, baseline: Any) -> Any:
+    """Only validated template ledger/clock/queue fields change; learning stays owned."""
+    value = owned(native)
+    if policy.strategy in ("count_based", "icm"):
+        value.update(policy=policy.to_dict(), policy_identity=policy.policy_identity)
+    if baseline is not None:
+        counters, clock, _ = native_ledger(value, policy.strategy)
+        for name, initial in baseline.items():
+            if initial is not None:
+                counters[name] = initial
+        clock.update(
+            service_clock_unit="world_eligible_admission", service_position=baseline["admitted_rows"], ordinary_updates_at_position=0
+        )
+        if policy.strategy == "icm":
+            value["pending"] = []
+        else:
+            clock.update(pending_observations=clock["pending_observations"][:0].clone(), step_counter=0)
+    return value
+
+
+def validate_boundary_template(provider: Any, record: dict[str, Any], *, origin: dict[str, Any], policy: ResolvedExplorationPolicy) -> None:
+    """Bind an unstarted origin to its actual fresh or source-derived native template."""
+    if origin["initialization"] == "fresh_private":
+        expected_native = provider.checkpoint_state()
+        expected_gradients = capture_gradients(provider, policy.strategy)
+    else:
+        source = origin["source_checkpoint"]["shared_backend"]
+        expected_native = clone_native(source["native"], policy=policy, baseline=origin["inherited_baseline"])
+        expected_gradients = source["gradients"]
+    require(same(record["backend"]["backend"], expected_native), "unstarted native state contradicts selected initialization")
+    require(same(record["gradients"], expected_gradients), "unstarted gradients contradict selected initialization")
+
+
+def make_origin(
+    source: dict[str, Any], *, initialization: str, policy: ResolvedExplorationPolicy, descriptor: WorldCuriosityDescriptor
+) -> dict[str, Any]:
+    return dict(
+        schema="curiosity-private-initialization-v1",
+        initialization=initialization,
+        source_checkpoint=owned(source),
+        target_policy=policy.to_dict(),
+        target_policy_identity=policy.policy_identity,
+        target_descriptor=descriptor.to_dict(),
+        native_counter_basis="inherited_settled_plus_future_local",
+        inherited_baseline=inherited_baseline(source["shared_backend"]["native"], family=policy.strategy, initialization=initialization),
+        episode_baseline={record["world_id"]: record["cursor"]["accepted_episode_seq"] for record in source["worlds"]},
+    )
+
+
+def validate_origin(
+    state: dict[str, Any], *, policy: ResolvedExplorationPolicy, descriptor: WorldCuriosityDescriptor, device: torch.device
+) -> None:
+    origin = state["initialization_origin"]
+    if origin is None:
+        return
+    keys(
+        origin,
+        set(
+            (
+                "schema initialization source_checkpoint target_policy target_policy_identity "
+                "target_descriptor native_counter_basis inherited_baseline episode_baseline"
+            ).split()
+        ),
+        "initialization origin",
+    )
+    require(origin["schema"] == "curiosity-private-initialization-v1", "origin schema")
+    choice = origin["initialization"]
+    require(type(choice) is str and choice in ("fresh_private", "clone_learned_archive_pending"), "initialization selection")
+    require(origin["native_counter_basis"] == "inherited_settled_plus_future_local", "native counter basis")
+    require(
+        same(origin["target_policy"], policy.to_dict()) and origin["target_policy_identity"] == policy.policy_identity,
+        "origin target policy",
+    )
+    target = WorldCuriosityDescriptor.from_dict(origin["target_descriptor"])
+    expected = WorldCuriosityDescriptor.from_policy(
+        policy,
+        world_ids=target.world_ids,
+        observation_dim=descriptor.observation_dim,
+        action_dim=descriptor.action_dim,
+        training_seed=descriptor.training_seed,
+    )
+    require(target.to_dict() == expected.to_dict() and set(target.world_ids) == set(descriptor.world_ids), "origin target descriptor")
+    source = origin["source_checkpoint"]
+    source_policy, source_descriptor = conversion_source(source, policy=policy, descriptor=descriptor, device=device)
+    validate_records(source, policy=source_policy, descriptor=source_descriptor, device=device)
+    require(state["curiosity_epoch"] == source["curiosity_epoch"] + 1, "origin epoch relation")
+    expected_baseline = inherited_baseline(source["shared_backend"]["native"], family=policy.strategy, initialization=choice)
+    require(same(origin["inherited_baseline"], expected_baseline), "source-derived native baseline")
+    episodes = {record["world_id"]: record["cursor"]["accepted_episode_seq"] for record in source["worlds"]}
+    require(same(origin["episode_baseline"], episodes), "source-derived episode baseline")
+    mode = state["bank_phase"]
+    if mode in ("initial", "private_initialized"):
+        if source["bank_phase"] == "initial":
+            expected_phase = "initial"
+        else:
+            expected_phase = "private_initialized"
+        require(mode == expected_phase, "initialization boundary mismatch")
+    for record in state["worlds"]:
+        sequence, base = record["cursor"]["accepted_episode_seq"], episodes[record["world_id"]]
+        integer(sequence, 0, "origin current sequence")
+        if mode in ("initial", "private_initialized"):
+            require(sequence == base, "initialization episode cursor")
+        else:
+            require(sequence > base, "private runtime must follow initialization")
+
+
+def validate_archived_native(source: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device) -> None:
+    """Actual shared provider validation under separately disposable ambient custody."""
+    from townlet.exploration.provider_factory import make_backend
+    from townlet.exploration.world_curiosity_state import WorldRNGState
+
+    policy = ResolvedExplorationPolicy.from_dict(source["policy"])
+    source_descriptor = WorldCuriosityDescriptor.from_dict(source["descriptor"])
+    devices: tuple[int, ...] = ()
+    if device.type == "cuda":
+        devices = (cast(int, device.index),)
+    rng = WorldRNGState.create(descriptor=descriptor, world_id=sorted(descriptor.world_ids)[0], cuda_devices=devices)
+    with rng.activate("model_init"):
+        provider = make_backend(
+            policy,
+            world_id=None,
+            obs_dim=descriptor.observation_dim,
+            action_dim=descriptor.action_dim,
+            device=device,
+            rng=None,
+            descriptor=None,
+        )
+        payload = source["shared_backend"]
+        validate_native(provider, payload["native"], policy=policy, descriptor=source_descriptor)
+        provider.load_state(owned(payload["native"]))
+        require(same(provider.checkpoint_state(), payload["native"]), "source native transport changed")
+        attach_gradients(provider, payload["gradients"], policy.strategy)
+
+
 def event_state(event: CuriosityEventId) -> dict[str, Any]:
     return dict(
         curiosity_epoch=event.curiosity_epoch,
@@ -305,10 +537,10 @@ def event_state(event: CuriosityEventId) -> dict[str, Any]:
     )
 
 
-def event_value(value: Any) -> CuriosityEventId:
+def event_value(value: Any, *, epoch: int) -> CuriosityEventId:
     keys(value, EVENT, "event")
     result = CuriosityEventId(**value)
-    require(result.curiosity_epoch == 0, "ordinary event epoch")
+    require(result.curiosity_epoch == epoch, "event epoch mismatch")
     return result
 
 
@@ -321,7 +553,7 @@ def receipt_state(receipt: Any) -> dict[str, Any]:
     return result
 
 
-def receipt_value(value: Any, *, descriptor: WorldCuriosityDescriptor) -> Any:
+def receipt_value(value: Any, *, descriptor: WorldCuriosityDescriptor, epoch: int) -> Any:
     from townlet.exploration.scoped_curiosity import WorldServiceReceipt
 
     keys(value, set(RECEIPT), "service receipt")
@@ -329,7 +561,7 @@ def receipt_value(value: Any, *, descriptor: WorldCuriosityDescriptor) -> Any:
     boolean(value["eligible"], "receipt eligibility")
     events = value["event_ids"]
     require(type(events) is tuple and bool(events), "receipt events")
-    events = tuple(event_value(event) for event in events)
+    events = tuple(event_value(event, epoch=epoch) for event in events)
     ids = tuple(event.world_id for event in events)
     require(len(set(ids)) == len(ids) and set(ids).issubset(set(descriptor.world_ids)), "receipt event membership")
     if descriptor.scope == "per_world":
@@ -427,7 +659,7 @@ def local_content(value: dict[str, Any], index: int) -> dict[str, Any]:
     return result
 
 
-def validate_cache(record: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device, mode: str) -> None:
+def validate_cache(record: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device, mode: str, epoch: int) -> None:
     cursor, cache, world = record["cursor"], record["phase_cache"], record["world_id"]
     keys(cursor, CURSOR, "world cursor")
     for name in ("accepted_episode_seq", "eligible_seq", "cumulative_service_position"):
@@ -444,6 +676,10 @@ def validate_cache(record: dict[str, Any], *, descriptor: WorldCuriosityDescript
         require(cursor["disposition"] is None and not cursor["participated"], "INITIAL disposition")
         return
     integer(cursor["accepted_episode_seq"], 1, "accepted cursor")
+    if mode == "private_initialized":
+        require(not cache and cursor["eligible_seq"] == cursor["cumulative_service_position"] == 0, "initialized local work")
+        require(cursor["disposition"] is None and not cursor["participated"], "initialized disposition")
+        return
     if mode == "live_episode":
         require(cursor["disposition"] is None and "completion" not in cache, "live disposition/history")
     else:
@@ -457,7 +693,7 @@ def validate_cache(record: dict[str, Any], *, descriptor: WorldCuriosityDescript
         if phase == "reward":
             required = {"event_id", "content", "update_stats", "raw", "scale"}
         keys(entry, required, f"{phase} cache")
-        event = event_value(entry["event_id"])
+        event = event_value(entry["event_id"], epoch=epoch)
         require(event.world_id == world and event.world_episode_seq == cursor["accepted_episode_seq"], "cache event binding")
         integer(event.eligible_seq, 1, "cache eligible event")
         validate_content(entry["content"], descriptor=descriptor, device=device, rows=())
@@ -472,7 +708,7 @@ def validate_cache(record: dict[str, Any], *, descriptor: WorldCuriosityDescript
                 require(event.eligible_seq == cursor["eligible_seq"], "completed reward must be settled")
         else:
             require(event.eligible_seq == cursor["eligible_seq"] and cursor["participated"], "service cursor")
-            receipt = receipt_value(entry["receipt"], descriptor=descriptor)
+            receipt = receipt_value(entry["receipt"], descriptor=descriptor, epoch=epoch)
             require(receipt.eligible and event in receipt.event_ids, "cache receipt event")
             if receipt.clock is not None:
                 position = entry["content"]["vector_tick"]
@@ -481,8 +717,8 @@ def validate_cache(record: dict[str, Any], *, descriptor: WorldCuriosityDescript
                 require(receipt.clock.position == position, "local service clock")
     if "service" in cache:
         require("reward" in cache, "service without reward cache")
-        reward_event = event_value(cache["reward"]["event_id"])
-        service_event = event_value(cache["service"]["event_id"])
+        reward_event = event_value(cache["reward"]["event_id"], epoch=epoch)
+        service_event = event_value(cache["service"]["event_id"], epoch=epoch)
         require(reward_event.eligible_seq >= service_event.eligible_seq, "cache phase order")
         if reward_event == service_event:
             require(same(cache["reward"]["content"], cache["service"]["content"]), "cache phase content mismatch")
@@ -537,11 +773,11 @@ def validate_completion(state: dict[str, Any], *, descriptor: WorldCuriosityDesc
         require(same(cached["content"], expected), "local completion content")
 
 
-def stamp_value(value: Any, *, device: torch.device) -> CuriosityStepStamp:
+def stamp_value(value: Any, *, device: torch.device, epoch: int) -> CuriosityStepStamp:
     keys(value, STAMP, "step stamp")
     require(type(value["event_ids"]) is tuple, "stamp events tuple")
     require(value["world_episode_seqs"].device == device, "stamp selected device")
-    return CuriosityStepStamp(**dict(value, event_ids=tuple(event_value(event) for event in value["event_ids"])))
+    return CuriosityStepStamp(**dict(value, event_ids=tuple(event_value(event, epoch=epoch) for event in value["event_ids"])))
 
 
 def validate_step(state: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device) -> None:
@@ -557,7 +793,7 @@ def validate_step(state: dict[str, Any], *, descriptor: WorldCuriosityDescriptor
         )
     else:
         require(same(binding, state["dispatch_identity"]), "step/dispatch binding")
-    stamp = stamp_value(step["stamp"], device=device)
+    stamp = stamp_value(step["stamp"], device=device, epoch=state["curiosity_epoch"])
     require(
         list(stamp.world_ids) == binding["world_ids"] and stamp.world_episode_seqs.tolist() == binding["world_episode_seqs"],
         "step stamp binding",
@@ -588,7 +824,7 @@ def validate_step(state: dict[str, Any], *, descriptor: WorldCuriosityDescriptor
     receipts = step["receipts"]
     if step["serviced"]:
         require(reward is not None and type(receipts) is tuple, "settled step needs reward/receipts")
-        decoded = tuple(receipt_value(receipt, descriptor=descriptor) for receipt in receipts)
+        decoded = tuple(receipt_value(receipt, descriptor=descriptor, epoch=state["curiosity_epoch"]) for receipt in receipts)
         if descriptor.scope == "per_world":
             require(len(decoded) == n, "private receipt rows")
             require(
@@ -643,7 +879,7 @@ def validate_records(
     if mode == "live_episode":
         episodes = identity(state["dispatch_identity"], descriptor.world_ids)
     for record in state["worlds"]:
-        validate_cache(record, descriptor=descriptor, device=device, mode=mode)
+        validate_cache(record, descriptor=descriptor, device=device, mode=mode, epoch=state["curiosity_epoch"])
         cursor = record["cursor"]
         if episodes is not None:
             require(cursor["accepted_episode_seq"] == episodes[record["world_id"]], "live cursor accepted identity")
@@ -652,23 +888,9 @@ def validate_records(
             keys(envelope, {"schema", "healthy", "backend", "rng"}, "owned provider envelope")
             require(envelope["schema"] == "owned-world-backend-v1" and envelope["healthy"] is True, "healthy owned provider required")
             native = envelope["backend"]
-            if policy.strategy in ("rnd", "adaptive_rnd", "icm"):
-                if policy.strategy == "adaptive_rnd":
-                    native = native["rnd_state"]
-                if policy.strategy != "icm":
-                    native = native["predictor_service"]
-                    admitted = native["admitted_rows"]
-                else:
-                    admitted = native["counters"]["admitted_rows"]
-                require(
-                    type(admitted) is int and admitted == cursor["cumulative_service_position"],
-                    "provider/BANK cumulative admission mismatch",
-                )
-                position = native["service_position"]
-                if position is None:
-                    require(admitted == 0, "unstarted provider position")
-                else:
-                    require(type(position) is int and position == admitted, "private provider service position")
+            future = future_counters(native, policy=policy, origin=state["initialization_origin"])
+            if future is not None:
+                require(future["admitted_rows"] == cursor["cumulative_service_position"], "provider/BANK cumulative admission mismatch")
     validate_completion(state, descriptor=descriptor)
     validate_step(state, descriptor=descriptor, device=device)
     binding = state["dispatch_identity"]
@@ -736,6 +958,18 @@ def validate_native(provider: Any, payload: Any, *, policy: ResolvedExplorationP
         disposable = clone_provider(provider, family=family)
         disposable.load_state(owned(payload))
     else:
+        if family in ("rnd", "adaptive_rnd"):
+            native = payload
+            if family == "adaptive_rnd":
+                native = payload["rnd_state"]
+            for name in ("epsilon", "epsilon_decay", "epsilon_min"):
+                number(native[name], "native " + name)
+            require(
+                native["epsilon_decay"] == policy.epsilon_decay
+                and native["epsilon_min"] == policy.epsilon_end
+                and policy.epsilon_end <= native["epsilon"] <= policy.epsilon_start,
+                "native epsilon policy mismatch",
+            )
         require(provider.validate_state(payload) is None, "native validator return")
 
 
@@ -806,16 +1040,16 @@ def _allocate_runtime_data(*, section: str, value: Any) -> Any:
     return owned(value)
 
 
-def decode_cache(values: dict[str, Any], *, descriptor: WorldCuriosityDescriptor) -> dict[str, Any]:
+def decode_cache(values: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, epoch: int) -> dict[str, Any]:
     result = {}
     for world, cache in values.items():
         phases = {}
         for phase, entry in cache.items():
             item = dict(entry)
             if phase in ("reward", "service"):
-                item["event_id"] = event_value(entry["event_id"])
+                item["event_id"] = event_value(entry["event_id"], epoch=epoch)
             if phase == "service":
-                item["receipt"] = receipt_value(entry["receipt"], descriptor=descriptor)
+                item["receipt"] = receipt_value(entry["receipt"], descriptor=descriptor, epoch=epoch)
             phases[phase] = item
         result[world] = phases
     return result
@@ -857,17 +1091,17 @@ def project_step(step: dict[str, Any], *, order: tuple[str, ...]) -> dict[str, A
     return result
 
 
-def decode_step(step: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device) -> dict[str, Any]:
+def decode_step(step: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device, epoch: int) -> dict[str, Any]:
     from townlet.exploration.scoped_curiosity import CuriosityReward
 
     result = dict(step)
     result.pop("original_binding")
-    result["stamp"] = stamp_value(step["stamp"], device=device)
+    result["stamp"] = stamp_value(step["stamp"], device=device, epoch=epoch)
     if step["reward"] is not None:
         reward = step["reward"]
         result["reward"] = CuriosityReward(reward["raw"], reward["scales"], reward["eligible"], result["stamp"].event_ids, reward["scope"])
     if step["receipts"] is not None:
-        result["receipts"] = tuple(receipt_value(value, descriptor=descriptor) for value in step["receipts"])
+        result["receipts"] = tuple(receipt_value(value, descriptor=descriptor, epoch=epoch) for value in step["receipts"])
     return result
 
 
@@ -891,10 +1125,10 @@ def runtime_data(state: dict[str, Any], *, descriptor: WorldCuriosityDescriptor,
         projected = dict(step, receipts=receipts)
         if descriptor.scope == "per_world":
             projected = project_step(projected, order=descriptor.world_ids)
-        pending = decode_step(projected, descriptor=descriptor, device=device)
+        pending = decode_step(projected, descriptor=descriptor, device=device, epoch=state["curiosity_epoch"])
     return dict(
         cursor={record["world_id"]: owned(record["cursor"]) for record in state["worlds"]},
-        cache=decode_cache(caches, descriptor=descriptor),
+        cache=decode_cache(caches, descriptor=descriptor, epoch=state["curiosity_epoch"]),
         pending=pending,
         history=history,
         historical_step=historical_step,

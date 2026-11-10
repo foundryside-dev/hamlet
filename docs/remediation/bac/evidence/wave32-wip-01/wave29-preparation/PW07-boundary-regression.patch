@@ -1,0 +1,77 @@
+diff --git a/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py b/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
+index d58d9cce..6c85deca 100644
+--- a/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
++++ b/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
+@@ -12,6 +12,7 @@ from pathlib import Path
+ import numpy as np
+ import pytest
+ import torch
++
+ from townlet.config.bac_options import BaCOptions
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+ from townlet.config.exploration_policy import IntrinsicTransitionContext, resolve_exploration_policy
+@@ -1392,3 +1393,64 @@ def test_fixture_actual_private_callback_witnesses(compiled, family):
+     # A third actual operation proves witness calls did not quarantine the owner.
+     rig.step(3, (True, False))
+     assert rig.bank.snapshot_world(world_id="A")["cursor"]["cumulative_service_position"] == 3
++
++
++@pytest.mark.parametrize("mutation", ("choice", "archive_counts", "target_counts"))
++def test_unstarted_count_origin_requires_selected_template(compiled, mutation):
++    """Reject valid native Count state that contradicts its unstarted origin claim."""
++    source = trained_source(compiled, "count_based", "paced_fifo")
++    source_before = live(source.bank)
++    target = destination(compiled, source)
++    convert(target, source.saved, CHOICES[1])
++    original = target.bank.checkpoint_state()
++    assert original["bank_phase"] == "private_initialized"
++    assert original["initialization_origin"]["inherited_baseline"] is None
++    assert all(record["cursor"]["cumulative_service_position"] == 0 for record in original["worlds"])
++    changed = deepcopy(original)
++    if mutation == "choice":
++        changed["initialization_origin"]["initialization"] = CHOICES[0]
++        assert changed["worlds"][0]["backend"]["backend"]["counts"]
++    else:
++        if mutation == "archive_counts":
++            native = changed["initialization_origin"]["source_checkpoint"]["shared_backend"]["native"]
++            validator = Rig(compiled, source.bank.policy)
++        else:
++            native = changed["worlds"][0]["backend"]["backend"]
++            validator = Rig(compiled, target.bank.policy)
++        native["counts"][next(iter(native["counts"]))] += 1
++        # Actual Count's complete loader accepts this independently valid learned state.
++        on_backend(validator.bank, lambda provider: provider.load_state(deepcopy(native)))
++        equal(live(validator.bank)["native"], native)
++    receiver = destination(compiled, source)
++    before = {world: live(receiver.bank, world) for world in IDS}
++    rng = {world: receiver.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
++    revision = receiver.bank.mutation_revision
++    ambient = torch.get_rng_state().clone()
++    with pytest.raises(ValueError):
++        receiver.bank.prepare_restore(
++            state=changed,
++            mode="private_initialized",
++            accepted=None,
++            parent_restore=receiver.parent,
++            validate_parent_restore=receiver.validate_parent,
++        )
++    assert receiver.bank.mutation_revision == revision
++    for world in IDS:
++        equal(live(receiver.bank, world), before[world])
++        equal(receiver.bank.snapshot_world(world_id=world)["backend"]["rng"], rng[world])
++    equal(torch.get_rng_state(), ambient)
++    assert_source(source, source_before, source.saved)
++    token = receiver.bank.prepare_restore(
++        state=original,
++        mode="private_initialized",
++        accepted=None,
++        parent_restore=receiver.parent,
++        validate_parent_restore=receiver.validate_parent,
++    )
++    receiver.bank.install_restore(prepared=token)
++    receiver.install_parent()
++    equal(learned(live(receiver.bank)["native"], "count_based"), learned(source_before["native"], "count_based"))
++    receiver.begin(source.accepted.batch_episode + 1)
++    receiver.step(401, (True, False))
++    assert receiver.bank.snapshot_world(world_id="A")["cursor"]["cumulative_service_position"] == 1
++    assert_source(source, source_before, source.saved)

@@ -1,0 +1,149 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [3 items]
+
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+________ test_unstarted_count_origin_requires_selected_template[choice] ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+mutation = 'choice'
+
+    @pytest.mark.parametrize("mutation", ("choice", "archive_counts", "target_counts"))
+    def test_unstarted_count_origin_requires_selected_template(compiled, mutation):
+        """Reject valid native Count state that contradicts its unstarted origin claim."""
+        source = trained_source(compiled, "count_based", "paced_fifo")
+        source_before = live(source.bank)
+        target = destination(compiled, source)
+        convert(target, source.saved, CHOICES[1])
+        original = target.bank.checkpoint_state()
+        assert original["bank_phase"] == "private_initialized"
+        assert original["initialization_origin"]["inherited_baseline"] is None
+        assert all(record["cursor"]["cumulative_service_position"] == 0 for record in original["worlds"])
+        changed = deepcopy(original)
+        if mutation == "choice":
+            changed["initialization_origin"]["initialization"] = CHOICES[0]
+            assert changed["worlds"][0]["backend"]["backend"]["counts"]
+        else:
+            if mutation == "archive_counts":
+                native = changed["initialization_origin"]["source_checkpoint"]["shared_backend"]["native"]
+                validator = Rig(compiled, source.bank.policy)
+            else:
+                native = changed["worlds"][0]["backend"]["backend"]
+                validator = Rig(compiled, target.bank.policy)
+            native["counts"][next(iter(native["counts"]))] += 1
+            # Actual Count's complete loader accepts this independently valid learned state.
+            on_backend(validator.bank, lambda provider: provider.load_state(deepcopy(native)))
+            equal(live(validator.bank)["native"], native)
+        receiver = destination(compiled, source)
+        before = {world: live(receiver.bank, world) for world in IDS}
+        rng = {world: receiver.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
+        revision = receiver.bank.mutation_revision
+        ambient = torch.get_rng_state().clone()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1429: Failed
+____ test_unstarted_count_origin_requires_selected_template[archive_counts] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+mutation = 'archive_counts'
+
+    @pytest.mark.parametrize("mutation", ("choice", "archive_counts", "target_counts"))
+    def test_unstarted_count_origin_requires_selected_template(compiled, mutation):
+        """Reject valid native Count state that contradicts its unstarted origin claim."""
+        source = trained_source(compiled, "count_based", "paced_fifo")
+        source_before = live(source.bank)
+        target = destination(compiled, source)
+        convert(target, source.saved, CHOICES[1])
+        original = target.bank.checkpoint_state()
+        assert original["bank_phase"] == "private_initialized"
+        assert original["initialization_origin"]["inherited_baseline"] is None
+        assert all(record["cursor"]["cumulative_service_position"] == 0 for record in original["worlds"])
+        changed = deepcopy(original)
+        if mutation == "choice":
+            changed["initialization_origin"]["initialization"] = CHOICES[0]
+            assert changed["worlds"][0]["backend"]["backend"]["counts"]
+        else:
+            if mutation == "archive_counts":
+                native = changed["initialization_origin"]["source_checkpoint"]["shared_backend"]["native"]
+                validator = Rig(compiled, source.bank.policy)
+            else:
+                native = changed["worlds"][0]["backend"]["backend"]
+                validator = Rig(compiled, target.bank.policy)
+            native["counts"][next(iter(native["counts"]))] += 1
+            # Actual Count's complete loader accepts this independently valid learned state.
+            on_backend(validator.bank, lambda provider: provider.load_state(deepcopy(native)))
+            equal(live(validator.bank)["native"], native)
+        receiver = destination(compiled, source)
+        before = {world: live(receiver.bank, world) for world in IDS}
+        rng = {world: receiver.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
+        revision = receiver.bank.mutation_revision
+        ambient = torch.get_rng_state().clone()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1429: Failed
+____ test_unstarted_count_origin_requires_selected_template[target_counts] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+mutation = 'target_counts'
+
+    @pytest.mark.parametrize("mutation", ("choice", "archive_counts", "target_counts"))
+    def test_unstarted_count_origin_requires_selected_template(compiled, mutation):
+        """Reject valid native Count state that contradicts its unstarted origin claim."""
+        source = trained_source(compiled, "count_based", "paced_fifo")
+        source_before = live(source.bank)
+        target = destination(compiled, source)
+        convert(target, source.saved, CHOICES[1])
+        original = target.bank.checkpoint_state()
+        assert original["bank_phase"] == "private_initialized"
+        assert original["initialization_origin"]["inherited_baseline"] is None
+        assert all(record["cursor"]["cumulative_service_position"] == 0 for record in original["worlds"])
+        changed = deepcopy(original)
+        if mutation == "choice":
+            changed["initialization_origin"]["initialization"] = CHOICES[0]
+            assert changed["worlds"][0]["backend"]["backend"]["counts"]
+        else:
+            if mutation == "archive_counts":
+                native = changed["initialization_origin"]["source_checkpoint"]["shared_backend"]["native"]
+                validator = Rig(compiled, source.bank.policy)
+            else:
+                native = changed["worlds"][0]["backend"]["backend"]
+                validator = Rig(compiled, target.bank.policy)
+            native["counts"][next(iter(native["counts"]))] += 1
+            # Actual Count's complete loader accepts this independently valid learned state.
+            on_backend(validator.bank, lambda provider: provider.load_state(deepcopy(native)))
+            equal(live(validator.bank)["native"], native)
+        receiver = destination(compiled, source)
+        before = {world: live(receiver.bank, world) for world in IDS}
+        rng = {world: receiver.bank.snapshot_world(world_id=world)["backend"]["rng"] for world in IDS}
+        revision = receiver.bank.mutation_revision
+        ambient = torch.get_rng_state().clone()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1429: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_unstarted_count_origin_requires_selected_template[choice]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_unstarted_count_origin_requires_selected_template[archive_counts]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_unstarted_count_origin_requires_selected_template[target_counts]
+============================== 3 failed in 11.10s ==============================

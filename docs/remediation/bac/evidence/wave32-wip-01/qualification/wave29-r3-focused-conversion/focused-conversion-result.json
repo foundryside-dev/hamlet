@@ -1,0 +1,30 @@
+{
+  "name": "focused-conversion",
+  "exit_code": 1,
+  "seconds": 25.627197265625,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "fresh_private_and_clone_learned_origins and paced_fifo",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave29-r3-focused-conversion"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave29-r3-focused-conversion/focused-conversion.log",
+  "sha256": "80821479bdc68584f65bfea2612e700b772571119e53ca8300ea1a06d7af8286",
+  "candidate_tree": "e7ca61d0fbd20c8e5fc32bfb4d37629dd3111d4e",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "manifest_sha256": "51f695dd2d0ec6e7491ae14d482db55d29c815784f717d9d04d04bef761ece64",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

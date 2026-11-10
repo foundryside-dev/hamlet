@@ -1,0 +1,107 @@
+"""Publish qualified PW07 component and original causal evidence, without claiming BAC release."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+
+def digest(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+
+m = json.loads((W / 'wave32/r1-candidate.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree']
+assert not git('diff', '--name-only')
+for group in ('source_files', 'configs', 'artifacts'):
+    for p, h in m[group].items():
+        assert digest(R / p) == h, p
+receipt = json.loads((W / 'wave32/r1-checkpoint-receipt.json').read_text())
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['results']['coherent']['counts']['passed'] == 951
+assert receipt['results']['coherent']['counts']['skipped'] == 3
+expected = {
+    'CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md': 'c88a786674c4001ad121ba809c47eaa8cac1d19f640ec51eeb644745cd38c7a2',
+    'CURRENT-CURIOSITY-BANK-CONTRACT.md': '0e8e73ceeecbbcf1c4445ff063716b40edb53029d12637bb48ecdac09d4b8816',
+}
+for name, h in expected.items():
+    assert digest(W / 'wave32-preparation' / name) == h
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p) for p in ('src', 'tests', 'configs', 'scripts')}
+out = D / 'evidence/wave32-wip-01'
+out.mkdir(exist_ok=True)
+artifacts = {}
+
+def copy(source, dest):
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        assert digest(source) == digest(dest), str(dest)
+    else:
+        dest.write_bytes(source.read_bytes())
+    assert digest(source) == digest(dest)
+    artifacts[dest.relative_to(R).as_posix()] = {'sha256': digest(dest), 'original': str(source)}
+
+# Finite named cohorts only. No scratch fixtures, repositories, bundles or training artifacts.
+for wave in ('wave29', 'wave31', 'wave32'):
+    for folder in sorted(Q.glob(wave + '-r*')):
+        if folder.is_dir():
+            for p in sorted(folder.rglob('*')):
+                if p.is_file() and p.suffix in ('.json', '.log'):
+                    copy(p, out / 'qualification' / folder.name / p.relative_to(folder))
+    for p in sorted(Q.glob(wave + '-r*.json')):
+        copy(p, out / 'qualification' / p.name)
+for folder in ('wave29', 'wave29-preparation', 'wave30-preparation', 'wave31', 'wave31-preparation', 'wave32', 'wave32-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'run_bac_packet_checks_locked.py', 'bac_source_identity.py', 'publish_wave32_wip01.py'):
+    copy(Q / name, out / (name + '.txt'))
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name, h in expected.items():
+    target = D / name
+    target.write_bytes((W / 'wave32-preparation' / name).read_bytes())
+    assert digest(target) == h
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': h, 'original': str(W / 'wave32-preparation' / name)}
+manifest = {
+    'status': receipt['status'],
+    'packet': 'PW07 explicit private curiosity initialization and inactive learned-source archive; native ordered metadata preservation',
+    'evidence_base_commit': m['base_commit'],
+    'evidence_candidate_tree': m['candidate_tree'],
+    'execution_subtrees': execution,
+    'inventories': m['inventories'],
+    'source_files': m['source_files'],
+    'config_changes': m['config_changes'],
+    'receipt': receipt,
+    'artifacts': artifacts,
+    'qualified_progress': 'Original28/66 qualified releases unchanged. Bounded producer qualification only; actual parent/runtime integration and all final acceptance remain owed.',
+    'publication': 'Existing authorized remote branch; no new branch/worktree/checkout/repository/source copy/PR/merge/deletion. Private email-rewrite backup bundle excluded.',
+    'next': 'Original T18d current runtime and none-scale contracts, coherent parent/environment/population/runner integration, learning and final qualification.',
+}
+mp = D / 'evidence/wave32-wip-01.json'
+assert not mp.exists()
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+status = D / 'STATUS.md'
+status.write_text(status.read_text() + '''
+
+PW07's explicit private curiosity initialization component is accepted at the bounded producer level. `fresh_private` starts per-world curiosity from its genuine initial state; `clone_learned_archive_pending` copies learned state while preserving the complete source archive as inactive history. Native inherited counters and future per-world counters remain distinct, origin/epoch provenance is explicit, and conversion grants no fabricated simulator history or live close authority. The current bank/checkpoint schema is v2. Ordered native state dictionaries and Torch metadata survive owned transport; optional actual gradients, optimizer parameter pairing, private RNG and target parameters retain their separate contracts. Source refusal and publication use the reviewed prepare/install protocol. [Checkpoint contract](CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md), [bank contract](CURRENT-CURIOSITY-BANK-CONTRACT.md) and [exact evidence](evidence/wave32-wip-01.json) contain the source-verified behavior and limits.
+
+Root153 and independentSol153 conversion tests, root16 and independentAstra16 native metadata tests, root31 and independentAstra31 owner tests, and the final combined951 PASS/three unavailable-CUDA skips qualify the coherent component candidate. Independent whole-source design/spec/quality review and separate documentation truth review passed. Causal RED evidence and the narrowly repaired old test reference helper are retained. Ruff, Black, expression documentation and no-defaults pass; defaults remain601. Nine existing oracle/POP mypy errors remain an open integration gate. **WIP — NOT PARENT/INTEGRATION QUALIFIED — NOT RELEASED.** Original28/66 release count is unchanged. T18d still owes an actual zero selected scale for eligible `none`; current raw/contribution values are zero but the selected scale remains `initial_intrinsic_weight`. Current runtime, actual ENV/POP/runner/native-parent integration, captured-replay sampling/readiness/learning, T26 durability, CLI/default-repository/coverage≥70/slow/applicable hardware, fresh final54requirements/22lenses and exact-tip CI remain required. The preceding public a7c checkpoint has Config PASS, Lint FAIL and Tests FAIL; the Tests cause remains untriaged because job-log retrieval failed, and must not be inferred from the separate mypy errors. K01's existing simulator-continuation qualification remains explicit. Continue planned delivery without routine halt.
+''')
+paths = [*artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md']
+assert all('.bundle' not in p and 'git-backups' not in p for p in paths)
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for p, h in execution.items():
+    assert git('rev-parse', tree + ':' + p) == h, p
+for p, row in artifacts.items():
+    assert digest(R / p) == row['sha256'], p
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.', ':(glob,exclude)docs/remediation/bac/evidence/wave32-wip-01/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree, 'source_equivalence': 'PASS', 'artifact_count': len(artifacts), 'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave32-wip-01-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

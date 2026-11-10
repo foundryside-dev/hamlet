@@ -1,0 +1,326 @@
+{
+  "status": "BOUNDED PW07 PRIVATE INITIALIZATION AND OWNED NATIVE METADATA COMPONENTS ACCEPTED; WIP NOT PARENT/INTEGRATION QUALIFIED NOT RELEASED",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+  "inventory_across_separate_bounded_contexts": [
+    {
+      "path": "src/townlet/exploration/curiosity_checkpoint.py",
+      "lines": 1135,
+      "sha256": "9499dad4774ab6df303e970ff2871436e9f018c5e5bbf8482faaf7df1873d740"
+    },
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "lines": 1282,
+      "sha256": "a122097fa313e335a4213499627dc1b071aa02600984829dc08d80ddba0bb363"
+    },
+    {
+      "path": "src/townlet/config/exploration_policy.py",
+      "lines": 768,
+      "sha256": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "lines": 1456,
+      "sha256": "672a1441520b69cfda5045220a29d2abf891afa7fbad8d461c5e22c91adab893"
+    },
+    {
+      "path": "src/townlet/exploration/world_curiosity_state.py",
+      "lines": 883,
+      "sha256": "cb8a7fd9f27c73537ec3f18f37b6cd5a3d88ca23c281b76376cece8be5f9dfb1"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py",
+      "lines": 313,
+      "sha256": "3b1c6408835b43239afa920eca51d03ac82c0219caf3d7b01fc347c934ef1dbb"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+      "lines": 945,
+      "sha256": "7bc3f942badf058967fa1f96bd981b48c38c59c3a28f73e299af81a2bf2c1990"
+    }
+  ],
+  "source_budget": "Main4/4641 cap5000; metadataaux5/2951 cap5000; ownerfixture1/945 cap1100; no singleagent read this combinedinventory as source.",
+  "results": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.6628472805023193,
+      "source_guards": 354,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "focused": {
+      "job": "focused",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+      "exit_code": 0,
+      "counts": {
+        "passed": 5,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 9.130645036697388,
+      "source_guards": 354,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+      "exit_code": 0,
+      "counts": {
+        "passed": 31,
+        "skipped": 1,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 18.107207536697388,
+      "source_guards": 354,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+      "exit_code": 0,
+      "counts": {
+        "passed": 31,
+        "skipped": 1,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 18.99091935157776,
+      "source_guards": 354,
+      "process_identities": 2,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "coherent-collection": {
+      "job": "coherent-collection",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.5537092685699463,
+      "source_guards": 354,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "coherent": {
+      "job": "coherent",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+      "exit_code": 0,
+      "counts": {
+        "passed": 951,
+        "skipped": 3,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 121.80104279518127,
+      "source_guards": 354,
+      "process_identities": 4,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "previous_same_production_results": {
+    "main_root": {
+      "job": "main-owned",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+      "exit_code": 0,
+      "counts": {
+        "passed": 153,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 84.71997308731079,
+      "source_guards": 354,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "main_independentSol": {
+      "job": "main-independent",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+      "exit_code": 0,
+      "counts": {
+        "passed": 153,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 137.726824760437,
+      "source_guards": 354,
+      "process_identities": 2,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "metadata_root": {
+      "job": "owned",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+      "exit_code": 0,
+      "counts": {
+        "passed": 16,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 14.363572597503662,
+      "source_guards": 354,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "metadata_independentAstra": {
+      "job": "independent",
+      "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+      "candidate_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+      "exit_code": 0,
+      "counts": {
+        "passed": 16,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 13.91125226020813,
+      "source_guards": 354,
+      "process_identities": 2,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "production_equivalence": {
+    "previous_qualified_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+    "current_candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+    "source_changes": [
+      "tests/test_townlet/regressions/bac/test_pw_rng_domains.py"
+    ],
+    "production_and_153_conversion_and_16_metadata_test_bytes": "IDENTICAL",
+    "guards": 354,
+    "configs": 573,
+    "protected_artifacts": 13
+  },
+  "guards": {
+    "black": {
+      "exit_code": 0,
+      "seconds": 45.49587273597717,
+      "sha256": "248b0c655dea5f2f36c38d7dc50acc8fd0e37bb2154d60a314292a69023dec03"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.653963088989258,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 0.5582129955291748,
+      "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 1.116042137145996,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.07449698448181152,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  },
+  "reviews": {
+    "main_whole_fixed_source_and_design": "499bf1064e7ab40d11164b9287e50bfb289681afc1eff8ce0e46a314741a1d25",
+    "metadata_whole_fixed_source_and_design": "4e1e894321fc4048ba0aaad150a1479d8157312715cff45da406955e78fc3b2c",
+    "owner_fixture_final_source_and_runtime": "bfd9324f8c021e586e962992b64db3224a23158f86de85c7eaced10c1d53646c"
+  },
+  "dispositions": {
+    "finite_design": "Explicitfresh_private/clone_learned_archive_pending/initialization_origin/epoch source+1/private_initialized/no fabricatedpast; completeinactivearchive retained, ordinarycurrentcapturedreplay andsame-scoperestore preserved",
+    "main_fix1": "Countinitialoriginboundary/native+actualgrad consistency;typedRNDemptytail;explicitbranches/nodefaultwaiver",
+    "owner_codec": "OrderedDict exactkind/order/recursiveTorch_metadata and optional metadata absence retained with independentpuremutationdetection",
+    "reference_fixture_fix1": "Deepcopyactualnative reference preserveskind/metadata; genericMappingkeyset equality vs OrderedDict order semantics. All32original IDs and poisonchildassertions retained. ActualcausalRED->focused5GREEN->owner31root+31indepGREEN."
+  },
+  "custody": "Current354sources573configs13artifacts4coherentpytestidentities; nonpytestchild354exacthash48currentimports/Python3.13.5Torch2.11intra1interop5/poisonassertionsPASS; index/source/registry14MAIN1stationary. No sourcecopy/worktreecreation.",
+  "scope": "Bounded source-level curiosity producer API, actualCPUlearning/Adam/targets/gradients/RNG, realENVauthority with localotherrole fixtures and minimalactualHC/replaycontainers. Not wholeparent/nativeDemoRunner/DQNsampling or fullBAC qualification. Main153 and metadata16 overlap coherent951; counts not summed into independentrequirements.",
+  "open": "Original38of66packages remainunqualified. T18dnoneScalezero/currentruntime/current ENV/POP/runner/nativeparent/replayreadinesslearning/T26durability/fullrepo/defaultCLI/coverage>=70/slow/applicablehardware/provider/freshfinal54requirements22lenses/exacttipCI. NineglobaloraclePOPmypy errors. Previousa7c ConfigPASS/LintFAIL/TestsFAILcauseuntriaged due logaccess. CUDA unavailable/unqualified. K01existing stochastic/mid-episodesim qualification retained.",
+  "governance": "Existingremote branchpush authorized. No newbranch/worktree/repositorycopy/deletion/PR/merge/spending/access. No userdecisionpending; continuousplannedwork.",
+  "documentation": {
+    "checkpoint_sha256": "c88a786674c4001ad121ba809c47eaa8cac1d19f640ec51eeb644745cd38c7a2",
+    "bank_sha256": "0e8e73ceeecbbcf1c4445ff063716b40edb53029d12637bb48ecdac09d4b8816",
+    "truth_review_sha256": "e18f0da8337704f247aec3201e7b2829447b906e6c748912306ebbf8936ac45f",
+    "verdict": "FreshSolmedium source-truthAPPROVED wholecontracts then scoped finalqualificationupdate;4/4641"
+  }
+}

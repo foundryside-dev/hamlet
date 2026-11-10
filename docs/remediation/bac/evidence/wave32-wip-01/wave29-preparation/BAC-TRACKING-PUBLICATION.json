@@ -1,0 +1,50 @@
+{
+  "status": "updated_same_page_and_read_back",
+  "title": "BAC Work Completed and Remaining",
+  "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "created_at": "2026-11-10T14:07:57.502017Z",
+  "idempotency_key": "bac-work-tracker-2026-11-11-a7c4cd0b",
+  "drive_scope": "personal",
+  "parent": null,
+  "space_id": null,
+  "publication": "Created authorized private native editable text Page; no sharing changes, new Space, messages or automations.",
+  "verification": {
+    "readback_success": true,
+    "body_preserved_normalizing_whitespace": true,
+    "native_blocks": 32,
+    "completed_packet_ids": 28,
+    "remaining_packet_ids": 38,
+    "exact_packet_coverage": true,
+    "title_verified": true,
+    "headings_verified": true,
+    "visual_preview": "No rendered preview exposed by Page tools; visual layout not independently inspected.",
+    "latest_update": {
+      "atomic_nonpatch_operations": 6,
+      "all_applied": true,
+      "edit_receipt_sequence": 1,
+      "readback_success": true,
+      "changed_blocks_exact": true,
+      "all_untouched_blocks_preserved": true,
+      "native_blocks": 32,
+      "rendered_preview": "Unavailable; visual layout not independently inspected."
+    }
+  },
+  "source_checkpoint": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "source_set": [
+    "BAC-TRACKING-SNAPSHOT.json",
+    "../CURRENT-STATE.json",
+    "../progress.md",
+    "/workspace/hamlet/docs/remediation/bac/STATUS.md",
+    "/workspace/hamlet/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md"
+  ],
+  "source_total_lines": 3534,
+  "root_update_incorporated": "PW07 production implementation underway locally, unqualified and unpushed. 150 collected, five callback witnesses pass, 33 genuine prerequisites pass; full run 33 pass/117 intentional RED, no unrelated fixture failures. Original 28/66 qualified and 38 remaining unchanged.",
+  "draft_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave29-preparation/BAC-TRACKING-DRAFT.md",
+  "implementation_files_read_or_changed": false,
+  "runtime_or_git_mutations": false,
+  "subagents_spawned": false,
+  "updated_at": "2026-11-10T14:08:03.011748Z",
+  "latest_source_snapshot_utc": "2026-11-10T14:39:40.418089+00:00",
+  "latest_status": "PW07 production implementation underway locally, unqualified and unpushed. 150 collected, five callback witnesses pass, 33 genuine prerequisites pass; full run 33 pass/117 intentional RED, no unrelated fixture failures. Original 28/66 qualified and 38 remaining unchanged."
+}

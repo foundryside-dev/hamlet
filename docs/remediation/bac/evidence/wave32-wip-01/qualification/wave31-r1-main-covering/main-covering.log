@@ -1,0 +1,153 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 1/1 worker
+1 worker [785 items]
+
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 36%]
+........................................................................ [ 45%]
+........................................................................ [ 55%]
+.......................................................................F [ 64%]
+.F.......s............................................................s. [ 73%]
+........................................................................ [ 82%]
+........................................................................ [ 91%]
+..............................................................s..        [100%]
+=================================== FAILURES ===================================
+____ test_constructor_compute_failure_restoration_and_quarantine[True-rnd] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', after_update = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind, service_clock_unit="world_eligible_admission")(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+            owned_type.construct(rng=rng, factory=broken_factory)
+        _equal(global_before, _globals(()))
+        owner = _owner(kind, "world1", ("world1",))
+        other = _owner(kind, "world0", ("world0",))
+        healthy, unaffected = owner.snapshot(), other.snapshot()
+        learner_before = owner.call(lambda backend, sources: backend.checkpoint_state())
+        observed = []
+    
+        def fail_after_update(backend, sources):
+            if after_update:
+                observed.append(_learning_snapshot(_exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2))[2]))
+            else:
+                _draw(sources)
+            raise RuntimeError("live callback failure")
+    
+        with pytest.raises(RuntimeError, match="live callback failure"):
+            owner.call(fail_after_update)
+        _equal(global_before, _globals(()))
+        _equal(unaffected, other.snapshot())
+        diagnostic = owner.snapshot()
+        if after_update:
+            _assert_learning(learner_before, observed[0], kind, 1, 0)
+            model = "encoder" if kind == "icm" else "predictor_network"
+>           _equal(_rnd_state(observed[0], kind)[model], _find(diagnostic, model))
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:434: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = {'net.0.bias': tensor([-4.9972e-01, -3.7765e-01, -4.0237e-01, -3.1076e-01,  4.6264e-01,
+         1.9564e-01,  2.8423e-...-0.0288,  ..., -0.0516, -0.0138,  0.0514],
+        [ 0.0322,  0.0370,  0.0329,  ..., -0.0437,  0.0721, -0.0459]]), ...}
+right = OrderedDict({'net.0.weight': tensor([[ 0.2551,  0.0372, -0.1644],
+        [-0.1804,  0.2651, -0.0597],
+        [ 0.151...67e-02,
+         -6.5885e-02,  1.3974e-02,  1.3390e-02]]), 'net.4.bias': tensor([-0.0432, -0.0248,  0.0185,  0.0333])})
+
+    def _equal(left, right):
+>       assert type(left) is type(right)
+E       AssertionError: assert <class 'dict'> is <class 'collections.OrderedDict'>
+E        +  where <class 'dict'> = type({'net.0.bias': tensor([-4.9972e-01, -3.7765e-01, -4.0237e-01, -3.1076e-01,  4.6264e-01,\n         1.9564e-01,  2.8423e-...-0.0288,  ..., -0.0516, -0.0138,  0.0514],\n        [ 0.0322,  0.0370,  0.0329,  ..., -0.0437,  0.0721, -0.0459]]), ...})
+E        +  and   <class 'collections.OrderedDict'> = type(OrderedDict({'net.0.weight': tensor([[ 0.2551,  0.0372, -0.1644],\n        [-0.1804,  0.2651, -0.0597],\n        [ 0.151...67e-02,\n         -6.5885e-02,  1.3974e-02,  1.3390e-02]]), 'net.4.bias': tensor([-0.0432, -0.0248,  0.0185,  0.0333])}))
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:29: AssertionError
+_ test_constructor_compute_failure_restoration_and_quarantine[True-adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd', after_update = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind, service_clock_unit="world_eligible_admission")(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+            owned_type.construct(rng=rng, factory=broken_factory)
+        _equal(global_before, _globals(()))
+        owner = _owner(kind, "world1", ("world1",))
+        other = _owner(kind, "world0", ("world0",))
+        healthy, unaffected = owner.snapshot(), other.snapshot()
+        learner_before = owner.call(lambda backend, sources: backend.checkpoint_state())
+        observed = []
+    
+        def fail_after_update(backend, sources):
+            if after_update:
+                observed.append(_learning_snapshot(_exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2))[2]))
+            else:
+                _draw(sources)
+            raise RuntimeError("live callback failure")
+    
+        with pytest.raises(RuntimeError, match="live callback failure"):
+            owner.call(fail_after_update)
+        _equal(global_before, _globals(()))
+        _equal(unaffected, other.snapshot())
+        diagnostic = owner.snapshot()
+        if after_update:
+            _assert_learning(learner_before, observed[0], kind, 1, 0)
+            model = "encoder" if kind == "icm" else "predictor_network"
+>           _equal(_rnd_state(observed[0], kind)[model], _find(diagnostic, model))
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:434: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = {'net.0.bias': tensor([ 1.3263e-01, -4.7285e-01, -2.0047e-01,  5.4482e-01,  5.3674e-01,
+         1.1516e-01, -1.1977e-...-0.0387,  ..., -0.0105, -0.0403, -0.0090],
+        [ 0.0668, -0.0420,  0.0025,  ...,  0.0257,  0.0339,  0.0246]]), ...}
+right = OrderedDict({'net.0.weight': tensor([[-0.0887,  0.0562,  0.1191],
+        [-0.4755, -0.5136,  0.5289],
+        [-0.076...,  0.0189, -0.0761,  0.0352,  0.0054,  0.0006, -0.0121]]), 'net.4.bias': tensor([-0.0256, -0.0168,  0.0554,  0.0003])})
+
+    def _equal(left, right):
+>       assert type(left) is type(right)
+E       AssertionError: assert <class 'dict'> is <class 'collections.OrderedDict'>
+E        +  where <class 'dict'> = type({'net.0.bias': tensor([ 1.3263e-01, -4.7285e-01, -2.0047e-01,  5.4482e-01,  5.3674e-01,\n         1.1516e-01, -1.1977e-...-0.0387,  ..., -0.0105, -0.0403, -0.0090],\n        [ 0.0668, -0.0420,  0.0025,  ...,  0.0257,  0.0339,  0.0246]]), ...})
+E        +  and   <class 'collections.OrderedDict'> = type(OrderedDict({'net.0.weight': tensor([[-0.0887,  0.0562,  0.1191],\n        [-0.4755, -0.5136,  0.5289],\n        [-0.076...,  0.0189, -0.0761,  0.0352,  0.0054,  0.0006, -0.0121]]), 'net.4.bias': tensor([-0.0256, -0.0168,  0.0554,  0.0003])}))
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-adaptive_rnd]
+============= 2 failed, 780 passed, 3 skipped in 197.41s (0:03:17) =============

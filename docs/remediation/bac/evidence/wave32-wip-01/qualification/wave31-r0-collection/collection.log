@@ -1,0 +1,33 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 16 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_owned_native_metadata.py>
+            <Function test_real_factory_emits_ordered_native_metadata_and_learning_tail[rnd]>
+            <Function test_real_factory_emits_ordered_native_metadata_and_learning_tail[adaptive_rnd]>
+            <Function test_owned_callback_preserves_actual_native_mapping[rnd]>
+            <Function test_owned_callback_preserves_actual_native_mapping[adaptive_rnd]>
+            <Function test_owned_snapshot_preserves_native_metadata_order_and_tail[rnd]>
+            <Function test_owned_snapshot_preserves_native_metadata_order_and_tail[adaptive_rnd]>
+            <Function test_prepare_install_real_native_resume_learning_and_rng[rnd]>
+            <Function test_prepare_install_real_native_resume_learning_and_rng[adaptive_rnd]>
+            <Function test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-transport_order]>
+            <Function test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-candidate_metadata]>
+            <Function test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-transport_order]>
+            <Function test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-candidate_metadata]>
+            <Function test_callback_numeric_recursive_metadata_is_independently_owned[rnd]>
+            <Function test_callback_numeric_recursive_metadata_is_independently_owned[adaptive_rnd]>
+            <Function test_observation_revision_stales_prepared_handle_without_changing_state[rnd]>
+            <Function test_observation_revision_stales_prepared_handle_without_changing_state[adaptive_rnd]>
+
+========================= 16 tests collected in 0.10s ==========================

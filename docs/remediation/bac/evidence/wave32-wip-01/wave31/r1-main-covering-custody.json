@@ -1,0 +1,25 @@
+{
+  "candidate_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+  "passed": 780,
+  "failed": 2,
+  "CUDA_skips": 3,
+  "wall_seconds": 204.64912056922913,
+  "source_guards": 354,
+  "configs": 573,
+  "artifacts": 13,
+  "pytest_processes": 2,
+  "nonpytest_children": [
+    {
+      "receipt": "/workspace/bac-review-2026-11-01/qualification/wave31-r1-main-covering/main-covering/subprocess-custody-poisoning-98908.json",
+      "source_hashes": 354,
+      "imports": 48,
+      "profile": "Py3.13.5/Torch2.11.0+cu130/intra1interop5",
+      "poisoning": "PASS"
+    }
+  ],
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "diagnosis": "Old learning_snapshot flattens allMappings toplainDict while correctcurrentowner preservesOrdered. Update testreferencecopy; retain strict actualvalue/type/order/metadata assertions.",
+  "scope": "NotfullcoverPASS; mainroot153/indep153pass, fixturecoherence/finalgatesowed"
+}

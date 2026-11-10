@@ -1,0 +1,34 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave29/r5-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave29-r5-covering",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "covering",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_private_bank.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+        "tests/test_townlet/regressions/bac/test_pw_rng_binding.py",
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+        "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+        "-q",
+        "-n",
+        "1",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave29-r5-covering"
+      ]
+    }
+  ]
+}

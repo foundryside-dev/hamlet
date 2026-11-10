@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave32/r0-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave32-r0-focused",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "focused",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "constructor_compute_failure_restoration_and_quarantine and True and (rnd or adaptive_rnd)",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave32-r0-focused"
+      ]
+    }
+  ]
+}

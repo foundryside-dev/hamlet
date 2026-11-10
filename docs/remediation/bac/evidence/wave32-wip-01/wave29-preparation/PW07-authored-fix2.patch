@@ -1,0 +1,259 @@
+diff --git a/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py b/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
+index c0037d56..d58d9cce 100644
+--- a/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
++++ b/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py
+@@ -286,9 +286,38 @@ def service(bank, accepted, tick, active):
+ 
+ 
+ def backend(bank, world="A"):
++    """Shared-only test seam; private providers never escape an owned callback."""
++    assert bank.scope == "shared", "inspect private state inside on_backend callback"
++    return bank._shared
++
++
++def on_backend(bank, operation, world="A"):
+     if bank.scope == "shared":
+-        return bank._shared
+-    return bank._owners[world].call(lambda provider, sources: provider)
++        return operation(bank._shared)
++    return bank._owners[world].call(lambda provider, sources: operation(provider))
++
++
++def validate_live(bank, state, world="A"):
++    on_backend(bank, lambda provider: provider.validate_state(state), world)
++
++
++def observe_training(bank, family, world="A"):
++    batches, handles = [], []
++
++    def observe(module, inputs):
++        if torch.is_grad_enabled():
++            batches.append(inputs[0].detach().clone())
++
++    def install(provider):
++        model = provider.encoder if family == "icm" else (provider.rnd if family == "adaptive_rnd" else provider).predictor_network
++        handles.append(model.register_forward_pre_hook(observe))
++
++    def remove(provider):
++        for handle in handles:
++            handle.remove()
++
++    on_backend(bank, install, world)
++    return batches, lambda: on_backend(bank, remove, world)
+ 
+ 
+ def modules(provider, family):
+@@ -337,7 +366,10 @@ def learned(native, family):
+ 
+ 
+ def live(bank, world="A"):
+-    provider, family = backend(bank, world), bank.policy.strategy
++    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
++
++
++def live_provider(provider, family):
+     params = [p for module in modules(provider, family).values() for p in module.parameters()]
+     gradients = {
+         key: {name: None if p.grad is None else p.grad.detach().clone() for name, p in module.named_parameters()}
+@@ -358,12 +390,22 @@ def live(bank, world="A"):
+             (id(p), tuple(v.data_ptr() for v in state.values() if isinstance(v, torch.Tensor))) for p, state in adam.state.items()
+         )
+         storage_ids.update(v.data_ptr() for state in adam.state.values() for v in state.values() if isinstance(v, torch.Tensor))
+-    return {"native": provider.checkpoint_state(), "gradients": gradients, "refs": refs, "storage_ids": tuple(sorted(storage_ids))}
++    return {
++        "provider_id": id(provider),
++        "native": provider.checkpoint_state(),
++        "gradients": gradients,
++        "refs": refs,
++        "storage_ids": tuple(sorted(storage_ids)),
++    }
+ 
+ 
+ def set_gradients(bank):
+-    for index, parameter in enumerate(p for module in modules(backend(bank), bank.policy.strategy).values() for p in module.parameters()):
+-        parameter.grad = None if index % 3 == 0 else torch.full_like(parameter, 0.0 if index % 3 == 1 else 0.125)
++    def assign(provider):
++        parameters = (p for module in modules(provider, bank.policy.strategy).values() for p in module.parameters())
++        for index, parameter in enumerate(parameters):
++            parameter.grad = None if index % 3 == 0 else torch.full_like(parameter, 0.0 if index % 3 == 1 else 0.125)
++
++    on_backend(bank, assign)
+ 
+ 
+ def trained_source(compiled, family, mode):
+@@ -557,7 +599,7 @@ def test_fresh_private_and_clone_learned_origins(compiled, family, choice, mode)
+         assert storages(actual).isdisjoint(storages(source_live))
+         assert set(actual["storage_ids"]).isdisjoint(source_live["storage_ids"])
+         if family in TRAINABLE:
+-            backend(target.bank, world).validate_state(actual["native"])
++            validate_live(target.bank, actual["native"], world)
+             counters, queue = native_ledger(actual["native"], family)
+             assert len(queue) == 0
+             assert counters["admitted_rows"] == counters["consumed_rows"] + counters["dropped_rows"]
+@@ -639,7 +681,7 @@ def test_fresh_private_and_clone_learned_origins(compiled, family, choice, mode)
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("choice", CHOICES)
+ @pytest.mark.parametrize("mode", MODES)
+-def test_shared_pending_is_archived_not_falsely_attributed(compiled, monkeypatch, family, choice, mode):
++def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+     """Catches dropped/reordered archives and any archive-to-active service route."""
+     source = trained_source(compiled, family, mode)
+     source_live = live(source.bank)
+@@ -664,41 +706,24 @@ def test_shared_pending_is_archived_not_falsely_attributed(compiled, monkeypatch
+         expected = source_live if choice == CHOICES[1] else fresh[world]
+         equal(learned(live(target.bank, world)["native"], family), learned(expected["native"], family))
+         equal(live(target.bank, world)["gradients"], expected["gradients"])
+-    provider = backend(target.bank)
+-    observed = []
+-    trained_batches = []
+     if family in TRAINABLE:
+-        native, pending = native_ledger(provider.checkpoint_state(), family)
++        native, pending = native_ledger(live(target.bank)["native"], family)
+         assert len(pending) == 0
+-        operation = provider.admit_and_service_at
+-
+-        def service_spy(payload, *, clock):
+-            observed.append(deepcopy(payload.predecessor if family == "icm" else payload))
+-            return operation(payload, clock=clock)
+-
+-        monkeypatch.setattr(provider, "admit_and_service_at", service_spy)
+-        model = provider.encoder if family == "icm" else (provider.rnd if family == "adaptive_rnd" else provider).predictor_network
+-
+-        def batch_spy(module, inputs):
+-            if torch.is_grad_enabled():
+-                trained_batches.append(inputs[0].detach().clone())
+-
+-        hook = model.register_forward_pre_hook(batch_spy)
++        trained_batches, remove_hook = observe_training(target.bank, family)
+     before_b = live(target.bank, "B")
+     target.begin(source.accepted.batch_episode + 1)
+     first, _, _, _ = target.step(301, (True, False))
+     second, _, _, _ = target.step(302, (True, False))
+     if family in TRAINABLE:
+-        equal(observed, [first.predecessor[:1], second.predecessor[:1]])
+-        hook.remove()
++        remove_hook()
+         equal(trained_batches[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
+-        actual, pending = native_ledger(provider.checkpoint_state(), family)
++        actual, pending = native_ledger(live(target.bank)["native"], family)
+         baseline = native["optimizer_updates"]
+         assert actual["optimizer_updates"] == baseline + 1 and len(pending) == 0
+         # Complete local B2 batch consists only of these new A rows; no source tail can be consumed.
+         source_tail = native_ledger(source.saved["shared_backend"]["native"], family)[1]
+         assert len(source_tail) == 1
+-        provider.validate_state(provider.checkpoint_state())
++        validate_live(target.bank, live(target.bank)["native"])
+     equal(live(target.bank, "B"), before_b)
+     assert_future(target.bank.snapshot_world(world_id="A"), family, 2, 1)
+     equal(target.bank.checkpoint_state()["initialization_origin"]["source_checkpoint"], source.saved)
+@@ -1068,8 +1093,7 @@ def test_fixture_coherent_incompatible_targets(compiled, mismatch):
+     """Each mismatch is a real independently valid target, not corrupt source metadata."""
+     target = incompatible_target(compiled, mismatch)
+     for world in target.env.world_ids:
+-        provider = backend(target.bank, world)
+-        provider.validate_state(provider.checkpoint_state())
++        validate_live(target.bank, live(target.bank, world)["native"], world)
+     assert target.bank.checkpoint_state()["bank_phase"] == "initial"
+ 
+ 
+@@ -1082,7 +1106,7 @@ def test_coherent_incompatible_target_refuses(compiled, mismatch):
+     target = incompatible_target(compiled, mismatch)
+     before = {world: live(target.bank, world) for world in target.env.world_ids}
+     for world in target.env.world_ids:
+-        backend(target.bank, world).validate_state(before[world]["native"])
++        validate_live(target.bank, before[world]["native"], world)
+     with pytest.raises(ValueError):
+         target.bank.prepare_private_initialization(
+             state=state, initialization=CHOICES[1], parent_restore=None, validate_parent_restore=None
+@@ -1106,7 +1130,7 @@ def test_explicit_choice_profile_and_parent_custody(compiled, fault):
+     state = deepcopy(source.saved)
+     backend(source.bank).validate_state(state["shared_backend"]["native"])
+     for world in IDS:
+-        backend(target.bank, world).validate_state(live(target.bank, world)["native"])
++        validate_live(target.bank, live(target.bank, world)["native"], world)
+     parent = target.parent
+     if fault == "declared_profile":
+         # CPU-host test of saved device provenance; native source itself stays validated/current.
+@@ -1288,7 +1312,7 @@ def test_signed_rnd_offset_survives_clone_and_next_real_update(compiled, sign):
+     target.step(51, (True, False))
+     target.step(52, (True, False))
+     actual = live(target.bank)["native"]
+-    backend(target.bank).validate_state(actual)
++    validate_live(target.bank, actual)
+     assert actual["predictor_service"]["optimizer_step_offset"] == expected
+     assert_baseline(target.bank, source.saved, CHOICES[1], "A", 2, 1)
+     for key, value in actual["optimizer"]["state"].items():
+@@ -1308,23 +1332,63 @@ def test_nonzero_drop_baseline_and_multirow_archive_exclusion(compiled, family,
+     convert(target, source.saved, choice)
+     assert_baseline(target.bank, source.saved, choice, "A", 0, 0)
+     b = live(target.bank, "B")
+-    provider = backend(target.bank)
+-    trained = []
+-    model = provider.encoder if family == "icm" else provider.predictor_network
+-
+-    def observe(module, inputs):
+-        if torch.is_grad_enabled():
+-            trained.append(inputs[0].detach().clone())
+-
+-    hook = model.register_forward_pre_hook(observe)
++    trained, remove_hook = observe_training(target.bank, family)
+     target.begin(1)
+     first, _, _, receipts = target.step(71, (True, False, False, False, False))
+     assert receipts[0].clock == ServiceClock("world_eligible_admission", 1)
+     second, _, _, receipts = target.step(72, (True, False, False, False, False))
+-    hook.remove()
++    remove_hook()
+     equal(trained[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
+     assert receipts[0].clock == ServiceClock("world_eligible_admission", 2)
+     assert_baseline(target.bank, source.saved, choice, "A", 2, 1)
+     equal(live(target.bank, "B"), b)
+     equal(target.bank.checkpoint_state()["initialization_origin"]["source_checkpoint"], source.saved)
+     assert_source(source, before, source.saved)
++
++
++@pytest.mark.parametrize("family", FAMILIES)
++def test_fixture_actual_private_callback_witnesses(compiled, family):
++    """Reject copied-provider evidence: stable installed addresses and real service hooks."""
++    rig = Rig(compiled, policy(compiled, family, "per_world", "paced_fifo"))
++    before = live(rig.bank)
++    equal(live(rig.bank), before)
++    other = live(rig.bank, "B")
++    assert before["provider_id"] != other["provider_id"]
++    assert set(before["storage_ids"]).isdisjoint(other["storage_ids"])
++    rng = rig.bank.snapshot_world(world_id="B")["backend"]["rng"]
++    if family in TRAINABLE:
++        assert before["storage_ids"]
++        batches, remove_hook = observe_training(rig.bank, family)
++    rig.begin(0)
++    first, _, _, _ = rig.step(1, (True, False))
++    second, _, _, _ = rig.step(2, (True, False))
++    if family in TRAINABLE:
++        remove_hook()
++        equal(batches[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
++    after = live(rig.bank)
++    assert after["provider_id"] == before["provider_id"]
++    equal(live(rig.bank), after)
++    equal(live(rig.bank, "B"), other)
++    equal(rig.bank.snapshot_world(world_id="B")["backend"]["rng"], rng)
++    if family in TRAINABLE:
++        counter, tail = native_ledger(after["native"], family)
++        assert counter["optimizer_updates"] == 1 and len(tail) == 0
++        assert tuple(row[:2] for row in before["refs"]) == tuple(row[:2] for row in after["refs"][: len(before["refs"])])
++        gradients = [value for group in after["gradients"].values() for value in group.values()]
++        assert any(value is not None and bool(value.abs().sum() > 0) for value in gradients)
++        set_gradients(rig.bank)
++        sentinel = live(rig.bank)
++        equal(live(rig.bank), sentinel)
++        gradients = [value for group in sentinel["gradients"].values() for value in group.values()]
++        assert any(value is None for value in gradients)
++        assert any(value is not None and not bool(value.any()) for value in gradients)
++        assert any(value is not None and bool(value.any()) for value in gradients)
++        validate_live(rig.bank, sentinel["native"])
++        equal(live(rig.bank), sentinel)
++    elif family == "count_based":
++        assert not before["native"]["counts"] and len(after["native"]["counts"]) == 2
++    else:
++        equal(after["native"], before["native"])
++    # A third actual operation proves witness calls did not quarantine the owner.
++    rig.step(3, (True, False))
++    assert rig.bank.snapshot_world(world_id="A")["cursor"]["cumulative_service_position"] == 3

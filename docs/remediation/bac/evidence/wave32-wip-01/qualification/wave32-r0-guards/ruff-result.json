@@ -1,0 +1,18 @@
+{
+  "name": "ruff",
+  "exit_code": 0,
+  "seconds": 0.07200360298156738,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "."
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave32-r0-guards/ruff.log",
+  "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "candidate_tree": "dd09287c79bef1444b34575e511d3d71460b41a4",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "manifest_sha256": "6d8733d3011e279a439af5f94f857537782c58fc7342fe0695ba56f37717aa37",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

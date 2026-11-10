@@ -1,0 +1,17 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/population/vectorized.py:800: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/population/vectorized.py:800: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/population/vectorized.py:800: error: Incompatible types in assignment (expression has type "WorldRecord", variable has type "Tensor")  [assignment]
+src/townlet/population/vectorized.py:2307: error: Missing named argument "rng" for "RNDExploration"  [call-arg]
+src/townlet/population/vectorized.py:2307: note: "RNDExploration" defined in "townlet.exploration.rnd"
+src/townlet/population/vectorized.py:2307: error: Missing named argument "service_clock_unit" for "RNDExploration"  [call-arg]
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 9 errors in 2 files (checked 197 source files)

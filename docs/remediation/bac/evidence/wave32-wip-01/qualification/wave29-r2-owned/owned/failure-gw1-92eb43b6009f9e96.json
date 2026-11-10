@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[clone_learned_archive_pending-adaptive_rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'adaptive_rnd', choice = 'clone_learned_archive_pending'\n\n    @pytest.mark.parametrize(\"family\", FAMILIES)\n    @pytest.mark.parametrize(\"choice\", CHOICES)\n    def test_initial_conversion_has_no_episode_or_closing_history(compiled, family, choice):\n        \"\"\"Catches an INITIAL template inventing an accepted episode or completed history.\"\"\"\n        source = Rig(compiled, policy(compiled, family, \"shared\", \"paced_fifo\"))\n        state = source.bank.checkpoint_state()\n        target = Rig(compiled, policy(compiled, family, \"per_world\", \"paced_fifo\"))\n>       token = target.bank.prepare_private_initialization(\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            state=state,\n            initialization=choice,\n            parent_restore=None,\n            validate_parent_restore=None,\n        )\nE       AttributeError: 'CuriosityBank' object has no attribute 'prepare_private_initialization'\n\ntests/test_townlet/regressions/bac/test_pw_scope_conversion.py:836: AttributeError",
+  "candidate_tree": "f36a7fad819dd3786c306252e8834c2385066b65"
+}

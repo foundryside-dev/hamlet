@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+  "child_receipt": "/workspace/bac-review-2026-11-01/qualification/wave32-r1-coherent/coherent/subprocess-custody-poisoning-102714.json",
+  "sha256": "ae9b030ade89c22bbad0c48a7f2d86e4ed339ec49b7aa780979e63651570c4c1",
+  "sources": 354,
+  "imports": 48,
+  "python": "3.13.5",
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "poisoning_assertions": "PASS"
+}

@@ -1,0 +1,200 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [32 items]
+
+.F.F..sF........................                                         [100%]
+=================================== FAILURES ===================================
+________________ test_private_rng_restores_global_streams[rnd] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Genuine shared and private learning use their explicitly selected clocks.
+        native = _factory(kind, service_clock_unit="vector_tick")(None)
+        before = copy.deepcopy(native.checkpoint_state())
+        native_sources = type("Sources", (), {"python": random, "numpy": np.random.default_rng(13)})()
+        _, reward, after = _exercise(native, native_sources, 2, 0, clock=ws.ServiceClock("vector_tick", 0))
+        assert torch.isfinite(reward).all()
+        _assert_learning(before, after, kind, 1, 0)
+        random.seed(17)
+        random.gauss(0, 1)  # Keep a cached Gaussian in the exact global state.
+        np.random.seed(19)
+        np.random.normal()
+        global_before = _globals(())
+        rng = _rng(kind, "world1", ("world0", "world1"))
+        original_rng = rng.snapshot()
+        _, owned_type = _api()
+        owner = owned_type.construct(rng=rng, factory=_factory(kind, service_clock_unit="world_eligible_admission"))
+        _equal(original_rng, rng.snapshot())
+        constructed_rng = owner.snapshot()["rng"]
+        used = {"model_init", "predictor"} if kind == "icm" else {"target", "predictor"}
+        for component in ws.WORLD_SEED_COMPONENTS:
+            before_component = original_rng["components"][component]
+            after_component = constructed_rng["components"][component]
+            if component in used:
+                assert not torch.equal(before_component["torch_cpu"], after_component["torch_cpu"])
+                for field in before_component.keys() - {"torch_cpu"}:
+                    _equal(before_component[field], after_component[field])
+            else:
+>               _equal(before_component, after_component)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = {'cuda': {}, 'numpy_legacy': ('MT19937', array([3957619735,  739747813, 1097976411,  933560197, 1501166717,
+       343... 'uinteger': 0}, 'python': (3, (2147483648, 3274411500, 2716978106, 3489019670, 521667551, 645932916, ...), None), ...}
+right = {'cuda': {}, 'numpy_legacy': ('MT19937', array([3957619735,  739747813, 1097976411,  933560197, 1501166717,
+       343... 'uinteger': 0}, 'python': (3, (2147483648, 3274411500, 2716978106, 3489019670, 521667551, 645932916, ...), None), ...}
+
+    def _equal(left, right):
+        assert type(left) is type(right)
+        if isinstance(left, torch.Tensor):
+            assert left.dtype == right.dtype and left.shape == right.shape and left.device == right.device
+            assert torch.equal(left, right)
+        elif isinstance(left, np.ndarray):
+            assert left.dtype == right.dtype and np.array_equal(left, right)
+        elif isinstance(left, Mapping):
+>           assert list(left) == list(right)
+E           AssertionError: assert ['seed', 'tor...numpy_legacy'] == ['torch_cpu',...'numpy_pcg64']
+E             
+E             At index 0 diff: 'seed' != 'torch_cpu'
+E             Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:37: AssertionError
+________________ test_private_rng_restores_global_streams[icm] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Genuine shared and private learning use their explicitly selected clocks.
+        native = _factory(kind, service_clock_unit="vector_tick")(None)
+        before = copy.deepcopy(native.checkpoint_state())
+        native_sources = type("Sources", (), {"python": random, "numpy": np.random.default_rng(13)})()
+        _, reward, after = _exercise(native, native_sources, 2, 0, clock=ws.ServiceClock("vector_tick", 0))
+        assert torch.isfinite(reward).all()
+        _assert_learning(before, after, kind, 1, 0)
+        random.seed(17)
+        random.gauss(0, 1)  # Keep a cached Gaussian in the exact global state.
+        np.random.seed(19)
+        np.random.normal()
+        global_before = _globals(())
+        rng = _rng(kind, "world1", ("world0", "world1"))
+        original_rng = rng.snapshot()
+        _, owned_type = _api()
+        owner = owned_type.construct(rng=rng, factory=_factory(kind, service_clock_unit="world_eligible_admission"))
+        _equal(original_rng, rng.snapshot())
+        constructed_rng = owner.snapshot()["rng"]
+        used = {"model_init", "predictor"} if kind == "icm" else {"target", "predictor"}
+        for component in ws.WORLD_SEED_COMPONENTS:
+            before_component = original_rng["components"][component]
+            after_component = constructed_rng["components"][component]
+            if component in used:
+                assert not torch.equal(before_component["torch_cpu"], after_component["torch_cpu"])
+                for field in before_component.keys() - {"torch_cpu"}:
+                    _equal(before_component[field], after_component[field])
+            else:
+>               _equal(before_component, after_component)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = {'cuda': {}, 'numpy_legacy': ('MT19937', array([ 485584643, 3971901232, 2730361377, 3071316690, 3687529492,
+       353...'uinteger': 0}, 'python': (3, (2147483648, 1787374916, 1420354389, 2033654026, 3121374166, 958320876, ...), None), ...}
+right = {'cuda': {}, 'numpy_legacy': ('MT19937', array([ 485584643, 3971901232, 2730361377, 3071316690, 3687529492,
+       353...'uinteger': 0}, 'python': (3, (2147483648, 1787374916, 1420354389, 2033654026, 3121374166, 958320876, ...), None), ...}
+
+    def _equal(left, right):
+        assert type(left) is type(right)
+        if isinstance(left, torch.Tensor):
+            assert left.dtype == right.dtype and left.shape == right.shape and left.device == right.device
+            assert torch.equal(left, right)
+        elif isinstance(left, np.ndarray):
+            assert left.dtype == right.dtype and np.array_equal(left, right)
+        elif isinstance(left, Mapping):
+>           assert list(left) == list(right)
+E           AssertionError: assert ['seed', 'tor...numpy_legacy'] == ['torch_cpu',...'numpy_pcg64']
+E             
+E             At index 0 diff: 'seed' != 'torch_cpu'
+E             Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:37: AssertionError
+____________ test_private_rng_restores_global_streams[adaptive_rnd] ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Genuine shared and private learning use their explicitly selected clocks.
+        native = _factory(kind, service_clock_unit="vector_tick")(None)
+        before = copy.deepcopy(native.checkpoint_state())
+        native_sources = type("Sources", (), {"python": random, "numpy": np.random.default_rng(13)})()
+        _, reward, after = _exercise(native, native_sources, 2, 0, clock=ws.ServiceClock("vector_tick", 0))
+        assert torch.isfinite(reward).all()
+        _assert_learning(before, after, kind, 1, 0)
+        random.seed(17)
+        random.gauss(0, 1)  # Keep a cached Gaussian in the exact global state.
+        np.random.seed(19)
+        np.random.normal()
+        global_before = _globals(())
+        rng = _rng(kind, "world1", ("world0", "world1"))
+        original_rng = rng.snapshot()
+        _, owned_type = _api()
+        owner = owned_type.construct(rng=rng, factory=_factory(kind, service_clock_unit="world_eligible_admission"))
+        _equal(original_rng, rng.snapshot())
+        constructed_rng = owner.snapshot()["rng"]
+        used = {"model_init", "predictor"} if kind == "icm" else {"target", "predictor"}
+        for component in ws.WORLD_SEED_COMPONENTS:
+            before_component = original_rng["components"][component]
+            after_component = constructed_rng["components"][component]
+            if component in used:
+                assert not torch.equal(before_component["torch_cpu"], after_component["torch_cpu"])
+                for field in before_component.keys() - {"torch_cpu"}:
+                    _equal(before_component[field], after_component[field])
+            else:
+>               _equal(before_component, after_component)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:314: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = {'cuda': {}, 'numpy_legacy': ('MT19937', array([3818475268, 4093111492, 1542973829,  123913495, 3708948759,
+       340...uinteger': 0}, 'python': (3, (2147483648, 2551480874, 2293858063, 1984106468, 1491964004, 2262394541, ...), None), ...}
+right = {'cuda': {}, 'numpy_legacy': ('MT19937', array([3818475268, 4093111492, 1542973829,  123913495, 3708948759,
+       340...uinteger': 0}, 'python': (3, (2147483648, 2551480874, 2293858063, 1984106468, 1491964004, 2262394541, ...), None), ...}
+
+    def _equal(left, right):
+        assert type(left) is type(right)
+        if isinstance(left, torch.Tensor):
+            assert left.dtype == right.dtype and left.shape == right.shape and left.device == right.device
+            assert torch.equal(left, right)
+        elif isinstance(left, np.ndarray):
+            assert left.dtype == right.dtype and np.array_equal(left, right)
+        elif isinstance(left, Mapping):
+>           assert list(left) == list(right)
+E           AssertionError: assert ['seed', 'tor...numpy_legacy'] == ['torch_cpu',...'numpy_pcg64']
+E             
+E             At index 0 diff: 'seed' != 'torch_cpu'
+E             Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:37: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[adaptive_rnd]
+=================== 3 failed, 28 passed, 1 skipped in 8.89s ====================

@@ -1,0 +1,16 @@
+{
+  "candidate_tree": "e7ca61d0fbd20c8e5fc32bfb4d37629dd3111d4e",
+  "passed": 8,
+  "failed": 2,
+  "wall_seconds": 25.627197265625,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 5,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "confirmed_runtime_defect": "RND/adaptive clone creates pending observations as Python[]; actualnative validator requires empty[0,D]Tensor with correct dtype/device. Sourcearchive must remain unchanged.",
+  "independent_static_finding": "Sol d0fee24f P2 boundaryoriginconsistency: trainedCountclone can be relabeledfresh; requires genuine current-API RED before repair.",
+  "scope": "No broadGREEN/covering/independent-runtime run; causal focused prerequisite repaired first."
+}

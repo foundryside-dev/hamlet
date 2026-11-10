@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave29/r5-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave29-r5-focused-conversion",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "focused-conversion",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "fresh_private_and_clone_learned_origins and paced_fifo",
+        "-q",
+        "-n",
+        "4",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave29-r5-focused-conversion"
+      ]
+    }
+  ]
+}

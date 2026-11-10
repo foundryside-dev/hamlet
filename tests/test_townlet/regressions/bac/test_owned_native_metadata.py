@@ -1,0 +1,313 @@
+"""Real native OrderedDict ownership at the private backend transport boundary.
+
+The native owner serializes models/Adam/FIFO/RMS, not residual Parameter.grad.
+Callbacks observe the actual backend and export only owned data or primitives.
+"""
+
+import random
+from collections import OrderedDict
+from collections.abc import Mapping
+from copy import deepcopy
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pytest
+import torch
+
+from townlet.config.bac_options import BaCOptions
+from townlet.config.drive_as_code import IntrinsicStrategyConfig
+from townlet.config.exploration_policy import resolve_exploration_policy
+from townlet.config.training_v2_config import TrainingV2Config
+from townlet.exploration.provider_factory import make_backend
+from townlet.exploration.world_curiosity_state import OwnedWorldBackend, ServiceClock, WorldCuriosityDescriptor, WorldRNGState
+from townlet.universe.compiler import UniverseCompiler
+
+FAMILIES = ("rnd", "adaptive_rnd")
+ROWS = torch.tensor([[0.2, -0.4, 0.7], [0.5, 0.3, -0.2], [-0.6, 0.9, 0.1]], dtype=torch.float32)
+
+
+def assert_same(left: Any, right: Any) -> None:
+    """Independent exact native assertion, including recursive metadata/order."""
+    assert type(left) is type(right)
+    if isinstance(left, torch.Tensor):
+        assert (left.dtype, left.device, left.shape) == (right.dtype, right.device, right.shape)
+        assert torch.equal(left, right)
+    elif isinstance(left, np.ndarray):
+        assert left.dtype == right.dtype and left.shape == right.shape
+        assert np.array_equal(left, right)
+    elif isinstance(left, Mapping):
+        assert list(left) == list(right)
+        assert hasattr(left, "_metadata") == hasattr(right, "_metadata")
+        if hasattr(left, "_metadata"):
+            assert_same(left._metadata, right._metadata)
+        for key in left:
+            assert_same(left[key], right[key])
+    elif isinstance(left, (list, tuple)):
+        assert len(left) == len(right)
+        for a, b in zip(left, right, strict=True):
+            assert_same(a, b)
+    else:
+        assert left == right
+
+
+def global_streams() -> tuple[Any, ...]:
+    return deepcopy((random.getstate(), np.random.get_state(), torch.get_rng_state()))
+
+
+@pytest.fixture(autouse=True)
+def preserve_global_streams():
+    before = global_streams()
+    yield
+    assert_same(before, global_streams())
+
+
+@pytest.fixture(scope="module")
+def compiled_level():
+    compiled = UniverseCompiler().compile(Path("/workspace/hamlet/configs/test/token_set_smoke"), primary_level="L0_test", use_cache=False)
+    return compiled.get_level("L0_test")
+
+
+@pytest.fixture(params=FAMILIES)
+def setup_native(request, compiled_level):
+    family = request.param
+    drive = IntrinsicStrategyConfig.model_validate({**compiled_level.drive.intrinsic.model_dump(), "strategy": family})
+    training_data = compiled_level.training.model_dump()
+    training_data["replay_buffer"]["batch_size"] = 2
+    intrinsic = training_data["intrinsic"]
+    intrinsic["rnd"].update(feature_dim=4, learning_rate=0.001)
+    intrinsic.update(initial_weight=0.4, survival_window=10, min_survival_fraction=0.1)
+    intrinsic["annealing"].update(min_weight=0.01, threshold=100.0, decay_rate=0.9)
+    training_data["training_loop"]["max_steps_per_episode"] = 20
+    training = TrainingV2Config.model_validate(training_data)
+    options = BaCOptions.model_validate(
+        {
+            "curiosity_scope": {"scope": "per_world", "seed_policy": "world_id_derived_v1"},
+            "provider_parameter_source": "training",
+            "rnd": {"service_mode": "paced_fifo", "max_updates_per_tick": 1, "max_pending_rows": 4, "overflow_policy": "drop_oldest"},
+        }
+    )
+    policy = resolve_exploration_policy(drive, training, options)
+    descriptor = WorldCuriosityDescriptor.from_policy(
+        policy, world_ids=("native-world",), observation_dim=3, action_dim=2, training_seed=731
+    )
+
+    def rng():
+        return WorldRNGState.create(descriptor=descriptor, world_id="native-world", cuda_devices=())
+
+    def factory(candidate_rng):
+        return make_backend(
+            policy, world_id="native-world", obs_dim=3, action_dim=2, device="cpu", rng=candidate_rng, descriptor=descriptor
+        )
+
+    return family, rng, factory
+
+
+def rnd_backend(backend, family):
+    return backend if family == "rnd" else backend.rnd
+
+
+def native_rnd(state):
+    """Locate the actual serialized RND schema, without reimplementing a codec."""
+    if isinstance(state, dict):
+        if state.get("schema") == "rnd-state-v2":
+            return state
+        for value in state.values():
+            if isinstance(value, dict):
+                found = native_rnd(value)
+                if found is not None:
+                    return found
+    return None
+
+
+def learn(backend, family, rows, position):
+    rnd = rnd_backend(backend, family)
+    rnd.compute_intrinsic_rewards(rows, update_stats=True)
+    return rnd.admit_and_service_at(rows, clock=ServiceClock("world_eligible_admission", position))
+
+
+def gradients(backend, family):
+    rnd = rnd_backend(backend, family)
+    return tuple(None if parameter.grad is None else parameter.grad.detach().clone() for parameter in rnd.predictor_network.parameters())
+
+
+def validate(candidate, state):
+    candidate.validate_state(state)
+
+
+def direct_provider(setup_native):
+    family, new_rng, factory = setup_native
+    rng = new_rng()
+    with rng.activate("model_init"):
+        backend = factory(rng)
+    return family, rng, backend
+
+
+def owner(setup_native):
+    _, new_rng, factory = setup_native
+    return OwnedWorldBackend.construct(rng=new_rng(), factory=factory)
+
+
+def assert_native_mappings(state):
+    rnd = native_rnd(state)
+    assert rnd is not None
+    for key in ("fixed_network", "predictor_network"):
+        mapping = rnd[key]
+        assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+        assert type(mapping._metadata) is OrderedDict
+        assert list(mapping._metadata) == ["", "net", "net.0", "net.1", "net.2", "net.3", "net.4"]
+        assert all("version" in value for value in mapping._metadata.values())
+
+
+def test_real_factory_emits_ordered_native_metadata_and_learning_tail(setup_native):
+    family, rng, backend = direct_provider(setup_native)
+    initial = backend.checkpoint_state()
+    assert_native_mappings(initial)
+    with rng.activate("service"):
+        receipt = learn(backend, family, ROWS, 3)
+    assert receipt.optimizer_updates == 1 and receipt.pending_rows == 1
+    trained = backend.checkpoint_state()
+    assert_native_mappings(trained)
+    rnd = native_rnd(trained)
+    assert_same(rnd["predictor_service"]["pending_observations"], ROWS[-1:])
+    assert_same(native_rnd(initial)["fixed_network"], rnd["fixed_network"])
+    assert any(not torch.equal(value, rnd["predictor_network"][key]) for key, value in native_rnd(initial)["predictor_network"].items())
+    assert all(value is not None and torch.isfinite(value).all() for value in gradients(backend, family))
+    before = deepcopy(trained)
+    with rng.activate("service"):
+        backend.validate_state(trained)
+    assert_same(before, trained)
+    assert_same(before, backend.checkpoint_state())
+
+
+def test_owned_callback_preserves_actual_native_mapping(setup_native):
+    actual = owner(setup_native)
+    # Primitive evidence is collected before call's result copier runs.
+    witness = actual.call(
+        lambda backend, sources: tuple(
+            (type(native_rnd(backend.checkpoint_state())[key]).__name__, list(native_rnd(backend.checkpoint_state())[key]._metadata))
+            for key in ("fixed_network", "predictor_network")
+        )
+    )
+    assert all(kind == "OrderedDict" and "net.0" in keys for kind, keys in witness)
+    result = actual.call(lambda backend, sources: backend.checkpoint_state())
+    assert_native_mappings(result)
+    baseline = actual.snapshot()
+    native_rnd(result)["predictor_network"]._metadata["net.0"]["version"] += 100
+    next(iter(native_rnd(result)["predictor_network"].values())).add_(100)
+    assert_same(baseline, actual.snapshot())
+
+
+def test_owned_snapshot_preserves_native_metadata_order_and_tail(setup_native):
+    family, rng, backend = direct_provider(setup_native)
+    actual = owner(setup_native)
+    with rng.activate("service"):
+        learn(backend, family, ROWS, 3)
+    actual.call(lambda candidate, sources: learn(candidate, family, ROWS, 3))
+    expected = backend.checkpoint_state()
+    observed = actual.snapshot()
+    assert_native_mappings(observed["backend"])
+    assert_same(expected, observed["backend"])
+    assert_same(rng.snapshot(), observed["rng"])
+    native_rnd(observed["backend"])["fixed_network"]._metadata["net.0"]["version"] += 100
+    assert_same(expected, actual.snapshot()["backend"])
+
+
+def test_prepare_install_real_native_resume_learning_and_rng(setup_native):
+    family, rng, backend = direct_provider(setup_native)
+    _, _, factory = setup_native
+    with rng.activate("service"):
+        learn(backend, family, ROWS, 3)
+    destination = owner(setup_native)
+    # Native input comes straight from the real provider, before the owner copier.
+    payload = {"schema": "owned-world-backend-v1", "healthy": True, "backend": backend.checkpoint_state(), "rng": rng.snapshot()}
+    original = deepcopy(payload)
+    destination_before = destination.snapshot()
+    prepared = destination.prepare_restore(payload, factory=factory, validate_backend=validate)
+    assert_same(original, payload)
+    destination.install(prepared)
+    installed = destination.snapshot()
+    assert_native_mappings(installed["backend"])
+    assert_same(original, installed)
+    assert not torch.equal(
+        next(iter(native_rnd(destination_before["backend"])["predictor_network"].values())),
+        next(iter(native_rnd(installed["backend"])["predictor_network"].values())),
+    )
+    native_rnd(payload["backend"])["predictor_network"]._metadata["net.0"]["version"] += 100
+    next(iter(native_rnd(payload["backend"])["predictor_network"].values())).zero_()
+    assert_same(original, destination.snapshot())
+    continuation = ROWS[:1] * 0.7
+    with rng.activate("service"):
+        receipt = learn(backend, family, continuation, 4)
+    restored_receipt = destination.call(lambda candidate, sources: learn(candidate, family, continuation, 4))
+    assert receipt == restored_receipt
+    assert receipt.optimizer_updates == 1 and receipt.pending_rows == 0
+    assert_same(backend.checkpoint_state(), destination.snapshot()["backend"])
+    assert_same(rng.snapshot(), destination.snapshot()["rng"])
+    # Gradients generated by the next real update must match; residual pre-load
+    # gradients are outside the native transport contract.
+    assert_same(gradients(backend, family), destination.call(lambda candidate, sources: gradients(candidate, family)))
+    with pytest.raises(ValueError, match="already installed|destination changed"):
+        destination.install(prepared)
+
+
+@pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+    family, _, backend = direct_provider(setup_native)
+    destination = owner(setup_native)
+    _, _, factory = setup_native
+    payload = destination.snapshot()
+    payload["backend"] = backend.checkpoint_state()
+    before = destination.snapshot()
+    original = deepcopy(payload)
+    reached = []
+
+    def impure(candidate, transported):
+        candidate.validate_state(transported)
+        reached.append(True)
+        if mutation == "transport_order":
+            mapping = native_rnd(transported)["predictor_network"]
+            first = next(iter(mapping))
+            mapping[first] = mapping.pop(first)
+        else:
+            module = rnd_backend(candidate, family).predictor_network.net[0]
+            module._version += 1
+
+    with pytest.raises(ValueError, match="validation mutated"):
+        destination.prepare_restore(payload, factory=factory, validate_backend=impure)
+    assert reached == [True], "must reach the mutation after genuine native validation"
+    assert_same(original, payload)
+    assert_same(before, destination.snapshot())
+
+
+def test_callback_numeric_recursive_metadata_is_independently_owned(setup_native):
+    actual = owner(setup_native)
+    # This narrow portable nested metadata value tests the generic copier. It
+    # does not assert that arbitrary plugin native schemas can load this value.
+    inner = OrderedDict([("z", torch.tensor([1.5], requires_grad=True)), ("a", np.array([2.5], dtype=np.float64))])
+    inner._metadata = OrderedDict([("inner", {"version": np.int64(3)})])
+    value = OrderedDict([("second", inner), ("first", (np.float32(4.5), [6]))])
+    value._metadata = OrderedDict([("", {"version": 1, "nested": inner})])
+    expected = deepcopy(value)
+    result = actual.call(lambda backend, sources: value)
+    assert type(result) is OrderedDict, "callback metadata mapping kind must survive"
+    assert_same(expected, result)
+    assert result["second"]["z"].requires_grad is False
+    value["second"]["z"].detach().add_(10)
+    value._metadata[""]["nested"]["a"][0] = 20
+    assert_same(expected, result)
+    result._metadata[""]["nested"]._metadata["inner"]["version"] = 99
+    assert value._metadata[""]["nested"]._metadata["inner"]["version"] == np.int64(3)
+
+
+def test_observation_revision_stales_prepared_handle_without_changing_state(setup_native):
+    destination = owner(setup_native)
+    _, _, factory = setup_native
+    payload = destination.snapshot()
+    prepared = destination.prepare_restore(payload, factory=factory, validate_backend=validate)
+    # Even a pure snapshot increments the owner's revision; it is an explicit
+    # observation effect and must not be confused with failed restore mutation.
+    assert_same(payload, destination.snapshot())
+    with pytest.raises(ValueError, match="destination changed"):
+        destination.install(prepared)
+    assert_same(payload, destination.snapshot())

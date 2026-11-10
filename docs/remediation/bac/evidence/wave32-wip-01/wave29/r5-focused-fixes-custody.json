@@ -1,0 +1,16 @@
+{
+  "candidate_tree": "1f530ee8da363f0bb8c9c9015f88148752c01c0d",
+  "Count_fix_regressions_PASS": 3,
+  "RND_adaptive_clone_native_barrier": "CLEARED",
+  "RND_adaptive_exact_payload_FAIL": 2,
+  "wall_seconds": 24.067108154296875,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 5,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "dependency": "ExistingWS copier normalizes genuineTorchOrderedDict toplain dict anddropsmetadata; separateboundedproducerrepair required. Do not weakenCPsame ordiscardsource metadata.",
+  "scope": "AllruntimeCLOSED; no broadGREEN/fullcomponentacceptance"
+}

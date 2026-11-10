@@ -1,0 +1,112 @@
+diff --git a/src/townlet/exploration/curiosity_checkpoint.py b/src/townlet/exploration/curiosity_checkpoint.py
+index 2983457f..43b1b3ee 100644
+--- a/src/townlet/exploration/curiosity_checkpoint.py
++++ b/src/townlet/exploration/curiosity_checkpoint.py
+@@ -335,7 +335,7 @@ def conversion_source(
+     return source_policy, source_descriptor
+ 
+ 
+-def native_ledger(native: dict[str, Any], family: str) -> tuple[dict[str, Any], dict[str, Any], list[Any]]:
++def native_ledger(native: dict[str, Any], family: str) -> tuple[dict[str, Any], dict[str, Any], list[Any] | torch.Tensor]:
+     if family == "adaptive_rnd":
+         native = native["rnd_state"]
+     if family == "icm":
+@@ -354,7 +354,10 @@ def inherited_baseline(native: Any, *, family: str, initialization: str) -> dict
+             values[name] = None
+         else:
+             integer(counters[name], 0, name)
+-            values[name] = counters[name] if initialization == "clone_learned_archive_pending" else 0
++            if initialization == "clone_learned_archive_pending":
++                values[name] = counters[name]
++            else:
++                values[name] = 0
+     values["admitted_rows"] = values["consumed_rows"] + values["dropped_rows"]
+     return values
+ 
+@@ -407,10 +410,23 @@ def clone_native(native: Any, *, policy: ResolvedExplorationPolicy, baseline: An
+         if policy.strategy == "icm":
+             value["pending"] = []
+         else:
+-            clock.update(pending_observations=[], step_counter=0)
++            clock.update(pending_observations=clock["pending_observations"][:0].clone(), step_counter=0)
+     return value
+ 
+ 
++def validate_boundary_template(provider: Any, record: dict[str, Any], *, origin: dict[str, Any], policy: ResolvedExplorationPolicy) -> None:
++    """Bind an unstarted origin to its actual fresh or source-derived native template."""
++    if origin["initialization"] == "fresh_private":
++        expected_native = provider.checkpoint_state()
++        expected_gradients = capture_gradients(provider, policy.strategy)
++    else:
++        source = origin["source_checkpoint"]["shared_backend"]
++        expected_native = clone_native(source["native"], policy=policy, baseline=origin["inherited_baseline"])
++        expected_gradients = source["gradients"]
++    require(same(record["backend"]["backend"], expected_native), "unstarted native state contradicts selected initialization")
++    require(same(record["gradients"], expected_gradients), "unstarted gradients contradict selected initialization")
++
++
+ def make_origin(
+     source: dict[str, Any], *, initialization: str, policy: ResolvedExplorationPolicy, descriptor: WorldCuriosityDescriptor
+ ) -> dict[str, Any]:
+@@ -470,7 +486,10 @@ def validate_origin(
+     require(same(origin["episode_baseline"], episodes), "source-derived episode baseline")
+     mode = state["bank_phase"]
+     if mode in ("initial", "private_initialized"):
+-        expected_phase = "initial" if source["bank_phase"] == "initial" else "private_initialized"
++        if source["bank_phase"] == "initial":
++            expected_phase = "initial"
++        else:
++            expected_phase = "private_initialized"
+         require(mode == expected_phase, "initialization boundary mismatch")
+     for record in state["worlds"]:
+         sequence, base = record["cursor"]["accepted_episode_seq"], episodes[record["world_id"]]
+@@ -488,7 +507,9 @@ def validate_archived_native(source: dict[str, Any], *, descriptor: WorldCuriosi
+ 
+     policy = ResolvedExplorationPolicy.from_dict(source["policy"])
+     source_descriptor = WorldCuriosityDescriptor.from_dict(source["descriptor"])
+-    devices = () if device.type == "cpu" else (cast(int, device.index),)
++    devices: tuple[int, ...] = ()
++    if device.type == "cuda":
++        devices = (cast(int, device.index),)
+     rng = WorldRNGState.create(descriptor=descriptor, world_id=sorted(descriptor.world_ids)[0], cuda_devices=devices)
+     with rng.activate("model_init"):
+         provider = make_backend(
+@@ -938,7 +959,9 @@ def validate_native(provider: Any, payload: Any, *, policy: ResolvedExplorationP
+         disposable.load_state(owned(payload))
+     else:
+         if family in ("rnd", "adaptive_rnd"):
+-            native = payload["rnd_state"] if family == "adaptive_rnd" else payload
++            native = payload
++            if family == "adaptive_rnd":
++                native = payload["rnd_state"]
+             for name in ("epsilon", "epsilon_decay", "epsilon_min"):
+                 number(native[name], "native " + name)
+             require(
+diff --git a/src/townlet/exploration/scoped_curiosity.py b/src/townlet/exploration/scoped_curiosity.py
+index 7b0085a3..454c95c0 100644
+--- a/src/townlet/exploration/scoped_curiosity.py
++++ b/src/townlet/exploration/scoped_curiosity.py
+@@ -1093,7 +1093,9 @@ class CuriosityBank:
+         origin = checkpoint.make_origin(source, initialization=initialization, policy=self.policy, descriptor=self.descriptor)
+         owners: dict[str, OwnedWorldBackend] = {}
+         records = []
+-        devices = () if self.device.type == "cpu" else (cast(int, self.device.index),)
++        devices: tuple[int, ...] = ()
++        if self.device.type == "cuda":
++            devices = (cast(int, self.device.index),)
+         validator = partial(checkpoint.validate_native, policy=self.policy, descriptor=self.descriptor)
+         for world in sorted(self.world_ids):
+             rng = WorldRNGState.create(descriptor=self.descriptor, world_id=world, cuda_devices=devices)
+@@ -1202,6 +1204,12 @@ class CuriosityBank:
+                 rng = WorldRNGState.create(descriptor=self.descriptor, world_id=world, cuda_devices=devices)
+                 factory = partial(self._factory, world)
+                 owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
++                if saved["initialization_origin"] is not None and mode in ("initial", "private_initialized"):
++                    owner.call(
++                        lambda provider, sources: checkpoint.validate_boundary_template(
++                            provider, records[world], origin=saved["initialization_origin"], policy=self.policy
++                        )
++                    )
+                 native = owner.prepare_restore(records[world]["backend"], factory=factory, validate_backend=validator)
+                 owner.install(native)
+                 owner.call(

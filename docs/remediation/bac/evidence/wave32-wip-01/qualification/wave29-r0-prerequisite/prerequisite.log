@@ -1,0 +1,284 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [17 items]
+
+FF.....F...F.F...                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_source_shared_and_live_same_scope_restore_remain_real[none] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_source_shared_and_live_same_scope_restore_remain_real(compiled, family):
+        """Positive countercontrol: explicit conversion must not damage ordinary restore."""
+        source = trained_source(compiled, family, "paced_fifo")
+        restored = Rig(compiled, source.bank.policy)
+        restored.prepare_parent(source)
+        token = restored.bank.prepare_restore(
+            state=source.saved,
+            mode="completed_boundary",
+            accepted=None,
+            parent_restore=restored.parent,
+            validate_parent_restore=restored.validate_parent,
+        )
+        restored.bank.install_restore(prepared=token)
+        restored.install_parent()
+        equal(live(restored.bank)["native"], live(source.bank)["native"])
+>       restored.begin(source.accepted.batch_episode + 1)
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:771: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:148: in begin
+    reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2060: in prepare_episode
+    self._require_release(release)
+src/townlet/environment/vectorized_env.py:2019: in _require_release
+    self._valid_record(release, "release")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd263d7ae90>
+record = WorldRecord(kind='release', _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd263d7ae90>, ...wnlet.simulator.vfs.world-draw.v1', 'training_seed': 701, 'world_ids': ('A', 'B'), 'world_episode_seqs': (1, 1)})}))}))
+kind = 'release'
+
+    def _valid_record(self, record: Any, kind: str) -> None:
+        if (
+            not isinstance(record, WorldRecord)
+            or record.kind != kind
+            or record._owner is not self
+            or record._generation != self._world_generation
+            or self._world_records.get(id(record)) is not record
+        ):
+>           raise ValueError("foreign, stale, changed or unissued world capability")
+E           ValueError: foreign, stale, changed or unissued world capability
+
+src/townlet/environment/vectorized_env.py:2006: ValueError
+___ test_source_shared_and_live_same_scope_restore_remain_real[count_based] ____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_source_shared_and_live_same_scope_restore_remain_real(compiled, family):
+        """Positive countercontrol: explicit conversion must not damage ordinary restore."""
+        source = trained_source(compiled, family, "paced_fifo")
+        restored = Rig(compiled, source.bank.policy)
+        restored.prepare_parent(source)
+        token = restored.bank.prepare_restore(
+            state=source.saved,
+            mode="completed_boundary",
+            accepted=None,
+            parent_restore=restored.parent,
+            validate_parent_restore=restored.validate_parent,
+        )
+        restored.bank.install_restore(prepared=token)
+        restored.install_parent()
+        equal(live(restored.bank)["native"], live(source.bank)["native"])
+>       restored.begin(source.accepted.batch_episode + 1)
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:771: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:148: in begin
+    reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2060: in prepare_episode
+    self._require_release(release)
+src/townlet/environment/vectorized_env.py:2019: in _require_release
+    self._valid_record(release, "release")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd2640be850>
+record = WorldRecord(kind='release', _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd2640be850>, ...wnlet.simulator.vfs.world-draw.v1', 'training_seed': 701, 'world_ids': ('A', 'B'), 'world_episode_seqs': (1, 1)})}))}))
+kind = 'release'
+
+    def _valid_record(self, record: Any, kind: str) -> None:
+        if (
+            not isinstance(record, WorldRecord)
+            or record.kind != kind
+            or record._owner is not self
+            or record._generation != self._world_generation
+            or self._world_records.get(id(record)) is not record
+        ):
+>           raise ValueError("foreign, stale, changed or unissued world capability")
+E           ValueError: foreign, stale, changed or unissued world capability
+
+src/townlet/environment/vectorized_env.py:2006: ValueError
+_______ test_source_shared_and_live_same_scope_restore_remain_real[rnd] ________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_source_shared_and_live_same_scope_restore_remain_real(compiled, family):
+        """Positive countercontrol: explicit conversion must not damage ordinary restore."""
+        source = trained_source(compiled, family, "paced_fifo")
+        restored = Rig(compiled, source.bank.policy)
+        restored.prepare_parent(source)
+        token = restored.bank.prepare_restore(
+            state=source.saved,
+            mode="completed_boundary",
+            accepted=None,
+            parent_restore=restored.parent,
+            validate_parent_restore=restored.validate_parent,
+        )
+        restored.bank.install_restore(prepared=token)
+        restored.install_parent()
+        equal(live(restored.bank)["native"], live(source.bank)["native"])
+>       restored.begin(source.accepted.batch_episode + 1)
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:771: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:148: in begin
+    reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2060: in prepare_episode
+    self._require_release(release)
+src/townlet/environment/vectorized_env.py:2019: in _require_release
+    self._valid_record(release, "release")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd264004690>
+record = WorldRecord(kind='release', _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd264004690>, ...wnlet.simulator.vfs.world-draw.v1', 'training_seed': 701, 'world_ids': ('A', 'B'), 'world_episode_seqs': (1, 1)})}))}))
+kind = 'release'
+
+    def _valid_record(self, record: Any, kind: str) -> None:
+        if (
+            not isinstance(record, WorldRecord)
+            or record.kind != kind
+            or record._owner is not self
+            or record._generation != self._world_generation
+            or self._world_records.get(id(record)) is not record
+        ):
+>           raise ValueError("foreign, stale, changed or unissued world capability")
+E           ValueError: foreign, stale, changed or unissued world capability
+
+src/townlet/environment/vectorized_env.py:2006: ValueError
+___ test_source_shared_and_live_same_scope_restore_remain_real[adaptive_rnd] ___
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_source_shared_and_live_same_scope_restore_remain_real(compiled, family):
+        """Positive countercontrol: explicit conversion must not damage ordinary restore."""
+        source = trained_source(compiled, family, "paced_fifo")
+        restored = Rig(compiled, source.bank.policy)
+        restored.prepare_parent(source)
+        token = restored.bank.prepare_restore(
+            state=source.saved,
+            mode="completed_boundary",
+            accepted=None,
+            parent_restore=restored.parent,
+            validate_parent_restore=restored.validate_parent,
+        )
+        restored.bank.install_restore(prepared=token)
+        restored.install_parent()
+        equal(live(restored.bank)["native"], live(source.bank)["native"])
+>       restored.begin(source.accepted.batch_episode + 1)
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:771: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:148: in begin
+    reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2060: in prepare_episode
+    self._require_release(release)
+src/townlet/environment/vectorized_env.py:2019: in _require_release
+    self._valid_record(release, "release")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd25875d450>
+record = WorldRecord(kind='release', _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd25875d450>, ...wnlet.simulator.vfs.world-draw.v1', 'training_seed': 701, 'world_ids': ('A', 'B'), 'world_episode_seqs': (5, 5)})}))}))
+kind = 'release'
+
+    def _valid_record(self, record: Any, kind: str) -> None:
+        if (
+            not isinstance(record, WorldRecord)
+            or record.kind != kind
+            or record._owner is not self
+            or record._generation != self._world_generation
+            or self._world_records.get(id(record)) is not record
+        ):
+>           raise ValueError("foreign, stale, changed or unissued world capability")
+E           ValueError: foreign, stale, changed or unissued world capability
+
+src/townlet/environment/vectorized_env.py:2006: ValueError
+_______ test_source_shared_and_live_same_scope_restore_remain_real[icm] ________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_source_shared_and_live_same_scope_restore_remain_real(compiled, family):
+        """Positive countercontrol: explicit conversion must not damage ordinary restore."""
+        source = trained_source(compiled, family, "paced_fifo")
+        restored = Rig(compiled, source.bank.policy)
+        restored.prepare_parent(source)
+        token = restored.bank.prepare_restore(
+            state=source.saved,
+            mode="completed_boundary",
+            accepted=None,
+            parent_restore=restored.parent,
+            validate_parent_restore=restored.validate_parent,
+        )
+        restored.bank.install_restore(prepared=token)
+        restored.install_parent()
+        equal(live(restored.bank)["native"], live(source.bank)["native"])
+>       restored.begin(source.accepted.batch_episode + 1)
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:771: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:148: in begin
+    reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2060: in prepare_episode
+    self._require_release(release)
+src/townlet/environment/vectorized_env.py:2019: in _require_release
+    self._valid_record(release, "release")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd2586d0e10>
+record = WorldRecord(kind='release', _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fd2586d0e10>, ...wnlet.simulator.vfs.world-draw.v1', 'training_seed': 701, 'world_ids': ('A', 'B'), 'world_episode_seqs': (1, 1)})}))}))
+kind = 'release'
+
+    def _valid_record(self, record: Any, kind: str) -> None:
+        if (
+            not isinstance(record, WorldRecord)
+            or record.kind != kind
+            or record._owner is not self
+            or record._generation != self._world_generation
+            or self._world_records.get(id(record)) is not record
+        ):
+>           raise ValueError("foreign, stale, changed or unissued world capability")
+E           ValueError: foreign, stale, changed or unissued world capability
+
+src/townlet/environment/vectorized_env.py:2006: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_source_shared_and_live_same_scope_restore_remain_real[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_source_shared_and_live_same_scope_restore_remain_real[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_source_shared_and_live_same_scope_restore_remain_real[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_source_shared_and_live_same_scope_restore_remain_real[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_source_shared_and_live_same_scope_restore_remain_real[icm]
+======================== 5 failed, 12 passed in 13.74s =========================

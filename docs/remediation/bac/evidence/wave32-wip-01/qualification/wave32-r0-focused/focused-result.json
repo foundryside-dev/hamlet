@@ -1,0 +1,30 @@
+{
+  "name": "focused",
+  "exit_code": 0,
+  "seconds": 13.902485609054565,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "constructor_compute_failure_restoration_and_quarantine and True and (rnd or adaptive_rnd)",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave32-r0-focused"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave32-r0-focused/focused.log",
+  "sha256": "d6bd4940aa1f4275eb4ea5fcc9b23b8b1bd8591f4defb6da38ac92214f6c21e2",
+  "candidate_tree": "dd09287c79bef1444b34575e511d3d71460b41a4",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "manifest_sha256": "6d8733d3011e279a439af5f94f857537782c58fc7342fe0695ba56f37717aa37",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

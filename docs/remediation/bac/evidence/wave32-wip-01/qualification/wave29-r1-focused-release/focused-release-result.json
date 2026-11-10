@@ -1,0 +1,30 @@
+{
+  "name": "focused-release",
+  "exit_code": 0,
+  "seconds": 21.411674976348877,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "source_shared_and_live_same_scope_restore_remain_real",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave29-r1-focused-release"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave29-r1-focused-release/focused-release.log",
+  "sha256": "40074e06c190d0144a79e7b9f13cf5d5b55e6b7235f5665021e27f403033d9f3",
+  "candidate_tree": "bcbf81d7af4f035018d58555e91555b853f7f947",
+  "base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+  "manifest_sha256": "a5ef077900977dbaa54e7eba5da84628b78aaed42e0414404cc759d229262d68",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

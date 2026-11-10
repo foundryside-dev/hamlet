@@ -1,0 +1,11 @@
+{
+  "previous_qualified_tree": "3c0052b80d24fc6387a1e186e485b808dd3bf3de",
+  "current_candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+  "source_changes": [
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py"
+  ],
+  "production_and_153_conversion_and_16_metadata_test_bytes": "IDENTICAL",
+  "guards": 354,
+  "configs": 573,
+  "protected_artifacts": 13
+}

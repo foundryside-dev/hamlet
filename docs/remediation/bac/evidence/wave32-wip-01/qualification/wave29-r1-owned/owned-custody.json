@@ -1,0 +1,20 @@
+{
+  "candidate_tree": "bcbf81d7af4f035018d58555e91555b853f7f947",
+  "passed": 28,
+  "failed": 117,
+  "classified": {
+    "missing_operation_RED": 105,
+    "count_witness_copy_fixture": 8,
+    "required_origin_schema_RED": 3,
+    "unstable_copy_storage_witness_fixture": 1
+  },
+  "wall_seconds": 36.92172861099243,
+  "source_guards": 353,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 5,
+  "registry": 14,
+  "available": 1,
+  "negative_custody": "PASS",
+  "scope": "108 intended RED controls are genuine;9fixturefailures and private backend-copy witness flaw require tests-only repair2. No complete authored closure or production authority."
+}

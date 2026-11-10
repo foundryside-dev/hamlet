@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_and_live_private_continuation[rnd-fresh_private]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'rnd', origin = 'fresh_private'\n\n    @pytest.mark.parametrize(\"origin\", (\"ordinary\", \"fresh_private\", \"clone_learned_archive_pending\"))\n    @pytest.mark.parametrize(\"family\", TRAINABLE)\n    def test_initial_and_live_private_continuation(compiled, family, origin):\n        \"\"\"Catches converted INITIAL/live decoder gaps, lost RNG/gradients and foreign cached epochs.\"\"\"\n        selected = policy(compiled, family, \"per_world\", \"paced_fifo\")\n        target = Rig(compiled, selected)\n        if origin != \"ordinary\":\n            source = Rig(compiled, policy(compiled, family, \"shared\", \"paced_fifo\"))\n>           token = target.bank.prepare_private_initialization(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                state=source.bank.checkpoint_state(), initialization=origin, parent_restore=None, validate_parent_restore=None\n            )\nE           AttributeError: 'CuriosityBank' object has no attribute 'prepare_private_initialization'\n\ntests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1144: AttributeError",
+  "candidate_tree": "bcbf81d7af4f035018d58555e91555b853f7f947"
+}

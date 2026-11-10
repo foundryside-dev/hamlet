@@ -11,6 +11,7 @@ import json
 import math
 import random
 import threading
+from collections import OrderedDict
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import copy, deepcopy
@@ -358,6 +359,11 @@ def _owned(value: Any) -> Any:
         if value.dtype.hasobject:
             return deepcopy(value)
         return value.copy()
+    if isinstance(value, OrderedDict):
+        ordered = OrderedDict((_owned(key), _owned(item)) for key, item in value.items())
+        if hasattr(value, "_metadata"):
+            cast(Any, ordered)._metadata = _owned(value._metadata)
+        return ordered
     if isinstance(value, Mapping):
         return {_owned(key): _owned(item) for key, item in value.items()}
     if isinstance(value, list):
@@ -381,6 +387,12 @@ def _same(left: Any, right: Any) -> bool:
         return left.dtype == right.dtype and left.device == right.device and left.shape == right.shape and torch.equal(left, right)
     if isinstance(left, np.ndarray):
         return left.dtype == right.dtype and left.shape == right.shape and bool(np.array_equal(left, right))
+    if isinstance(left, OrderedDict):
+        if list(left) != list(right) or hasattr(left, "_metadata") != hasattr(right, "_metadata"):
+            return False
+        if hasattr(left, "_metadata") and not _same(left._metadata, right._metadata):
+            return False
+        return all(_same(left[key], right[key]) for key in left)
     if isinstance(left, Mapping):
         return left.keys() == right.keys() and all(_same(left[key], right[key]) for key in left)
     if isinstance(left, (tuple, list)):

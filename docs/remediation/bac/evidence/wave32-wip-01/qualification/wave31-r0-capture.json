@@ -1,0 +1,62 @@
+{
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave31/r0-candidate.json",
+  "tree": "7b94a1d32a51616e3012109d013cddd7670260f7",
+  "files": 5,
+  "lines": 1564,
+  "reviewed_scopes": {
+    "T21": {
+      "files": 5,
+      "lines": 1564
+    },
+    "PW04-OWNER-SUITES": {
+      "files": 5,
+      "lines": 2596
+    },
+    "ENV-FIXTURE-IDENTITY": {
+      "files": 4,
+      "lines": 4539
+    },
+    "W22-RNG-BINDING": {
+      "files": 3,
+      "lines": 2058
+    },
+    "W23-PW03-FACTORY": {
+      "files": 5,
+      "lines": 2600
+    },
+    "W24-PW02-CURRENT-FIXTURES": {
+      "files": 5,
+      "lines": 3446
+    },
+    "W26-ENV-ACCEPTED-AUTH": {
+      "files": 4,
+      "lines": 3841
+    },
+    "W27-EXACT-OUTCOME-ID": {
+      "files": 3,
+      "lines": 659
+    },
+    "W29-PW07-PRODUCTION": {
+      "files": 4,
+      "lines": 4641
+    },
+    "W31-OWNED-NATIVE-METADATA": {
+      "files": 5,
+      "lines": 2939
+    }
+  },
+  "source_guards": 354,
+  "config_changes": {},
+  "resources": {
+    "cpu": "400000 100000",
+    "affinity": 5,
+    "memory_current": "1207476224",
+    "memory_limit": "17179869184",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+    "workspace_free": 25716350976,
+    "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+    "threads": 1,
+    "CUDA": "unavailable/unqualified",
+    "processes": "    PID    PPID %CPU   RSS COMMAND\n      1       0  0.0   880 tail\n      2       1  0.0  1784 cloud-agent-log\n      3       2  0.0   264 caas-prefix-tra\n    124       1  0.1 35656 dockerd\n    177     124  1.2 21412 containerd\n    449       0  0.3 39428 codex\n   3743       1  0.0     0 git\n   3796       1  0.0     0 git\n   5580       1  0.0     0 git\n  12077       1  0.0     0 git\n  17656       1  0.0     0 git\n  23754       1  0.0     0 git\n  28375       1  0.0     0 git\n  31066       1  0.0     0 git\n  36163       1  0.0     0 git\n  41371       1  0.0     0 git\n  48680       1  0.0     0 git\n  52874       1  0.0     0 git\n  62622       1  0.0     0 git\n  65316       1  0.0     0 git\n  68302       1  0.0     0 git\n  71033       1  0.0     0 git\n  77371       1  0.0     0 git\n  85141       1  0.0     0 git\n  95832     449 11.3 15212 codex-linux-san\n  95834   95832  0.0   928 bwrap\n  95835   95834  4.5 14636 codex\n  95836   95835  0.0  1876 bash\n  95840   95836 59.2 18820 python\n  95908   95840  0.0  2496 ps\n"
+  }
+}

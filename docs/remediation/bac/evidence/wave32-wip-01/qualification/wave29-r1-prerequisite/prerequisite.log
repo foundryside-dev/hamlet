@@ -1,0 +1,102 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [31 items]
+
+.....................F..FF.....                                          [100%]
+=================================== FAILURES ===================================
+___________ test_initial_and_live_private_continuation[rnd-ordinary] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', origin = 'ordinary'
+
+    @pytest.mark.parametrize("origin", ("ordinary", "fresh_private", "clone_learned_archive_pending"))
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_initial_and_live_private_continuation(compiled, family, origin):
+        """Catches converted INITIAL/live decoder gaps, lost RNG/gradients and foreign cached epochs."""
+        selected = policy(compiled, family, "per_world", "paced_fifo")
+        target = Rig(compiled, selected)
+        if origin != "ordinary":
+            source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"))
+            token = target.bank.prepare_private_initialization(
+                state=source.bank.checkpoint_state(), initialization=origin, parent_restore=None, validate_parent_restore=None
+            )
+            target.bank.install_restore(prepared=token)
+        initial = target.bank.checkpoint_state()
+        if origin == "ordinary":
+>           assert initial["initialization_origin"] is None and initial["curiosity_epoch"] == 0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'initialization_origin'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1150: KeyError
+______ test_initial_and_live_private_continuation[adaptive_rnd-ordinary] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', origin = 'ordinary'
+
+    @pytest.mark.parametrize("origin", ("ordinary", "fresh_private", "clone_learned_archive_pending"))
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_initial_and_live_private_continuation(compiled, family, origin):
+        """Catches converted INITIAL/live decoder gaps, lost RNG/gradients and foreign cached epochs."""
+        selected = policy(compiled, family, "per_world", "paced_fifo")
+        target = Rig(compiled, selected)
+        if origin != "ordinary":
+            source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"))
+            token = target.bank.prepare_private_initialization(
+                state=source.bank.checkpoint_state(), initialization=origin, parent_restore=None, validate_parent_restore=None
+            )
+            target.bank.install_restore(prepared=token)
+        initial = target.bank.checkpoint_state()
+        if origin == "ordinary":
+>           assert initial["initialization_origin"] is None and initial["curiosity_epoch"] == 0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'initialization_origin'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1150: KeyError
+___________ test_initial_and_live_private_continuation[icm-ordinary] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', origin = 'ordinary'
+
+    @pytest.mark.parametrize("origin", ("ordinary", "fresh_private", "clone_learned_archive_pending"))
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_initial_and_live_private_continuation(compiled, family, origin):
+        """Catches converted INITIAL/live decoder gaps, lost RNG/gradients and foreign cached epochs."""
+        selected = policy(compiled, family, "per_world", "paced_fifo")
+        target = Rig(compiled, selected)
+        if origin != "ordinary":
+            source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"))
+            token = target.bank.prepare_private_initialization(
+                state=source.bank.checkpoint_state(), initialization=origin, parent_restore=None, validate_parent_restore=None
+            )
+            target.bank.install_restore(prepared=token)
+        initial = target.bank.checkpoint_state()
+        if origin == "ordinary":
+>           assert initial["initialization_origin"] is None and initial["curiosity_epoch"] == 0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'initialization_origin'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1150: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_and_live_private_continuation[rnd-ordinary]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_and_live_private_continuation[adaptive_rnd-ordinary]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_and_live_private_continuation[icm-ordinary]
+======================== 3 failed, 28 passed in 13.54s =========================

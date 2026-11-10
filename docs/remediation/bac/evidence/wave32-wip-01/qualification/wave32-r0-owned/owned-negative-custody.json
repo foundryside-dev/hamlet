@@ -1,0 +1,16 @@
+{
+  "candidate_tree": "dd09287c79bef1444b34575e511d3d71460b41a4",
+  "negative_evidence_integrity": "PASS",
+  "source_guards": 354,
+  "configs": 573,
+  "artifacts": 13,
+  "pytest_processes": 3,
+  "nonpytest_children": 1,
+  "child_imports": 48,
+  "passed": 28,
+  "failed": 3,
+  "CUDA_skips": 1,
+  "wall_seconds": 12.971449613571167,
+  "source_comparison": "353current + oldtest captured indexed blob; known sole postrun authorized fix1 test edit now underway. This is historical negative evidence; not final candidate custody. Independent runtime full negative custody separately closed before edit.",
+  "diagnosis": "testreference plain-dict insertion order overconstraint only; OrderedDict order and metadata remain required"
+}

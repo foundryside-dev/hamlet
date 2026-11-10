@@ -1,0 +1,410 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [16 items]
+
+..FFFFFFFFFFF.F.                                                         [100%]
+=================================== FAILURES ===================================
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-transport_order] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7fe20a283e20>, <function setup_native.<locals>.factory at 0x7fe20a283880>)
+mutation = 'transport_order'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+        payload = destination.snapshot()
+        payload["backend"] = backend.checkpoint_state()
+        before = destination.snapshot()
+        original = deepcopy(payload)
+        reached = []
+    
+        def impure(candidate, transported):
+            candidate.validate_state(transported)
+            reached.append(True)
+            if mutation == "transport_order":
+                mapping = native_rnd(transported)["predictor_network"]
+                first = next(iter(mapping))
+                mapping[first] = mapping.pop(first)
+            else:
+                module = rnd_backend(candidate, family).predictor_network.net[0]
+                module._version += 1
+    
+>       with pytest.raises(ValueError, match="validation mutated"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:276: Failed
+___________ test_owned_callback_preserves_actual_native_mapping[rnd] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f6111f2f9c0>, <function setup_native.<locals>.factory at 0x7f6111f2fba0>)
+
+    def test_owned_callback_preserves_actual_native_mapping(setup_native):
+        actual = owner(setup_native)
+        # Primitive evidence is collected before call's result copier runs.
+        witness = actual.call(
+            lambda backend, sources: tuple(
+                (type(native_rnd(backend.checkpoint_state())[key]).__name__, list(native_rnd(backend.checkpoint_state())[key]._metadata))
+                for key in ("fixed_network", "predictor_network")
+            )
+        )
+        assert all(kind == "OrderedDict" and "net.0" in keys for kind, keys in witness)
+        result = actual.call(lambda backend, sources: backend.checkpoint_state())
+>       assert_native_mappings(result)
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'embed_dim': 4, 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon_min': 0.01, ...}
+
+    def assert_native_mappings(state):
+        rnd = native_rnd(state)
+        assert rnd is not None
+        for key in ("fixed_network", "predictor_network"):
+            mapping = rnd[key]
+>           assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+E           AssertionError: native network mapping kind was lost at the ownership boundary
+E           assert <class 'dict'> is OrderedDict
+E            +  where <class 'dict'> = type({'net.0.bias': tensor([ 0.0866,  0.2622, -0.4002,  0.2550,  0.3942, -0.5716, -0.5045, -0.3990,\n         0.1780,  0.133... 0.0070,  ...,  0.0531,  0.0393, -0.0102],\n        [ 0.0274, -0.0371,  0.0321,  ..., -0.0292, -0.0175,  0.0440]]), ...})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:156: AssertionError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-candidate_metadata] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7fe1ff437600>, <function setup_native.<locals>.factory at 0x7fe1ff436480>)
+mutation = 'candidate_metadata'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+        payload = destination.snapshot()
+        payload["backend"] = backend.checkpoint_state()
+        before = destination.snapshot()
+        original = deepcopy(payload)
+        reached = []
+    
+        def impure(candidate, transported):
+            candidate.validate_state(transported)
+            reached.append(True)
+            if mutation == "transport_order":
+                mapping = native_rnd(transported)["predictor_network"]
+                first = next(iter(mapping))
+                mapping[first] = mapping.pop(first)
+            else:
+                module = rnd_backend(candidate, family).predictor_network.net[0]
+                module._version += 1
+    
+>       with pytest.raises(ValueError, match="validation mutated"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:276: Failed
+______ test_owned_callback_preserves_actual_native_mapping[adaptive_rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f6111f2f1a0>, <function setup_native.<locals>.factory at 0x7f6111f2c220>)
+
+    def test_owned_callback_preserves_actual_native_mapping(setup_native):
+        actual = owner(setup_native)
+        # Primitive evidence is collected before call's result copier runs.
+        witness = actual.call(
+            lambda backend, sources: tuple(
+                (type(native_rnd(backend.checkpoint_state())[key]).__name__, list(native_rnd(backend.checkpoint_state())[key]._metadata))
+                for key in ("fixed_network", "predictor_network")
+            )
+        )
+        assert all(kind == "OrderedDict" and "net.0" in keys for kind, keys in witness)
+        result = actual.call(lambda backend, sources: backend.checkpoint_state())
+>       assert_native_mappings(result)
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'current_intrinsic_weight': 0.4, 'decay_rate': 0.9, 'initial_intrinsic_weight': 0.4, 'max_episode_length': 20, ...}
+
+    def assert_native_mappings(state):
+        rnd = native_rnd(state)
+        assert rnd is not None
+        for key in ("fixed_network", "predictor_network"):
+            mapping = rnd[key]
+>           assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+E           AssertionError: native network mapping kind was lost at the ownership boundary
+E           assert <class 'dict'> is OrderedDict
+E            +  where <class 'dict'> = type({'net.0.bias': tensor([-4.9908e-01,  1.7576e-01,  2.0180e-01,  3.6900e-02,  1.5162e-01,\n         5.6465e-01,  5.3933e-... 0.0544,  ..., -0.0220, -0.0534, -0.0534],\n        [-0.0363,  0.0041, -0.0192,  ...,  0.0042, -0.0498,  0.0133]]), ...})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:156: AssertionError
+______ test_owned_snapshot_preserves_native_metadata_order_and_tail[rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f6111f17e20>, <function setup_native.<locals>.factory at 0x7f6111f17c40>)
+
+    def test_owned_snapshot_preserves_native_metadata_order_and_tail(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        actual = owner(setup_native)
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+        actual.call(lambda candidate, sources: learn(candidate, family, ROWS, 3))
+        expected = backend.checkpoint_state()
+        observed = actual.snapshot()
+>       assert_native_mappings(observed["backend"])
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'embed_dim': 4, 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon_min': 0.01, ...}
+
+    def assert_native_mappings(state):
+        rnd = native_rnd(state)
+        assert rnd is not None
+        for key in ("fixed_network", "predictor_network"):
+            mapping = rnd[key]
+>           assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+E           AssertionError: native network mapping kind was lost at the ownership boundary
+E           assert <class 'dict'> is OrderedDict
+E            +  where <class 'dict'> = type({'net.0.bias': tensor([ 0.0866,  0.2622, -0.4002,  0.2550,  0.3942, -0.5716, -0.5045, -0.3990,\n         0.1780,  0.133... 0.0070,  ...,  0.0531,  0.0393, -0.0102],\n        [ 0.0274, -0.0371,  0.0321,  ..., -0.0292, -0.0175,  0.0440]]), ...})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:156: AssertionError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-transport_order] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7fe1ff436de0>, <function setup_native.<locals>.factory at 0x7fe1ff436ca0>)
+mutation = 'transport_order'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+        payload = destination.snapshot()
+        payload["backend"] = backend.checkpoint_state()
+        before = destination.snapshot()
+        original = deepcopy(payload)
+        reached = []
+    
+        def impure(candidate, transported):
+            candidate.validate_state(transported)
+            reached.append(True)
+            if mutation == "transport_order":
+                mapping = native_rnd(transported)["predictor_network"]
+                first = next(iter(mapping))
+                mapping[first] = mapping.pop(first)
+            else:
+                module = rnd_backend(candidate, family).predictor_network.net[0]
+                module._version += 1
+    
+>       with pytest.raises(ValueError, match="validation mutated"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:276: Failed
+__ test_owned_snapshot_preserves_native_metadata_order_and_tail[adaptive_rnd] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f6111f177e0>, <function setup_native.<locals>.factory at 0x7f6111f17880>)
+
+    def test_owned_snapshot_preserves_native_metadata_order_and_tail(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        actual = owner(setup_native)
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+        actual.call(lambda candidate, sources: learn(candidate, family, ROWS, 3))
+        expected = backend.checkpoint_state()
+        observed = actual.snapshot()
+>       assert_native_mappings(observed["backend"])
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'current_intrinsic_weight': 0.4, 'decay_rate': 0.9, 'initial_intrinsic_weight': 0.4, 'max_episode_length': 20, ...}
+
+    def assert_native_mappings(state):
+        rnd = native_rnd(state)
+        assert rnd is not None
+        for key in ("fixed_network", "predictor_network"):
+            mapping = rnd[key]
+>           assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+E           AssertionError: native network mapping kind was lost at the ownership boundary
+E           assert <class 'dict'> is OrderedDict
+E            +  where <class 'dict'> = type({'net.0.bias': tensor([-4.9908e-01,  1.7576e-01,  2.0180e-01,  3.6900e-02,  1.5162e-01,\n         5.6465e-01,  5.3933e-... 0.0544,  ..., -0.0220, -0.0534, -0.0534],\n        [-0.0363,  0.0041, -0.0192,  ...,  0.0042, -0.0498,  0.0133]]), ...})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:156: AssertionError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-candidate_metadata] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7fe1ff435b20>, <function setup_native.<locals>.factory at 0x7fe1ff434b80>)
+mutation = 'candidate_metadata'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+        payload = destination.snapshot()
+        payload["backend"] = backend.checkpoint_state()
+        before = destination.snapshot()
+        original = deepcopy(payload)
+        reached = []
+    
+        def impure(candidate, transported):
+            candidate.validate_state(transported)
+            reached.append(True)
+            if mutation == "transport_order":
+                mapping = native_rnd(transported)["predictor_network"]
+                first = next(iter(mapping))
+                mapping[first] = mapping.pop(first)
+            else:
+                module = rnd_backend(candidate, family).predictor_network.net[0]
+                module._version += 1
+    
+>       with pytest.raises(ValueError, match="validation mutated"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:276: Failed
+_____ test_callback_numeric_recursive_metadata_is_independently_owned[rnd] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7fe1ff4349a0>, <function setup_native.<locals>.factory at 0x7fe1ff434680>)
+
+    def test_callback_numeric_recursive_metadata_is_independently_owned(setup_native):
+        actual = owner(setup_native)
+        # This narrow portable nested metadata value tests the generic copier. It
+        # does not assert that arbitrary plugin native schemas can load this value.
+        inner = OrderedDict([("z", torch.tensor([1.5], requires_grad=True)), ("a", np.array([2.5], dtype=np.float64))])
+        inner._metadata = OrderedDict([("inner", {"version": np.int64(3)})])
+        value = OrderedDict([("second", inner), ("first", (np.float32(4.5), [6]))])
+        value._metadata = OrderedDict([("", {"version": 1, "nested": inner})])
+        expected = deepcopy(value)
+        result = actual.call(lambda backend, sources: value)
+>       assert type(result) is OrderedDict, "callback metadata mapping kind must survive"
+E       AssertionError: callback metadata mapping kind must survive
+E       assert <class 'dict'> is OrderedDict
+E        +  where <class 'dict'> = type({'first': (np.float32(4.5), [6]), 'second': {'a': array([2.5]), 'z': tensor([1.5000])}})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:293: AssertionError
+________ test_prepare_install_real_native_resume_learning_and_rng[rnd] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f6111f16b60>, <function setup_native.<locals>.factory at 0x7f6111f16ac0>)
+
+    def test_prepare_install_real_native_resume_learning_and_rng(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        _, _, factory = setup_native
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+        destination = owner(setup_native)
+        # Native input comes straight from the real provider, before the owner copier.
+        payload = {"schema": "owned-world-backend-v1", "healthy": True, "backend": backend.checkpoint_state(), "rng": rng.snapshot()}
+        original = deepcopy(payload)
+        destination_before = destination.snapshot()
+        prepared = destination.prepare_restore(payload, factory=factory, validate_backend=validate)
+        assert_same(original, payload)
+        destination.install(prepared)
+        installed = destination.snapshot()
+>       assert_native_mappings(installed["backend"])
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'embed_dim': 4, 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon_min': 0.01, ...}
+
+    def assert_native_mappings(state):
+        rnd = native_rnd(state)
+        assert rnd is not None
+        for key in ("fixed_network", "predictor_network"):
+            mapping = rnd[key]
+>           assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+E           AssertionError: native network mapping kind was lost at the ownership boundary
+E           assert <class 'dict'> is OrderedDict
+E            +  where <class 'dict'> = type({'net.0.bias': tensor([ 0.0866,  0.2622, -0.4002,  0.2550,  0.3942, -0.5716, -0.5045, -0.3990,\n         0.1780,  0.133... 0.0070,  ...,  0.0531,  0.0393, -0.0102],\n        [ 0.0274, -0.0371,  0.0321,  ..., -0.0292, -0.0175,  0.0440]]), ...})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:156: AssertionError
+_ test_callback_numeric_recursive_metadata_is_independently_owned[adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7fe1ff41e7a0>, <function setup_native.<locals>.factory at 0x7fe1ff41e660>)
+
+    def test_callback_numeric_recursive_metadata_is_independently_owned(setup_native):
+        actual = owner(setup_native)
+        # This narrow portable nested metadata value tests the generic copier. It
+        # does not assert that arbitrary plugin native schemas can load this value.
+        inner = OrderedDict([("z", torch.tensor([1.5], requires_grad=True)), ("a", np.array([2.5], dtype=np.float64))])
+        inner._metadata = OrderedDict([("inner", {"version": np.int64(3)})])
+        value = OrderedDict([("second", inner), ("first", (np.float32(4.5), [6]))])
+        value._metadata = OrderedDict([("", {"version": 1, "nested": inner})])
+        expected = deepcopy(value)
+        result = actual.call(lambda backend, sources: value)
+>       assert type(result) is OrderedDict, "callback metadata mapping kind must survive"
+E       AssertionError: callback metadata mapping kind must survive
+E       assert <class 'dict'> is OrderedDict
+E        +  where <class 'dict'> = type({'first': (np.float32(4.5), [6]), 'second': {'a': array([2.5]), 'z': tensor([1.5000])}})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:293: AssertionError
+____ test_prepare_install_real_native_resume_learning_and_rng[adaptive_rnd] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f6111f15940>, <function setup_native.<locals>.factory at 0x7f6111f15a80>)
+
+    def test_prepare_install_real_native_resume_learning_and_rng(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        _, _, factory = setup_native
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+        destination = owner(setup_native)
+        # Native input comes straight from the real provider, before the owner copier.
+        payload = {"schema": "owned-world-backend-v1", "healthy": True, "backend": backend.checkpoint_state(), "rng": rng.snapshot()}
+        original = deepcopy(payload)
+        destination_before = destination.snapshot()
+        prepared = destination.prepare_restore(payload, factory=factory, validate_backend=validate)
+        assert_same(original, payload)
+        destination.install(prepared)
+        installed = destination.snapshot()
+>       assert_native_mappings(installed["backend"])
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'current_intrinsic_weight': 0.4, 'decay_rate': 0.9, 'initial_intrinsic_weight': 0.4, 'max_episode_length': 20, ...}
+
+    def assert_native_mappings(state):
+        rnd = native_rnd(state)
+        assert rnd is not None
+        for key in ("fixed_network", "predictor_network"):
+            mapping = rnd[key]
+>           assert type(mapping) is OrderedDict, "native network mapping kind was lost at the ownership boundary"
+E           AssertionError: native network mapping kind was lost at the ownership boundary
+E           assert <class 'dict'> is OrderedDict
+E            +  where <class 'dict'> = type({'net.0.bias': tensor([-4.9908e-01,  1.7576e-01,  2.0180e-01,  3.6900e-02,  1.5162e-01,\n         5.6465e-01,  5.3933e-... 0.0544,  ..., -0.0220, -0.0534, -0.0534],\n        [-0.0363,  0.0041, -0.0192,  ...,  0.0042, -0.0498,  0.0133]]), ...})
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:156: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-transport_order]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-candidate_metadata]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_snapshot_preserves_native_metadata_order_and_tail[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-transport_order]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_snapshot_preserves_native_metadata_order_and_tail[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-candidate_metadata]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_callback_numeric_recursive_metadata_is_independently_owned[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_prepare_install_real_native_resume_learning_and_rng[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_callback_numeric_recursive_metadata_is_independently_owned[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_prepare_install_real_native_resume_learning_and_rng[adaptive_rnd]
+======================== 12 failed, 4 passed in 10.55s =========================

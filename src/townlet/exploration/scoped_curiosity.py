@@ -295,6 +295,9 @@ class CuriosityBank:
         self._history: dict[str, Any] | None = None
         self._historical_step: dict[str, Any] | None = None
         self._restore_tokens: dict[object, Any] = {}
+        self._initialization_origin: dict[str, Any] | None = None
+        self._curiosity_epoch = 0
+        self._private_initialized = False
         self._owners: dict[str, OwnedWorldBackend] = {}
         self._shared: Any = None
         self._cursor: dict[str, dict[str, Any]] = {
@@ -372,13 +375,17 @@ class CuriosityBank:
         for world, episode in zip(accepted.world_ids, accepted.world_episode_seqs, strict=True):
             cursor = self._cursor[world]
             _require(type(episode) is int and episode == cursor["accepted_episode_seq"] + 1, "accepted episode must advance once")
-            _require(cursor["accepted_episode_seq"] == 0 or cursor["disposition"] is not None, "unfinished accepted episode")
+            _require(
+                cursor["accepted_episode_seq"] == 0 or cursor["disposition"] is not None or self._private_initialized,
+                "unfinished accepted episode",
+            )
         receipt = self._issuer.issue(kind="activation", payload={"accepted": accepted})
         for world, episode in zip(accepted.world_ids, accepted.world_episode_seqs, strict=True):
             self._cursor[world].update(accepted_episode_seq=episode, eligible_seq=0, participated=False, disposition=None)
             self._cache[world] = {}
         self._accepted, self._activation, self._pending, self._committed = accepted, receipt, None, None
         self._history, self._historical_step = None, None
+        self._private_initialized = False
         self._completion_payload, self._completion_outcomes, self._completion_values = {}, (), {}
         self.mutation_revision += 1
         return receipt
@@ -407,7 +414,7 @@ class CuriosityBank:
             _require(pending["serviced"] and vector_tick > pending["tick"], "unfinished or regressing preparation")
         sequences = tuple(self._cursor[world]["eligible_seq"] + int(active_on_entry[i]) for i, world in enumerate(world_ids))
         events = tuple(
-            CuriosityEventId(0, world, episode, seq)
+            CuriosityEventId(self._curiosity_epoch, world, episode, seq)
             for world, episode, seq in zip(world_ids, accepted.world_episode_seqs, sequences, strict=True)
         )
         stamp = CuriosityStepStamp(
@@ -439,7 +446,10 @@ class CuriosityBank:
         assert pending is not None
         _require(stamp.world_ids == accepted.world_ids and _same(stamp.eligible, context.active_on_entry), "stamp row/eligibility mismatch")
         for i, event in enumerate(stamp.event_ids):
-            _require(event.curiosity_epoch == 0 and event.world_episode_seq == accepted.world_episode_seqs[i], "stamp episode mismatch")
+            _require(
+                event.curiosity_epoch == self._curiosity_epoch and event.world_episode_seq == accepted.world_episode_seqs[i],
+                "stamp episode mismatch",
+            )
             if not bool(stamp.eligible[i]):
                 _require(event.eligible_seq <= self._cursor[event.world_id]["eligible_seq"], "inactive cursor is in the future")
         current = self._current(context, stamp)
@@ -634,6 +644,9 @@ class CuriosityBank:
                 if self.scope == "per_world":
                     position = self._cursor[world]["cumulative_service_position"] + 1
                 clock = ServiceClock(self.policy.service_clock_unit, position)
+                native_clock = clock
+                if self.scope == "per_world" and self._initialization_origin is not None:
+                    native_clock = ServiceClock(clock.unit, position + self._initialization_origin["inherited_baseline"]["admitted_rows"])
 
                 def service(backend: Any) -> Any:
                     if self.policy.strategy == "icm":
@@ -641,7 +654,7 @@ class CuriosityBank:
                     else:
                         payload = content["predecessor"][group]
                     if self.scope == "per_world":
-                        return backend.admit_and_service_at(payload, clock=clock)
+                        return backend.admit_and_service_at(payload, clock=native_clock)
                     if self.policy.strategy == "icm":
                         return backend.admit_and_service(payload)
                     return backend.admit_and_service(payload, vector_tick=context.vector_tick)
@@ -857,8 +870,12 @@ class CuriosityBank:
 
     @_serialized
     def snapshot_world(self, *, world_id: str) -> dict[str, Any]:
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
         self._available()
         _require(type(world_id) is str and world_id in self._cursor, "unknown exact world ID")
+        if self._initialization_origin is not None:
+            self._report_transport(self._initialization_origin, "snapshot", None)
         try:
             if self.scope == "per_world":
                 backend = self._owners[world_id].snapshot()
@@ -892,13 +909,19 @@ class CuriosityBank:
                     context=local_context,
                 )
         return dict(
-            schema="curiosity-bank-world-v1",
+            schema="curiosity-bank-world-v2",
             scope=self.scope,
             world_id=world_id,
             policy_identity=self.policy.policy_identity,
             descriptor=self.descriptor.to_dict(),
             backend=backend,
-            curiosity_epoch=0,
+            curiosity_epoch=self._curiosity_epoch,
+            initialization_origin=checkpoint.owned(self._initialization_origin),
+            future_service_counters=(
+                checkpoint.future_counters(backend["backend"], policy=self.policy, origin=self._initialization_origin)
+                if self.scope == "per_world"
+                else None
+            ),
             accepted_identity=identity,
             cursor=deepcopy(self._cursor[world_id]),
             phase_cache=deepcopy(self._cache[world_id]),
@@ -908,6 +931,8 @@ class CuriosityBank:
         )
 
     def _checkpoint_phase(self) -> str:
+        if self._private_initialized:
+            return "private_initialized"
         if self._history is not None or self._committed is not None:
             return "completed_boundary"
         if self._accepted is not None:
@@ -930,6 +955,8 @@ class CuriosityBank:
         from townlet.exploration import curiosity_checkpoint as checkpoint
 
         self._available()
+        if self._initialization_origin is not None:
+            self._report_transport(self._initialization_origin, "checkpoint", None)
         phase = self._checkpoint_phase()
         worlds = []
         shared = None
@@ -978,12 +1005,13 @@ class CuriosityBank:
                 assert self._accepted is not None
                 dispatch = checkpoint.accepted_identity(self._accepted)
             return dict(
-                schema="curiosity-bank-state-v1",
+                schema="curiosity-bank-state-v2",
                 policy=self.policy.to_dict(),
                 policy_identity=self.policy.policy_identity,
                 descriptor=self.descriptor.to_dict(),
                 source_device=str(self.device),
-                curiosity_epoch=0,
+                curiosity_epoch=self._curiosity_epoch,
+                initialization_origin=checkpoint.owned(self._initialization_origin),
                 bank_phase=phase,
                 dispatch_identity=dispatch,
                 worlds=worlds,
@@ -993,6 +1021,138 @@ class CuriosityBank:
             )
         finally:
             self.mutation_revision += 1
+
+    def _report_transport(self, state: Any, operation: str, parent_restore: Any) -> None:
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        size = checkpoint.tensor_bytes(state)
+        reserve = self._allocation(operation, len(self.world_ids), 0)
+        callback_bytes = 0
+        if parent_restore is not None:
+            callback_bytes = 2 * size
+        components = reserve.components + (
+            ("owned_input_candidate_workspace", 5 * size),
+            ("two_retained_parent_callback_views", callback_bytes),
+        )
+        if operation in ("initialize_private", "snapshot", "checkpoint") or state["initialization_origin"] is not None:
+            components += (("source_archive_and_disposable_native_validator", 3 * size),)
+        self._report(
+            replace(
+                reserve,
+                known_tensor_bytes=sum(value for _, value in components),
+                components=components,
+                assumptions=reserve.assumptions
+                + (
+                    "old resident plus new owners, gradients/Adam/tails, owned transport and sequential validation workspace",
+                    "five input tensor inventories reserve transport, gradients, RNG, caches, outcomes and transient copies",
+                    "both independently owned parent callback views may be retained; earlier preparations/external copies excluded",
+                ),
+                unknown_components=reserve.unknown_components + ("parent callback copies and retention from earlier preparations",),
+            )
+        )
+
+    def _correlate_parent(self, saved: dict[str, Any], parent: Any, validate: Any) -> None:
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        if parent is not None:
+            checkpoint.match_parent(saved, parent=parent, descriptor=self.descriptor)
+            view = checkpoint.owned(saved)
+            _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+            _require(checkpoint.same(saved, view), "parent callback changed curiosity state")
+
+    @_serialized
+    def prepare_private_initialization(self, *, state: Any, initialization: str, parent_restore: Any, validate_parent_restore: Any) -> Any:
+        """Prepare an explicit owned private origin; archived shared work stays inactive."""
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        self._available()
+        _require(
+            type(initialization) is str and initialization in ("fresh_private", "clone_learned_archive_pending"),
+            "explicit initialization required",
+        )
+        _require(
+            self.scope == "per_world"
+            and self._checkpoint_phase() == "initial"
+            and self._initialization_origin is None
+            and self._pending is None
+            and self._activation is None
+            and all(not cache for cache in self._cache.values())
+            and all(not any(cursor.values()) for cursor in self._cursor.values()),
+            "initialization requires an untouched INITIAL private bank",
+        )
+        revision = self.mutation_revision
+        source_policy, source_descriptor = checkpoint.conversion_source(
+            state, policy=self.policy, descriptor=self.descriptor, device=self.device
+        )
+        checkpoint.check_mode(mode=state["bank_phase"], accepted=None, parent=parent_restore, validate=validate_parent_restore)
+        self._report_transport(state, "initialize_private", parent_restore)
+        source = checkpoint.owned(state)
+        self._correlate_parent(source, parent_restore, validate_parent_restore)
+        checkpoint.validate_records(source, policy=source_policy, descriptor=source_descriptor, device=self.device)
+        checkpoint.validate_archived_native(source, descriptor=self.descriptor, device=self.device)
+        origin = checkpoint.make_origin(source, initialization=initialization, policy=self.policy, descriptor=self.descriptor)
+        owners: dict[str, OwnedWorldBackend] = {}
+        records = []
+        devices: tuple[int, ...] = ()
+        if self.device.type == "cuda":
+            devices = (cast(int, self.device.index),)
+        validator = partial(checkpoint.validate_native, policy=self.policy, descriptor=self.descriptor)
+        for world in sorted(self.world_ids):
+            rng = WorldRNGState.create(descriptor=self.descriptor, world_id=world, cuda_devices=devices)
+            factory = partial(self._factory, world)
+            owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+            envelope = owner.snapshot()
+            gradients = owner.call(lambda provider, sources: checkpoint.capture_gradients(provider, self.policy.strategy))
+            if initialization == "clone_learned_archive_pending":
+                envelope["backend"] = checkpoint.clone_native(
+                    source["shared_backend"]["native"], policy=self.policy, baseline=origin["inherited_baseline"]
+                )
+                gradients = source["shared_backend"]["gradients"]
+            native = owner.prepare_restore(envelope, factory=factory, validate_backend=validator)
+            owner.install(native)
+            owner.call(lambda provider, sources: checkpoint.attach_gradients(provider, gradients, self.policy.strategy))
+            restored = owner.snapshot()
+            _require(checkpoint.same(restored, envelope), "initialization changed target native/RNG payload")
+            owners[world] = owner
+            records.append(
+                dict(
+                    world_id=world,
+                    backend=restored,
+                    gradients=checkpoint.owned(gradients),
+                    phase_cache={},
+                    cursor=dict(
+                        accepted_episode_seq=origin["episode_baseline"][world],
+                        eligible_seq=0,
+                        cumulative_service_position=0,
+                        participated=False,
+                        disposition=None,
+                    ),
+                )
+            )
+        by_world = {record["world_id"]: record for record in records}
+        saved = dict(
+            schema="curiosity-bank-state-v2",
+            policy=self.policy.to_dict(),
+            policy_identity=self.policy.policy_identity,
+            descriptor=self.descriptor.to_dict(),
+            source_device=str(self.device),
+            curiosity_epoch=source["curiosity_epoch"] + 1,
+            initialization_origin=origin,
+            bank_phase="initial" if source["bank_phase"] == "initial" else "private_initialized",
+            dispatch_identity=None,
+            worlds=[by_world[world] for world in self.world_ids],
+            shared_backend=None,
+            step=None,
+            completion=None,
+        )
+        checkpoint.preflight(saved, policy=self.policy, descriptor=self.descriptor, device=self.device, mode=saved["bank_phase"])
+        checkpoint.validate_origin(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
+        checkpoint.validate_records(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
+        token, runtime = self._restore_publication(saved, owners, None, None, revision)
+        self._correlate_parent(source, parent_restore, validate_parent_restore)
+        _require(self.mutation_revision == revision, "destination changed during initialization preparation")
+        self._restore_tokens[token] = (revision, runtime, None)
+        return token
 
     @_serialized
     def prepare_restore(
@@ -1011,30 +1171,9 @@ class CuriosityBank:
         revision = self.mutation_revision
         checkpoint.preflight(state, policy=self.policy, descriptor=self.descriptor, device=self.device, mode=mode)
         checkpoint.check_mode(mode=mode, accepted=accepted, parent=parent_restore, validate=validate_parent_restore)
-        size = checkpoint.tensor_bytes(state)
-        reserve = self._allocation("restore", len(self.world_ids), 0)
-        callback_bytes = 0
-        if parent_restore is not None:
-            callback_bytes = 2 * size
-        components = reserve.components + (
-            ("owned_input_candidate_workspace", 5 * size),
-            ("two_retained_parent_callback_views", callback_bytes),
-        )
-        self._report(
-            replace(
-                reserve,
-                known_tensor_bytes=sum(value for _, value in components),
-                components=components,
-                assumptions=reserve.assumptions
-                + (
-                    "old resident plus new owners, gradients/Adam/tails, owned transport and sequential validation workspace",
-                    "five input tensor inventories reserve transport, gradients, RNG, caches, outcomes and transient copies",
-                    "both independently owned parent callback views may be retained; earlier preparations/external copies excluded",
-                ),
-                unknown_components=reserve.unknown_components + ("parent callback copies and retention from earlier preparations",),
-            )
-        )
+        self._report_transport(state, "restore", parent_restore)
         saved = checkpoint.owned(state)
+        checkpoint.validate_origin(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
 
         def correlate() -> None:
             if mode == "live_episode":
@@ -1042,13 +1181,17 @@ class CuriosityBank:
                 self._validate(accepted=accepted)
                 checkpoint.match_live(saved, accepted=accepted, descriptor=self.descriptor)
             elif parent_restore is not None:
-                checkpoint.match_parent(saved, parent=parent_restore, descriptor=self.descriptor)
-                view = checkpoint.owned(saved)
-                _require(validate_parent_restore(prepared=parent_restore, curiosity_state=view) is None, "parent validator return")
-                _require(checkpoint.same(saved, view), "parent callback changed curiosity state")
+                history = saved
+                if mode == "private_initialized":
+                    history = saved["initialization_origin"]["source_checkpoint"]
+                self._correlate_parent(history, parent_restore, validate_parent_restore)
 
         correlate()
         checkpoint.validate_records(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
+        if saved["initialization_origin"] is not None:
+            checkpoint.validate_archived_native(
+                saved["initialization_origin"]["source_checkpoint"], descriptor=self.descriptor, device=self.device
+            )
         owners: dict[str, OwnedWorldBackend] = {}
         shared = None
         devices: tuple[int, ...] = ()
@@ -1061,6 +1204,12 @@ class CuriosityBank:
                 rng = WorldRNGState.create(descriptor=self.descriptor, world_id=world, cuda_devices=devices)
                 factory = partial(self._factory, world)
                 owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+                if saved["initialization_origin"] is not None and mode in ("initial", "private_initialized"):
+                    owner.call(
+                        lambda provider, sources: checkpoint.validate_boundary_template(
+                            provider, records[world], origin=saved["initialization_origin"], policy=self.policy
+                        )
+                    )
                 native = owner.prepare_restore(records[world]["backend"], factory=factory, validate_backend=validator)
                 owner.install(native)
                 owner.call(
@@ -1074,9 +1223,20 @@ class CuriosityBank:
             shared.load_state(checkpoint.owned(payload["native"]))
             _require(checkpoint.same(shared.checkpoint_state(), payload["native"]), "shared native transport changed")
             checkpoint.attach_gradients(shared, payload["gradients"], self.policy.strategy)
+        token, runtime = self._restore_publication(saved, owners, shared, accepted, revision)
+        correlate()
+        _require(self.mutation_revision == revision, "destination changed during restore preparation")
+        self._restore_tokens[token] = (revision, runtime, accepted)
+        return token
+
+    def _restore_publication(
+        self, saved: dict[str, Any], owners: dict[str, OwnedWorldBackend], shared: Any, accepted: Any, revision: int
+    ) -> tuple[Any, dict[str, Any]]:
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
         runtime_values = checkpoint.runtime_data(saved, descriptor=self.descriptor, device=self.device)
         activation = None
-        if mode == "live_episode":
+        if saved["bank_phase"] == "live_episode":
             activation = self._issuer.issue(kind="activation", payload={"accepted": accepted})
         token = checkpoint.PreparedCuriosityRestore()
         runtime = dict(self.__dict__)
@@ -1098,12 +1258,12 @@ class CuriosityBank:
             _completion_outcomes=(),
             _completion_values={},
             _restore_tokens={},
+            _initialization_origin=checkpoint.owned(saved["initialization_origin"]),
+            _curiosity_epoch=saved["curiosity_epoch"],
+            _private_initialized=saved["bank_phase"] == "private_initialized",
             mutation_revision=revision + 1,
         )
-        correlate()
-        _require(self.mutation_revision == revision, "destination changed during restore preparation")
-        self._restore_tokens[token] = (revision, runtime, accepted)
-        return token
+        return token, runtime
 
     @_serialized
     def install_restore(self, *, prepared: Any) -> None:

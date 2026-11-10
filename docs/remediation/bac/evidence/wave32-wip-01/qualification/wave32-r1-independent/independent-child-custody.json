@@ -1,0 +1,13 @@
+{
+  "child_receipt": "/workspace/bac-review-2026-11-01/qualification/wave32-r1-independent/independent/subprocess-custody-poisoning-102182.json",
+  "sha256": "1a54e21a9169cd81fcf1a7efce2f7eaa89b7569957c5bb799913d5675344edc1",
+  "full_sources": 354,
+  "all_current_import_paths": 48,
+  "python": "3.13.5",
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "poisoning_assertions": "PASS",
+  "status": "PASS",
+  "candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571"
+}

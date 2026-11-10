@@ -1,0 +1,28 @@
+{
+  "candidate_tree": "7b94a1d32a51616e3012109d013cddd7670260f7",
+  "guards": {
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.08580350875854492
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 1.2320668697357178
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.9767911434173584
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.1103672981262207
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 58.58793377876282
+    }
+  },
+  "defaults": "601 unchanged restored by PW07fix1",
+  "mypy": "Same9oraclePOPerrors197sources, noownederrors",
+  "source_config_artifact_index_registry_postflight": "PASS354/573/13/registry14MAIN1"
+}

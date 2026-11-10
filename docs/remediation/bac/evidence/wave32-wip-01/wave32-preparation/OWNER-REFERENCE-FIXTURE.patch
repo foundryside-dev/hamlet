@@ -1,0 +1,44 @@
+diff --git a/tests/test_townlet/regressions/bac/test_pw_rng_domains.py b/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
+index 43a493e0..79bddbfb 100644
+--- a/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
++++ b/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
+@@ -9,6 +9,7 @@ import random
+ import subprocess
+ import sys
+ import threading
++from collections import OrderedDict
+ from collections.abc import Mapping
+ from pathlib import Path
+ 
+@@ -33,9 +34,13 @@ def _equal(left, right):
+     elif isinstance(left, np.ndarray):
+         assert left.dtype == right.dtype and np.array_equal(left, right)
+     elif isinstance(left, Mapping):
+-        assert left.keys() == right.keys()
++        assert list(left) == list(right)
+         for key in left:
+             _equal(left[key], right[key])
++        if isinstance(left, OrderedDict):
++            assert hasattr(left, "_metadata") == hasattr(right, "_metadata")
++            if hasattr(left, "_metadata"):
++                _equal(left._metadata, right._metadata)
+     elif isinstance(left, (list, tuple)):
+         assert len(left) == len(right)
+         for a, b in zip(left, right, strict=True):
+@@ -204,14 +209,8 @@ def _rnd_state(state, kind):
+ 
+ 
+ def _learning_snapshot(value):
+-    # Native state_dict uses OrderedDict; owned checkpoints expose plain mappings.
+-    # Normalize only mapping representation, retaining sequence and leaf types.
+-    if isinstance(value, Mapping):
+-        return {key: _learning_snapshot(child) for key, child in value.items()}
+-    if isinstance(value, list):
+-        return [_learning_snapshot(child) for child in value]
+-    if isinstance(value, tuple):
+-        return tuple(_learning_snapshot(child) for child in value)
++    # Preserve native mapping kinds, entry order and recursive Torch metadata,
++    # while independently owning the reference snapshot and its leaves.
+     return copy.deepcopy(value)
+ 
+ 

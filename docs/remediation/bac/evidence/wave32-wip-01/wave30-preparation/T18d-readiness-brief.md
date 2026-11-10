@@ -1,0 +1,18 @@
+# Next original T18d producer consumer readiness — bounded readonly work
+
+Read T18d-original-task.md first: exact accepted requirements/values. This is next dependency-coherent original package after PW07, not new programme design. Root is currently the integration owner and a sole Astra writer is implementing PW07 CP/BANK. Your initial work is independent READONLY comparison of stable existing policy/factory/RNG-owner interfaces against T18d's actual acceptance, then a finite ignored report. No implementation/test writer baton, no new branch/worktree/checkout/source copy/subagents/runtime/import/compile/pytest/probes/index/commit/push/install/delete/external messages.
+
+AGENTS.md/current user zero-backwards-compatibility ruling supersedes original task bullets requiring old adapter signatures or legacy callable paths solely for compatibility. Replace obsolete interfaces and callers/tests/docs together when authorized; no fallback. Preserve current explicit shared option, all five actual provider algorithms, real learning/service/scale/global-selector/once-only-completion/native/history/replay guarantees. Source metadata dates can be historical; actual accepted current public contracts and later owner rulings govern. Do not remove/consolidate required capability, silently call an integrated package done, or invent new adapter/facade layers without a concrete gap.
+
+Exactly five named source slots/ceilings5000:
+1 src/townlet/config/exploration_policy.py current768 cap1000 READONLY now.
+2 src/townlet/exploration/provider_factory.py current153 cap250 READONLY.
+3 src/townlet/exploration/scoped_curiosity.py current1122 (evolving) cap1350 — DO NOT READ IMPLEMENTATION UNTIL ROOT NOTIFIES PW07 IS STATIONARY. Use current public BANK/checkpoint contract prose and approved PW07 ABI until then.
+4 src/townlet/exploration/world_curiosity_state.py current871 cap1000 READONLY.
+5 tests/test_townlet/regressions/bac/test_exploration_factory.py absent/reserved cap1400 — no test authoring now.
+
+Initial actual first3 stable implementations RP/PF/WS=1792; BANK deferred, fifth test absent. Do not read CP/RND/ICM/adaptive/Count/EPS/POP/runner/old-test/helper implementations as extra sources or introspection. Current public APIs/facts are available in docs/remediation/bac/CURRENT-CURIOSITY-* contracts, current local-service/factory/RNG/identity contracts and wave25/wave28/wave29-preparation named SOURCE-VERIFIED capsules. API/data prose is allowed; underlying implementation is not.
+
+Compare exact T18d behavior to already-qualified producer capabilities: five-family factory153 and owned bank/state; current policy epsilon/global selector, raw novelty/runtime scale and actual once-only completion; real current provider-native state/ownership and explicit historical archive boundary. Identify which original acceptance is already supported, which needs new integration tests/receipts/ABI, and which has a confirmed source defect/gap. Finite source-backed mapping only, no test-count closure or generic new architecture programme. Parent/runner integration remains required even if a producer already exists. Do not guess a method or infer that constructor selection proves learning/continuation.
+
+Write only ignored T18d-readiness-report.md here, with exact inspected file inventory/hash/line count, acceptance-to-contract mapping, concrete remaining work and specific missing facts. State BANK implementation deferred until root's stationary handoff and therefore no final whole-slice verdict yet. Propose next smallest tests-first slice under the named budget, preserving all actual required acceptance; root will reconcile after PW07 qualifies. No independent consumer implementation or broad review before that dependency.

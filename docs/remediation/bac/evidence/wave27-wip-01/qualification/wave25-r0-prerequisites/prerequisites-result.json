@@ -1,0 +1,24 @@
+{
+  "name": "prerequisites",
+  "exit_code": 0,
+  "seconds": 7.913946151733398,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_pristine_current_producer_and_env_fixture_control",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave25-r0-prerequisites"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave25-r0-prerequisites/prerequisites.log",
+  "sha256": "0a82e2e7e9a95df8446440214949911935d0009bbbf3815fcd911e649cbd77c4",
+  "candidate_tree": "44bd9dc4d48786f8e982e863af397cba366ca635",
+  "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+  "manifest_sha256": "2e7ca1c742cc40a97ba53f607b38bc7a070993fd3938b91a755709d66f654d11",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

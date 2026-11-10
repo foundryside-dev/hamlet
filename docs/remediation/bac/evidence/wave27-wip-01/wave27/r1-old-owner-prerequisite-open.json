@@ -1,0 +1,9 @@
+{
+  "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+  "failed": 1,
+  "passed": 0,
+  "seconds": 4.792046308517456,
+  "cause": "Existingepisode_lanes.py48sharedENVfixture lacks required world_roster/training_seed/lane_world_ids beforeactualT19bindingassertions; not causedbyDTOpredicatefix",
+  "custody": "PASS349source573config13artifact/index/import/process/thread1/registry",
+  "disposition": "REQUIRED existingfixture+actualPOP/ENVactivation/parentowner integration repair beforefullqualification; do notrerun unchangedbroadT19suite; no falsepositiveverifier"
+}

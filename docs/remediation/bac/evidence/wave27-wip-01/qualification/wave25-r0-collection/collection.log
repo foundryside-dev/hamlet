@@ -1,0 +1,76 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 59 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_pw_private_bank.py>
+            <Function test_private_models_moments_and_queues_do_not_alias[none]>
+            <Function test_private_models_moments_and_queues_do_not_alias[count_based]>
+            <Function test_private_models_moments_and_queues_do_not_alias[rnd]>
+            <Function test_private_models_moments_and_queues_do_not_alias[adaptive_rnd]>
+            <Function test_private_models_moments_and_queues_do_not_alias[icm]>
+            <Function test_world1_updates_match_when_world0_activity_changes[none]>
+            <Function test_world1_updates_match_when_world0_activity_changes[count_based]>
+            <Function test_world1_updates_match_when_world0_activity_changes[rnd]>
+            <Function test_world1_updates_match_when_world0_activity_changes[adaptive_rnd]>
+            <Function test_world1_updates_match_when_world0_activity_changes[icm]>
+            <Function test_shared_mode_retains_coupled_control>
+            <Function test_phase_retry_inactive_and_terminal_once[none]>
+            <Function test_phase_retry_inactive_and_terminal_once[count_based]>
+            <Function test_phase_retry_inactive_and_terminal_once[rnd]>
+            <Function test_phase_retry_inactive_and_terminal_once[adaptive_rnd]>
+            <Function test_phase_retry_inactive_and_terminal_once[icm]>
+            <Function test_complete_batch_preflight_precedes_any_world_effect[action]>
+            <Function test_complete_batch_preflight_precedes_any_world_effect[width]>
+            <Function test_complete_batch_preflight_precedes_any_world_effect[dtype]>
+            <Function test_complete_batch_preflight_precedes_any_world_effect[tick]>
+            <Function test_complete_batch_preflight_precedes_any_world_effect[eligibility]>
+            <Function test_complete_batch_preflight_precedes_any_world_effect[token]>
+            <Function test_reserved_tick_order_and_expired_events_refuse>
+            <Function test_all_inactive_shared_call_does_not_service_pending_tail[rnd]>
+            <Function test_all_inactive_shared_call_does_not_service_pending_tail[adaptive_rnd]>
+            <Function test_all_inactive_shared_call_does_not_service_pending_tail[icm]>
+            <Function test_completion_preserves_nonempty_gradients_and_tail>
+            <Function test_completion_malformed_last_outcome_and_wrong_destination_refuse>
+            <Function test_nonparticipant_retirement_does_not_invent_adaptive_history>
+            <Function test_initial_snapshot_has_no_fabricated_event>
+            <Function test_empty_evidence_and_conservative_quarantine>
+            <Function test_quarantine_prevents_pending_completion_publication>
+            <Function test_allocation_report_can_refuse_before_constructor>
+            <Function test_completion_allocation_refusal_leaves_provider_untouched>
+            <Function test_pristine_current_producer_and_env_fixture_control[none]>
+            <Function test_pristine_current_producer_and_env_fixture_control[count_based]>
+            <Function test_pristine_current_producer_and_env_fixture_control[rnd]>
+            <Function test_pristine_current_producer_and_env_fixture_control[adaptive_rnd]>
+            <Function test_pristine_current_producer_and_env_fixture_control[icm]>
+            <Function test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[rnd]>
+            <Function test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[adaptive_rnd]>
+            <Function test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[icm]>
+            <Function test_supported_geometry_positive[none-0]>
+            <Function test_supported_geometry_positive[count_based-3]>
+            <Function test_count_zero_width_refuses_before_any_provider_call>
+            <Function test_shared_real_family_and_aggregate_receipt[none]>
+            <Function test_shared_real_family_and_aggregate_receipt[count_based]>
+            <Function test_shared_real_family_and_aggregate_receipt[rnd]>
+            <Function test_shared_real_family_and_aggregate_receipt[adaptive_rnd]>
+            <Function test_shared_real_family_and_aggregate_receipt[icm]>
+            <Function test_exact_id_not_row_or_spectator_controls_private_state[none]>
+            <Function test_exact_id_not_row_or_spectator_controls_private_state[count_based]>
+            <Function test_exact_id_not_row_or_spectator_controls_private_state[rnd]>
+            <Function test_exact_id_not_row_or_spectator_controls_private_state[adaptive_rnd]>
+            <Function test_exact_id_not_row_or_spectator_controls_private_state[icm]>
+            <Function test_adaptive_real_history_weight_and_per_row_scale>
+            <Function test_completion_content_is_full_canonical_outcome_not_just_hash[payload]>
+            <Function test_completion_content_is_full_canonical_outcome_not_just_hash[fingerprint]>
+            <Function test_completion_content_is_full_canonical_outcome_not_just_hash[order]>
+
+========================= 59 tests collected in 0.11s ==========================

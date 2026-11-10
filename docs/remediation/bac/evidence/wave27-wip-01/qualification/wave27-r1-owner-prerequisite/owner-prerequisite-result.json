@@ -1,0 +1,24 @@
+{
+  "name": "owner-prerequisite",
+  "exit_code": 1,
+  "seconds": 4.792046308517456,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_owned_binding_requires_concrete_fresh_caller_identity",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave27-r1-owner-prerequisite"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave27-r1-owner-prerequisite/owner-prerequisite.log",
+  "sha256": "70e0bfb01d02a1e89cef233844792f0edc6fcc58958a96d06814970cbb00c4c1",
+  "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+  "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+  "manifest_sha256": "28485c583720135df2604372d9e4d44e285e138a8d77d3edaba3237ea3a1cee9",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

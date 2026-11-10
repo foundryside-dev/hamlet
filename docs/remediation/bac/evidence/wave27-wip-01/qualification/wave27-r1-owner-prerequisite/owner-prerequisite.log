@@ -1,0 +1,43 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py F              [100%]
+
+=================================== FAILURES ===================================
+__________ test_owned_binding_requires_concrete_fresh_caller_identity __________
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave27-r1-owner-prerequisite/test_owned_binding_requires_co0')
+
+    def test_owned_binding_requires_concrete_fresh_caller_identity(tmp_path):
+>       pop = _population(tmp_path)
+              ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_outcome_clocks.py:46: in _population
+    pop = build_authored_population(config, num_agents=2, exploration=EpsilonGreedyExploration(0.0, 1.0, 0.0))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/fixtures/episode_lanes.py:53: in build_authored_population
+    env = compile_authored_environment(config_dir, num_agents=num_agents)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+config_dir = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave27-r1-owner-prerequisite/test_owned_binding_requires_co0/pack')
+
+    def compile_authored_environment(config_dir: Path, *, num_agents: int) -> VectorizedHamletEnv:
+        """Compile supported YAML without cache or runtime state injection."""
+        universe = UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
+>       return VectorizedHamletEnv(universe=universe, level_name=LEVEL_NAME, num_agents=num_agents, device="cpu")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: VectorizedHamletEnv.__init__() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/regressions/fixtures/episode_lanes.py:48: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_owned_binding_requires_concrete_fresh_caller_identity
+============================== 1 failed in 1.28s ===============================

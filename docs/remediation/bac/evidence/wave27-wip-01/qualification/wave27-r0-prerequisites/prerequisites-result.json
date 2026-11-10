@@ -1,0 +1,25 @@
+{
+  "name": "prerequisites",
+  "exit_code": 0,
+  "seconds": 3.453348159790039,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_valid_ordinary_completion_control",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_roster_accepts_exact_whitespace_ids_control",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave27-r0-prerequisites"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave27-r0-prerequisites/prerequisites.log",
+  "sha256": "7123854b6cf72e92b7f97ccdf22b1313e8b80fbd5d1de43853d31f542864ca75",
+  "candidate_tree": "310c32d30e528332a12a2f382f3bad80cfaee017",
+  "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+  "manifest_sha256": "28d19e64250e6e1329cd95b97874caeb118ba8679c15c511312da6139fe871f4",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

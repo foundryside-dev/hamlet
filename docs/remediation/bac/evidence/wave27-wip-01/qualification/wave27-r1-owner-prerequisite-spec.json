@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave27/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave27-r1-owner-prerequisite",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owner-prerequisite",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_outcome_clocks.py::test_owned_binding_requires_concrete_fresh_caller_identity",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave27-r1-owner-prerequisite"
+      ]
+    }
+  ]
+}

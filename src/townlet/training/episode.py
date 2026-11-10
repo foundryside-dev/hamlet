@@ -50,7 +50,7 @@ class LaneOutcome:
             value = getattr(self, name)
             if type(value) is not int or value < minimum:
                 raise ValueError(f"{name} must be an integer >= {minimum}")
-        if not isinstance(self.world_id, str) or not self.world_id.strip():
+        if not isinstance(self.world_id, str) or not self.world_id:
             raise ValueError("world_id must be a concrete nonempty string")
         for name in ("reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping", "policy_entropy"):
             value = getattr(self, name)

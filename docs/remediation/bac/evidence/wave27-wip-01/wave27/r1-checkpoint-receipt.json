@@ -1,0 +1,213 @@
+{
+  "status": "BOUNDED EXACT OUTCOME ID PRODUCER ACCEPTED; BANK TESTS ARE DRAFT TDD INTENT, NOT IMPLEMENTATION; PARENT/FULLQUALIFICATION OPEN",
+  "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+  "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+  "DTO_change": "Only notworld_id.strip()->notworld_id, keepingstrtype/emptyrefusal/allfields/schema/native/frozenfingerprintalgorithms. ExistingnonemptyrawIDbehavior unchanged, acceptedwhitespace-onlyroster IDs nowcomplete.",
+  "runs": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+      "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.2891595363616943,
+      "source_guards": 349,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+      "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+      "exit_code": 0,
+      "counts": {
+        "passed": 27,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.1025948524475098,
+      "source_guards": 349,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+      "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+      "exit_code": 0,
+      "counts": {
+        "passed": 27,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.3872482776641846,
+      "source_guards": 349,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "initial_RED": {
+    "candidate_tree": "310c32d30e528332a12a2f382f3bad80cfaee017",
+    "collection": 27,
+    "fixture_controls": "2actualDTO/acceptedRostercontrolsPASS3.45335",
+    "RED": {
+      "failed": 10,
+      "passed": 17,
+      "errors": 0,
+      "seconds": 4.461637258529663,
+      "cause": "onlyvaliddeclaredwhitespaceIDs refusedbyoldLaneOutcome.strip"
+    },
+    "custody": "PASS349source573config13artifact/index/import/1process/thread1/registry14MAIN1",
+    "sessions": "CLOSED",
+    "nodes": [
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_current_state_roundtrip[tab]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_constructs_outcome[carriage-return]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_frozen_roundtrip[space]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_current_state_roundtrip[carriage-return]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_constructs_outcome[space]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_current_state_roundtrip[space]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_constructs_outcome[tab]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_frozen_roundtrip[carriage-return]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_frozen_roundtrip[tab]",
+      "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_whitespace_and_existing_exact_ids_have_distinct_fingerprints"
+    ]
+  },
+  "old_owner_prerequisite_REQUIRED_OPEN": {
+    "candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+    "failed": 1,
+    "passed": 0,
+    "seconds": 4.792046308517456,
+    "cause": "Existingepisode_lanes.py48sharedENVfixture lacks required world_roster/training_seed/lane_world_ids beforeactualT19bindingassertions; not causedbyDTOpredicatefix",
+    "custody": "PASS349source573config13artifact/index/import/process/thread1/registry",
+    "disposition": "REQUIRED existingfixture+actualPOP/ENVactivation/parentowner integration repair beforefullqualification; do notrerun unchangedbroadT19suite; no falsepositiveverifier"
+  },
+  "reviews": "FreshAstra3whole659<=1050/source/spec/qualityPASS no materialfindings; authorno-sourceformat/schemachanges.",
+  "guards": {
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.08445215225219727,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 1.232097864151001,
+      "sha256": "879d6d069a919f18435c803f321d3f69dc662e9c8ad4c9c3b50fb1f6c7ec1b54"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.9289505481719971,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 1.7797729969024658,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 46.803842544555664,
+      "sha256": "09b94c303c9c1ad410d439b0a6fe2e902fe93c453b40c2f8606d20c2870353c2"
+    }
+  },
+  "Bank_TDD": {
+    "candidate_tree": "44bd9dc4d48786f8e982e863af397cba366ca635",
+    "base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+    "collection": 59,
+    "prerequisites": "5currentrealproducer/realENVtoken+issuercontrolsPASS7.91395, noBANKlookup",
+    "RED": {
+      "failed": 54,
+      "passed": 5,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 15.194056987762451,
+      "cause": "all54call-phase explicitmissingactualCuriosityBank assertion"
+    },
+    "custody": "PASS348source573config13artifact/index/import/3process/thread1/registry14MAIN1",
+    "nodes": [
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_supported_geometry_positive[none-0]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_supported_geometry_positive[count_based-3]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_mode_retains_coupled_control",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_empty_evidence_and_conservative_quarantine",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[count_based]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[none]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_malformed_last_outcome_and_wrong_destination_refuse",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_all_inactive_shared_call_does_not_service_pending_tail[icm]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_all_inactive_shared_call_does_not_service_pending_tail[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[icm]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_allocation_refusal_leaves_provider_untouched",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[none]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_content_is_full_canonical_outcome_not_just_hash[fingerprint]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_preserves_nonempty_gradients_and_tail",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_count_zero_width_refuses_before_any_provider_call",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[dtype]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_adaptive_real_history_weight_and_per_row_scale",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[width]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_quarantine_prevents_pending_completion_publication",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[tick]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_all_inactive_shared_call_does_not_service_pending_tail[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_reserved_tick_order_and_expired_events_refuse",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[count_based]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_initial_snapshot_has_no_fabricated_event",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[count_based]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_content_is_full_canonical_outcome_not_just_hash[order]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_allocation_report_can_refuse_before_constructor",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[adaptive_rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[count_based]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[rnd]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[icm]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[icm]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_completion_content_is_full_canonical_outcome_not_just_hash[payload]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_phase_retry_inactive_and_terminal_once[none]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[token]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[none]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_exact_id_not_row_or_spectator_controls_private_state[icm]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_private_models_moments_and_queues_do_not_alias[count_based]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_world1_updates_match_when_world0_activity_changes[none]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[action]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_complete_batch_preflight_precedes_any_world_effect[eligibility]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_nonparticipant_retirement_does_not_invent_adaptive_history",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_shared_real_family_and_aggregate_receipt[icm]",
+      "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_ordinary_episode_preserves_learning_rng_and_cumulative_clock[icm]"
+    ],
+    "sessions": "CLOSED",
+    "pending_required_producer": "ExactnonemptyWorldRoster IDs vsLaneOutcome whitespace-only refusal\u2014finiteadditiveDTOalignment beforeBANKsourceacceptance, no newcapabilitydegradation/narrowing"
+  },
+  "Bank_design": "ExactR4ABI5b93c9032c8aadd8db0e8eaac9b0c5fe8878e7804a9e13c0937922423ee289c9 Solapproved all5designfindingsADDR; fullhexcodec2536ef58...Solapproved. BANKsourceabsent. Published901lineacceptancetestDRAFT currently59cases5realcontrolsPASS54missingBANKRED, notqualifiedBANK. Solauthoredteststaticreviewrequests4finiteevidencefixes, queuedoriginalAstraauthorbeforeproduction.",
+  "open": "ActualBANK/privatelearning/phase/context/ENV/POP/runner/nativeparent/sourceverifieddocs/CLI/defaultrepo/coverage/slow/hardware/fresh54requirement22lens+synthesis/requiredCI allmandatoryOPEN. Globalmypy9actualoracle/POPerrors. OldT19episode_lanesfixturecausalsetuprepairmandatorybeforefullparentqualification. Original28/66countunchanged.",
+  "sessions": "Allcurrentroot/reviewerqualificationCLOSED; no codewriterduringpublication."
+}

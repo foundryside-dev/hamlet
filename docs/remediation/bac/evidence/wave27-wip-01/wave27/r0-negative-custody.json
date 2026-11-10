@@ -1,0 +1,26 @@
+{
+  "candidate_tree": "310c32d30e528332a12a2f382f3bad80cfaee017",
+  "collection": 27,
+  "fixture_controls": "2actualDTO/acceptedRostercontrolsPASS3.45335",
+  "RED": {
+    "failed": 10,
+    "passed": 17,
+    "errors": 0,
+    "seconds": 4.461637258529663,
+    "cause": "onlyvaliddeclaredwhitespaceIDs refusedbyoldLaneOutcome.strip"
+  },
+  "custody": "PASS349source573config13artifact/index/import/1process/thread1/registry14MAIN1",
+  "sessions": "CLOSED",
+  "nodes": [
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_current_state_roundtrip[tab]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_constructs_outcome[carriage-return]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_frozen_roundtrip[space]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_current_state_roundtrip[carriage-return]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_constructs_outcome[space]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_current_state_roundtrip[space]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_constructs_outcome[tab]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_frozen_roundtrip[carriage-return]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_declared_whitespace_id_frozen_roundtrip[tab]",
+    "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_whitespace_and_existing_exact_ids_have_distinct_fingerprints"
+  ]
+}

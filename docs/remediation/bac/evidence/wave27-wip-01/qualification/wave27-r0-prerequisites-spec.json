@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave27/r0-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave27-r0-prerequisites",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "prerequisites",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_valid_ordinary_completion_control",
+        "tests/test_townlet/regressions/bac/test_lane_outcome_exact_world_ids.py::test_roster_accepts_exact_whitespace_ids_control",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave27-r0-prerequisites"
+      ]
+    }
+  ]
+}

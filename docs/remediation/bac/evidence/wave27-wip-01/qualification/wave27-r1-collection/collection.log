@@ -1,0 +1,44 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 27 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_lane_outcome_exact_world_ids.py>
+            <Function test_valid_ordinary_completion_control>
+            <Function test_roster_accepts_exact_whitespace_ids_control>
+            <Function test_declared_whitespace_id_constructs_outcome[space]>
+            <Function test_declared_whitespace_id_constructs_outcome[tab]>
+            <Function test_declared_whitespace_id_constructs_outcome[carriage-return]>
+            <Function test_declared_whitespace_id_current_state_roundtrip[space]>
+            <Function test_declared_whitespace_id_current_state_roundtrip[tab]>
+            <Function test_declared_whitespace_id_current_state_roundtrip[carriage-return]>
+            <Function test_declared_whitespace_id_frozen_roundtrip[space]>
+            <Function test_declared_whitespace_id_frozen_roundtrip[tab]>
+            <Function test_declared_whitespace_id_frozen_roundtrip[carriage-return]>
+            <Function test_existing_exact_id_preservation[ordinary]>
+            <Function test_existing_exact_id_preservation[leading-space]>
+            <Function test_existing_exact_id_preservation[trailing-space]>
+            <Function test_existing_exact_id_preservation[case-distinct]>
+            <Function test_existing_exact_id_preservation[unicode-composed]>
+            <Function test_existing_exact_id_preservation[unicode-decomposed]>
+            <Function test_existing_exact_id_preservation[embedded-carriage-return]>
+            <Function test_existing_exact_id_preservation[embedded-tab]>
+            <Function test_existing_exact_id_preservation[embedded-space]>
+            <Function test_empty_or_nonstring_id_still_refused[empty]>
+            <Function test_empty_or_nonstring_id_still_refused[none]>
+            <Function test_empty_or_nonstring_id_still_refused[integer]>
+            <Function test_empty_or_nonstring_id_still_refused[boolean]>
+            <Function test_empty_or_nonstring_id_still_refused[bytes]>
+            <Function test_existing_distinct_exact_ids_have_distinct_fingerprints>
+            <Function test_whitespace_and_existing_exact_ids_have_distinct_fingerprints>
+
+========================= 27 tests collected in 0.03s ==========================

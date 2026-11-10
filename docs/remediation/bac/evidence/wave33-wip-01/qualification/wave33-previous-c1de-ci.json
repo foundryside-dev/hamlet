@@ -1,0 +1,32 @@
+{
+  "sha": "c1de41509ae108848fd5bf295487510254daab6b",
+  "runs": [
+    {
+      "id": 42854407964,
+      "name": "Tests",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "c1de41509ae108848fd5bf295487510254daab6b",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42854407964"
+    },
+    {
+      "id": 42854408857,
+      "name": "Config Validation",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "c1de41509ae108848fd5bf295487510254daab6b",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42854408857"
+    },
+    {
+      "id": 42854407866,
+      "name": "Lint",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "c1de41509ae108848fd5bf295487510254daab6b",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42854407866"
+    }
+  ],
+  "lint_job": 129963373526,
+  "lint_evidence": "Actual job log verifies same nine oracle/POP mypy errors; Ruff and Black pass; no-defaults CI step skipped after mypy. Local no-defaults remains PASS601.",
+  "scope": "Observed preceding checkpoint status; not final candidate CI qualification."
+}

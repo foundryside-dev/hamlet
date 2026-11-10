@@ -1,0 +1,215 @@
+{
+  "status": "ORIGINAL T18d NONE-SCALE PRODUCER/CURRENT-CACHE PREREQUISITE ACCEPTED; WIP NOT WHOLE T18d OR PARENT/INTEGRATION QUALIFIED NOT RELEASED",
+  "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+  "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+  "inventory": [
+    {
+      "path": "src/townlet/exploration/curiosity_checkpoint.py",
+      "lines": 1138,
+      "sha256": "4de4c481eca21fb3d7fa9aea8804c2b2875c63df6077046e7e286470b6faeb5a"
+    },
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "lines": 1284,
+      "sha256": "294ef0f8d9f11e74869567e21f2ca44b623fe1cd54ca5c3eb59819c80681a05f"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "lines": 1456,
+      "sha256": "672a1441520b69cfda5045220a29d2abf891afa7fbad8d461c5e22c91adab893"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_none_scale.py",
+      "lines": 233,
+      "sha256": "646797d6f256c6396f57b0203413614bb0c4b7b2786b764ed62c425b45e53a13"
+    }
+  ],
+  "budget": "4implementation/testsource4111within4956ceilings; docsactorseparate4/4646<=5000",
+  "results": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+      "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 6.8824121952056885,
+      "source_guards": 355,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "focused": {
+      "job": "focused",
+      "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+      "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 2,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 15.187075853347778,
+      "source_guards": 355,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+      "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 22,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 36.44224977493286,
+      "source_guards": 355,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+      "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 22,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 279.65746450424194,
+      "source_guards": 355,
+      "process_identities": 2,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "coherent": {
+      "job": "coherent",
+      "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+      "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 973,
+        "skipped": 3,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 345.223753452301,
+      "source_guards": 355,
+      "process_identities": 4,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "causal_red": {
+    "status": "EXPECTED_CAUSAL_RED",
+    "candidate_tree": "816728bffbd23f4dc726a29915a682041ea77388",
+    "passed": 0,
+    "failed": 2,
+    "cause": "Both scopes actual eligible selectedscale0.4 violates required0; raw/eligibility/provider/ENV fixtures reachedassertion",
+    "negative_custody": "PASS",
+    "sources": 355,
+    "configs": 573,
+    "artifacts": 13,
+    "pytest_processes": 3,
+    "registry": 14,
+    "available": 1,
+    "nonpytest_children": 0,
+    "wall_seconds": 16.77757978439331
+  },
+  "fixed_source_design_review_sha256": "6b682e40e23a37b7c3f8c3174b651a746c513504e3bcfff28bcb710d0f1dee2b",
+  "guards": {
+    "black": {
+      "exit_code": 0,
+      "seconds": 73.53731966018677,
+      "sha256": "b5591bd8991b52f20d0803ab6f3f34d946020788bf707e558fce4a42976263ff"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.539353847503662,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 2.4574074745178223,
+      "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 1.3272628784179688,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.1817944049835205,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  },
+  "child_custody": {
+    "status": "PASS",
+    "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+    "receipt": "/workspace/bac-review-2026-11-01/qualification/wave33-r2-coherent/coherent/subprocess-custody-poisoning-106590.json",
+    "sha256": "e2a38ae9c67a7c882d3cd479ade0ef3de1b1fe0b07628a08d648440034220bd9",
+    "sources": 355,
+    "imports": 48,
+    "python": "3.13.5",
+    "torch": "2.11.0+cu130",
+    "threads": 1,
+    "interop_threads": 5,
+    "actual_poisoning_assertions": "PASS"
+  },
+  "disposition": "ActualBANKnoneeligibleScale0andCPstrictcurrentcache0; positiveauthoredinitialweight0.4/bothscopes/rawscalecontributionzero/inactive/rewardserviceretry/currentlive+completedparentrestore/healthycontinuation/currentcoherentcorruptionrefusal. No facade-onlynormalization,wrongscaleacceptance,compatibilityfallbackorotherprovideralgorithm/ownership/originchange.",
+  "preflight": "r0notexecutedbecauseNEWignoredtestnotstaged;caughtbeforequalification. r1explicitstagedcandidate816728bf/newmaintenancewritepathactual22collect+causalRED; productionr2b848b95a currentfullsourceguard. Failedpreflightreceiptnotqualification.",
+  "scope": "NarrowrequiredoriginalT18dscalecontract sourcecomponent. GenuineENVacceptance/compiledfixtures withcooperativeother-roleparentreceipts/syntheticgeometry; not wholecurrentRPfacade,fullparent/nativeDemoRunner/DQNsamplingorBACcompletion. Countsnotpercentageeffort andoverlapping22includedin973.",
+  "open": "Original38/66packages/fullT18dcurrentruntime/globalEPSbatchcadence; actualparentvalidate_committed_batch/validate_parent_cadence andpreparedauthority; actualhistoricalselected-currentlearnedsubtreeadmission/fullsourcearchive; POP6vsHC7nativeconsistency; ENV/POP/runner/currentreplay/readinesslearning/T26; oraclePOP9mypy; CLI/defaultsuite/coverage>=70/slow/applicablehardwareprovider/freshfinal54requirements22lenses/exacttipCI. CUDAunavailable/unqualified. K01exactstochastic/midepisodesimqualificationunchanged.",
+  "governance": "Existingbranchpushallauthorized; no newbranch/worktree/checkout/repository/sourcecopy/deletion/PR/merge/spending/access. Continuefiniteprogramme; nonecessarynewuserdecision.",
+  "documentation": {
+    "contracts": {
+      "CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md": "1ef44f020f6448465035157bd9455a44b4bb0a7e66808527b2ee18ac8a939637",
+      "CURRENT-CURIOSITY-BANK-CONTRACT.md": "98f565189298af9f15871bf8e432f328165eb020e23904df2052c11670804f73"
+    },
+    "truth_review_sha256": "c225b6ff0bf65f25f59ed4a19470176ee3a4689720cf531e4868516184bdba7c",
+    "verdict": "IndependentSol source-truthAPPROVED 4/4646"
+  },
+  "next_runtime_design": {
+    "proposal_sha256": "dec17531b6d6700e929c0c952028598cb9e3e8b3f0d2f1131ad8288a73471349",
+    "review_sha256": "e91aee47858a9fcd47d5f2455968a27a75c7d950e0da9ff9559b8ae38052666d",
+    "verdict": "Astraauthor/SolindependentABI SPEC+DESIGNQUALITYAPPROVED afterfiniteR1 enforcednonreentry fix1. ActualruntimeimplementationNOTSTARTED; parent/historicalactualintegrationowed."
+  }
+}

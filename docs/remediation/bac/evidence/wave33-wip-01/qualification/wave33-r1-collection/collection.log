@@ -1,0 +1,39 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 22 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_none_scale.py>
+            <Function test_none_bank_selected_scale_and_unchanged_retry[shared]>
+            <Function test_none_bank_selected_scale_and_unchanged_retry[per_world]>
+            <Function test_none_current_live_cache_restore_replays_and_continues[shared]>
+            <Function test_none_current_live_cache_restore_replays_and_continues[per_world]>
+            <Function test_none_current_completed_parent_restore_and_next_episode[shared]>
+            <Function test_none_current_completed_parent_restore_and_next_episode[per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[selected_nonzero-live_episode-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[selected_nonzero-live_episode-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[selected_nonzero-completed_boundary-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[selected_nonzero-completed_boundary-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[raw_nonzero-live_episode-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[raw_nonzero-live_episode-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[raw_nonzero-completed_boundary-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[raw_nonzero-completed_boundary-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[missing_scale-live_episode-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[missing_scale-live_episode-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[missing_scale-completed_boundary-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[missing_scale-completed_boundary-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[old_schema-live_episode-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[old_schema-live_episode-per_world]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[old_schema-completed_boundary-shared]>
+            <Function test_none_invalid_current_cache_refuses_without_mutation_and_retries[old_schema-completed_boundary-per_world]>
+
+========================= 22 tests collected in 0.06s ==========================

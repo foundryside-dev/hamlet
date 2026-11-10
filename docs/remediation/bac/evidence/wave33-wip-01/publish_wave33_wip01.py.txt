@@ -1,0 +1,108 @@
+"""Publish the qualified T18d none-scale prerequisite without claiming runtime integration."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+
+m = json.loads((W / 'wave33/r2-candidate.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+for group in ('source_files', 'configs', 'artifacts'):
+    for p, h in m[group].items():
+        assert sha(R / p) == h, p
+receipt = json.loads((W / 'wave33/r2-checkpoint-receipt.json').read_text())
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['results']['coherent']['counts']['passed'] == 973
+assert receipt['results']['coherent']['counts']['skipped'] == 3
+assert receipt['results']['owned']['counts']['passed'] == 22
+assert receipt['results']['independent']['counts']['passed'] == 22
+expected = receipt['documentation']['contracts']
+for name, h in expected.items():
+    assert sha(W / 'wave33-preparation' / name) == h
+assert sha(W / 'wave33-preparation/T18d-NONE-SCALE-DOC-TRUTH-REVIEW.md') == receipt['documentation']['truth_review_sha256']
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p) for p in ('src', 'tests', 'configs', 'scripts')}
+out = D / 'evidence/wave33-wip-01'
+out.mkdir(exist_ok=True)
+artifacts = {}
+
+def copy(source, dest):
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        assert sha(source) == sha(dest), str(dest)
+    else:
+        dest.write_bytes(source.read_bytes())
+    assert sha(source) == sha(dest)
+    artifacts[dest.relative_to(R).as_posix()] = {'sha256': sha(dest), 'original': str(source)}
+
+for folder in sorted(Q.glob('wave33-r*')):
+    if folder.is_dir():
+        for p in sorted(folder.rglob('*')):
+            if p.is_file() and p.suffix in ('.json', '.log'):
+                copy(p, out / 'qualification' / folder.name / p.relative_to(folder))
+for p in sorted(Q.glob('wave33-*.json')):
+    copy(p, out / 'qualification' / p.name)
+for p in sorted(Q.glob('wave33-previous-*.log')):
+    copy(p, out / 'qualification' / p.name)
+for folder in ('wave33', 'wave33-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'run_bac_packet_checks_locked.py', 'bac_source_identity.py', 'publish_wave33_wip01.py'):
+    copy(Q / name, out / (name + '.txt'))
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+for name, h in expected.items():
+    target = D / name
+    target.write_bytes((W / 'wave33-preparation' / name).read_bytes())
+    assert sha(target) == h
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': h, 'original': str(W / 'wave33-preparation' / name)}
+manifest = {
+    'status': receipt['status'],
+    'packet': 'Original T18d none raw/selected-scale/contribution zero prerequisite at BANK and current checkpoint cache boundary',
+    'evidence_base_commit': m['base_commit'],
+    'evidence_candidate_tree': m['candidate_tree'],
+    'execution_subtrees': execution,
+    'inventories': m['inventories'],
+    'source_files': m['source_files'],
+    'config_changes': m['config_changes'],
+    'receipt': receipt,
+    'artifacts': artifacts,
+    'qualified_progress': 'Original28/66 releases unchanged; whole T18d runtime and actual parent/runner/native/replay/learning/final qualification remain owed.',
+    'publication': 'Existing authorized remote branch only. No new branch/worktree/repository/source copy/PR/merge/deletion. Private backup bundle excluded.',
+    'next': 'Continue original T18d current runtime, separate global epsilon cadence and current selector+BANK state custody, then actual parent ownership and finite final acceptance.',
+}
+mp = D / 'evidence/wave33-wip-01.json'
+assert not mp.exists()
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+p = D / 'STATUS.md'
+p.write_text(p.read_text() + '''
+
+Original T18d's zero-scale prerequisite is accepted. Eligible `none` curiosity now returns raw0, selected scale0 and contribution0, including a positive configured initial weight; current checkpoint validation requires that same zero cache value. Inactive rows remain zero. Both shared and per-world owners preserve genuine service/reward retries, live and completed current restores, and healthy continuation. Coherent nonzero cached-scale corruption refuses without mutation. No facade postprocessing, old-cache fallback or change to another selected family is introduced. [Updated checkpoint contract](CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md), [bank contract](CURRENT-CURIOSITY-BANK-CONTRACT.md) and [exact evidence](evidence/wave33-wip-01.json) record the producer/current-cache boundary.
+
+Two genuine scale-assertion RED cases preceded the production repair. Root22 and independentAstra22 new checks pass, and the coherent current curiosity suite has973 PASS/three unavailable-CUDA skips. Fresh actual fixed-source/design review and separate documentation truth review approve this bounded prerequisite. Source355/config573/artifacts13, exact pytest identities and the actual poisoning child are verified. Four cheap repository guards pass with defaults601; the same nine oracle/POP mypy errors remain. **This closes the narrow prerequisite, not whole T18d or BAC integration.** Original28/66 release counts are unchanged. The missing current runtime/global selector, actual committed parent cadence/authority, historical selected-current learned-subtree admission, POP native version consistency, actual ENV/POP/runner/replay learning, T26, CLI/default suite/coverage≥70/slow/applicable hardware, fresh final54requirements/22lenses and exact-tip CI remain required. The preceding c1de checkpoint has Config PASS and Lint FAIL at its existing nine mypy errors; its Tests run is recorded at the status observed in the evidence. K01 simulator-continuation qualification is unchanged. Continue the planned programme.
+''')
+paths = [*artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md']
+assert all('.bundle' not in p and 'git-backups' not in p for p in paths)
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for p, h in execution.items():
+    assert git('rev-parse', tree + ':' + p) == h, p
+for p, row in artifacts.items():
+    assert sha(R / p) == row['sha256'], p
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.', ':(glob,exclude)docs/remediation/bac/evidence/wave33-wip-01/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree, 'source_equivalence': 'PASS', 'artifact_count': len(artifacts), 'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave33-wip-01-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

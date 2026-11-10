@@ -1,0 +1,96 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [2 items]
+
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_none_bank_selected_scale_and_unchanged_retry[per_world] _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_none_bank_selected_scale_and_unchanged_retry(compiled, scope):
+        """Fail at actual eligible BANK scale, even though contribution already vanishes."""
+        rig = none_rig(compiled, scope)
+        active = (True, False)
+        native = {world: live(rig.bank, world)["native"] for world in IDS}
+        rig.begin(0)
+        context, stamp, reward, receipts = rig.step(1, active)
+        equal(reward.eligible, torch.tensor(active))
+        assert tuple(event.world_id for event in reward.event_ids) == IDS
+>       assert_reward(reward, scope, active)
+
+tests/test_townlet/regressions/bac/test_none_scale.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_none_scale.py:36: in assert_reward
+    equal(reward.scales, torch.zeros(len(IDS)))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([0.4000, 0.0000]), right = tensor([0., 0.])
+
+    def equal(left, right):
+        """Independent value witness; never call the production checkpoint comparator."""
+        assert type(left) is type(right), (type(left), type(right))
+        if isinstance(left, torch.Tensor):
+            assert (left.dtype, left.shape, left.device, left.layout) == (right.dtype, right.shape, right.device, right.layout)
+>           assert torch.equal(left, right)
+E           assert False
+E            +  where False = <built-in method equal of type object at 0x7f325d0e4000>(tensor([0.4000, 0.0000]), tensor([0., 0.]))
+E            +    where <built-in method equal of type object at 0x7f325d0e4000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:43: AssertionError
+__________ test_none_bank_selected_scale_and_unchanged_retry[shared] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_none_bank_selected_scale_and_unchanged_retry(compiled, scope):
+        """Fail at actual eligible BANK scale, even though contribution already vanishes."""
+        rig = none_rig(compiled, scope)
+        active = (True, False)
+        native = {world: live(rig.bank, world)["native"] for world in IDS}
+        rig.begin(0)
+        context, stamp, reward, receipts = rig.step(1, active)
+        equal(reward.eligible, torch.tensor(active))
+        assert tuple(event.world_id for event in reward.event_ids) == IDS
+>       assert_reward(reward, scope, active)
+
+tests/test_townlet/regressions/bac/test_none_scale.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_none_scale.py:36: in assert_reward
+    equal(reward.scales, torch.zeros(len(IDS)))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([0.4000, 0.0000]), right = tensor([0., 0.])
+
+    def equal(left, right):
+        """Independent value witness; never call the production checkpoint comparator."""
+        assert type(left) is type(right), (type(left), type(right))
+        if isinstance(left, torch.Tensor):
+            assert (left.dtype, left.shape, left.device, left.layout) == (right.dtype, right.shape, right.device, right.layout)
+>           assert torch.equal(left, right)
+E           assert False
+E            +  where False = <built-in method equal of type object at 0x7fe247df1000>(tensor([0.4000, 0.0000]), tensor([0., 0.]))
+E            +    where <built-in method equal of type object at 0x7fe247df1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:43: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_none_scale.py::test_none_bank_selected_scale_and_unchanged_retry[per_world]
+FAILED tests/test_townlet/regressions/bac/test_none_scale.py::test_none_bank_selected_scale_and_unchanged_retry[shared]
+============================== 2 failed in 10.72s ==============================

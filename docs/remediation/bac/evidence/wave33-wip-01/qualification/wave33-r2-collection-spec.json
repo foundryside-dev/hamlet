@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave33/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave33-r2-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_none_scale.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q"
+      ]
+    }
+  ]
+}

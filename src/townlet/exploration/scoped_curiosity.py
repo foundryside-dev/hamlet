@@ -565,7 +565,9 @@ class CuriosityBank:
                     novelty = backend.compute_transition_novelty(self._row_context(content, group), update_stats=update_stats)
                 else:
                     novelty = backend.compute_intrinsic_rewards(content["successor"][group], update_stats=update_stats)
-                if self.policy.strategy == "adaptive_rnd":
+                if self.policy.strategy == "none":
+                    scale = 0.0
+                elif self.policy.strategy == "adaptive_rnd":
                     scale = backend.get_intrinsic_weight()
                 else:
                     scale = self.policy.initial_intrinsic_weight

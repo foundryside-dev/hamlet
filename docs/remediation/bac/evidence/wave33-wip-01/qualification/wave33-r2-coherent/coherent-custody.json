@@ -1,0 +1,22 @@
+{
+  "job": "coherent",
+  "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+  "candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+  "exit_code": 0,
+  "counts": {
+    "passed": 973,
+    "skipped": 3,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 345.223753452301,
+  "source_guards": 355,
+  "process_identities": 4,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

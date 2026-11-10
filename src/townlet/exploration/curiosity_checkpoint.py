@@ -902,7 +902,10 @@ def validate_records(
         if "reward" in cache:
             scale = cache["reward"]["scale"]
             if policy.strategy != "adaptive_rnd":
-                expected_scale = torch.tensor(policy.initial_intrinsic_weight, dtype=torch.float32, device=device)
+                selected_scale = policy.initial_intrinsic_weight
+                if policy.strategy == "none":
+                    selected_scale = 0.0
+                expected_scale = torch.tensor(selected_scale, dtype=torch.float32, device=device)
                 require(same(scale, expected_scale), "cached selected reward scale")
             else:
                 require(

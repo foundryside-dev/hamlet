@@ -1,0 +1,349 @@
+﻿2026-11-10T16:25:40.3705394Z Current runner version: '2.338.2'
+2026-11-10T16:25:40.3727355Z ##[group]Runner Image Provisioner
+2026-11-10T16:25:40.3728145Z Hosted Compute Agent
+2026-11-10T16:25:40.3728651Z Version: 20261028.624
+2026-11-10T16:25:40.3729395Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-10T16:25:40.3730026Z Build Date: 2026-10-28T21:51:42Z
+2026-11-10T16:25:40.3730610Z Worker ID: {e5b4cb7c-2147-4202-b2d4-017aa44ab7e5}
+2026-11-10T16:25:40.3731249Z Region: centralus
+2026-11-10T16:25:40.3731832Z Cloud: Azure
+2026-11-10T16:25:40.3732315Z ##[endgroup]
+2026-11-10T16:25:40.3733566Z ##[group]Operating System
+2026-11-10T16:25:40.3734096Z Ubuntu
+2026-11-10T16:25:40.3734611Z 26.04.1
+2026-11-10T16:25:40.3735062Z LTS
+2026-11-10T16:25:40.3735530Z ##[endgroup]
+2026-11-10T16:25:40.3736063Z ##[group]Runner Image
+2026-11-10T16:25:40.3736569Z Image: ubuntu-26.04
+2026-11-10T16:25:40.3737392Z Version: 20261101.186.1
+2026-11-10T16:25:40.3738509Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261101.186/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-10T16:25:40.3739990Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261101.186
+2026-11-10T16:25:40.3740796Z ##[endgroup]
+2026-11-10T16:25:40.3741780Z ##[group]GITHUB_TOKEN Permissions
+2026-11-10T16:25:40.3743545Z Contents: read
+2026-11-10T16:25:40.3744120Z Metadata: read
+2026-11-10T16:25:40.3744666Z ##[endgroup]
+2026-11-10T16:25:40.3746356Z Secret source: Actions
+2026-11-10T16:25:40.3747250Z Cache mode: write
+2026-11-10T16:25:40.3747855Z Prepare workflow directory
+2026-11-10T16:25:40.4019184Z Prepare all required actions
+2026-11-10T16:25:40.4057971Z Getting action download info
+2026-11-10T16:25:40.6763765Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-10T16:25:40.7739110Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-10T16:25:40.8571814Z Download action repository 'astral-sh/setup-uv@v1' (SHA:162b8acf397cb069dec09a3f5a9847cf71cfa46a)
+2026-11-10T16:25:41.4525560Z Complete job name: lint
+2026-11-10T16:25:41.5288903Z ##[group]Run actions/checkout@v4
+2026-11-10T16:25:41.5289691Z with:
+2026-11-10T16:25:41.5290169Z   repository: foundryside-dev/hamlet
+2026-11-10T16:25:41.5293580Z   token: ***
+2026-11-10T16:25:41.5293991Z   ssh-strict: true
+2026-11-10T16:25:41.5294410Z   ssh-user: git
+2026-11-10T16:25:41.5294943Z   persist-credentials: true
+2026-11-10T16:25:41.5295409Z   clean: true
+2026-11-10T16:25:41.5295835Z   sparse-checkout-cone-mode: true
+2026-11-10T16:25:41.5296321Z   fetch-depth: 1
+2026-11-10T16:25:41.5296725Z   fetch-tags: false
+2026-11-10T16:25:41.5297158Z   show-progress: true
+2026-11-10T16:25:41.5297592Z   lfs: false
+2026-11-10T16:25:41.5297990Z   submodules: false
+2026-11-10T16:25:41.5298424Z   set-safe-directory: true
+2026-11-10T16:25:41.5299004Z   allow-unsafe-pr-checkout: false
+2026-11-10T16:25:41.5299698Z ##[endgroup]
+2026-11-10T16:25:41.7601338Z Syncing repository: foundryside-dev/hamlet
+2026-11-10T16:25:41.7603251Z ##[group]Getting Git version info
+2026-11-10T16:25:41.7603988Z Working directory is '/home/runner/work/hamlet/hamlet'
+2026-11-10T16:25:41.7604935Z [command]/usr/bin/git version
+2026-11-10T16:25:41.7608178Z git version 2.56.0
+2026-11-10T16:25:41.7625674Z ##[endgroup]
+2026-11-10T16:25:41.7638120Z Temporarily overriding HOME='/home/runner/work/_temp/d4566d8f-e081-4bdb-b6c8-29b3d9f22688' before making global git config changes
+2026-11-10T16:25:41.7639955Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-10T16:25:41.7642442Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hamlet/hamlet
+2026-11-10T16:25:41.7706451Z Deleting the contents of '/home/runner/work/hamlet/hamlet'
+2026-11-10T16:25:41.7709651Z ##[group]Initializing the repository
+2026-11-10T16:25:41.7713552Z [command]/usr/bin/git init /home/runner/work/hamlet/hamlet
+2026-11-10T16:25:41.7816181Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-10T16:25:41.7817582Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-10T16:25:41.7818404Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-10T16:25:41.7819380Z hint: call:
+2026-11-10T16:25:41.7819802Z hint:
+2026-11-10T16:25:41.7820275Z hint: 	git config --global init.defaultBranch <name>
+2026-11-10T16:25:41.7820837Z hint:
+2026-11-10T16:25:41.7821362Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-10T16:25:41.7822335Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-10T16:25:41.7822994Z hint:
+2026-11-10T16:25:41.7823378Z hint: 	git branch -m <name>
+2026-11-10T16:25:41.7823816Z hint:
+2026-11-10T16:25:41.7824505Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-10T16:25:41.7829756Z Initialized empty Git repository in /home/runner/work/hamlet/hamlet/.git/
+2026-11-10T16:25:41.7839199Z [command]/usr/bin/git remote add origin https://github.com/foundryside-dev/hamlet
+2026-11-10T16:25:41.7885307Z ##[endgroup]
+2026-11-10T16:25:41.7886043Z ##[group]Disabling automatic garbage collection
+2026-11-10T16:25:41.7888922Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-10T16:25:41.7918229Z ##[endgroup]
+2026-11-10T16:25:41.7919118Z ##[group]Setting up auth
+2026-11-10T16:25:41.7924310Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-10T16:25:41.7953678Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-10T16:25:41.8355129Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-10T16:25:41.8383415Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-10T16:25:41.8617174Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-10T16:25:41.8646254Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-10T16:25:41.8878586Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-10T16:25:41.8913176Z ##[endgroup]
+2026-11-10T16:25:41.8920035Z ##[group]Fetching the repository
+2026-11-10T16:25:41.8921513Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c1de41509ae108848fd5bf295487510254daab6b:refs/remotes/origin/project-recovery-bac-2026-11-01
+2026-11-10T16:25:46.6689825Z From https://github.com/foundryside-dev/hamlet
+2026-11-10T16:25:46.6690537Z  * [new ref]         c1de41509ae108848fd5bf295487510254daab6b -> origin/project-recovery-bac-2026-11-01
+2026-11-10T16:25:46.6693631Z ##[endgroup]
+2026-11-10T16:25:46.6694089Z ##[group]Determining the checkout info
+2026-11-10T16:25:46.6696619Z ##[endgroup]
+2026-11-10T16:25:46.6703200Z [command]/usr/bin/git sparse-checkout disable
+2026-11-10T16:25:46.6752903Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-10T16:25:46.6793229Z ##[group]Checking out the ref
+2026-11-10T16:25:46.6794256Z [command]/usr/bin/git checkout --progress --force -B project-recovery-bac-2026-11-01 refs/remotes/origin/project-recovery-bac-2026-11-01
+2026-11-10T16:25:47.3741035Z Switched to a new branch 'project-recovery-bac-2026-11-01'
+2026-11-10T16:25:47.3744399Z branch 'project-recovery-bac-2026-11-01' set up to track 'origin/project-recovery-bac-2026-11-01'.
+2026-11-10T16:25:47.3784125Z ##[endgroup]
+2026-11-10T16:25:47.3829183Z [command]/usr/bin/git log -1 --format=%H
+2026-11-10T16:25:47.3853556Z c1de41509ae108848fd5bf295487510254daab6b
+2026-11-10T16:25:47.4164746Z ##[group]Run actions/setup-python@v5
+2026-11-10T16:25:47.4165045Z with:
+2026-11-10T16:25:47.4165242Z   python-version: 3.13
+2026-11-10T16:25:47.4165653Z   check-latest: false
+2026-11-10T16:25:47.4167710Z   token: ***
+2026-11-10T16:25:47.4167906Z   update-environment: true
+2026-11-10T16:25:47.4168123Z   allow-prereleases: false
+2026-11-10T16:25:47.4168331Z   freethreaded: false
+2026-11-10T16:25:47.4168523Z ##[endgroup]
+2026-11-10T16:25:47.5294827Z ##[group]Installed versions
+2026-11-10T16:25:47.5590772Z (node:2194) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-10T16:25:47.5591608Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-10T16:25:47.5592160Z Successfully set up CPython (3.13.18)
+2026-11-10T16:25:47.5592622Z ##[endgroup]
+2026-11-10T16:25:47.5755690Z ##[group]Run astral-sh/setup-uv@v1
+2026-11-10T16:25:47.5755983Z with:
+2026-11-10T16:25:47.5756195Z   version: 0.4.4
+2026-11-10T16:25:47.5756395Z   enable-cache: false
+2026-11-10T16:25:47.5756614Z   cache-local-path: /tmp/setup-uv-cache
+2026-11-10T16:25:47.5756847Z env:
+2026-11-10T16:25:47.5757103Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:47.5757475Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-10T16:25:47.5757841Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:47.5758160Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:47.5758475Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:47.5759047Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-10T16:25:47.5759361Z ##[endgroup]
+2026-11-10T16:25:47.6813138Z Downloading uv from "https://github.com/astral-sh/uv/releases/download/0.4.4/uv-x86_64-unknown-linux-gnu.tar.gz" ...
+2026-11-10T16:25:47.6820455Z (node:2202) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-10T16:25:47.6821227Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-10T16:25:48.1126716Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/977ad1d9-3d5c-4773-88bb-6143cf812fd5 -f /home/runner/work/_temp/50f77c0f-a41d-4f3c-84a9-521c9242812c
+2026-11-10T16:25:48.3722753Z Added /opt/hostedtoolcache/uv/0.4.4/x86_64 to the path
+2026-11-10T16:25:48.3726382Z Successfully installed uv version 0.4.4
+2026-11-10T16:25:48.3734167Z Set UV_CACHE_DIR to /tmp/setup-uv-cache
+2026-11-10T16:25:48.3968022Z ##[group]Run uv sync --all-extras
+2026-11-10T16:25:48.3968352Z [36;1muv sync --all-extras[0m
+2026-11-10T16:25:48.4113696Z shell: /usr/bin/bash -e {0}
+2026-11-10T16:25:48.4113944Z env:
+2026-11-10T16:25:48.4114184Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:48.4114547Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-10T16:25:48.4114892Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:48.4115201Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:48.4115533Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:25:48.4115839Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-10T16:25:48.4116117Z   UV_CACHE_DIR: /tmp/setup-uv-cache
+2026-11-10T16:25:48.4116331Z ##[endgroup]
+2026-11-10T16:25:48.9937036Z Using Python 3.13.18 interpreter at: /opt/hostedtoolcache/Python/3.13.18/x64/bin/python3.13
+2026-11-10T16:25:48.9937771Z Creating virtualenv at: .venv
+2026-11-10T16:25:49.0029892Z Resolved 95 packages in 0.99ms
+2026-11-10T16:26:12.1558154Z Prepared 94 packages in 23.15s
+2026-11-10T16:26:12.9322576Z Installed 94 packages in 775ms
+2026-11-10T16:26:12.9323057Z  + absl-py==2.5.0
+2026-11-10T16:26:12.9323529Z  + annotated-doc==0.0.5
+2026-11-10T16:26:12.9323885Z  + annotated-types==0.8.0
+2026-11-10T16:26:12.9324237Z  + anyio==4.14.2
+2026-11-10T16:26:12.9324544Z  + ast-serialize==0.8.0
+2026-11-10T16:26:12.9324891Z  + black==26.5.1
+2026-11-10T16:26:12.9325175Z  + click==8.4.2
+2026-11-10T16:26:12.9325431Z  + contourpy==1.3.3
+2026-11-10T16:26:12.9326163Z  + coverage==7.15.4
+2026-11-10T16:26:12.9326492Z  + cuda-bindings==13.3.1
+2026-11-10T16:26:12.9326857Z  + cuda-pathfinder==1.6.0
+2026-11-10T16:26:12.9327208Z  + cuda-toolkit==13.0.2
+2026-11-10T16:26:12.9327520Z  + cycler==0.12.1
+2026-11-10T16:26:12.9327818Z  + execnet==2.1.2
+2026-11-10T16:26:12.9328070Z  + fastapi==0.141.1
+2026-11-10T16:26:12.9328398Z  + ffmpeg-python==0.2.0
+2026-11-10T16:26:12.9328716Z  + filelock==3.32.2
+2026-11-10T16:26:12.9329173Z  + fonttools==4.63.0
+2026-11-10T16:26:12.9329472Z  + fsspec==2026.7.0
+2026-11-10T16:26:12.9329763Z  + future==1.0.0
+2026-11-10T16:26:12.9330008Z  + grpcio==1.83.0
+2026-11-10T16:26:12.9330309Z  + h11==0.16.0
+2026-11-10T16:26:12.9330563Z  + httptools==0.8.0
+2026-11-10T16:26:12.9330879Z  + hypothesis==6.165.3
+2026-11-10T16:26:12.9331195Z  + idna==3.18
+2026-11-10T16:26:12.9331472Z  + iniconfig==2.3.0
+2026-11-10T16:26:12.9331783Z  + jinja2==3.1.6
+2026-11-10T16:26:12.9332039Z  + kiwisolver==1.5.0
+2026-11-10T16:26:12.9332360Z  + librt==0.15.0
+2026-11-10T16:26:12.9332628Z  + lz4==4.4.5
+2026-11-10T16:26:12.9332894Z  + markdown==3.10.3
+2026-11-10T16:26:12.9333186Z  + markupsafe==3.0.3
+2026-11-10T16:26:12.9333505Z  + matplotlib==3.11.1
+2026-11-10T16:26:12.9333786Z  + mpmath==1.3.0
+2026-11-10T16:26:12.9334098Z  + msgpack==1.2.1
+2026-11-10T16:26:12.9334344Z  + mypy==2.3.0
+2026-11-10T16:26:12.9334610Z  + mypy-extensions==1.1.0
+2026-11-10T16:26:12.9334982Z  + networkx==3.6.1
+2026-11-10T16:26:12.9335251Z  + numpy==2.5.2
+2026-11-10T16:26:12.9335575Z  + nvidia-cublas==13.1.0.3
+2026-11-10T16:26:12.9335942Z  + nvidia-cuda-cupti==13.0.85
+2026-11-10T16:26:12.9336310Z  + nvidia-cuda-nvrtc==13.0.88
+2026-11-10T16:26:12.9336686Z  + nvidia-cuda-runtime==13.0.96
+2026-11-10T16:26:12.9337079Z  + nvidia-cudnn-cu13==9.19.0.56
+2026-11-10T16:26:12.9337445Z  + nvidia-cufft==12.0.0.61
+2026-11-10T16:26:12.9337769Z  + nvidia-cufile==1.15.1.6
+2026-11-10T16:26:12.9338087Z  + nvidia-curand==10.4.0.35
+2026-11-10T16:26:12.9338399Z  + nvidia-cusolver==12.0.4.66
+2026-11-10T16:26:12.9338743Z  + nvidia-cusparse==12.6.3.3
+2026-11-10T16:26:12.9339210Z  + nvidia-cusparselt-cu13==0.8.0
+2026-11-10T16:26:12.9339566Z  + nvidia-nccl-cu13==2.28.9
+2026-11-10T16:26:12.9339863Z  + nvidia-nvjitlink==13.0.88
+2026-11-10T16:26:12.9340240Z  + nvidia-nvshmem-cu13==3.4.5
+2026-11-10T16:26:12.9340550Z  + nvidia-nvtx==13.0.85
+2026-11-10T16:26:12.9340850Z  + packaging==26.3
+2026-11-10T16:26:12.9341132Z  + pathspec==1.1.1
+2026-11-10T16:26:12.9341705Z  + pillow==12.3.0
+2026-11-10T16:26:12.9341985Z  + platformdirs==4.11.2
+2026-11-10T16:26:12.9342289Z  + pluggy==1.6.0
+2026-11-10T16:26:12.9342565Z  + protobuf==7.35.1
+2026-11-10T16:26:12.9342852Z  + py-cpuinfo==9.0.0
+2026-11-10T16:26:12.9343108Z  + pydantic==2.13.4
+2026-11-10T16:26:12.9343294Z  + pydantic-core==2.46.4
+2026-11-10T16:26:12.9343486Z  + pygments==2.20.0
+2026-11-10T16:26:12.9343864Z  + pyparsing==3.3.2
+2026-11-10T16:26:12.9344064Z  + pytest==8.4.2
+2026-11-10T16:26:12.9344247Z  + pytest-asyncio==1.4.0
+2026-11-10T16:26:12.9344443Z  + pytest-benchmark==5.2.3
+2026-11-10T16:26:12.9344650Z  + pytest-cov==7.1.0
+2026-11-10T16:26:12.9344855Z  + pytest-xdist==3.8.0
+2026-11-10T16:26:12.9345048Z  + python-dateutil==2.9.0.post0
+2026-11-10T16:26:12.9345274Z  + python-dotenv==1.2.2
+2026-11-10T16:26:12.9345464Z  + pytokens==0.4.1
+2026-11-10T16:26:12.9345641Z  + pyyaml==6.0.3
+2026-11-10T16:26:12.9345828Z  + ruff==0.16.2
+2026-11-10T16:26:12.9346019Z  + setuptools==81.0.0
+2026-11-10T16:26:12.9346211Z  + six==1.17.0
+2026-11-10T16:26:12.9346390Z  + sortedcontainers==2.4.0
+2026-11-10T16:26:12.9346586Z  + starlette==1.6.0
+2026-11-10T16:26:12.9346767Z  + sympy==1.14.0
+2026-11-10T16:26:12.9346939Z  + tensorboard==2.21.0
+2026-11-10T16:26:12.9347137Z  + tensorboard-data-server==0.7.2
+2026-11-10T16:26:12.9347350Z  + torch==2.11.0
+2026-11-10T16:26:12.9347587Z  + townlet==0.1.0 (from file:///home/runner/work/hamlet/hamlet)
+2026-11-10T16:26:12.9347868Z  + triton==3.6.0
+2026-11-10T16:26:12.9348051Z  + types-pyyaml==6.0.12.20260724
+2026-11-10T16:26:12.9348268Z  + typing-extensions==4.16.0
+2026-11-10T16:26:12.9348608Z  + typing-inspection==0.4.3
+2026-11-10T16:26:12.9349255Z  + uvicorn==0.52.1
+2026-11-10T16:26:12.9349521Z  + uvloop==0.22.1
+2026-11-10T16:26:12.9349743Z  + vulture==2.16
+2026-11-10T16:26:12.9349966Z  + watchfiles==1.2.0
+2026-11-10T16:26:12.9350205Z  + websockets==17.0.1
+2026-11-10T16:26:12.9350441Z  + werkzeug==3.1.8
+2026-11-10T16:26:12.9833782Z ##[group]Run echo "Running ruff linter - all warnings must be fixed"
+2026-11-10T16:26:12.9834257Z [36;1mecho "Running ruff linter - all warnings must be fixed"[0m
+2026-11-10T16:26:12.9834562Z [36;1muv run ruff check .[0m
+2026-11-10T16:26:12.9834774Z [36;1mif [ $? -ne 0 ]; then[0m
+2026-11-10T16:26:12.9835132Z [36;1m  echo "❌ Lint violations found. Run 'uv run ruff check . --fix' locally to auto-fix."[0m
+2026-11-10T16:26:12.9835520Z [36;1m  exit 1[0m
+2026-11-10T16:26:12.9835694Z [36;1mfi[0m
+2026-11-10T16:26:12.9835884Z [36;1mecho "✅ All lint checks passed"[0m
+2026-11-10T16:26:12.9880840Z shell: /usr/bin/bash -e {0}
+2026-11-10T16:26:12.9881080Z env:
+2026-11-10T16:26:12.9881311Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:12.9881679Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-10T16:26:12.9882024Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:12.9882386Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:12.9882721Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:12.9883034Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-10T16:26:12.9883319Z   UV_CACHE_DIR: /tmp/setup-uv-cache
+2026-11-10T16:26:12.9883534Z ##[endgroup]
+2026-11-10T16:26:13.0385904Z Running ruff linter - all warnings must be fixed
+2026-11-10T16:26:13.3058095Z All checks passed!
+2026-11-10T16:26:13.3086805Z ✅ All lint checks passed
+2026-11-10T16:26:13.3724529Z ##[group]Run echo "Running black formatter check - all code must be formatted"
+2026-11-10T16:26:13.3725196Z [36;1mecho "Running black formatter check - all code must be formatted"[0m
+2026-11-10T16:26:13.3725695Z [36;1muv run black --check src tests[0m
+2026-11-10T16:26:13.3726022Z [36;1mif [ $? -ne 0 ]; then[0m
+2026-11-10T16:26:13.3726542Z [36;1m  echo "❌ Format violations found. Run 'uv run black src tests' locally to auto-format."[0m
+2026-11-10T16:26:13.3727094Z [36;1m  exit 1[0m
+2026-11-10T16:26:13.3727331Z [36;1mfi[0m
+2026-11-10T16:26:13.3727584Z [36;1mecho "✅ All format checks passed"[0m
+2026-11-10T16:26:13.3773571Z shell: /usr/bin/bash -e {0}
+2026-11-10T16:26:13.3773789Z env:
+2026-11-10T16:26:13.3774020Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:13.3774452Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-10T16:26:13.3774811Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:13.3775189Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:13.3775497Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:13.3775815Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-10T16:26:13.3776098Z   UV_CACHE_DIR: /tmp/setup-uv-cache
+2026-11-10T16:26:13.3776315Z ##[endgroup]
+2026-11-10T16:26:13.4937534Z Running black formatter check - all code must be formatted
+2026-11-10T16:26:30.0777117Z All done! ✨ 🍰 ✨
+2026-11-10T16:26:30.0777490Z 702 files would be left unchanged.
+2026-11-10T16:26:30.1094834Z ✅ All format checks passed
+2026-11-10T16:26:30.1153111Z ##[group]Run echo "Running mypy type checker - all type errors must be fixed"
+2026-11-10T16:26:30.1153828Z [36;1mecho "Running mypy type checker - all type errors must be fixed"[0m
+2026-11-10T16:26:30.1154375Z [36;1muv run mypy src/townlet --show-error-codes[0m
+2026-11-10T16:26:30.1154746Z [36;1mif [ $? -ne 0 ]; then[0m
+2026-11-10T16:26:30.1155336Z [36;1m  echo "❌ Type errors found. Run 'uv run mypy src/townlet --show-error-codes' locally to see details."[0m
+2026-11-10T16:26:30.1155970Z [36;1m  exit 1[0m
+2026-11-10T16:26:30.1156228Z [36;1mfi[0m
+2026-11-10T16:26:30.1156761Z [36;1mecho "✅ All type checks passed"[0m
+2026-11-10T16:26:30.1219144Z shell: /usr/bin/bash -e {0}
+2026-11-10T16:26:30.1219470Z env:
+2026-11-10T16:26:30.1219821Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:30.1220412Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-10T16:26:30.1221034Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:30.1221546Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:30.1222048Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-10T16:26:30.1222558Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-10T16:26:30.1223015Z   UV_CACHE_DIR: /tmp/setup-uv-cache
+2026-11-10T16:26:30.1223346Z ##[endgroup]
+2026-11-10T16:26:30.1304400Z Running mypy type checker - all type errors must be fixed
+2026-11-10T16:26:51.6009479Z src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+2026-11-10T16:26:52.9993587Z src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+2026-11-10T16:26:52.9994615Z src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+2026-11-10T16:26:52.9995619Z src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+2026-11-10T16:26:52.9996533Z src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+2026-11-10T16:26:52.9997533Z src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+2026-11-10T16:26:52.9998472Z src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+2026-11-10T16:26:52.9999723Z src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+2026-11-10T16:26:53.1349719Z src/townlet/population/vectorized.py:800: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+2026-11-10T16:26:53.1350898Z src/townlet/population/vectorized.py:800: note: "reset" defined in "townlet.environment.vectorized_env"
+2026-11-10T16:26:53.1352080Z src/townlet/population/vectorized.py:800: error: Incompatible types in assignment (expression has type "WorldRecord", variable has type "Tensor")  [assignment]
+2026-11-10T16:26:53.1353212Z src/townlet/population/vectorized.py:2307: error: Missing named argument "rng" for "RNDExploration"  [call-arg]
+2026-11-10T16:26:53.1354066Z src/townlet/population/vectorized.py:2307: note: "RNDExploration" defined in "townlet.exploration.rnd"
+2026-11-10T16:26:53.1354926Z src/townlet/population/vectorized.py:2307: error: Missing named argument "service_clock_unit" for "RNDExploration"  [call-arg]
+2026-11-10T16:26:53.1505468Z src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+2026-11-10T16:26:53.1506841Z src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+2026-11-10T16:26:53.2305446Z Found 9 errors in 2 files (checked 197 source files)
+2026-11-10T16:26:53.2903774Z ##[error]Process completed with exit code 1.
+2026-11-10T16:26:53.3028341Z Post job cleanup.
+2026-11-10T16:26:53.3748401Z [command]/usr/bin/git version
+2026-11-10T16:26:53.3786430Z git version 2.56.0
+2026-11-10T16:26:53.3817853Z Temporarily overriding HOME='/home/runner/work/_temp/315c209b-ce0c-45fc-9514-50c3ca752a74' before making global git config changes
+2026-11-10T16:26:53.3819135Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-10T16:26:53.3821149Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hamlet/hamlet
+2026-11-10T16:26:53.3856148Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-10T16:26:53.3895437Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-10T16:26:53.4193476Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-10T16:26:53.4226914Z http.https://github.com/.extraheader
+2026-11-10T16:26:53.4246254Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-10T16:26:53.5178738Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-10T16:26:53.5448338Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-10T16:26:53.5479774Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-10T16:26:53.5888060Z Cleaning up orphan processes
+2026-11-10T16:26:53.6236398Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, astral-sh/setup-uv@v1. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

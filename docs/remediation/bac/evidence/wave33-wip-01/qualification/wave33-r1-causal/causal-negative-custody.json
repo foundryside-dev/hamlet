@@ -1,0 +1,16 @@
+{
+  "status": "EXPECTED_CAUSAL_RED",
+  "candidate_tree": "816728bffbd23f4dc726a29915a682041ea77388",
+  "passed": 0,
+  "failed": 2,
+  "cause": "Both scopes actual eligible selectedscale0.4 violates required0; raw/eligibility/provider/ENV fixtures reachedassertion",
+  "negative_custody": "PASS",
+  "sources": 355,
+  "configs": 573,
+  "artifacts": 13,
+  "pytest_processes": 3,
+  "registry": 14,
+  "available": 1,
+  "nonpytest_children": 0,
+  "wall_seconds": 16.77757978439331
+}

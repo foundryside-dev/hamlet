@@ -1,0 +1,179 @@
+{
+  "status": "updated_same_page_and_read_back",
+  "title": "BAC Work Completed and Remaining",
+  "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "created_at": "2026-11-10T14:07:57.502017Z",
+  "idempotency_key": "bac-work-tracker-2026-11-11-a7c4cd0b",
+  "drive_scope": "personal",
+  "parent": null,
+  "space_id": null,
+  "publication": "Created authorized private native editable text Page; no sharing changes, new Space, messages or automations.",
+  "verification": {
+    "readback_success": true,
+    "body_preserved_normalizing_whitespace": true,
+    "native_blocks": 32,
+    "completed_packet_ids": 28,
+    "remaining_packet_ids": 38,
+    "exact_packet_coverage": true,
+    "title_verified": true,
+    "headings_verified": true,
+    "visual_preview": "No rendered preview exposed by Page tools; visual layout not independently inspected.",
+    "latest_update": {
+      "readback_success": true,
+      "changed_blocks_exact": true,
+      "all_untouched_blocks_preserved": true,
+      "native_blocks": 32,
+      "completed_packet_ids": 28,
+      "remaining_packet_ids": 38,
+      "exact_packet_coverage": true,
+      "rendered_preview": "No rendered preview tool exposed; visual layout not independently inspected.",
+      "atomic_nonpatch_operations": 8,
+      "all_applied": true,
+      "edit_receipt_sequence": 2
+    }
+  },
+  "source_checkpoint": "c1de41509ae108848fd5bf295487510254daab6b",
+  "source_set": [
+    "BAC-TRACKING-SNAPSHOT.json",
+    "../CURRENT-STATE.json",
+    "../progress.md",
+    "/workspace/hamlet/docs/remediation/bac/STATUS.md",
+    "/workspace/hamlet/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md"
+  ],
+  "source_total_lines": 3534,
+  "root_update_incorporated": "Bounded PW07 producer accepted and pushed; 153 root and independent conversion PASS, 16 root and independent metadata PASS, 31 root and independent owner PASS with one CUDA skip each; combined951 PASS3CUDA skips. Original28/66 and38remaining unchanged. All new-tip CI in progress; nine mypy blockers and full acceptance remain open.",
+  "draft_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave29-preparation/BAC-TRACKING-DRAFT.md",
+  "implementation_files_read_or_changed": false,
+  "runtime_or_git_mutations": false,
+  "subagents_spawned": false,
+  "updated_at": "2026-11-10T14:40:43.569722Z",
+  "latest_source_snapshot_utc": "2026-11-10T16:25:58Z",
+  "latest_status": "Bounded PW07 producer accepted and pushed; 153 root and independent conversion PASS, 16 root and independent metadata PASS, 31 root and independent owner PASS with one CUDA skip each; combined951 PASS3CUDA skips. Original28/66 and38remaining unchanged. All new-tip CI in progress; nine mypy blockers and full acceptance remain open.",
+  "latest_edit_receipt": {
+    "new_sequence": 2,
+    "through_sequence": 2,
+    "operation_results": [
+      {
+        "operation_index": 0,
+        "preceding_block_id": null,
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+          "relative_position_base64": "AL+M+KELhAFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+            "hash": "81cb253106a9685b138d930fb46178874eccd2a5e1e1d33038e2f9daaaccd2e8"
+          }
+        ]
+      },
+      {
+        "operation_index": 1,
+        "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+          "relative_position_base64": "AL+M+KELkw5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "hash": "1861c42c7697a349000698017a639a8d9af0f8268fbbe215f988073d6d116f78"
+          }
+        ]
+      },
+      {
+        "operation_index": 2,
+        "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+          "relative_position_base64": "AL+M+KELhxJB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+            "hash": "09fc85ab22fba06e0030db2bcdf1726dc7c53e2f56349cd84dcfcb7fa10a8a2b"
+          }
+        ]
+      },
+      {
+        "operation_index": 3,
+        "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+          "relative_position_base64": "AL+M+KELxydB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+            "hash": "7f177f281cfc384650cd12ca8272bfb1b2e8b274e2438d5fcff5fbb03d018952"
+          }
+        ]
+      },
+      {
+        "operation_index": 4,
+        "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+          "relative_position_base64": "AL+M+KELxT5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+            "hash": "d13db28caca86757ff4ffe818b958f80e9a3bcd251afb877709663a0411c8b15"
+          }
+        ]
+      },
+      {
+        "operation_index": 5,
+        "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+          "relative_position_base64": "AL+M+KELqkFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "hash": "2611c033ad683dc3635480e79221912e72587754d91451a7cdd07a6c5ef7fcce"
+          }
+        ]
+      },
+      {
+        "operation_index": 6,
+        "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+          "relative_position_base64": "AL+M+KELn0JB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "hash": "ebc6c244032b475538c61bf9b32e17fd80955b5c2fe4ee470fb34fc46711753a"
+          }
+        ]
+      },
+      {
+        "operation_index": 7,
+        "preceding_block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+          "relative_position_base64": "AL+M+KELkkRB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+            "hash": "51a8fe49fee238ec793c7e39eff7de71e69fc5ee39988d4e43e7fff4bc5c0975"
+          }
+        ]
+      }
+    ]
+  }
+}

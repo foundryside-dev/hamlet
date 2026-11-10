@@ -1,0 +1,30 @@
+{
+  "name": "causal",
+  "exit_code": 1,
+  "seconds": 16.77757978439331,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_none_scale.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "none_bank_selected_scale_and_unchanged_retry",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave33-r1-causal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave33-r1-causal/causal.log",
+  "sha256": "e9787ad29b5d17f917bb5eb5fc1f8c1f1ab70ef6dc376282718258daad6d37ef",
+  "candidate_tree": "816728bffbd23f4dc726a29915a682041ea77388",
+  "base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+  "manifest_sha256": "a2c454bae69dbf6e96577b84a4abf8c14417939a21b0584d163f1bd321807696",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

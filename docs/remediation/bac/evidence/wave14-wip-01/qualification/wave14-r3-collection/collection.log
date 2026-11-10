@@ -1,0 +1,81 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 64 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_curriculum_factory.py>
+            <Function test_legacy_step_refuses_at_authored_boundary>
+            <Function test_unknown_curriculum_declarations_refuse[payload0]>
+            <Function test_unknown_curriculum_declarations_refuse[payload1]>
+            <Function test_unknown_curriculum_declarations_refuse[payload2]>
+            <Function test_current_resolution_and_named_policy_provenance[True]>
+            <Function test_current_resolution_and_named_policy_provenance[False]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[False-roster0]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[False-roster1]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[False-roster2]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[False-roster3]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[True-roster0]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[True-roster1]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[True-roster2]>
+            <Function test_static_factory_transports_exact_roster_and_fixed_policy[True-roster3]>
+            <Function test_invalid_declared_rosters_refuse[roster0]>
+            <Function test_invalid_declared_rosters_refuse[roster1]>
+            <Function test_invalid_declared_rosters_refuse[roster2]>
+            <Function test_invalid_declared_rosters_refuse[roster3]>
+            <Function test_invalid_declared_rosters_refuse[roster4]>
+            <Function test_factory_refuses_unresolved_modes_even_for_static[modes0]>
+            <Function test_factory_refuses_unresolved_modes_even_for_static[modes1]>
+            <Function test_factory_has_no_obsolete_horizon_signature>
+            <Function test_custom_programmatic_static_parameters_remain_meaningful[0.37]>
+            <Function test_custom_programmatic_static_parameters_remain_meaningful[0.0]>
+            <Function test_custom_programmatic_static_parameters_remain_meaningful[12.0]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[-0.01]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[True]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[False]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[nan]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[inf]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[-inf]>
+            <Function test_custom_programmatic_static_invalid_depletion_refuses_before_decisions[depletion6]>
+            <Function test_actual_completion_demonstrates_stage_and_rate_choices[stage_band-0.01-0.25-False]>
+            <Function test_actual_completion_demonstrates_stage_and_rate_choices[stage_band-0.01-0.25-True]>
+            <Function test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.01-0.1-False]>
+            <Function test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.01-0.1-True]>
+            <Function test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.1-0.25-False]>
+            <Function test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.1-0.25-True]>
+            <Function test_singleton_bounds_and_current_native_future[stage_band]>
+            <Function test_singleton_bounds_and_current_native_future[rate_limited]>
+            <Function test_authored_dwell_entropy_and_threshold_reach_runtime[min_steps_at_stage-11]>
+            <Function test_authored_dwell_entropy_and_threshold_reach_runtime[entropy_gate-0.1]>
+            <Function test_authored_dwell_entropy_and_threshold_reach_runtime[survival_advance_threshold-0.95]>
+            <Function test_authored_rate_zero_still_refuses>
+            <Function test_static_roles_are_truthful[True-derived]>
+            <Function test_static_roles_are_truthful[False-active]>
+            <Function test_inactive_presets_preserve_authoring_but_not_selected_execution>
+            <Function test_adversarial_rate_identity_tracks_only_selected_semantics[stage_band-False]>
+            <Function test_adversarial_rate_identity_tracks_only_selected_semantics[rate_limited-True]>
+            <Function test_static_execution_binds_actual_roster_while_authored_training_does_not>
+            <Function test_adversarial_execution_excludes_inactive_static_roster>
+            <Function test_omitted_and_explicit_equal_modes_have_equal_selected_identity>
+            <Function test_portable_effective_current_roundtrip[roster0]>
+            <Function test_portable_effective_current_roundtrip[roster1]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[missing_policy]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[roster]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[difficulty]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[reward]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[hash]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[role]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[legacy_commit]>
+            <Function test_forged_or_obsolete_effective_payload_refuses[missing_scope]>
+            <Function test_pure_options_resolution_preserves_unrelated_declared_choices_without_roster>
+            <Function test_factory_uses_actual_declared_yaml_meter_roster>
+
+========================= 64 tests collected in 0.08s ==========================

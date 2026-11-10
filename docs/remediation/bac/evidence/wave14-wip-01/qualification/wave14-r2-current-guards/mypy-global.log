@@ -1,0 +1,6 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/universe/compiled.py:389: error: Missing named argument "declared_meter_names" for "resolve_effective_run"  [call-arg]
+src/townlet/universe/compiled.py:389: note: "resolve_effective_run" defined in "townlet.config.effective_run"
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 1 error in 1 file (checked 193 source files)

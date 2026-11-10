@@ -1,70 +1,58 @@
-"""Curriculum factory helpers for v2.1 training packs.
-
-Selects the appropriate curriculum implementation (static vs adversarial)
-based on TrainingV2Config.curriculum.strategy, so that behavior is driven
-by configuration rather than hard-coded defaults.
-"""
+"""Construct current curricula from explicit resolved policy declarations."""
 
 from __future__ import annotations
 
-from typing import Final
-
 import torch
 
+from townlet.config.bac_options import CurriculumOptions, StaticBaselinePolicy
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.base import CurriculumManager
 from townlet.curriculum.static import StaticCurriculum
 
-DEFAULT_STATIC_DIFFICULTY: Final[float] = 0.5
-
 
 def build_curriculum(
     training: TrainingV2Config,
     *,
-    max_steps_per_episode: int,
+    curriculum_options: CurriculumOptions,
+    static_policy: StaticBaselinePolicy,
     device: torch.device,
 ) -> CurriculumManager:
-    """Build a CurriculumManager from TrainingV2Config.
+    """Build an uninitialized manager; the caller initializes its actual population.
 
-    Args:
-        training: Parsed v2.1 training configuration for the current level.
-        max_steps_per_episode: Episode length from training.training_loop.
-        device: Torch device for any curriculum-internal tensors.
-
-    Returns:
-        A CurriculumManager instance (StaticCurriculum or AdversarialCurriculum).
-
-    Notes:
-        - For strategy="static", this returns a StaticCurriculum with fixed
-          difficulty and meter set. Future work may expose these knobs in
-          TrainingV2Config.
-        - For strategy="adversarial", this returns AdversarialCurriculum
-          configured with max_steps_per_episode and device. The per-stage
-          advancement/retreat thresholds remain defined in AdversarialCurriculum;
-          additional wiring from training.curriculum.adversarial can be added
-          without changing call sites.
+    Resolve options and the roster-bound static baseline at the configuration
+    boundary. This consumer never selects omitted values or probes old APIs.
+    Static reward and meter metadata are transported without claiming their
+    application mechanics are qualified. Programmatic StaticCurriculum callers
+    may continue supplying their own supported fixed parameters directly.
     """
+    if curriculum_options.commit_mode != "completion":
+        raise ValueError("curriculum_options.commit_mode must be resolved to completion")
+    if curriculum_options.difficulty_mode not in ("stage_band", "rate_limited"):
+        raise ValueError("curriculum_options.difficulty_mode must be resolved")
     strategy_cfg = training.curriculum
-    strategy = strategy_cfg.strategy
-
-    if strategy == "static":
-        # Static curriculum: no adaptation, fixed difficulty.
-        # Use StaticCurriculum defaults for now; they already cover the full
-        # meter set used by the environment. This keeps behavior explicit and
-        # makes the strategy flag meaningful without introducing new schema.
-        return StaticCurriculum(difficulty_level=DEFAULT_STATIC_DIFFICULTY)
-
-    if strategy == "adversarial":
+    if strategy_cfg.strategy == "static":
+        return StaticCurriculum(
+            commit_mode=curriculum_options.commit_mode,
+            difficulty_level=static_policy.difficulty_level,
+            reward_mode=static_policy.reward_mode,
+            active_meters=list(static_policy.active_meters),
+            depletion_multiplier=static_policy.depletion_multiplier,
+        )
+    if strategy_cfg.strategy == "adversarial":
         adversarial_cfg = strategy_cfg.adversarial
         if adversarial_cfg is None:
-            raise ValueError("training.curriculum.adversarial is required when " "curriculum.strategy='adversarial'.")
-
-        curriculum = AdversarialCurriculum(
-            max_steps_per_episode=max_steps_per_episode,
+            raise ValueError("training.curriculum.adversarial is required when curriculum.strategy='adversarial'")
+        return AdversarialCurriculum(
+            commit_mode=curriculum_options.commit_mode,
+            difficulty_mode=curriculum_options.difficulty_mode,
+            adaptation_rate=adversarial_cfg.adaptation_rate,
+            min_difficulty=adversarial_cfg.min_difficulty,
+            max_difficulty=adversarial_cfg.max_difficulty,
+            survival_advance_threshold=adversarial_cfg.survival_advance_threshold,
+            survival_retreat_threshold=adversarial_cfg.survival_retreat_threshold,
+            entropy_gate=adversarial_cfg.entropy_gate,
+            min_steps_at_stage=adversarial_cfg.min_steps_at_stage,
             device=device,
         )
-        curriculum.configure_from_training(adversarial_cfg)
-        return curriculum
-
-    raise ValueError(f"Unsupported curriculum.strategy: {strategy!r}")
+    raise ValueError(f"Unsupported curriculum.strategy: {strategy_cfg.strategy!r}")

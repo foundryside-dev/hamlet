@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave14/r4-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-dto-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "dto-independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave14-r4-dto-independent",
+        "-k",
+        "static_factory_transports_exact_roster_and_fixed_policy or custom_programmatic_static_parameters_remain_meaningful or custom_programmatic_static_invalid_depletion_refuses_before_decisions or invalid_declared_rosters_refuse"
+      ]
+    }
+  ]
+}

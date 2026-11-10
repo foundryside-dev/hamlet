@@ -1,0 +1,23 @@
+{
+  "status": "MEANINGFUL_DECISION_INTERFACE_RED",
+  "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+  "candidate_tree": "8a1cf92942c88fa394dcd3b6bc17dcf979bd5cb8",
+  "counts": {
+    "failed": 6,
+    "passed": 58,
+    "errors": 0
+  },
+  "wall_seconds": 10.752670526504517,
+  "failure_nodes": [
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_custom_programmatic_static_parameters_remain_meaningful[0.0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_custom_programmatic_static_parameters_remain_meaningful[12.0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster3]",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster3]"
+  ],
+  "causes": "Two empty roster/two seven-meter roster and zero/12 finite custom depletion actualproducerdecisions refused by shared DTO; all58controls incl7malformed constructor inputsPASS",
+  "custody": "176source573config13artifact/3process/index/import/threadsPASS;14registry1available",
+  "log_sha256": "91a1e8d9c06e4467a77473fb9b5816361c675265d99ef94baf017e2f7138e27a",
+  "clearance": "STATE-only additiveDTOcontractrepair authorized to sameboundedSolauthor; no other source changes"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "black-current",
+  "exit_code": 0,
+  "seconds": 2.9035680294036865,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src/townlet/config/bac_options.py",
+    "src/townlet/config/training_v2_config.py",
+    "src/townlet/config/effective_run.py",
+    "src/townlet/curriculum/factory.py",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r2-current-guards/black-current.log",
+  "sha256": "25369eabb8c122f861d58ddb255f81f4b9ee797f42f3882975bef953218258ed",
+  "candidate_tree": "c60042475a49c107ac35d0d8b84b97d455e9f043",
+  "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+  "manifest_sha256": "012515858a518558c66607190b63c5d0c71acb499bf7eb356cd784bffa94c4b4",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

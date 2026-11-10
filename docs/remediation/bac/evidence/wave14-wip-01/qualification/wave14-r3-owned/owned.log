@@ -1,0 +1,312 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [64 items]
+
+..........F........F....F........F...............F..F...........         [100%]
+=================================== FAILURES ===================================
+_ test_static_factory_transports_exact_roster_and_fixed_policy[False-roster0] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = (), via_effective = False
+
+    @pytest.mark.parametrize(
+        "roster", [(), ROSTER, tuple(reversed(ROSTER)), ("energy", "hygiene", "satiation", "money", "mood", "social", "thermal_budget")]
+    )
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+        curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+        config = curriculum.checkpoint_state()["completion"]["config"]
+        assert config == {
+            "commit_mode": "completion",
+            "difficulty_level": 0.5,
+            "reward_mode": "shaped",
+            "depletion_multiplier": 1.0,
+            "active_meters": list(roster),
+        }
+>       decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7fbab3921d30>
+agent_states = None, agent_ids = ['test-agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       active_meters
+E         List should have at least 1 item after validation, not 0 [type=too_short, input_value=[], input_type=list]
+E           For further information visit https://errors.pydantic.dev/2.13/v/too_short
+
+src/townlet/curriculum/static.py:51: ValidationError
+_ test_static_factory_transports_exact_roster_and_fixed_policy[False-roster3] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('energy', 'hygiene', 'satiation', 'money', 'mood', 'social', ...)
+via_effective = False
+
+    @pytest.mark.parametrize(
+        "roster", [(), ROSTER, tuple(reversed(ROSTER)), ("energy", "hygiene", "satiation", "money", "mood", "social", "thermal_budget")]
+    )
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+        curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+        config = curriculum.checkpoint_state()["completion"]["config"]
+        assert config == {
+            "commit_mode": "completion",
+            "difficulty_level": 0.5,
+            "reward_mode": "shaped",
+            "depletion_multiplier": 1.0,
+            "active_meters": list(roster),
+        }
+>       decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7fbab3924c30>
+agent_states = None, agent_ids = ['test-agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       active_meters
+E         List should have at most 6 items after validation, not 7 [type=too_long, input_value=['energy', 'hygiene', 'sa...cial', 'thermal_budget'], input_type=list]
+E           For further information visit https://errors.pydantic.dev/2.13/v/too_long
+
+src/townlet/curriculum/static.py:51: ValidationError
+__ test_static_factory_transports_exact_roster_and_fixed_policy[True-roster0] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = (), via_effective = True
+
+    @pytest.mark.parametrize(
+        "roster", [(), ROSTER, tuple(reversed(ROSTER)), ("energy", "hygiene", "satiation", "money", "mood", "social", "thermal_budget")]
+    )
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+        curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+        config = curriculum.checkpoint_state()["completion"]["config"]
+        assert config == {
+            "commit_mode": "completion",
+            "difficulty_level": 0.5,
+            "reward_mode": "shaped",
+            "depletion_multiplier": 1.0,
+            "active_meters": list(roster),
+        }
+>       decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7fbab3925350>
+agent_states = None, agent_ids = ['test-agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       active_meters
+E         List should have at least 1 item after validation, not 0 [type=too_short, input_value=[], input_type=list]
+E           For further information visit https://errors.pydantic.dev/2.13/v/too_short
+
+src/townlet/curriculum/static.py:51: ValidationError
+__ test_static_factory_transports_exact_roster_and_fixed_policy[True-roster3] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('energy', 'hygiene', 'satiation', 'money', 'mood', 'social', ...)
+via_effective = True
+
+    @pytest.mark.parametrize(
+        "roster", [(), ROSTER, tuple(reversed(ROSTER)), ("energy", "hygiene", "satiation", "money", "mood", "social", "thermal_budget")]
+    )
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+        curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+        config = curriculum.checkpoint_state()["completion"]["config"]
+        assert config == {
+            "commit_mode": "completion",
+            "difficulty_level": 0.5,
+            "reward_mode": "shaped",
+            "depletion_multiplier": 1.0,
+            "active_meters": list(roster),
+        }
+>       decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7fbab39b6140>
+agent_states = None, agent_ids = ['test-agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       active_meters
+E         List should have at most 6 items after validation, not 7 [type=too_long, input_value=['energy', 'hygiene', 'sa...cial', 'thermal_budget'], input_type=list]
+E           For further information visit https://errors.pydantic.dev/2.13/v/too_long
+
+src/townlet/curriculum/static.py:51: ValidationError
+______ test_custom_programmatic_static_parameters_remain_meaningful[0.0] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+depletion = 0.0
+
+    @pytest.mark.parametrize("depletion", [0.37, 0.0, 12.0])
+    def test_custom_programmatic_static_parameters_remain_meaningful(depletion):
+        meters = ["operator_defined"]
+        curriculum = StaticCurriculum(
+            commit_mode="completion",
+            difficulty_level=0.8,
+            reward_mode="sparse",
+            active_meters=meters,
+            depletion_multiplier=depletion,
+        )
+        meters.append("not-owned")
+        curriculum.initialize_population(1)
+>       decision = curriculum.get_batch_decisions(None, ["agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7fbab392e950>
+agent_states = None, agent_ids = ['agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       depletion_multiplier
+E         Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+E           For further information visit https://errors.pydantic.dev/2.13/v/greater_than
+
+src/townlet/curriculum/static.py:51: ValidationError
+______ test_custom_programmatic_static_parameters_remain_meaningful[12.0] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+depletion = 12.0
+
+    @pytest.mark.parametrize("depletion", [0.37, 0.0, 12.0])
+    def test_custom_programmatic_static_parameters_remain_meaningful(depletion):
+        meters = ["operator_defined"]
+        curriculum = StaticCurriculum(
+            commit_mode="completion",
+            difficulty_level=0.8,
+            reward_mode="sparse",
+            active_meters=meters,
+            depletion_multiplier=depletion,
+        )
+        meters.append("not-owned")
+        curriculum.initialize_population(1)
+>       decision = curriculum.get_batch_decisions(None, ["agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7fbab37146e0>
+agent_states = None, agent_ids = ['agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       depletion_multiplier
+E         Input should be less than or equal to 10 [type=less_than_equal, input_value=12.0, input_type=float]
+E           For further information visit https://errors.pydantic.dev/2.13/v/less_than_equal
+
+src/townlet/curriculum/static.py:51: ValidationError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster3]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster3]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_custom_programmatic_static_parameters_remain_meaningful[0.0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_custom_programmatic_static_parameters_remain_meaningful[12.0]
+========================= 6 failed, 58 passed in 6.95s =========================

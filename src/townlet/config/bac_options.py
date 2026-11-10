@@ -59,8 +59,37 @@ class RNDOptions(OptionModel):
 
 
 class CurriculumOptions(OptionModel):
-    commit_mode: Literal["completion", "legacy_step"] | None = None
+    commit_mode: Literal["completion"] | None = None
     difficulty_mode: Literal["stage_band", "rate_limited"] | None = None
+
+
+class StaticBaselinePolicy(OptionModel):
+    """Resolved current static baseline, never an authored policy override."""
+
+    policy_id: Literal["static-baseline-v1"]
+    difficulty_level: Annotated[float, Field(ge=0.5, le=0.5)]
+    reward_mode: Literal["shaped"]
+    depletion_multiplier: Annotated[float, Field(ge=1.0, le=1.0)]
+    active_meters: tuple[str, ...]
+
+    @model_validator(mode="after")
+    def validate_meter_roster(self) -> StaticBaselinePolicy:
+        if any(not name.strip() for name in self.active_meters):
+            raise ValueError("declared meter names must be nonblank")
+        if len(set(self.active_meters)) != len(self.active_meters):
+            raise ValueError("declared meter names must be unique")
+        return self
+
+
+def resolve_static_baseline_policy(*, declared_meter_names: tuple[str, ...]) -> StaticBaselinePolicy:
+    """Bind the named immutable baseline to the actual ordered declared roster."""
+    return StaticBaselinePolicy(
+        policy_id="static-baseline-v1",
+        difficulty_level=0.5,
+        reward_mode="shaped",
+        depletion_multiplier=1.0,
+        active_meters=declared_meter_names,
+    )
 
 
 class ServingOptions(OptionModel):
@@ -164,7 +193,7 @@ class OptionProvenance(OptionModel):
 
 
 class ResolvedBaCOptions(OptionModel):
-    schema_version: Literal["bac-options-v1"]
+    schema_version: Literal["bac-options-v2"]
     options: BaCOptions
     provenance: tuple[OptionProvenance, ...]
 
@@ -271,8 +300,8 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
                 explicit = key in overrides
                 if explicit:
                     base[key] = overrides[key]
-                origin = "bac-options-v1"
-                reason = "versioned old-document semantic resolution"
+                origin = "bac-options-v2"
+                reason = "versioned current semantic resolution"
                 if path in reasons:
                     reason = reasons[path]
                 if explicit:
@@ -291,4 +320,4 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
         raise ValueError("bac_options.rnd.max_pending_rows must accommodate training.replay_buffer.batch_size")
     if icm["max_pending_transitions"] < icm["training_batch_size"]:
         raise ValueError("bac_options.providers.icm.max_pending_transitions must accommodate training_batch_size")
-    return ResolvedBaCOptions(schema_version="bac-options-v1", options=BaCOptions.model_validate(table), provenance=tuple(provenance))
+    return ResolvedBaCOptions(schema_version="bac-options-v2", options=BaCOptions.model_validate(table), provenance=tuple(provenance))

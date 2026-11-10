@@ -11,7 +11,7 @@ rnd:
   max_pending_rows: 128
   overflow_policy: drop_oldest
 curriculum:
-  commit_mode: legacy_step
+  commit_mode: completion
   difficulty_mode: rate_limited
 serving:
   policy_mode: mc_dropout

@@ -1,0 +1,847 @@
+diff --git a/configs/test/bac_remediation/dueling/levels/L0_0_minimal/training.yaml b/configs/test/bac_remediation/dueling/levels/L0_0_minimal/training.yaml
+index bbb7ca8d..545e705f 100644
+--- a/configs/test/bac_remediation/dueling/levels/L0_0_minimal/training.yaml
++++ b/configs/test/bac_remediation/dueling/levels/L0_0_minimal/training.yaml
+@@ -81,7 +81,7 @@ training:
+       max_pending_rows: 128
+       overflow_policy: drop_oldest
+     curriculum:
+-      commit_mode: legacy_step
++      commit_mode: completion
+       difficulty_mode: rate_limited
+     serving:
+       policy_mode: mc_dropout
+diff --git a/configs/test/bac_remediation/options/modes-1.yaml b/configs/test/bac_remediation/options/modes-1.yaml
+index d0dc3c88..bb43e1b9 100644
+--- a/configs/test/bac_remediation/options/modes-1.yaml
++++ b/configs/test/bac_remediation/options/modes-1.yaml
+@@ -11,7 +11,7 @@ rnd:
+   max_pending_rows: 128
+   overflow_policy: drop_oldest
+ curriculum:
+-  commit_mode: legacy_step
++  commit_mode: completion
+   difficulty_mode: rate_limited
+ serving:
+   policy_mode: mc_dropout
+diff --git a/configs/test/bac_remediation/recurrent/levels/L0_0_minimal/training.yaml b/configs/test/bac_remediation/recurrent/levels/L0_0_minimal/training.yaml
+index a148a944..25e093f2 100644
+--- a/configs/test/bac_remediation/recurrent/levels/L0_0_minimal/training.yaml
++++ b/configs/test/bac_remediation/recurrent/levels/L0_0_minimal/training.yaml
+@@ -81,7 +81,7 @@ training:
+       max_pending_rows: 128
+       overflow_policy: drop_oldest
+     curriculum:
+-      commit_mode: legacy_step
++      commit_mode: completion
+       difficulty_mode: rate_limited
+     serving:
+       policy_mode: mc_dropout
+diff --git a/src/townlet/config/bac_options.py b/src/townlet/config/bac_options.py
+index 082b2804..2fd84cba 100644
+--- a/src/townlet/config/bac_options.py
++++ b/src/townlet/config/bac_options.py
+@@ -59,10 +59,39 @@ class RNDOptions(OptionModel):
+ 
+ 
+ class CurriculumOptions(OptionModel):
+-    commit_mode: Literal["completion", "legacy_step"] | None = None
++    commit_mode: Literal["completion"] | None = None
+     difficulty_mode: Literal["stage_band", "rate_limited"] | None = None
+ 
+ 
++class StaticBaselinePolicy(OptionModel):
++    """Resolved current static baseline, never an authored policy override."""
++
++    policy_id: Literal["static-baseline-v1"]
++    difficulty_level: Annotated[float, Field(ge=0.5, le=0.5)]
++    reward_mode: Literal["shaped"]
++    depletion_multiplier: Annotated[float, Field(ge=1.0, le=1.0)]
++    active_meters: tuple[str, ...]
++
++    @model_validator(mode="after")
++    def validate_meter_roster(self) -> StaticBaselinePolicy:
++        if any(not name.strip() for name in self.active_meters):
++            raise ValueError("declared meter names must be nonblank")
++        if len(set(self.active_meters)) != len(self.active_meters):
++            raise ValueError("declared meter names must be unique")
++        return self
++
++
++def resolve_static_baseline_policy(*, declared_meter_names: tuple[str, ...]) -> StaticBaselinePolicy:
++    """Bind the named immutable baseline to the actual ordered declared roster."""
++    return StaticBaselinePolicy(
++        policy_id="static-baseline-v1",
++        difficulty_level=0.5,
++        reward_mode="shaped",
++        depletion_multiplier=1.0,
++        active_meters=declared_meter_names,
++    )
++
++
+ class ServingOptions(OptionModel):
+     policy_mode: Literal["greedy_eval", "mc_dropout"] | None = None
+ 
+@@ -164,7 +193,7 @@ class OptionProvenance(OptionModel):
+ 
+ 
+ class ResolvedBaCOptions(OptionModel):
+-    schema_version: Literal["bac-options-v1"]
++    schema_version: Literal["bac-options-v2"]
+     options: BaCOptions
+     provenance: tuple[OptionProvenance, ...]
+ 
+@@ -271,8 +300,8 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
+                 explicit = key in overrides
+                 if explicit:
+                     base[key] = overrides[key]
+-                origin = "bac-options-v1"
+-                reason = "versioned old-document semantic resolution"
++                origin = "bac-options-v2"
++                reason = "versioned current semantic resolution"
+                 if path in reasons:
+                     reason = reasons[path]
+                 if explicit:
+@@ -291,4 +320,4 @@ def resolve_bac_options(options: BaCOptions | None, *, training: TrainingV2Confi
+         raise ValueError("bac_options.rnd.max_pending_rows must accommodate training.replay_buffer.batch_size")
+     if icm["max_pending_transitions"] < icm["training_batch_size"]:
+         raise ValueError("bac_options.providers.icm.max_pending_transitions must accommodate training_batch_size")
+-    return ResolvedBaCOptions(schema_version="bac-options-v1", options=BaCOptions.model_validate(table), provenance=tuple(provenance))
++    return ResolvedBaCOptions(schema_version="bac-options-v2", options=BaCOptions.model_validate(table), provenance=tuple(provenance))
+diff --git a/src/townlet/config/effective_run.py b/src/townlet/config/effective_run.py
+index 435e17dd..c294ce54 100644
+--- a/src/townlet/config/effective_run.py
++++ b/src/townlet/config/effective_run.py
+@@ -9,10 +9,10 @@ from dataclasses import dataclass
+ from types import MappingProxyType
+ from typing import Any, Literal
+ 
+-from townlet.config.bac_options import BaCOptions, resolve_bac_options
++from townlet.config.bac_options import BaCOptions, StaticBaselinePolicy, resolve_bac_options, resolve_static_baseline_policy
+ from townlet.config.brain_config import BrainConfig, apply_training_overrides, compute_brain_hash
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+-from townlet.config.exploration_policy import SCOPE_FIELDS, ResolvedExplorationPolicy, is_legacy_policy_payload, resolve_exploration_policy
++from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
+ from townlet.config.training_v2_config import TrainingV2Config
+ 
+ 
+@@ -57,6 +57,7 @@ class EffectiveRunConfig:
+     training: TrainingV2Config
+     authored_options: BaCOptions
+     options: BaCOptions
++    static_policy: StaticBaselinePolicy
+     exploration: ResolvedExplorationPolicy
+     primary_level: str
+     field_roles: Mapping[str, FieldRole]
+@@ -90,6 +91,7 @@ class EffectiveRunConfig:
+             "training": self.training.model_dump(),
+             "authored_options": self.authored_options.model_dump(),
+             "options": self.options.model_dump(),
++            "static_policy": self.static_policy.model_dump(),
+             "exploration": self.exploration.to_dict(),
+             "primary_level": self.primary_level,
+             "field_roles": {
+@@ -109,36 +111,15 @@ class EffectiveRunConfig:
+         # and null. Active numeric validity is checked independently by the DTOs/RP.
+         if _hash(self.to_dict()) == _hash(dict(payload)):
+             return
+-        old_fields = set(
+-            "base_brain effective_brain training authored_options options exploration primary_level field_roles "
+-            "authored_brain_hash authored_identity execution_hash training_hash derivations origins".split()
+-        )
+-        policy = payload.get("exploration")
+-        options = payload.get("options")
+-        if (
+-            set(payload) == old_fields
+-            and isinstance(policy, Mapping)
+-            and is_legacy_policy_payload(policy)
+-            and isinstance(options, Mapping)
+-            and "curiosity_scope" not in options
+-            and self.exploration.curiosity_scope == "shared"
+-            and self.exploration.scope_origin == "bac-options-v1"
+-        ):
+-            legacy = self.to_dict()
+-            legacy["options"].pop("curiosity_scope")
+-            legacy["exploration"] = self.exploration.legacy_shared_payload()
+-            for name in SCOPE_FIELDS:
+-                legacy["field_roles"].pop(f"exploration.{name}", None)
+-                legacy["derivations"].pop(f"exploration.{name}", None)
+-            for name in ("scope", "seed_policy"):
+-                legacy["field_roles"].pop(f"bac_options.curiosity_scope.{name}", None)
+-                legacy["derivations"].pop(f"curiosity_scope.{name}", None)
+-            if _hash(legacy) == _hash(dict(payload)):
+-                return
+         raise ValueError("effective_run: serialized fields, roles or execution_hash disagree with resolved authoring")
+ 
+     @classmethod
+     def from_dict(cls, payload: Mapping[str, Any]) -> EffectiveRunConfig:
++        static_data = dict(payload["static_policy"])
++        meters = static_data["active_meters"]
++        if isinstance(meters, list):
++            static_data["active_meters"] = tuple(meters)
++        static_policy = StaticBaselinePolicy.model_validate(static_data)
+         policy = ResolvedExplorationPolicy.from_dict(payload["exploration"])
+         result = resolve_effective_run(
+             BrainConfig.model_validate(payload["base_brain"]),
+@@ -146,6 +127,7 @@ class EffectiveRunConfig:
+             primary_level=payload["primary_level"],
+             origins=payload["origins"],
+             drive_intrinsic=IntrinsicStrategyConfig.model_validate(policy.authored_parameters["drive_intrinsic"]),
++            declared_meter_names=static_policy.active_meters,
+         )
+         result.validate_payload(payload)
+         return result
+@@ -158,6 +140,7 @@ def resolve_effective_run(
+     primary_level: str,
+     origins: Mapping[str, str],
+     drive_intrinsic: IntrinsicStrategyConfig,
++    declared_meter_names: tuple[str, ...],
+ ) -> EffectiveRunConfig:
+     """Resolve RP first from authored options, then materialize its selected context.
+ 
+@@ -167,6 +150,7 @@ def resolve_effective_run(
+     """
+     base = BrainConfig.model_validate(base.model_dump())
+     training = TrainingV2Config.model_validate(training.model_dump())
++    static_policy = resolve_static_baseline_policy(declared_meter_names=declared_meter_names)
+     if not isinstance(primary_level, str) or not primary_level:
+         raise ValueError("primary_level must be a nonempty string")
+     if any(not isinstance(key, str) or not isinstance(value, str) for key, value in origins.items()):
+@@ -298,7 +282,7 @@ def resolve_effective_run(
+         elif relative.startswith("replay."):
+             enabled = recurrent
+         provenance = next(item for item in defaults.provenance if item.field == relative)
+-        if relative.startswith("curriculum."):
++        if relative == "curriculum.difficulty_mode":
+             enabled = training.curriculum.strategy == "adversarial"
+         explicit = path in declared_paths
+         origin = provenance.origin
+@@ -348,17 +332,39 @@ def resolve_effective_run(
+         roles[prefix] = FieldRole(
+             "derived" if encoder is None else "active", "bac-options-v1" if encoder is None else prefix, "selected token encoder"
+         )
++    identity: dict[str, Any] = {"schema": "effective-run-v2", "fields": active, "exploration": exploration.policy_identity}
++    static_selected = training.curriculum.strategy == "static"
++    for name in static_policy.model_dump():
++        path = f"static_policy.{name}"
++        origin = "static-baseline-v1"
++        reason = "named immutable static baseline"
++        if name == "active_meters":
++            origin = "declared_level_meters"
++            reason = "actual declared level.bars.meters names in declared order"
++        status: Literal["active", "inactive_preset", "derived", "unqualified"] = "inactive_preset"
++        if static_selected:
++            status = "derived"
++            if name in ("reward_mode", "active_meters"):
++                status = "unqualified"
++                reason += "; application mechanics remain unqualified"
++        roles[path] = FieldRole(status, origin, reason)
++        derivations[path] = reason
++    if static_selected:
++        # Bind complete policy context, including metadata whose application is
++        # unqualified, without falsely promoting those field roles to active.
++        identity["static_policy"] = static_policy.model_dump()
+     return EffectiveRunConfig(
+         base,
+         effective,
+         training,
+         authored,
+         options,
++        static_policy,
+         exploration,
+         primary_level,
+         MappingProxyType(roles),
+         compute_brain_hash(base),
+-        _hash({"schema": "effective-run-v1", "fields": active, "exploration": exploration.policy_identity}),
++        _hash(identity),
+         hashlib.sha256(training.model_dump_json().encode("utf-8")).hexdigest(),
+         MappingProxyType(derivations),
+         MappingProxyType(dict(origins)),
+diff --git a/src/townlet/config/training_v2_config.py b/src/townlet/config/training_v2_config.py
+index c44b672a..6fd48354 100644
+--- a/src/townlet/config/training_v2_config.py
++++ b/src/townlet/config/training_v2_config.py
+@@ -79,7 +79,7 @@ class EnabledActionsConfig(BaseModel):
+         duplicates = [action for action in actions if actions.count(action) > 1]
+         if duplicates:
+             raise ValueError(
+-                f"Duplicate action names in enabled_actions.custom: {list(set(duplicates))}. " f"Each action must appear only once."
++                f"Duplicate action names in enabled_actions.custom: {list(set(duplicates))}. Each action must appear only once."
+             )
+         return actions
+ 
+@@ -169,7 +169,7 @@ class IntrinsicConfig(BaseModel):
+     annealing: AnnealingConfig = Field(description="Annealing configuration")
+     initial_weight: float = Field(
+         ge=0.0,
+-        description=("Initial intrinsic reward weight (vs extrinsic). " "For inference runs, set to 0.0 for near-greedy behavior."),
++        description=("Initial intrinsic reward weight (vs extrinsic). For inference runs, set to 0.0 for near-greedy behavior."),
+     )
+     min_survival_fraction: float = Field(
+         gt=0.0,
+@@ -221,7 +221,9 @@ class AdversarialCurriculumConfig(BaseModel):
+     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+ 
+     difficulty_metric: Literal["survival_rate"] = Field(description="Difficulty metric to track")
+-    adaptation_rate: float = Field(gt=0.0, le=1.0, description="Difficulty adaptation rate")
++    adaptation_rate: float = Field(
++        gt=0.0, le=1.0, description="Maximum difficulty movement per eligible transition in rate_limited; inactive in stage_band"
++    )
+     min_difficulty: float = Field(ge=0.0, le=1.0, description="Minimum difficulty")
+     max_difficulty: float = Field(ge=0.0, le=1.0, description="Maximum difficulty")
+ 
+@@ -229,12 +231,12 @@ class AdversarialCurriculumConfig(BaseModel):
+     survival_advance_threshold: float = Field(
+         ge=0.0,
+         le=1.0,
+-        description="Survival rate threshold for stage advancement (e.g., 0.7 = 70% of max_steps).",
++        description="Completed outcome survival_time/planned_horizon threshold for stage advancement.",
+     )
+     survival_retreat_threshold: float = Field(
+         ge=0.0,
+         le=1.0,
+-        description="Survival rate threshold for stage retreat (e.g., 0.3 = 30% of max_steps).",
++        description="Completed outcome survival_time/planned_horizon threshold for stage retreat.",
+     )
+     entropy_gate: float = Field(
+         ge=0.0,
+@@ -243,7 +245,7 @@ class AdversarialCurriculumConfig(BaseModel):
+     )
+     min_steps_at_stage: int = Field(
+         gt=0,
+-        description="Minimum number of steps at a stage before advancement/retreat is considered.",
++        description="Minimum accumulated eligible transitions at a stage before completion considers advancement/retreat.",
+     )
+ 
+     @model_validator(mode="after")
+@@ -251,7 +253,7 @@ class AdversarialCurriculumConfig(BaseModel):
+         """Ensure min_difficulty <= max_difficulty."""
+         if self.min_difficulty > self.max_difficulty:
+             raise ValueError(
+-                f"curriculum.adversarial.min_difficulty ({self.min_difficulty}) must be <= " f"max_difficulty ({self.max_difficulty})."
++                f"curriculum.adversarial.min_difficulty ({self.min_difficulty}) must be <= max_difficulty ({self.max_difficulty})."
+             )
+         return self
+ 
+@@ -339,7 +341,7 @@ class TrainingV2Config(BaseModel):
+ 
+     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+ 
+-    bac_options: Annotated[BaCOptions | None, Field(description="Additive BAC policies; omissions resolve via bac-options-v1")] = None
++    bac_options: Annotated[BaCOptions | None, Field(description="Additive BAC policies; omissions resolve via bac-options-v2")] = None
+ 
+     version: Literal["1.0"] = Field(description="Config version")
+     seed: int = Field(
+@@ -367,7 +369,7 @@ class TrainingV2Config(BaseModel):
+ 
+     randomize_affordances: bool = Field(
+         description=(
+-            "true = randomize affordance positions each episode, " "false = use configured positions from affordances.yaml/optimization."
++            "true = randomize affordance positions each episode, false = use configured positions from affordances.yaml/optimization."
+         )
+     )
+     enabled_actions: EnabledActionsConfig | None = Field(
+@@ -420,9 +422,7 @@ def load_training_v2_config(config_dir: Path) -> TrainingV2Config:
+ 
+     if "training" not in data:
+         available_sections = list(data.keys())
+-        raise KeyError(
+-            f"Section 'training' not found in training.yaml\n" f"Available sections: {available_sections}\n" f"File path: {config_file}"
+-        )
++        raise KeyError(f"Section 'training' not found in training.yaml\nAvailable sections: {available_sections}\nFile path: {config_file}")
+ 
+     training_section = data.get("training") or {}
+     payload = dict(training_section)
+diff --git a/src/townlet/curriculum/factory.py b/src/townlet/curriculum/factory.py
+index 4960225f..9c569b8f 100644
+--- a/src/townlet/curriculum/factory.py
++++ b/src/townlet/curriculum/factory.py
+@@ -1,70 +1,58 @@
+-"""Curriculum factory helpers for v2.1 training packs.
+-
+-Selects the appropriate curriculum implementation (static vs adversarial)
+-based on TrainingV2Config.curriculum.strategy, so that behavior is driven
+-by configuration rather than hard-coded defaults.
+-"""
++"""Construct current curricula from explicit resolved policy declarations."""
+ 
+ from __future__ import annotations
+ 
+-from typing import Final
+-
+ import torch
+ 
++from townlet.config.bac_options import CurriculumOptions, StaticBaselinePolicy
+ from townlet.config.training_v2_config import TrainingV2Config
+ from townlet.curriculum.adversarial import AdversarialCurriculum
+ from townlet.curriculum.base import CurriculumManager
+ from townlet.curriculum.static import StaticCurriculum
+ 
+-DEFAULT_STATIC_DIFFICULTY: Final[float] = 0.5
+-
+ 
+ def build_curriculum(
+     training: TrainingV2Config,
+     *,
+-    max_steps_per_episode: int,
++    curriculum_options: CurriculumOptions,
++    static_policy: StaticBaselinePolicy,
+     device: torch.device,
+ ) -> CurriculumManager:
+-    """Build a CurriculumManager from TrainingV2Config.
+-
+-    Args:
+-        training: Parsed v2.1 training configuration for the current level.
+-        max_steps_per_episode: Episode length from training.training_loop.
+-        device: Torch device for any curriculum-internal tensors.
+-
+-    Returns:
+-        A CurriculumManager instance (StaticCurriculum or AdversarialCurriculum).
++    """Build an uninitialized manager; the caller initializes its actual population.
+ 
+-    Notes:
+-        - For strategy="static", this returns a StaticCurriculum with fixed
+-          difficulty and meter set. Future work may expose these knobs in
+-          TrainingV2Config.
+-        - For strategy="adversarial", this returns AdversarialCurriculum
+-          configured with max_steps_per_episode and device. The per-stage
+-          advancement/retreat thresholds remain defined in AdversarialCurriculum;
+-          additional wiring from training.curriculum.adversarial can be added
+-          without changing call sites.
++    Resolve options and the roster-bound static baseline at the configuration
++    boundary. This consumer never selects omitted values or probes old APIs.
++    Static reward and meter metadata are transported without claiming their
++    application mechanics are qualified. Programmatic StaticCurriculum callers
++    may continue supplying their own supported fixed parameters directly.
+     """
++    if curriculum_options.commit_mode != "completion":
++        raise ValueError("curriculum_options.commit_mode must be resolved to completion")
++    if curriculum_options.difficulty_mode not in ("stage_band", "rate_limited"):
++        raise ValueError("curriculum_options.difficulty_mode must be resolved")
+     strategy_cfg = training.curriculum
+-    strategy = strategy_cfg.strategy
+-
+-    if strategy == "static":
+-        # Static curriculum: no adaptation, fixed difficulty.
+-        # Use StaticCurriculum defaults for now; they already cover the full
+-        # meter set used by the environment. This keeps behavior explicit and
+-        # makes the strategy flag meaningful without introducing new schema.
+-        return StaticCurriculum(difficulty_level=DEFAULT_STATIC_DIFFICULTY)
+-
+-    if strategy == "adversarial":
++    if strategy_cfg.strategy == "static":
++        return StaticCurriculum(
++            commit_mode=curriculum_options.commit_mode,
++            difficulty_level=static_policy.difficulty_level,
++            reward_mode=static_policy.reward_mode,
++            active_meters=list(static_policy.active_meters),
++            depletion_multiplier=static_policy.depletion_multiplier,
++        )
++    if strategy_cfg.strategy == "adversarial":
+         adversarial_cfg = strategy_cfg.adversarial
+         if adversarial_cfg is None:
+-            raise ValueError("training.curriculum.adversarial is required when " "curriculum.strategy='adversarial'.")
+-
+-        curriculum = AdversarialCurriculum(
+-            max_steps_per_episode=max_steps_per_episode,
++            raise ValueError("training.curriculum.adversarial is required when curriculum.strategy='adversarial'")
++        return AdversarialCurriculum(
++            commit_mode=curriculum_options.commit_mode,
++            difficulty_mode=curriculum_options.difficulty_mode,
++            adaptation_rate=adversarial_cfg.adaptation_rate,
++            min_difficulty=adversarial_cfg.min_difficulty,
++            max_difficulty=adversarial_cfg.max_difficulty,
++            survival_advance_threshold=adversarial_cfg.survival_advance_threshold,
++            survival_retreat_threshold=adversarial_cfg.survival_retreat_threshold,
++            entropy_gate=adversarial_cfg.entropy_gate,
++            min_steps_at_stage=adversarial_cfg.min_steps_at_stage,
+             device=device,
+         )
+-        curriculum.configure_from_training(adversarial_cfg)
+-        return curriculum
+-
+-    raise ValueError(f"Unsupported curriculum.strategy: {strategy!r}")
++    raise ValueError(f"Unsupported curriculum.strategy: {strategy_cfg.strategy!r}")
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_factory.py b/tests/test_townlet/regressions/bac/test_curriculum_factory.py
+new file mode 100644
+index 00000000..615e5611
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_curriculum_factory.py
+@@ -0,0 +1,377 @@
++"""Current explicit curriculum policy transport and selected execution identity."""
++
++from __future__ import annotations
++
++import copy
++import inspect
++import json
++from pathlib import Path
++
++import pytest
++import torch
++import yaml
++from pydantic import ValidationError
++
++from townlet.config import bac_options as op
++from townlet.config import effective_run as ef
++from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
++from townlet.curriculum.factory import build_curriculum
++from townlet.curriculum.static import StaticCurriculum
++from townlet.training.episode import EpisodeCompletion, LaneOutcome
++
++PACK = Path(__file__).resolve().parents[4] / "configs/test/bac_remediation/feedforward"
++LEVEL = PACK / "levels/L0_0_minimal"
++ROSTER = ("custom_reserve", "thermal_budget")
++
++
++def training_config(*, strategy="static", mode="stage_band", rate=0.01, omitted=False):
++    data = load_training_v2_config(LEVEL).model_dump()
++    data["population"]["size"] = 1
++    data["curriculum"]["strategy"] = strategy
++    data["curriculum"]["adversarial"].update(
++        adaptation_rate=rate,
++        min_difficulty=0.0,
++        max_difficulty=1.0,
++        min_steps_at_stage=1,
++        survival_advance_threshold=0.7,
++        survival_retreat_threshold=0.3,
++        entropy_gate=0.5,
++    )
++    data["bac_options"]["curriculum"] = None if omitted else {"commit_mode": "completion", "difficulty_mode": mode}
++    return TrainingV2Config.model_validate(data)
++
++
++def resolve(training):
++    return op.resolve_bac_options(training.bac_options, training=training)
++
++
++def effective(training, roster=ROSTER):
++    brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
++    drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
++    return ef.resolve_effective_run(
++        brain,
++        training,
++        primary_level="L0_0_minimal",
++        origins={"training": "test-training"},
++        drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
++        declared_meter_names=roster,
++    )
++
++
++def manager(training, *, roster=ROSTER, via_effective=False):
++    if via_effective:
++        policy = effective(training, roster)
++        options, static = policy.options, policy.static_policy
++    else:
++        options = resolve(training).options
++        static = op.resolve_static_baseline_policy(declared_meter_names=roster)
++    result = build_curriculum(training, curriculum_options=options.curriculum, static_policy=static, device=torch.device("cpu"))
++    result.initialize_population(1)
++    return result
++
++
++def event(seq, *, survival=10, horizon=10, entropy=0.0):
++    return LaneOutcome(
++        outcome=EpisodeCompletion(
++            agent_idx=0,
++            reason="cap",
++            survival_time=survival,
++            final_observation=torch.tensor([0.2]),
++            final_meters=torch.tensor([0.8]),
++        ),
++        batch_episode=seq,
++        planned_horizon=horizon,
++        reward_total=1.0,
++        reward_extrinsic=1.0,
++        reward_intrinsic=0.0,
++        reward_shaping=0.0,
++        policy_entropy=entropy,
++        world_id="declared-test-world",
++        world_episode_seq=seq,
++    )
++
++
++def difficulty(curriculum):
++    return curriculum.get_batch_decisions(None, ["test-agent"])[0].difficulty_level
++
++
++def test_legacy_step_refuses_at_authored_boundary():
++    with pytest.raises(ValidationError):
++        op.CurriculumOptions(commit_mode="legacy_step", difficulty_mode="rate_limited")
++
++
++@pytest.mark.parametrize("payload", [{"commit_mode": "unknown"}, {"difficulty_mode": "unknown"}, {"obsolete": True}])
++def test_unknown_curriculum_declarations_refuse(payload):
++    with pytest.raises(ValidationError):
++        op.CurriculumOptions.model_validate(payload)
++
++
++@pytest.mark.parametrize("omitted", [True, False])
++def test_current_resolution_and_named_policy_provenance(omitted):
++    training = training_config(omitted=omitted)
++    resolved = resolve(training)
++    assert resolved.schema_version == "bac-options-v2"
++    assert resolved.options.curriculum.commit_mode == "completion"
++    assert resolved.options.curriculum.difficulty_mode == "stage_band"
++    static = op.resolve_static_baseline_policy(declared_meter_names=ROSTER)
++    assert static.model_dump() == {
++        "policy_id": "static-baseline-v1",
++        "difficulty_level": 0.5,
++        "reward_mode": "shaped",
++        "depletion_multiplier": 1.0,
++        "active_meters": ROSTER,
++    }
++    provenance = {item.field: item for item in resolved.provenance}
++    assert provenance["curriculum.commit_mode"].origin == ("bac-options-v2" if omitted else "authored")
++    with pytest.raises((ValidationError, AttributeError)):
++        static.difficulty_level = 0.9
++
++
++@pytest.mark.parametrize(
++    "roster", [(), ROSTER, tuple(reversed(ROSTER)), ("energy", "hygiene", "satiation", "money", "mood", "social", "thermal_budget")]
++)
++@pytest.mark.parametrize("via_effective", [False, True])
++def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
++    curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
++    config = curriculum.checkpoint_state()["completion"]["config"]
++    assert config == {
++        "commit_mode": "completion",
++        "difficulty_level": 0.5,
++        "reward_mode": "shaped",
++        "depletion_multiplier": 1.0,
++        "active_meters": list(roster),
++    }
++    decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
++    assert decision.difficulty_level == 0.5
++    assert decision.active_meters == list(roster)
++    assert decision.depletion_multiplier == 1.0
++    assert decision.reward_mode == "shaped"
++    curriculum.commit_episode_outcomes([event(0)])
++    curriculum.commit_episode_outcomes([event(0)])
++    decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
++    assert decision.difficulty_level == 0.5
++    assert decision.active_meters == list(roster)
++    assert curriculum.get_stage_info(0)["current_stage"] == 0
++    assert curriculum.get_stage_info(0)["episodes_at_stage"] == 1
++    config["active_meters"].append("external-mutation")
++    assert curriculum.checkpoint_state()["completion"]["config"]["active_meters"] == list(roster)
++
++
++@pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
++def test_invalid_declared_rosters_refuse(roster):
++    with pytest.raises((TypeError, ValueError)):
++        op.resolve_static_baseline_policy(declared_meter_names=roster)
++
++
++@pytest.mark.parametrize("modes", [op.CurriculumOptions(), op.CurriculumOptions(commit_mode="completion")])
++def test_factory_refuses_unresolved_modes_even_for_static(modes):
++    training = training_config()
++    static = op.resolve_static_baseline_policy(declared_meter_names=ROSTER)
++    with pytest.raises(ValueError, match="resolved|difficulty_mode|commit_mode"):
++        build_curriculum(training, curriculum_options=modes, static_policy=static, device=torch.device("cpu"))
++
++
++def test_factory_has_no_obsolete_horizon_signature():
++    assert "max_steps_per_episode" not in inspect.signature(build_curriculum).parameters
++    with pytest.raises(TypeError):
++        build_curriculum(training_config(), max_steps_per_episode=10, device=torch.device("cpu"))
++
++
++@pytest.mark.parametrize("depletion", [0.37, 0.0, 12.0])
++def test_custom_programmatic_static_parameters_remain_meaningful(depletion):
++    meters = ["operator_defined"]
++    curriculum = StaticCurriculum(
++        commit_mode="completion",
++        difficulty_level=0.8,
++        reward_mode="sparse",
++        active_meters=meters,
++        depletion_multiplier=depletion,
++    )
++    meters.append("not-owned")
++    curriculum.initialize_population(1)
++    decision = curriculum.get_batch_decisions(None, ["agent"])[0]
++    assert decision.difficulty_level == 0.8
++    assert decision.reward_mode == "sparse"
++    assert decision.active_meters == ["operator_defined"]
++    assert decision.depletion_multiplier == depletion
++    curriculum.commit_episode_outcomes([event(0)])
++    after = curriculum.get_batch_decisions(None, ["agent"])[0]
++    assert after.difficulty_level == 0.8
++    assert after.reward_mode == "sparse"
++    assert after.active_meters == ["operator_defined"]
++    assert after.depletion_multiplier == depletion
++
++
++@pytest.mark.parametrize("depletion", [-0.01, True, False, float("nan"), float("inf"), -float("inf"), [1.0]])
++def test_custom_programmatic_static_invalid_depletion_refuses_before_decisions(depletion):
++    with pytest.raises(ValueError, match="finite and nonnegative"):
++        StaticCurriculum(
++            commit_mode="completion",
++            difficulty_level=0.8,
++            reward_mode="sparse",
++            active_meters=["operator_defined"],
++            depletion_multiplier=depletion,
++        )
++
++
++@pytest.mark.parametrize("via_effective", [False, True])
++@pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
++def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
++    curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
++    assert difficulty(curriculum) == 0.0
++    curriculum.commit_episode_outcomes([event(0)])
++    assert curriculum.get_stage_info(0)["current_stage"] == 2
++    assert difficulty(curriculum) == pytest.approx(expected)
++    before = curriculum.checkpoint_state()
++    for _ in range(3):
++        curriculum.get_batch_decisions(None, ["agent"])
++    assert curriculum.checkpoint_state()["completion"]["generation"] == before["completion"]["generation"]
++    assert difficulty(curriculum) == pytest.approx(expected)
++
++
++@pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
++def test_singleton_bounds_and_current_native_future(mode):
++    data = training_config(strategy="adversarial", mode=mode).model_dump()
++    data["curriculum"]["adversarial"].update(min_difficulty=0.6, max_difficulty=0.6)
++    training = TrainingV2Config.model_validate(data)
++    original = manager(training)
++    original.commit_episode_outcomes([event(0)])
++    restored = manager(training, via_effective=True)
++    restored.load_state(original.checkpoint_state())
++    for current in (original, restored):
++        current.commit_episode_outcomes([event(1, survival=2)])
++        assert difficulty(current) == 0.6
++    assert original.get_stage_info(0) == restored.get_stage_info(0)
++
++
++@pytest.mark.parametrize("field,value", [("min_steps_at_stage", 11), ("entropy_gate", 0.1), ("survival_advance_threshold", 0.95)])
++def test_authored_dwell_entropy_and_threshold_reach_runtime(field, value):
++    data = training_config(strategy="adversarial").model_dump()
++    data["curriculum"]["adversarial"][field] = value
++    curriculum = manager(TrainingV2Config.model_validate(data))
++    curriculum.commit_episode_outcomes([event(0, survival=9, entropy=0.2)])
++    assert curriculum.get_stage_info(0)["current_stage"] == 1
++    assert difficulty(curriculum) == 0.0
++    control = manager(training_config(strategy="adversarial"))
++    control.commit_episode_outcomes([event(0, survival=9, entropy=0.2)])
++    assert control.get_stage_info(0)["current_stage"] == 2
++
++
++def test_authored_rate_zero_still_refuses():
++    with pytest.raises(ValidationError):
++        training_config(strategy="adversarial", rate=0.0)
++
++
++@pytest.mark.parametrize("omitted,status", [(True, "derived"), (False, "active")])
++def test_static_roles_are_truthful(omitted, status):
++    current = effective(training_config(omitted=omitted))
++    assert current.field_roles["bac_options.curriculum.commit_mode"].status == status
++    assert current.field_roles["bac_options.curriculum.difficulty_mode"].status == "inactive_preset"
++    assert current.field_roles["training.curriculum.adversarial.adaptation_rate"].status == "inactive_preset"
++    for name in ("policy_id", "difficulty_level", "depletion_multiplier"):
++        assert current.field_roles[f"static_policy.{name}"].status == "derived"
++    for name in ("reward_mode", "active_meters"):
++        assert current.field_roles[f"static_policy.{name}"].status == "unqualified"
++
++
++def test_inactive_presets_preserve_authoring_but_not_selected_execution():
++    first = effective(training_config(mode="stage_band", rate=0.01))
++    second = effective(training_config(mode="rate_limited", rate=0.1))
++    assert first.execution_hash == second.execution_hash
++    assert first.training_hash != second.training_hash
++    assert first.authored_identity != second.authored_identity
++    assert second.training.curriculum.adversarial.adaptation_rate == 0.1
++    assert second.options.curriculum.difficulty_mode == "rate_limited"
++
++
++@pytest.mark.parametrize("mode,changes", [("stage_band", False), ("rate_limited", True)])
++def test_adversarial_rate_identity_tracks_only_selected_semantics(mode, changes):
++    first = effective(training_config(strategy="adversarial", mode=mode, rate=0.01))
++    second = effective(training_config(strategy="adversarial", mode=mode, rate=0.1))
++    assert (first.execution_hash != second.execution_hash) is changes
++    assert first.training_hash != second.training_hash
++    assert first.field_roles["training.curriculum.adversarial.adaptation_rate"].status == ("active" if changes else "inactive_preset")
++    assert first.field_roles["static_policy.active_meters"].status == "inactive_preset"
++
++
++def test_static_execution_binds_actual_roster_while_authored_training_does_not():
++    training = training_config()
++    first = effective(training, ROSTER)
++    second = effective(training, tuple(reversed(ROSTER)))
++    third = effective(training, ("different",))
++    assert len({first.execution_hash, second.execution_hash, third.execution_hash}) == 3
++    assert first.training_hash == second.training_hash == third.training_hash
++    assert first.authored_identity == second.authored_identity == third.authored_identity
++    assert first.static_policy.active_meters == ROSTER
++
++
++def test_adversarial_execution_excludes_inactive_static_roster():
++    training = training_config(strategy="adversarial")
++    assert effective(training, ROSTER).execution_hash == effective(training, ("different",)).execution_hash
++
++
++def test_omitted_and_explicit_equal_modes_have_equal_selected_identity():
++    omitted = effective(training_config(omitted=True))
++    explicit = effective(training_config())
++    assert omitted.execution_hash == explicit.execution_hash
++    assert omitted.training_hash != explicit.training_hash
++    assert (
++        omitted.field_roles["bac_options.curriculum.commit_mode"].origin
++        != explicit.field_roles["bac_options.curriculum.commit_mode"].origin
++    )
++
++
++@pytest.mark.parametrize("roster", [(), ROSTER])
++def test_portable_effective_current_roundtrip(roster):
++    current = effective(training_config(), roster)
++    payload = json.loads(json.dumps(current.to_dict()))
++    assert payload["static_policy"]["active_meters"] == list(roster)
++    restored = ef.EffectiveRunConfig.from_dict(payload)
++    assert restored.static_policy.active_meters == roster
++    assert restored.execution_hash == current.execution_hash
++    assert restored.to_dict() == current.to_dict()
++    payload["static_policy"]["active_meters"].append("outside")
++    assert restored.static_policy.active_meters == roster
++
++
++@pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit", "missing_scope"])
++def test_forged_or_obsolete_effective_payload_refuses(damage):
++    current = effective(training_config())
++    payload = copy.deepcopy(current.to_dict())
++    if damage == "missing_policy":
++        payload.pop("static_policy")
++    elif damage == "roster":
++        payload["static_policy"]["active_meters"] = ("forged",)
++    elif damage == "difficulty":
++        payload["static_policy"]["difficulty_level"] = 0.9
++    elif damage == "reward":
++        payload["static_policy"]["reward_mode"] = "forged"
++    elif damage == "hash":
++        payload["execution_hash"] = "0" * 64
++    elif damage == "role":
++        payload["field_roles"]["static_policy.active_meters"]["status"] = "active"
++    elif damage == "missing_scope":
++        payload["options"].pop("curiosity_scope")
++    else:
++        payload["training"]["bac_options"]["curriculum"]["commit_mode"] = "legacy_step"
++    with pytest.raises((ValueError, KeyError)):
++        ef.EffectiveRunConfig.from_dict(payload)
++    assert current.static_policy.active_meters == ROSTER
++
++
++def test_pure_options_resolution_preserves_unrelated_declared_choices_without_roster():
++    training = training_config(mode="rate_limited")
++    resolved = resolve(training)
++    authored = training.bac_options
++    assert resolved.options.replay == authored.replay
++    assert resolved.options.serving == authored.serving
++    assert resolved.options.checkpoint == authored.checkpoint
++    assert resolved.options.provider_parameter_source == authored.provider_parameter_source
++    assert resolved.options.curriculum.difficulty_mode == "rate_limited"
++
++
++def test_factory_uses_actual_declared_yaml_meter_roster():
++    bars = yaml.safe_load((LEVEL / "bars.yaml").read_text())["bars"]
++    declared = tuple(bar["name"] for bar in bars["meters"])
++    curriculum = manager(training_config(), roster=declared, via_effective=True)
++    assert curriculum.checkpoint_state()["completion"]["config"]["active_meters"] == list(declared)

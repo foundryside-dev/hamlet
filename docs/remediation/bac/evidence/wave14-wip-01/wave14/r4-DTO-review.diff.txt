@@ -1,0 +1,155 @@
+ src/townlet/training/state.py                      | 14 ++++----
+ .../regressions/bac/test_curriculum_factory.py     | 39 ++++++++++++++++++----
+ 2 files changed, 41 insertions(+), 12 deletions(-)
+
+diff --git a/src/townlet/training/state.py b/src/townlet/training/state.py
+index e042d601..34e04368 100644
+--- a/src/townlet/training/state.py
++++ b/src/townlet/training/state.py
+@@ -146,27 +146,29 @@ class CurriculumDecision(BaseModel):
+ 
+     Returned by CurriculumManager to specify environment settings.
+     Validated at construction, immutable, serializable.
+     """
+ 
+     model_config = ConfigDict(frozen=True)
+ 
+     difficulty_level: float = Field(..., ge=0.0, le=1.0, description="Difficulty level from 0.0 (easiest) to 1.0 (hardest)")
+     active_meters: list[str] = Field(
+         ...,
+-        min_length=1,
+-        max_length=6,
+-        description="Which meters are active (e.g., ['energy', 'hygiene']). "
+-        "MED-12: max_length=6 corresponds to hardcoded meter count in HAMLET "
+-        "(energy, hygiene, satiation, money, mood, social). Increase if adding more meters.",
++        description="Active meter names from the actual declared roster, including an empty roster.",
++    )
++    depletion_multiplier: float = Field(
++        ...,
++        ge=0.0,
++        allow_inf_nan=False,
++        strict=True,
++        description="Finite nonnegative depletion rate multiplier (0.0 = disabled, 1.0 = normal)",
+     )
+-    depletion_multiplier: float = Field(..., gt=0.0, le=10.0, description="Depletion rate multiplier (0.1 = 10x slower, 1.0 = normal)")
+     reward_mode: str = Field(..., pattern=r"^(shaped|sparse)$", description="Reward mode: 'shaped' (dense) or 'sparse'")
+     reason: str = Field(..., min_length=1, description="Human-readable explanation for this decision")
+ 
+ 
+ class PopulationCheckpoint(BaseModel):
+     """
+     Cold path: Serializable population state for checkpointing.
+ 
+     Contains all state needed to restore a population training run:
+     per-agent curriculum state, exploration state, Pareto frontier, etc.
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_factory.py b/tests/test_townlet/regressions/bac/test_curriculum_factory.py
+index 511dfb65..615e5611 100644
+--- a/tests/test_townlet/regressions/bac/test_curriculum_factory.py
++++ b/tests/test_townlet/regressions/bac/test_curriculum_factory.py
+@@ -120,36 +120,44 @@ def test_current_resolution_and_named_policy_provenance(omitted):
+         "reward_mode": "shaped",
+         "depletion_multiplier": 1.0,
+         "active_meters": ROSTER,
+     }
+     provenance = {item.field: item for item in resolved.provenance}
+     assert provenance["curriculum.commit_mode"].origin == ("bac-options-v2" if omitted else "authored")
+     with pytest.raises((ValidationError, AttributeError)):
+         static.difficulty_level = 0.9
+ 
+ 
+-@pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
++@pytest.mark.parametrize(
++    "roster", [(), ROSTER, tuple(reversed(ROSTER)), ("energy", "hygiene", "satiation", "money", "mood", "social", "thermal_budget")]
++)
+ @pytest.mark.parametrize("via_effective", [False, True])
+ def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+     curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+     config = curriculum.checkpoint_state()["completion"]["config"]
+     assert config == {
+         "commit_mode": "completion",
+         "difficulty_level": 0.5,
+         "reward_mode": "shaped",
+         "depletion_multiplier": 1.0,
+         "active_meters": list(roster),
+     }
+-    assert difficulty(curriculum) == 0.5
++    decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
++    assert decision.difficulty_level == 0.5
++    assert decision.active_meters == list(roster)
++    assert decision.depletion_multiplier == 1.0
++    assert decision.reward_mode == "shaped"
+     curriculum.commit_episode_outcomes([event(0)])
+     curriculum.commit_episode_outcomes([event(0)])
+-    assert difficulty(curriculum) == 0.5
++    decision = curriculum.get_batch_decisions(None, ["test-agent"])[0]
++    assert decision.difficulty_level == 0.5
++    assert decision.active_meters == list(roster)
+     assert curriculum.get_stage_info(0)["current_stage"] == 0
+     assert curriculum.get_stage_info(0)["episodes_at_stage"] == 1
+     config["active_meters"].append("external-mutation")
+     assert curriculum.checkpoint_state()["completion"]["config"]["active_meters"] == list(roster)
+ 
+ 
+ @pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
+ def test_invalid_declared_rosters_refuse(roster):
+     with pytest.raises((TypeError, ValueError)):
+         op.resolve_static_baseline_policy(declared_meter_names=roster)
+@@ -162,36 +170,55 @@ def test_factory_refuses_unresolved_modes_even_for_static(modes):
+     with pytest.raises(ValueError, match="resolved|difficulty_mode|commit_mode"):
+         build_curriculum(training, curriculum_options=modes, static_policy=static, device=torch.device("cpu"))
+ 
+ 
+ def test_factory_has_no_obsolete_horizon_signature():
+     assert "max_steps_per_episode" not in inspect.signature(build_curriculum).parameters
+     with pytest.raises(TypeError):
+         build_curriculum(training_config(), max_steps_per_episode=10, device=torch.device("cpu"))
+ 
+ 
+-def test_custom_programmatic_static_parameters_remain_meaningful():
++@pytest.mark.parametrize("depletion", [0.37, 0.0, 12.0])
++def test_custom_programmatic_static_parameters_remain_meaningful(depletion):
+     meters = ["operator_defined"]
+     curriculum = StaticCurriculum(
+         commit_mode="completion",
+         difficulty_level=0.8,
+         reward_mode="sparse",
+         active_meters=meters,
+-        depletion_multiplier=0.37,
++        depletion_multiplier=depletion,
+     )
+     meters.append("not-owned")
+     curriculum.initialize_population(1)
+     decision = curriculum.get_batch_decisions(None, ["agent"])[0]
+     assert decision.difficulty_level == 0.8
+     assert decision.reward_mode == "sparse"
+     assert decision.active_meters == ["operator_defined"]
+-    assert decision.depletion_multiplier == 0.37
++    assert decision.depletion_multiplier == depletion
++    curriculum.commit_episode_outcomes([event(0)])
++    after = curriculum.get_batch_decisions(None, ["agent"])[0]
++    assert after.difficulty_level == 0.8
++    assert after.reward_mode == "sparse"
++    assert after.active_meters == ["operator_defined"]
++    assert after.depletion_multiplier == depletion
++
++
++@pytest.mark.parametrize("depletion", [-0.01, True, False, float("nan"), float("inf"), -float("inf"), [1.0]])
++def test_custom_programmatic_static_invalid_depletion_refuses_before_decisions(depletion):
++    with pytest.raises(ValueError, match="finite and nonnegative"):
++        StaticCurriculum(
++            commit_mode="completion",
++            difficulty_level=0.8,
++            reward_mode="sparse",
++            active_meters=["operator_defined"],
++            depletion_multiplier=depletion,
++        )
+ 
+ 
+ @pytest.mark.parametrize("via_effective", [False, True])
+ @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+ def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+     curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+     assert difficulty(curriculum) == 0.0
+     curriculum.commit_episode_outcomes([event(0)])
+     assert curriculum.get_stage_info(0)["current_stage"] == 2
+     assert difficulty(curriculum) == pytest.approx(expected)

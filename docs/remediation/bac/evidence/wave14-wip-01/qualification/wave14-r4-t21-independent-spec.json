@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave14/r4-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-t21-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "t21-independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave14-r4-t21-independent",
+        "-k",
+        "static_factory_transports_exact_roster_and_fixed_policy or invalid_declared_rosters_refuse or factory_refuses_unresolved_modes_even_for_static or custom_programmatic_static or actual_completion_demonstrates_stage_and_rate_choices or static_roles_are_truthful or inactive_presets_preserve_authoring_but_not_selected_execution or adversarial_rate_identity_tracks_only_selected_semantics or static_execution_binds_actual_roster_while_authored_training_does_not or adversarial_execution_excludes_inactive_static_roster or portable_effective_current_roundtrip or forged_or_obsolete_effective_payload_refuses"
+      ]
+    }
+  ]
+}

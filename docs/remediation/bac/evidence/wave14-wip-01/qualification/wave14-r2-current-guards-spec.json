@@ -1,0 +1,68 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave14/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave14-r2-current-guards",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "ruff-current",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "src/townlet/config/bac_options.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/config/effective_run.py",
+        "src/townlet/curriculum/factory.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py"
+      ]
+    },
+    {
+      "name": "black-current",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/config/bac_options.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/config/effective_run.py",
+        "src/townlet/curriculum/factory.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "--workers",
+        "1"
+      ]
+    },
+    {
+      "name": "mypy-current",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet/config/bac_options.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/config/effective_run.py",
+        "src/townlet/curriculum/factory.py",
+        "--follow-imports=silent"
+      ]
+    },
+    {
+      "name": "mypy-global",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    },
+    {
+      "name": "no-defaults",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,304 @@
+{
+  "status": "T21 AND DTO BOUNDED HANDOFFS ACCEPTED; WIP INTEGRATION OPEN",
+  "candidate_sha": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+  "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+  "scope": "T21config/factory5/1564actual of5/3450; separateDTO3/704actual of3/1220. Rootintegrationunion is not claimed as one5-filecontext.",
+  "inventories": {
+    "T21": [
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 323,
+        "sha256": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/effective_run.py",
+        "lines": 371,
+        "sha256": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "T21-DTO": [
+      {
+        "path": "src/townlet/training/state.py",
+        "lines": 263,
+        "sha256": "a6f22b0b26ca6422e6a0710f9268386e8d2b7162e1a5e9a43a2decdea4c9d3e3",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/static.py",
+        "lines": 64,
+        "sha256": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ]
+  },
+  "focused_commands": {
+    "job": "owned",
+    "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+    "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+    "exit_code": 0,
+    "counts": {
+      "passed": 239,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 18.689971685409546,
+    "source_guards": 176,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_commands": {
+    "T21_other_model_Sol": {
+      "job": "t21-independent",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "exit_code": 0,
+      "counts": {
+        "passed": 48,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 4.22620415687561,
+      "source_guards": 176,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "DTO_other_model_Astra": {
+      "job": "dto-independent",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "exit_code": 0,
+      "counts": {
+        "passed": 23,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 5.656903505325317,
+      "source_guards": 176,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "review_records": [
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave14-preparation/T21-independent-review-r4.md",
+      "sha256": "2d7a2a03ef7209179b5713b3aaf8c36c06f99d5dfe0ae973b96e1ecc692b262c"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave14-preparation/CURRICULUM-DECISION-independent-review-r4.md",
+      "sha256": "0887a13b2e532cd18a012f3947df174ece048c9ea205cda389b39c4d1363aa05"
+    }
+  ],
+  "review_disposition": "Both fresh source/spec/quality reviewers accept bounded producers after separate actual execution, no unresolvedownedP1/P2",
+  "static_commands": [
+    {
+      "name": "ruff-current",
+      "exit_code": 0,
+      "seconds": 0.0657963752746582,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "src/townlet/config/bac_options.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/config/effective_run.py",
+        "src/townlet/curriculum/factory.py",
+        "src/townlet/training/state.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-current-guards/ruff-current.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "manifest_sha256": "fc0fecc1a11edb136fbc9a758a2245df0c38bd518be27664ae6ab5e7202d1d6d",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "black-current",
+      "exit_code": 0,
+      "seconds": 3.069551706314087,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/config/bac_options.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/config/effective_run.py",
+        "src/townlet/curriculum/factory.py",
+        "src/townlet/training/state.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-current-guards/black-current.log",
+      "sha256": "7657c5ec367da2c8d4deead1b5f1f8eca9c1b89120ad13df7f855ca4005696b6",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "manifest_sha256": "fc0fecc1a11edb136fbc9a758a2245df0c38bd518be27664ae6ab5e7202d1d6d",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy-current",
+      "exit_code": 0,
+      "seconds": 0.9841642379760742,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet/config/bac_options.py",
+        "src/townlet/config/training_v2_config.py",
+        "src/townlet/config/effective_run.py",
+        "src/townlet/curriculum/factory.py",
+        "src/townlet/training/state.py",
+        "--follow-imports=silent"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-current-guards/mypy-current.log",
+      "sha256": "e317872697c2cbfdefa321527a6efe73290dff3a390b0fa8723b87092eccba6a",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "manifest_sha256": "fc0fecc1a11edb136fbc9a758a2245df0c38bd518be27664ae6ab5e7202d1d6d",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 0.8866112232208252,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-current-guards/no-defaults.log",
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "manifest_sha256": "fc0fecc1a11edb136fbc9a758a2245df0c38bd518be27664ae6ab5e7202d1d6d",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy-global",
+      "exit_code": 1,
+      "seconds": 64.10045623779297,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-current-guards/mypy-global.log",
+      "sha256": "dcc0138ecda358f5d832656468112500a623fdcddcb8e2764e0cb7bd9371f8ee",
+      "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+      "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+      "manifest_sha256": "fc0fecc1a11edb136fbc9a758a2245df0c38bd518be27664ae6ab5e7202d1d6d",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  ],
+  "repairs": [
+    "Completion-only authoredselection and bac-options-v2 omission/provenance",
+    "Pure options resolver plus separate immutable actual-roster-bound static baseline declaration",
+    "Required EF roster/staticpolicy, currenteffective-run-v2 policy context identity and exact payload/refusal",
+    "Truthfulactive/inactive/unqualifiedroles while preserving named substantive choices/presets",
+    "Explicit current static/adversarial factory construction and declared transition-unit descriptions",
+    "Exactly3legacy_step authoredselectors\u2192completion, retainingrate_limited and allotherchoices",
+    "SharedDTO followsactualmeterroster ratherthan hardcoded1..6; finite nonnegative depletion incl0/12, malformedproducerinputs stillrefuse"
+  ],
+  "negative_evidence": {
+    "r0": "Original47FAIL5PASS preserved; oneinvalidcustom_rewardfixture explicitlyrefuted as supportedmode, correctedtosparse withsame.8/.37/meterownership assertion",
+    "r1": "Correctedcustomsparse1PASS51deselected onunchangedT20production",
+    "r2": "T21initial2FAIL51PASS atlegitimateemptyrosterDTO mismatch; original6factorytypeerrorsclosed",
+    "r3": "6FAIL58PASS genuineempty/seven-meter/zero12producerDTOValidationErrors;7malformedcontrolsPASS",
+    "reconstructable_sources": "Everyr0..r4candidate has full binary-safe patch from remote base02d1f614; no newcheckout/worktree created"
+  },
+  "config_changes": {
+    "configs/test/bac_remediation/dueling/levels/L0_0_minimal/training.yaml": {
+      "before": "41633dc9ab8899d0632c2e236d50064fe827e45cd30dfb9639911f1722aae199",
+      "after": "b0868d5ab09b3a80d2f92f08cf4f222ed8532f1b5635736d77822eaba1786d1d"
+    },
+    "configs/test/bac_remediation/options/modes-1.yaml": {
+      "before": "f163ee2053e7f028e7b3daff3d561674fb264c2138d5e9d148018e7c902d75c3",
+      "after": "3e7c44b0a644df0b0dde1e6d2191fcad6afaf834202ce98701c27823d9a0b123"
+    },
+    "configs/test/bac_remediation/recurrent/levels/L0_0_minimal/training.yaml": {
+      "before": "d810fd43dc0421d4b15486d3e79929e7b1d74db72239ace414be0d7a34ed07fa",
+      "after": "765504acec8ad27b298cb9ea4fa50afb273fa0dc78a16f67156ce0f016e02c48"
+    }
+  },
+  "frozen_live_input_inventory": "Generator executed exit0; coveredinventory unchanged, exact3Bacfixturehashchangescaptured",
+  "owner_suite_commands": "Current239jointonly. ExistingT02/T03/config/compiler/currentowner suites remain named next gates, not silently counted as passing.",
+  "full_suite_status": "NOT RUN for current migration; required earlier full gate at coherentcurrentproducer/consumer tree before integratedrelease",
+  "full_suite_reason": "Sharedconfig/executionidentity/publicAPI meaningchanged; approved no-compat amendment permits accurateWIP durability/boundedhandoff beforecoherentintegration, no gatewaived",
+  "unrun_checks": [
+    "Real authoredcompiled factory witness and actual selectedlevel roster clone/serialize/currentcache validation",
+    "Existingcurrentowner suites and anyrequired boundedcaller/test maintenance",
+    "Unfiltered repositorypytest/globalRuff/globalBlack/compilerCLI/expressiondocguards atcoherentcandidate",
+    "Realworld lifecycle/VFS/privatebank/runner/all-sink/epsilon/currentnative/learning/E2E acceptance",
+    "Final54requirements/22freshlenses+synthesis,coverage>=70%,slow/applicablehardware",
+    "NewremotetipCIwillbecheckedafterpush; nocurrentrepo-greenclaim"
+  ],
+  "next_delivery": "Serialboundedcompiler/compiledrosterconsumerplusrealcompiledfactorywitness; preservecurrentcacheautorebuild and originalhistoricalartifacts whiledirectoldformatsrefuse",
+  "world_identity_design": "Astraauthor/SolreviewR3APPROVED exact perbatchbindingjournal/release/bootstrap/mixedretirement/manifest contracts; implementation/tests pending, noacceptancerowclosed",
+  "curiosity_scope": "No newshared/private runtimequalification; fiveprovider options preserved, strictprivate actualupdate proof remainsrequired",
+  "curiosity_origin": "Existingconfiguredprovideroriginroles retained; worldrunroster andprivateinstancebankintegrationpending",
+  "world_binding": "T21 staticpolicy actualmeter tuple is policycontext; doesNOT invent stableworldinstanceIDs orclaimparentworldbinding. Expectedactualworld mustmatchonparentnativeinstall.",
+  "guarantee": "Ownedimmutable resolvedfixedpolicy/portablecurrentEF/directfactory construction and compatibledecisionDTO, notactualwholeenvironmentmechanicapplication",
+  "local_clock_units": "Rate pereligiblecompletedtransition, fractions survival/plannedhorizon, completedtransitiondwell; stage_bandrateinactive",
+  "mode_limitations": "Currentcompletiononly; static/adversarial andstage_band/rate_limited preserved; no oldEFshared-payloadbranch or obsoletehorizon/configureadapter",
+  "optional_P3": "Staticunsupportedrewardlabelrefusaltiming recordedseparately; rawDTO malformed-inputdirectunitcoverage note (producernegativecontrols actuallypassed), no newrequiredrewardfeature",
+  "qualified_progress": "28/66 original scopedreleases unchanged; T20/T21 integratedrelease stillopen",
+  "resource_and_custody": "4CPU/16GiB/~.9GiBused,root2pytest+2guards; independentGit-custodyphasesstaggeredforobservedshared-indexcollision.176sources573configs13protectedartifacts,14registry/MAIN1available. No creation/prune/delete; CUDAunavailable/unqualified.",
+  "publication": "Existingbranchonly, authorizedWIPdurability, nextpacketcontinues, noPR/merge/halt",
+  "status_paragraph": "Work continues under John\u2019s explicit instruction to keep delivering the planned BAC programme. T21\u2019s current configuration/static-policy/factory and the typed decision interface have bounded independent handoff acceptance at tested tree `b7a8c6778ef1dc61e0865c8136ad073eafcfb255`: joint **239 passed** (64 new factory/interface +175 existing curriculum cases), independent Sol **48 passed,16 deselected**, and independent Astra DTO **23 passed,41 deselected**; these selections overlap and are not summed. Scoped Ruff/Black/mypy and the global601 defaults guard passed. The six obsolete factory type errors are fixed; one required roster argument in compiled.py remains for the next serial compiler packet. Actual declared meter tuples now bind the named static policy, current v2 effective identity and explicit factory inputs; unqualified meter/reward application labels remain truthful. Empty/seven-meter and zero/12 depletion producer outputs now survive the shared DTO, with malformed constructor refusals retained. [Current policy contract](CURRENT-CURRICULUM-POLICY.md) and [checkpoint evidence](evidence/wave14-wip-01.json) preserve exact sources, original negatives, receipts and accepted world-identity design. **WIP \u2014 NOT INTEGRATED-QUALIFIED \u2014 NOT RELEASED:** real compiled-route/owner/full/native/learning/final gates remain required. The next delivery is compiler/compiled roster transport; no routine halt is planned."
+}

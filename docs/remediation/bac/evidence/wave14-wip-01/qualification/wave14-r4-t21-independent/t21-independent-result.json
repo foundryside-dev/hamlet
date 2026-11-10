@@ -1,0 +1,26 @@
+{
+  "name": "t21-independent",
+  "exit_code": 0,
+  "seconds": 4.22620415687561,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave14-r4-t21-independent",
+    "-k",
+    "static_factory_transports_exact_roster_and_fixed_policy or invalid_declared_rosters_refuse or factory_refuses_unresolved_modes_even_for_static or custom_programmatic_static or actual_completion_demonstrates_stage_and_rate_choices or static_roles_are_truthful or inactive_presets_preserve_authoring_but_not_selected_execution or adversarial_rate_identity_tracks_only_selected_semantics or static_execution_binds_actual_roster_while_authored_training_does_not or adversarial_execution_excludes_inactive_static_roster or portable_effective_current_roundtrip or forged_or_obsolete_effective_payload_refuses"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave14-r4-t21-independent/t21-independent.log",
+  "sha256": "911f16d0eb552dba8362f9cf9a50508f293182ee1f269771f989ae72c949c6ce",
+  "candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+  "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+  "manifest_sha256": "fc0fecc1a11edb136fbc9a758a2245df0c38bd518be27664ae6ab5e7202d1d6d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

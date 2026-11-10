@@ -1,0 +1,354 @@
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_factory.py b/tests/test_townlet/regressions/bac/test_curriculum_factory.py
+new file mode 100644
+index 00000000..bcd328d4
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_curriculum_factory.py
+@@ -0,0 +1,348 @@
++"""Current explicit curriculum policy transport and selected execution identity."""
++
++from __future__ import annotations
++
++import copy
++import inspect
++import json
++from pathlib import Path
++
++import pytest
++import torch
++import yaml
++from pydantic import ValidationError
++
++from townlet.config import bac_options as op
++from townlet.config import effective_run as ef
++from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
++from townlet.curriculum.factory import build_curriculum
++from townlet.curriculum.static import StaticCurriculum
++from townlet.training.episode import EpisodeCompletion, LaneOutcome
++
++PACK = Path(__file__).resolve().parents[4] / "configs/test/bac_remediation/feedforward"
++LEVEL = PACK / "levels/L0_0_minimal"
++ROSTER = ("custom_reserve", "thermal_budget")
++
++
++def training_config(*, strategy="static", mode="stage_band", rate=0.01, omitted=False):
++    data = load_training_v2_config(LEVEL).model_dump()
++    data["population"]["size"] = 1
++    data["curriculum"]["strategy"] = strategy
++    data["curriculum"]["adversarial"].update(
++        adaptation_rate=rate,
++        min_difficulty=0.0,
++        max_difficulty=1.0,
++        min_steps_at_stage=1,
++        survival_advance_threshold=0.7,
++        survival_retreat_threshold=0.3,
++        entropy_gate=0.5,
++    )
++    data["bac_options"]["curriculum"] = None if omitted else {"commit_mode": "completion", "difficulty_mode": mode}
++    return TrainingV2Config.model_validate(data)
++
++
++def resolve(training):
++    return op.resolve_bac_options(training.bac_options, training=training)
++
++
++def effective(training, roster=ROSTER):
++    brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
++    drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
++    return ef.resolve_effective_run(
++        brain,
++        training,
++        primary_level="L0_0_minimal",
++        origins={"training": "test-training"},
++        drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
++        declared_meter_names=roster,
++    )
++
++
++def manager(training, *, roster=ROSTER, via_effective=False):
++    if via_effective:
++        policy = effective(training, roster)
++        options, static = policy.options, policy.static_policy
++    else:
++        options = resolve(training).options
++        static = op.resolve_static_baseline_policy(declared_meter_names=roster)
++    result = build_curriculum(training, curriculum_options=options.curriculum, static_policy=static, device=torch.device("cpu"))
++    result.initialize_population(1)
++    return result
++
++
++def event(seq, *, survival=10, horizon=10, entropy=0.0):
++    return LaneOutcome(
++        outcome=EpisodeCompletion(
++            agent_idx=0,
++            reason="cap",
++            survival_time=survival,
++            final_observation=torch.tensor([0.2]),
++            final_meters=torch.tensor([0.8]),
++        ),
++        batch_episode=seq,
++        planned_horizon=horizon,
++        reward_total=1.0,
++        reward_extrinsic=1.0,
++        reward_intrinsic=0.0,
++        reward_shaping=0.0,
++        policy_entropy=entropy,
++        world_id="declared-test-world",
++        world_episode_seq=seq,
++    )
++
++
++def difficulty(curriculum):
++    return curriculum.get_batch_decisions(None, ["test-agent"])[0].difficulty_level
++
++
++def test_legacy_step_refuses_at_authored_boundary():
++    with pytest.raises(ValidationError):
++        op.CurriculumOptions(commit_mode="legacy_step", difficulty_mode="rate_limited")
++
++
++@pytest.mark.parametrize("payload", [{"commit_mode": "unknown"}, {"difficulty_mode": "unknown"}, {"obsolete": True}])
++def test_unknown_curriculum_declarations_refuse(payload):
++    with pytest.raises(ValidationError):
++        op.CurriculumOptions.model_validate(payload)
++
++
++@pytest.mark.parametrize("omitted", [True, False])
++def test_current_resolution_and_named_policy_provenance(omitted):
++    training = training_config(omitted=omitted)
++    resolved = resolve(training)
++    assert resolved.schema_version == "bac-options-v2"
++    assert resolved.options.curriculum.commit_mode == "completion"
++    assert resolved.options.curriculum.difficulty_mode == "stage_band"
++    static = op.resolve_static_baseline_policy(declared_meter_names=ROSTER)
++    assert static.model_dump() == {
++        "policy_id": "static-baseline-v1",
++        "difficulty_level": 0.5,
++        "reward_mode": "shaped",
++        "depletion_multiplier": 1.0,
++        "active_meters": ROSTER,
++    }
++    provenance = {item.field: item for item in resolved.provenance}
++    assert provenance["curriculum.commit_mode"].origin == ("bac-options-v2" if omitted else "authored")
++    with pytest.raises((ValidationError, AttributeError)):
++        static.difficulty_level = 0.9
++
++
++@pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
++@pytest.mark.parametrize("via_effective", [False, True])
++def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
++    curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
++    config = curriculum.checkpoint_state()["completion"]["config"]
++    assert config == {
++        "commit_mode": "completion",
++        "difficulty_level": 0.5,
++        "reward_mode": "shaped",
++        "depletion_multiplier": 1.0,
++        "active_meters": list(roster),
++    }
++    assert difficulty(curriculum) == 0.5
++    curriculum.commit_episode_outcomes([event(0)])
++    curriculum.commit_episode_outcomes([event(0)])
++    assert difficulty(curriculum) == 0.5
++    assert curriculum.get_stage_info(0)["current_stage"] == 0
++    assert curriculum.get_stage_info(0)["episodes_at_stage"] == 1
++    config["active_meters"].append("external-mutation")
++    assert curriculum.checkpoint_state()["completion"]["config"]["active_meters"] == list(roster)
++
++
++@pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
++def test_invalid_declared_rosters_refuse(roster):
++    with pytest.raises((TypeError, ValueError)):
++        op.resolve_static_baseline_policy(declared_meter_names=roster)
++
++
++@pytest.mark.parametrize("modes", [op.CurriculumOptions(), op.CurriculumOptions(commit_mode="completion")])
++def test_factory_refuses_unresolved_modes_even_for_static(modes):
++    training = training_config()
++    static = op.resolve_static_baseline_policy(declared_meter_names=ROSTER)
++    with pytest.raises(ValueError, match="resolved|difficulty_mode|commit_mode"):
++        build_curriculum(training, curriculum_options=modes, static_policy=static, device=torch.device("cpu"))
++
++
++def test_factory_has_no_obsolete_horizon_signature():
++    assert "max_steps_per_episode" not in inspect.signature(build_curriculum).parameters
++    with pytest.raises(TypeError):
++        build_curriculum(training_config(), max_steps_per_episode=10, device=torch.device("cpu"))
++
++
++def test_custom_programmatic_static_parameters_remain_meaningful():
++    meters = ["operator_defined"]
++    curriculum = StaticCurriculum(
++        commit_mode="completion",
++        difficulty_level=0.8,
++        reward_mode="custom_reward",
++        active_meters=meters,
++        depletion_multiplier=0.37,
++    )
++    meters.append("not-owned")
++    curriculum.initialize_population(1)
++    decision = curriculum.get_batch_decisions(None, ["agent"])[0]
++    assert decision.difficulty_level == 0.8
++    assert decision.reward_mode == "custom_reward"
++    assert decision.active_meters == ["operator_defined"]
++    assert decision.depletion_multiplier == 0.37
++
++
++@pytest.mark.parametrize("via_effective", [False, True])
++@pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
++def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
++    curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
++    assert difficulty(curriculum) == 0.0
++    curriculum.commit_episode_outcomes([event(0)])
++    assert curriculum.get_stage_info(0)["current_stage"] == 2
++    assert difficulty(curriculum) == pytest.approx(expected)
++    before = curriculum.checkpoint_state()
++    for _ in range(3):
++        curriculum.get_batch_decisions(None, ["agent"])
++    assert curriculum.checkpoint_state()["completion"]["generation"] == before["completion"]["generation"]
++    assert difficulty(curriculum) == pytest.approx(expected)
++
++
++@pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
++def test_singleton_bounds_and_current_native_future(mode):
++    data = training_config(strategy="adversarial", mode=mode).model_dump()
++    data["curriculum"]["adversarial"].update(min_difficulty=0.6, max_difficulty=0.6)
++    training = TrainingV2Config.model_validate(data)
++    original = manager(training)
++    original.commit_episode_outcomes([event(0)])
++    restored = manager(training, via_effective=True)
++    restored.load_state(original.checkpoint_state())
++    for current in (original, restored):
++        current.commit_episode_outcomes([event(1, survival=2)])
++        assert difficulty(current) == 0.6
++    assert original.get_stage_info(0) == restored.get_stage_info(0)
++
++
++@pytest.mark.parametrize("field,value", [("min_steps_at_stage", 11), ("entropy_gate", 0.1), ("survival_advance_threshold", 0.95)])
++def test_authored_dwell_entropy_and_threshold_reach_runtime(field, value):
++    data = training_config(strategy="adversarial").model_dump()
++    data["curriculum"]["adversarial"][field] = value
++    curriculum = manager(TrainingV2Config.model_validate(data))
++    curriculum.commit_episode_outcomes([event(0, survival=9, entropy=0.2)])
++    assert curriculum.get_stage_info(0)["current_stage"] == 1
++    assert difficulty(curriculum) == 0.0
++    control = manager(training_config(strategy="adversarial"))
++    control.commit_episode_outcomes([event(0, survival=9, entropy=0.2)])
++    assert control.get_stage_info(0)["current_stage"] == 2
++
++
++def test_authored_rate_zero_still_refuses():
++    with pytest.raises(ValidationError):
++        training_config(strategy="adversarial", rate=0.0)
++
++
++@pytest.mark.parametrize("omitted,status", [(True, "derived"), (False, "active")])
++def test_static_roles_are_truthful(omitted, status):
++    current = effective(training_config(omitted=omitted))
++    assert current.field_roles["bac_options.curriculum.commit_mode"].status == status
++    assert current.field_roles["bac_options.curriculum.difficulty_mode"].status == "inactive_preset"
++    assert current.field_roles["training.curriculum.adversarial.adaptation_rate"].status == "inactive_preset"
++    for name in ("policy_id", "difficulty_level", "depletion_multiplier"):
++        assert current.field_roles[f"static_policy.{name}"].status == "derived"
++    for name in ("reward_mode", "active_meters"):
++        assert current.field_roles[f"static_policy.{name}"].status == "unqualified"
++
++
++def test_inactive_presets_preserve_authoring_but_not_selected_execution():
++    first = effective(training_config(mode="stage_band", rate=0.01))
++    second = effective(training_config(mode="rate_limited", rate=0.1))
++    assert first.execution_hash == second.execution_hash
++    assert first.training_hash != second.training_hash
++    assert first.authored_identity != second.authored_identity
++    assert second.training.curriculum.adversarial.adaptation_rate == 0.1
++    assert second.options.curriculum.difficulty_mode == "rate_limited"
++
++
++@pytest.mark.parametrize("mode,changes", [("stage_band", False), ("rate_limited", True)])
++def test_adversarial_rate_identity_tracks_only_selected_semantics(mode, changes):
++    first = effective(training_config(strategy="adversarial", mode=mode, rate=0.01))
++    second = effective(training_config(strategy="adversarial", mode=mode, rate=0.1))
++    assert (first.execution_hash != second.execution_hash) is changes
++    assert first.training_hash != second.training_hash
++    assert first.field_roles["training.curriculum.adversarial.adaptation_rate"].status == ("active" if changes else "inactive_preset")
++    assert first.field_roles["static_policy.active_meters"].status == "inactive_preset"
++
++
++def test_static_execution_binds_actual_roster_while_authored_training_does_not():
++    training = training_config()
++    first = effective(training, ROSTER)
++    second = effective(training, tuple(reversed(ROSTER)))
++    third = effective(training, ("different",))
++    assert len({first.execution_hash, second.execution_hash, third.execution_hash}) == 3
++    assert first.training_hash == second.training_hash == third.training_hash
++    assert first.authored_identity == second.authored_identity == third.authored_identity
++    assert first.static_policy.active_meters == ROSTER
++
++
++def test_adversarial_execution_excludes_inactive_static_roster():
++    training = training_config(strategy="adversarial")
++    assert effective(training, ROSTER).execution_hash == effective(training, ("different",)).execution_hash
++
++
++def test_omitted_and_explicit_equal_modes_have_equal_selected_identity():
++    omitted = effective(training_config(omitted=True))
++    explicit = effective(training_config())
++    assert omitted.execution_hash == explicit.execution_hash
++    assert omitted.training_hash != explicit.training_hash
++    assert (
++        omitted.field_roles["bac_options.curriculum.commit_mode"].origin
++        != explicit.field_roles["bac_options.curriculum.commit_mode"].origin
++    )
++
++
++@pytest.mark.parametrize("roster", [(), ROSTER])
++def test_portable_effective_current_roundtrip(roster):
++    current = effective(training_config(), roster)
++    payload = json.loads(json.dumps(current.to_dict()))
++    assert payload["static_policy"]["active_meters"] == list(roster)
++    restored = ef.EffectiveRunConfig.from_dict(payload)
++    assert restored.static_policy.active_meters == roster
++    assert restored.execution_hash == current.execution_hash
++    assert restored.to_dict() == current.to_dict()
++    payload["static_policy"]["active_meters"].append("outside")
++    assert restored.static_policy.active_meters == roster
++
++
++@pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
++def test_forged_or_obsolete_effective_payload_refuses(damage):
++    current = effective(training_config())
++    payload = copy.deepcopy(current.to_dict())
++    if damage == "missing_policy":
++        payload.pop("static_policy")
++    elif damage == "roster":
++        payload["static_policy"]["active_meters"] = ("forged",)
++    elif damage == "difficulty":
++        payload["static_policy"]["difficulty_level"] = 0.9
++    elif damage == "reward":
++        payload["static_policy"]["reward_mode"] = "forged"
++    elif damage == "hash":
++        payload["execution_hash"] = "0" * 64
++    elif damage == "role":
++        payload["field_roles"]["static_policy.active_meters"]["status"] = "active"
++    else:
++        payload["training"]["bac_options"]["curriculum"]["commit_mode"] = "legacy_step"
++    with pytest.raises((ValueError, KeyError)):
++        ef.EffectiveRunConfig.from_dict(payload)
++    assert current.static_policy.active_meters == ROSTER
++
++
++def test_pure_options_resolution_preserves_unrelated_declared_choices_without_roster():
++    training = training_config(mode="rate_limited")
++    resolved = resolve(training)
++    authored = training.bac_options
++    assert resolved.options.replay == authored.replay
++    assert resolved.options.serving == authored.serving
++    assert resolved.options.checkpoint == authored.checkpoint
++    assert resolved.options.provider_parameter_source == authored.provider_parameter_source
++    assert resolved.options.curriculum.difficulty_mode == "rate_limited"
++
++
++def test_factory_uses_actual_declared_yaml_meter_roster():
++    bars = yaml.safe_load((LEVEL / "bars.yaml").read_text())["bars"]
++    declared = tuple(bar["name"] for bar in bars["meters"])
++    curriculum = manager(training_config(), roster=declared, via_effective=True)
++    assert curriculum.checkpoint_state()["completion"]["config"]["active_meters"] == list(declared)

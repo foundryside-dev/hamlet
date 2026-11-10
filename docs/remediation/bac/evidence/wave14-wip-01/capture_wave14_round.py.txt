@@ -1,0 +1,99 @@
+"""Pin bounded T21 source and fixture identity before coordinator execution."""
+from pathlib import Path
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+tag = sys.argv[1]
+assert re.fullmatch(r'r[0-9]+', tag)
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *a: subprocess.check_output(['git', *a], cwd=R, text=True)
+head = git('rev-parse', 'HEAD').strip()
+assert head == '02d1f614bfbf603b9742d8fea60984b7b7e1b568'
+assert git('branch', '--show-current').strip() == 'project-recovery-bac-2026-11-01'
+task = next(t for t in json.loads((W / 'tasks.json').read_text())['tasks'] if t['id'] == 'T21')
+fixture_paths = {
+    'configs/test/bac_remediation/options/modes-1.yaml',
+    'configs/test/bac_remediation/dueling/levels/L0_0_minimal/training.yaml',
+    'configs/test/bac_remediation/recurrent/levels/L0_0_minimal/training.yaml',
+}
+allowed = set(task['write_paths']) | set(task.get('maintenance_write_paths', [])) | fixture_paths | {
+    '.defaults-ratchet', 'docs/product/evidence/static-epistemic-access/frozen-live-inputs.json'}
+changed = set(git('diff', '--name-only').splitlines()) | set(git('diff', '--cached', '--name-only').splitlines())
+assert changed <= allowed, changed - allowed
+test = task['test_path']
+assert (R / test).is_file()
+subprocess.run(['git', 'add', '-f', '--', *sorted(changed | {test})], cwd=R, check=True)
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=R).returncode == 0
+inventory = []
+for row in task['reads']:
+    p = R / row['path']
+    lines = len(p.read_bytes().splitlines())
+    assert lines <= row['projected_lines'], (str(p), lines, row['projected_lines'])
+    inventory.append({'path': row['path'], 'lines': lines, 'sha256': sha(p), 'present': True})
+assert len(inventory) <= 5 and sum(row['lines'] for row in inventory) <= 5000
+inventories = {'T21': inventory}
+for scope, rows in task.get('maintenance_scopes', {}).items():
+    extra = []
+    for row in rows:
+        p = R / row['path']
+        lines = len(p.read_bytes().splitlines())
+        assert lines <= row['projected_lines'], (str(p), lines, row['projected_lines'])
+        extra.append({'path': row['path'], 'lines': lines, 'sha256': sha(p), 'present': True})
+    assert len(extra) <= 5 and sum(row['lines'] for row in extra) <= 5000, scope
+    inventories[scope] = extra
+old = json.loads((W / 'wave13/r11-candidate.json').read_text())
+paths = set(old['source_files']) | {row['path'] for values in inventories.values() for row in values}
+source = {p: sha(R / p) for p in sorted(paths)}
+configs = {p: sha(R / p) for p in old['configs']}
+config_changes = {p: {'before': h, 'after': configs[p]} for p, h in old['configs'].items() if configs[p] != h}
+assert set(config_changes) <= fixture_paths, config_changes
+for p, h in old['artifacts'].items():
+    assert sha(R / p) == h, p
+registry = git('worktree', 'list', '--porcelain')
+assert registry == old['worktree_registry'].replace('HEAD ' + old['base_commit'] + '\n', 'HEAD ' + head + '\n', 1)
+availability = [{'path': s[9:], 'directory_exists': Path(s[9:]).is_dir()}
+                for s in registry.splitlines() if s.startswith('worktree ')]
+assert availability == old['worktree_availability']
+resources = {'cpu': Path('/sys/fs/cgroup/cpu.max').read_text().strip(),
+             'affinity': len(os.sched_getaffinity(0)),
+             'memory_current': Path('/sys/fs/cgroup/memory.current').read_text().strip(),
+             'memory_limit': Path('/sys/fs/cgroup/memory.max').read_text().strip(),
+             'memory_events': Path('/sys/fs/cgroup/memory.events').read_text().strip(),
+             'workspace_free': shutil.disk_usage('/workspace').free,
+             'TMPDIR': str(Q / 'scratch/tmp-wave08-r3'), 'threads': 1, 'CUDA': 'unavailable/unqualified'}
+assert resources['cpu'] == '400000 100000' and resources['affinity'] >= 4
+assert int(resources['memory_limit']) >= 16 * 1024**3, resources
+assert int(resources['memory_limit']) - int(resources['memory_current']) >= 4 * 1024**3, resources
+resources['processes'] = subprocess.check_output(['ps', '-eo', 'pid,ppid,pcpu,rss,comm'], text=True)
+
+out = W / 'wave14'
+out.mkdir(exist_ok=True)
+mp = out / (tag + '-candidate.json')
+assert not mp.exists()
+m = {'base_commit': head, 'candidate_tree': git('write-tree').strip(),
+     'source_files': source, 'changed_paths': git('diff', '--cached', '--name-only').splitlines(),
+     'task_ids': list(inventories), 'inventories': inventories,
+     'worktree_registry': registry, 'worktree_availability': availability,
+     'configs': configs, 'config_changes': config_changes, 'artifacts': old['artifacts'],
+     'runtime_barrier': 'Source/test/index/tracked docs frozen during execution;14 registry/MAIN1 available.'}
+mp.write_text(json.dumps(m, indent=2) + '\n')
+base = ['-m', 'pytest', test, '--no-cov', '-p', 'no:cacheprovider', '-p', 'bac_source_identity']
+jobs = [('collection', base + ['--collect-only', '-q']),
+        ('owned', base + ['-q', '-n', '2', '--dist', 'worksteal',
+                         '--basetemp=' + str(Q / 'scratch' / ('wave14-' + tag + '-owned'))])]
+for kind, args in jobs:
+    spec = {'root': str(R), 'manifest': str(mp), 'output': str(Q / ('wave14-' + tag + '-' + kind)),
+            'workers': 1, 'jobs': [{'name': kind, 'args': args}]}
+    (Q / ('wave14-' + tag + '-' + kind + '-spec.json')).write_text(json.dumps(spec, indent=2) + '\n')
+(out / (tag + '-fixture-resource-preflight.json')).write_text(json.dumps(resources, indent=2) + '\n')
+print(json.dumps({'manifest': str(mp), 'tree': m['candidate_tree'], 'files': len(inventory),
+                  'lines': sum(row['lines'] for row in inventory), 'reviewed_scopes': {k: {'files': len(v), 'lines': sum(row['lines'] for row in v)} for k, v in inventories.items()}, 'source_guards': len(source),
+                  'config_changes': config_changes, 'resources': resources}, indent=2))

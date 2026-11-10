@@ -79,7 +79,7 @@ class EnabledActionsConfig(BaseModel):
         duplicates = [action for action in actions if actions.count(action) > 1]
         if duplicates:
             raise ValueError(
-                f"Duplicate action names in enabled_actions.custom: {list(set(duplicates))}. " f"Each action must appear only once."
+                f"Duplicate action names in enabled_actions.custom: {list(set(duplicates))}. Each action must appear only once."
             )
         return actions
 
@@ -169,7 +169,7 @@ class IntrinsicConfig(BaseModel):
     annealing: AnnealingConfig = Field(description="Annealing configuration")
     initial_weight: float = Field(
         ge=0.0,
-        description=("Initial intrinsic reward weight (vs extrinsic). " "For inference runs, set to 0.0 for near-greedy behavior."),
+        description=("Initial intrinsic reward weight (vs extrinsic). For inference runs, set to 0.0 for near-greedy behavior."),
     )
     min_survival_fraction: float = Field(
         gt=0.0,
@@ -221,7 +221,9 @@ class AdversarialCurriculumConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     difficulty_metric: Literal["survival_rate"] = Field(description="Difficulty metric to track")
-    adaptation_rate: float = Field(gt=0.0, le=1.0, description="Difficulty adaptation rate")
+    adaptation_rate: float = Field(
+        gt=0.0, le=1.0, description="Maximum difficulty movement per eligible transition in rate_limited; inactive in stage_band"
+    )
     min_difficulty: float = Field(ge=0.0, le=1.0, description="Minimum difficulty")
     max_difficulty: float = Field(ge=0.0, le=1.0, description="Maximum difficulty")
 
@@ -229,12 +231,12 @@ class AdversarialCurriculumConfig(BaseModel):
     survival_advance_threshold: float = Field(
         ge=0.0,
         le=1.0,
-        description="Survival rate threshold for stage advancement (e.g., 0.7 = 70% of max_steps).",
+        description="Completed outcome survival_time/planned_horizon threshold for stage advancement.",
     )
     survival_retreat_threshold: float = Field(
         ge=0.0,
         le=1.0,
-        description="Survival rate threshold for stage retreat (e.g., 0.3 = 30% of max_steps).",
+        description="Completed outcome survival_time/planned_horizon threshold for stage retreat.",
     )
     entropy_gate: float = Field(
         ge=0.0,
@@ -243,7 +245,7 @@ class AdversarialCurriculumConfig(BaseModel):
     )
     min_steps_at_stage: int = Field(
         gt=0,
-        description="Minimum number of steps at a stage before advancement/retreat is considered.",
+        description="Minimum accumulated eligible transitions at a stage before completion considers advancement/retreat.",
     )
 
     @model_validator(mode="after")
@@ -251,7 +253,7 @@ class AdversarialCurriculumConfig(BaseModel):
         """Ensure min_difficulty <= max_difficulty."""
         if self.min_difficulty > self.max_difficulty:
             raise ValueError(
-                f"curriculum.adversarial.min_difficulty ({self.min_difficulty}) must be <= " f"max_difficulty ({self.max_difficulty})."
+                f"curriculum.adversarial.min_difficulty ({self.min_difficulty}) must be <= max_difficulty ({self.max_difficulty})."
             )
         return self
 
@@ -339,7 +341,7 @@ class TrainingV2Config(BaseModel):
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
-    bac_options: Annotated[BaCOptions | None, Field(description="Additive BAC policies; omissions resolve via bac-options-v1")] = None
+    bac_options: Annotated[BaCOptions | None, Field(description="Additive BAC policies; omissions resolve via bac-options-v2")] = None
 
     version: Literal["1.0"] = Field(description="Config version")
     seed: int = Field(
@@ -367,7 +369,7 @@ class TrainingV2Config(BaseModel):
 
     randomize_affordances: bool = Field(
         description=(
-            "true = randomize affordance positions each episode, " "false = use configured positions from affordances.yaml/optimization."
+            "true = randomize affordance positions each episode, false = use configured positions from affordances.yaml/optimization."
         )
     )
     enabled_actions: EnabledActionsConfig | None = Field(
@@ -420,9 +422,7 @@ def load_training_v2_config(config_dir: Path) -> TrainingV2Config:
 
     if "training" not in data:
         available_sections = list(data.keys())
-        raise KeyError(
-            f"Section 'training' not found in training.yaml\n" f"Available sections: {available_sections}\n" f"File path: {config_file}"
-        )
+        raise KeyError(f"Section 'training' not found in training.yaml\nAvailable sections: {available_sections}\nFile path: {config_file}")
 
     training_section = data.get("training") or {}
     payload = dict(training_section)

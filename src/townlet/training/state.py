@@ -153,13 +153,15 @@ class CurriculumDecision(BaseModel):
     difficulty_level: float = Field(..., ge=0.0, le=1.0, description="Difficulty level from 0.0 (easiest) to 1.0 (hardest)")
     active_meters: list[str] = Field(
         ...,
-        min_length=1,
-        max_length=6,
-        description="Which meters are active (e.g., ['energy', 'hygiene']). "
-        "MED-12: max_length=6 corresponds to hardcoded meter count in HAMLET "
-        "(energy, hygiene, satiation, money, mood, social). Increase if adding more meters.",
+        description="Active meter names from the actual declared roster, including an empty roster.",
     )
-    depletion_multiplier: float = Field(..., gt=0.0, le=10.0, description="Depletion rate multiplier (0.1 = 10x slower, 1.0 = normal)")
+    depletion_multiplier: float = Field(
+        ...,
+        ge=0.0,
+        allow_inf_nan=False,
+        strict=True,
+        description="Finite nonnegative depletion rate multiplier (0.0 = disabled, 1.0 = normal)",
+    )
     reward_mode: str = Field(..., pattern=r"^(shaped|sparse)$", description="Reward mode: 'shaped' (dense) or 'sparse'")
     reason: str = Field(..., min_length=1, description="Human-readable explanation for this decision")
 

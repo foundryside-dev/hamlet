@@ -9,10 +9,10 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, Literal
 
-from townlet.config.bac_options import BaCOptions, resolve_bac_options
+from townlet.config.bac_options import BaCOptions, StaticBaselinePolicy, resolve_bac_options, resolve_static_baseline_policy
 from townlet.config.brain_config import BrainConfig, apply_training_overrides, compute_brain_hash
 from townlet.config.drive_as_code import IntrinsicStrategyConfig
-from townlet.config.exploration_policy import SCOPE_FIELDS, ResolvedExplorationPolicy, is_legacy_policy_payload, resolve_exploration_policy
+from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
 from townlet.config.training_v2_config import TrainingV2Config
 
 
@@ -57,6 +57,7 @@ class EffectiveRunConfig:
     training: TrainingV2Config
     authored_options: BaCOptions
     options: BaCOptions
+    static_policy: StaticBaselinePolicy
     exploration: ResolvedExplorationPolicy
     primary_level: str
     field_roles: Mapping[str, FieldRole]
@@ -90,6 +91,7 @@ class EffectiveRunConfig:
             "training": self.training.model_dump(),
             "authored_options": self.authored_options.model_dump(),
             "options": self.options.model_dump(),
+            "static_policy": self.static_policy.model_dump(),
             "exploration": self.exploration.to_dict(),
             "primary_level": self.primary_level,
             "field_roles": {
@@ -109,36 +111,15 @@ class EffectiveRunConfig:
         # and null. Active numeric validity is checked independently by the DTOs/RP.
         if _hash(self.to_dict()) == _hash(dict(payload)):
             return
-        old_fields = set(
-            "base_brain effective_brain training authored_options options exploration primary_level field_roles "
-            "authored_brain_hash authored_identity execution_hash training_hash derivations origins".split()
-        )
-        policy = payload.get("exploration")
-        options = payload.get("options")
-        if (
-            set(payload) == old_fields
-            and isinstance(policy, Mapping)
-            and is_legacy_policy_payload(policy)
-            and isinstance(options, Mapping)
-            and "curiosity_scope" not in options
-            and self.exploration.curiosity_scope == "shared"
-            and self.exploration.scope_origin == "bac-options-v1"
-        ):
-            legacy = self.to_dict()
-            legacy["options"].pop("curiosity_scope")
-            legacy["exploration"] = self.exploration.legacy_shared_payload()
-            for name in SCOPE_FIELDS:
-                legacy["field_roles"].pop(f"exploration.{name}", None)
-                legacy["derivations"].pop(f"exploration.{name}", None)
-            for name in ("scope", "seed_policy"):
-                legacy["field_roles"].pop(f"bac_options.curiosity_scope.{name}", None)
-                legacy["derivations"].pop(f"curiosity_scope.{name}", None)
-            if _hash(legacy) == _hash(dict(payload)):
-                return
         raise ValueError("effective_run: serialized fields, roles or execution_hash disagree with resolved authoring")
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> EffectiveRunConfig:
+        static_data = dict(payload["static_policy"])
+        meters = static_data["active_meters"]
+        if isinstance(meters, list):
+            static_data["active_meters"] = tuple(meters)
+        static_policy = StaticBaselinePolicy.model_validate(static_data)
         policy = ResolvedExplorationPolicy.from_dict(payload["exploration"])
         result = resolve_effective_run(
             BrainConfig.model_validate(payload["base_brain"]),
@@ -146,6 +127,7 @@ class EffectiveRunConfig:
             primary_level=payload["primary_level"],
             origins=payload["origins"],
             drive_intrinsic=IntrinsicStrategyConfig.model_validate(policy.authored_parameters["drive_intrinsic"]),
+            declared_meter_names=static_policy.active_meters,
         )
         result.validate_payload(payload)
         return result
@@ -158,6 +140,7 @@ def resolve_effective_run(
     primary_level: str,
     origins: Mapping[str, str],
     drive_intrinsic: IntrinsicStrategyConfig,
+    declared_meter_names: tuple[str, ...],
 ) -> EffectiveRunConfig:
     """Resolve RP first from authored options, then materialize its selected context.
 
@@ -167,6 +150,7 @@ def resolve_effective_run(
     """
     base = BrainConfig.model_validate(base.model_dump())
     training = TrainingV2Config.model_validate(training.model_dump())
+    static_policy = resolve_static_baseline_policy(declared_meter_names=declared_meter_names)
     if not isinstance(primary_level, str) or not primary_level:
         raise ValueError("primary_level must be a nonempty string")
     if any(not isinstance(key, str) or not isinstance(value, str) for key, value in origins.items()):
@@ -298,7 +282,7 @@ def resolve_effective_run(
         elif relative.startswith("replay."):
             enabled = recurrent
         provenance = next(item for item in defaults.provenance if item.field == relative)
-        if relative.startswith("curriculum."):
+        if relative == "curriculum.difficulty_mode":
             enabled = training.curriculum.strategy == "adversarial"
         explicit = path in declared_paths
         origin = provenance.origin
@@ -348,17 +332,39 @@ def resolve_effective_run(
         roles[prefix] = FieldRole(
             "derived" if encoder is None else "active", "bac-options-v1" if encoder is None else prefix, "selected token encoder"
         )
+    identity: dict[str, Any] = {"schema": "effective-run-v2", "fields": active, "exploration": exploration.policy_identity}
+    static_selected = training.curriculum.strategy == "static"
+    for name in static_policy.model_dump():
+        path = f"static_policy.{name}"
+        origin = "static-baseline-v1"
+        reason = "named immutable static baseline"
+        if name == "active_meters":
+            origin = "declared_level_meters"
+            reason = "actual declared level.bars.meters names in declared order"
+        status: Literal["active", "inactive_preset", "derived", "unqualified"] = "inactive_preset"
+        if static_selected:
+            status = "derived"
+            if name in ("reward_mode", "active_meters"):
+                status = "unqualified"
+                reason += "; application mechanics remain unqualified"
+        roles[path] = FieldRole(status, origin, reason)
+        derivations[path] = reason
+    if static_selected:
+        # Bind complete policy context, including metadata whose application is
+        # unqualified, without falsely promoting those field roles to active.
+        identity["static_policy"] = static_policy.model_dump()
     return EffectiveRunConfig(
         base,
         effective,
         training,
         authored,
         options,
+        static_policy,
         exploration,
         primary_level,
         MappingProxyType(roles),
         compute_brain_hash(base),
-        _hash({"schema": "effective-run-v1", "fields": active, "exploration": exploration.policy_identity}),
+        _hash(identity),
         hashlib.sha256(training.model_dump_json().encode("utf-8")).hexdigest(),
         MappingProxyType(derivations),
         MappingProxyType(dict(origins)),

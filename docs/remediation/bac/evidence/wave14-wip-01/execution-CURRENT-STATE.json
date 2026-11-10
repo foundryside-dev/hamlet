@@ -1,0 +1,1119 @@
+{
+  "schema_version": 2,
+  "goal": "User steering: finish and qualify CURRENT T19 work package including bounded predictor-accounting auxiliary slice, commit/push all related source/tests/design/docs/evidence, exact-remote verify, leave durable outstanding-work handoff, then halt gracefully. Do not start T20 or any further package.",
+  "governance": "No durable rule was saved; user-only was not adopted. Failed rule is neither grant nor restriction. Existing project instructions, applicable Emmy scope delegation and actual tool approval requirements govern. Specific approvals never authorize extra creations. Current integration choice proposes no new branches/worktrees/source checkouts and preserves all14 existing project worktrees.",
+  "root": "/workspace/hamlet",
+  "branch": "project-recovery-bac-2026-11-01",
+  "head": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "staged_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+  "phase": "T20 current-only fixround1 semantic repair after meaningfulR5RED",
+  "qualified_previous_source": {
+    "sha": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+    "tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+    "full_result": {
+      "passed": 6857,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 16
+    },
+    "proof": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/final-postflight.json",
+    "native_proof": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/postflight.json"
+  },
+  "accepted_packages": [
+    "T01",
+    "T02",
+    "T03",
+    "T03a",
+    "T04",
+    "T08",
+    "T08a",
+    "T09",
+    "T09a",
+    "T18",
+    "T18a",
+    "PW01",
+    "T05",
+    "T10",
+    "T18b",
+    "T18c",
+    "T33",
+    "T06",
+    "T11",
+    "PW02",
+    "T07",
+    "T12",
+    "T13",
+    "T14",
+    "T15",
+    "T16",
+    "T17",
+    "T19"
+  ],
+  "active_packages": [
+    "T19"
+  ],
+  "active_source_owners": {
+    "all": "FROZEN all source/test/index/tracked docs/pinned13reports/helper for full runtime; only new ignored docs drafts allowed"
+  },
+  "goal_progress": {
+    "finite_total_packets": 66,
+    "qualified_released": 28,
+    "current_unreleased_packets": 0,
+    "other_packets": 38,
+    "final_acceptance": "Separate, all owed",
+    "remaining_packets": 38
+  },
+  "resources": "Four CPU quota,16GiB RAM. Full repository uses4workers with OMP/MKL/OpenBLAS/Torch1; all5process identities verified. Source/test/index frozen. CPU only; CUDA unavailable and unqualified.",
+  "worktree_count": 14,
+  "creation_proposal": null,
+  "current_specific_decisions_pending": [],
+  "next_actions": [
+    "Currentfix1 source stationarity;R6collection/GREEN/localguards",
+    "Astra scoped fix review + own guarded adversarial runtime",
+    "Durable current-core WIP handoff, T21 explicit options/factory, current world/runtime/caller/native slices"
+  ],
+  "final_acceptance_owed": "42 finite packages remain after24 scoped source-qualified. All54requirements/22fresh final design-source lenses+synthesis/finiteT40+12strictlearning/E2E/finalrepo/coverage>=70/slow/applicablehardware/exacttipCI remain. CUDA unavailable. X02bank/isolation and X04/T15 OPEN. Source publication authorized/durable; no merge/newlocalbranch/worktree.",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave12/r5-candidate.json",
+  "metadata_sha256": "f054a2a11f5e7d56e0ebba0a0466928f649446b85879ad2b5c6b63a0c01398ce",
+  "lenses_sha256": "370765b575f6102965ab24f81a418a2619072f5a6c68cf563451fb9ea598b43d",
+  "source_budgets": "CurrentT15same5/4950; readonlyOP actual294/projected300 frees300 for required test1300, no semantic design or read-scope change. T14 actual scoped bounds retained, no sixth helper.",
+  "active_review_findings": {
+    "T19-R2-P2-01": "ADDRESSED static; R4joint79passed, independent verification pending",
+    "T19-R2-P2-02": "ADDRESSED static; actualA1finite0/invalidQcontrols passed",
+    "T19-R2-P2-03": "ADDRESSED static; acceptedreset+latepartial/reordered commits passed",
+    "T19-R2-GATE-01": "ADDRESSED; all six guardsPASS/no-defaults612 unchanged"
+  },
+  "T13_HC_coordination": {
+    "proposal_sha256": "6845c544d14f97a8ae9e40650485806b7d73319b5a5624856c8e7db1c51bc75c",
+    "review_sha256": "91b484deee7f38f515837eafeca50a44d9ea2b8e88c5bfbeffac4bc692c1d832",
+    "verdict": "Technical APPROVE; root adopts bounded owner coordination; no authoring dispatch yet",
+    "core": "5 whole files/4200 projected",
+    "C01_test_only_slice": "5 whole files/4753 projected",
+    "metadata": "66 tasks/22 lenses retained;596 shared/interface pairs,315 mutable pairs,55 contracts; no unordered mutable conflict"
+  },
+  "T13_interface_readiness": {
+    "path": "wave07-preparation/T13-interface-readiness.md",
+    "sha256": "2b076c4bc1ba53183e37eb008ca8d21c6b748ca7a56a49b6cb535a718b649ca9",
+    "root_disposition": "Adopted as additive implementation choices under approved P3; actual implementation/independent source review/executable evidence still owed. No new review cycle or capability reduction.",
+    "key_interfaces": [
+      "configure_sampling(*, sampling_mode, rng: numpy.random.Generator, origin) explicit owned qualified sampler; constructor/global physical-slot legacy pair preserved",
+      "for_sampling required mode/rng/origin convenience, no hidden seed or default arguments",
+      "update_unit_priorities stable handles separate from legacy update_priorities physical slots",
+      "PS sample_units explicitGenerator plus same-source sample_legacy_units global NumPy adapter; common math, no copied RNG engine or hidden seed",
+      "PER6 persists owned sampler metadata/RNG state or honest external-global ownership; exact current5 adapter and historical4 preserved"
+    ],
+    "consumer_handoff": "T14 shares PS estimator; T15/T16 consume resolved mode and stable qualified handles; actual native RNG/resource/current full resume T24/T25 remains required open."
+  },
+  "wave06_r4_results": {
+    "T07": "112PASS",
+    "T12_unit": "115PASS",
+    "current_consumers": "42PASS",
+    "cheap_guards": "all five PASS; mypy191 clean; no-default613"
+  },
+  "wave06_r5_results": {
+    "native_proof": "2 passed in6.06s test/16.21s wall; actual constructor/native relocation/resave/history separation",
+    "full_collection": "6423 selected/6424 total,1 default perf deselection; PASS",
+    "independent_reviews": "T07/T12 scoped PASS rebound; new native proof fresh scoped PASS,72 hashes/5 review artifacts in preflight",
+    "preflight": "72 source/doc paths,573 configs,7 protected artifacts,entire14 worktree registry verified",
+    "gates": "All six standing guards PASS; four-worker full repository suite active; controller+4 workers exact identity/Torch1 verified.",
+    "full_repository": "FAILED:1failed4899passed10skipped13warnings;1055.83stest1062.14wall. Recurrent integration expected exact old5 active replay after resume; actual approved-A archive-bearing inspection/fresh0. No success claim."
+  },
+  "wave06_r6_results": {
+    "checkpoint_recurrent_owners": "125passed1skipped in211.34test218.68wall;3workers, exact candidate",
+    "guards": "all6 rerunPASS, mypy191clean/default613",
+    "fresh_owner_review": "Astra medium actual five4975 source/specPASS, noP1/P2; optional querypresence assertion strengthening only",
+    "full_collection": "6423/6424selected,1defaultdeselected,PASS",
+    "common_binding": "wave06/r6-common-source-binding.md; three prior reviewed source scopes unchanged, only bounded checkpointowner test differsR5",
+    "full_repository": "PASS:6407passed16skipped15warnings;1824.12test1829.68wall. Postflight73source/7review/5process/573configs/7artifacts/14worktrees PASS. Source commit07ce9755 exactly equals tested42bf1b69.",
+    "preflight": "73guarded paths,7review artifacts,573configs,7protectedartifacts,14worktrees verified"
+  },
+  "full_spec": "/workspace/bac-review-2026-11-01/qualification/wave09-full-r2-spec.json",
+  "full_output": "/workspace/bac-review-2026-11-01/qualification/wave09-full-r2",
+  "defaults_ratchet_change": "tightened614to613, no whitelist relaxation",
+  "native_current_handoff": {
+    "sha256": "77f6479d2df123f9508cb6a5ba1925a24a68d2058d0317b27384231a4507ccf8",
+    "status": "rootadoptsAstrareviewedadditiveclarification; blockingT24/T25evidencestillOPEN"
+  },
+  "history_archive": "wave06/state-history-before-compact-r6.json (all previous state retained unchanged)",
+  "metadata_registry": "PASS:66tasks,608shared/interface rows,317orderedmutationpairs,55contracts; all worker/reviewer bounds <=5/5000",
+  "durable_release_preparation": {
+    "postflight_script": "/workspace/bac-review-2026-11-01/qualification/wave08_postflight_r1.py",
+    "source_release_script": "/workspace/bac-review-2026-11-01/qualification/release_wave08_source_r1.py",
+    "status": "HISTORICAL wave08 scripts alreadyexecuted; T14qualifiedb3003550/docs75bc pushedgreen. CurrentT15 uses prepare_wave09_commit.py onlyafteractualfullR2PASS."
+  },
+  "T13_current5_data_capture": {
+    "manifest": "/workspace/bac-review-2026-11-01/qualification/t13-current5-fixtures/manifest.json",
+    "manifest_sha256": "4344a9d269dd3ebb84e5518843c14fe5da99ac547adcd801d61b47b21f3a3536",
+    "files": {
+      "per5-captured.pt": {
+        "sha256": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+        "bytes": 5422,
+        "keys": [
+          "action_dim",
+          "actions",
+          "alpha",
+          "beta",
+          "beta_annealing",
+          "beta_initial",
+          "capacity",
+          "dones",
+          "format_version",
+          "historical_archives",
+          "legality_mode",
+          "legality_recorded",
+          "max_priority",
+          "next_action_masks",
+          "next_observations",
+          "observations",
+          "position",
+          "priorities",
+          "replay_kind",
+          "rewards",
+          "rewards_extrinsic",
+          "rewards_extrinsic_present",
+          "rewards_intrinsic",
+          "rewards_intrinsic_present",
+          "rewards_shaping",
+          "rewards_shaping_present",
+          "size_current"
+        ],
+        "row_shape": [
+          3,
+          2
+        ],
+        "mask_shape": [
+          3,
+          3
+        ],
+        "physical_rows": [
+          3,
+          4,
+          2
+        ],
+        "position": 2,
+        "retained_transitions": 3,
+        "beta_initial": 0.4,
+        "beta": 0.7,
+        "priorities": [
+          3.0000009536743164,
+          5.000000953674316,
+          7.000000953674316
+        ],
+        "max_priority": 8.000000953674316,
+        "archive_count": 0
+      },
+      "per5-captured-with-per4-archive.pt": {
+        "sha256": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+        "bytes": 12588,
+        "keys": [
+          "action_dim",
+          "actions",
+          "alpha",
+          "beta",
+          "beta_annealing",
+          "beta_initial",
+          "capacity",
+          "dones",
+          "format_version",
+          "historical_archives",
+          "legality_mode",
+          "legality_recorded",
+          "max_priority",
+          "next_action_masks",
+          "next_observations",
+          "observations",
+          "position",
+          "priorities",
+          "replay_kind",
+          "rewards",
+          "rewards_extrinsic",
+          "rewards_extrinsic_present",
+          "rewards_intrinsic",
+          "rewards_intrinsic_present",
+          "rewards_shaping",
+          "rewards_shaping_present",
+          "size_current"
+        ],
+        "row_shape": [
+          3,
+          2
+        ],
+        "mask_shape": [
+          3,
+          3
+        ],
+        "physical_rows": [
+          3,
+          4,
+          2
+        ],
+        "position": 2,
+        "retained_transitions": 3,
+        "beta_initial": 0.4,
+        "beta": 0.7,
+        "priorities": [
+          3.0000009536743164,
+          5.000000953674316,
+          7.000000953674316
+        ],
+        "max_priority": 8.000000953674316,
+        "archive_count": 1
+      }
+    },
+    "verified": "Root output/hash/identity metadata checks PASS; external capture actual current5 validate/restore success; source fixture unchanged. DATA not installed in repo yet; future5to6adapter/C01 not proved.",
+    "next": "After actual current full/source/docs checkpoint integrate only these DATA under new fixture directory, preserve original protected manifests/artifacts. Core test author consumes DATA/prose, not externalhelper as sixthsource.",
+    "installed_paths": [
+      "tests/test_townlet/fixtures/bac_per_current5/per5-captured.pt",
+      "tests/test_townlet/fixtures/bac_per_current5/per5-captured-with-per4-archive.pt",
+      "tests/test_townlet/fixtures/bac_per_current5/portable-manifest.json"
+    ],
+    "installed_portable_manifest_sha256": "b3008db4299682714674b6f5b809c41b58efb9a9452299ad005383e8fe2b8780"
+  },
+  "wave07_r0_results": {
+    "collection": "131PASS; core128 +native3",
+    "core": "111 expected-feature/semanticFAIL17PASS; meaningful existingAPI gradient0.444444388vs0,3e38 normalizationValueError, unsafe whole-request priority update/duplicate defects. One genuineold4 fixture width118 vs populatedtarget2 prerequisite, repair before production.",
+    "preservation": "ExistingT11history21PASS",
+    "native_modest": "Actualpackadmitted gamma0/capacity2/Huber.25;2realoptimizerupdatesPASS,6paramtensorschanged eachtick, finite loss/parameters/Adam",
+    "native_high": "alpha0controlPASS2updates; alpha1 secondordinarysampleValueError probabilitiesdonotsum1 after1realupdate; admittedbase2e38/alpha1/gamma0/cap2/batch2/twoCPUworlds. Newbounded C01reachability, historicalAPI-onlyfindingnotrewritten.",
+    "native_evidence_capture": "Original2workerxdist-s run doesnotforwardallpassingworkerstdout; repeat narrow independentcaseprocesses after fixture repair to retain admittedconfig/tick1numeric evidence. Not a broad/full retry.",
+    "next": "Onlyrepaircausalold4testprereq; no production edits until correctedproof/clearance"
+  },
+  "wave07_red_clearance": "wave07/causal-red-clearance.json",
+  "wave07_r1_results": {
+    "PER4_prerequisite": "PASS .32test8.74wall",
+    "native_high_alpha0": "PASS2realupdates12.28test20.98wall;rawnumericstdoutretained",
+    "native_high_alpha1": "Intendedtick2normalizationfailureafter1realupdate14.71test24.14wall;actualadmittedreward/TD2e38,sum4e38,finitefirstloss",
+    "source_identity": "All94guarded paths/indexcandidateverified; productionunchanged beforedispatch"
+  },
+  "X04": {
+    "overlay": "wave07/X04-acceptance-overlay.json",
+    "review_sha256": "d4562d2cb241dff87e921e0a0c9540cb54832785a6dbf36c6ef8f1ee8fae8b76",
+    "severity": "P1 telemetry scoped, existing source, required",
+    "owner": "T15 producer before release/G2; T35 sink handoff",
+    "status": "OPEN",
+    "effective_requirements": 54,
+    "published_requirements": 53
+  },
+  "C01_authored_receipt": {
+    "path": "wave07-preparation/C01-authored-reachability-r1.md",
+    "sha256": "c6aa573650fdcaa88fc99d6b4d2ac5a3254eb0a2f2a1e11d6187cc712d305ecb",
+    "disposition": "New bounded authored reachability confirmed under recordedparameters; historicalAPIonlyassessment remains historical; fix and fixednative2updatepositive stillowed"
+  },
+  "wave07_source_inventories": {
+    "T13-core": {
+      "files": 5,
+      "lines": 3451
+    },
+    "T13-native": {
+      "files": 5,
+      "lines": 4352
+    },
+    "T13-existing-owners": {
+      "files": 4,
+      "lines": 2971
+    }
+  },
+  "wave07_r0_green": {
+    "core": "128PASS",
+    "native": "3PASS real2updates each; C01 repaired onR0 candidate,meanX04 remainsInf/open",
+    "owners": "107PASS1stalehistoryassertion; version/stableID expectations nowmaintained, rerunpending",
+    "static": "Ruff/Black/expressiondocPASS; mypy3HCtypingerrors; noDefaults615vs613 from2newPBconstructs",
+    "independent_review": "81adversarialPASS,2sourceconfirmedP2requiringrepair, legacyreadonlyindicespreservationregression alsoadded",
+    "review": "wave07-preparation/T13-astra-core-review-r0.md"
+  },
+  "wave07_review_red_r1": {
+    "new_cases": "4causalFAIL4positivePASS; globalRNGpreflight, strictnew6maxvalidate/load, legacywritableindices negativecases",
+    "history": "21PASS afterformat/stableIDmaintained",
+    "unit_diagnostic": "16FAIL43PASS1SKIP;15oldschema/version expectations maintained by separate owner; countbearingdiagnostic assignedproduction; no rerun yet",
+    "production_static": "mypy3HC146 typingerrors andno-default615vs613 assignedcore; ratchet/whitelistnotrelaxed"
+  },
+  "wave07_r1_green": {
+    "core": "136PASS,4.71test9.12wall",
+    "native": "3PASS2actualupdates each,38.90wall; X04meanInf stillopen",
+    "owners": "170PASS1SKIP39.55test46.14wall",
+    "five_cheap_guards": "AllPASS, mypy192clean/no-default613 unchanged",
+    "independent_core": "136PASS but2sourceconfirmedP2 for maxconversion/5to6coherence remain; newcases notyetexecuted",
+    "independent_owner": "Fourwholefiles2957 scopedstaticPASS; optionalclearIDtest duplicatecoverageP3only",
+    "mandatory_full": "NOTRUN; materialrepairs before costlygate"
+  },
+  "wave07_remaining_P2": {
+    "R1-P2a": "Causal10case RED7FAIL3positive; coherent prospective float32 conversion/max cache R2 repair10PASS/fullcore146PASS/fresh complete review APPROVE. Scoped closed, fullgate owed.",
+    "R1-P2b": "Current5 semantic admission same R2 repair closes 5to6 incoherence; authentic captured5 and old4 preservation PASS. Fullgate owed.",
+    "optional_P3": "Dedicated PS64 final-weight-overflow control, testside Torch-index warning cleanup and native oracle-probability label clarity remain optional. Owner clear-ID duplicate assertion is already covered by core, not a remaining material gap."
+  },
+  "wave07_max_red_r2": {
+    "collection": "10selected136deselectedPASS",
+    "actual": "7causalFAIL3positivePASS,0.56test5.49wall",
+    "negative": "Underflowvalidate/load/liveinsertion, schema5unrepresentablemaxvalidate/load, ordinaryroundup6/5continuation",
+    "positive": "Exact minsubnormal/maxfloat32 and old4archivalmaxdomain preserved",
+    "candidate_tree": "498a0e6832810a6a733daf57937fb6e7ab110466",
+    "scope": "Malformedsnapshot/live-attribute robustness, notnewauthoredincident; preservevalidcapturedhistory"
+  },
+  "wave07_r2_green": {
+    "core": "146PASS; source and native3/owners170PASS1SKIP and five cheap guards PASS",
+    "core_review": "Fresh complete five-file Astra medium scoped APPROVE; independent146PASS; review SHA bebfea0803b66df615caf9323500c158c6f877ccbe9d3a96ee587120b65e4c72",
+    "owner_review": "Fresh four-file R2 static PASS; no material findings",
+    "consumer_cli": "Compiler CLI PASS174.34s. Consumers FAILED2 stale currentPER5 assertions65PASS45.30stest. Exact producer state6; malformed/purity assertions preserved by test maintenance, not waived.",
+    "mandatory_full": "NOT RUN; repair causal test expectations before full."
+  },
+  "wave07_r3_results": {
+    "guards": "All6PASS",
+    "consumers": "1FAIL104PASS75.84stest80.31wall: original empty-buffer countbearing diagnostic changed. Existing test retained; actual causal proof, no success claim.",
+    "repair": "PB only7additions, valid positive int/np.integer preguard; invalid-batch validation retained; R4 runtime/review owed."
+  },
+  "wave07_r4_results": {
+    "core": "146PASS1benign test warning",
+    "native": "3PASS, actual2Adamupdates each",
+    "history_HC_unit_owners": "170PASS1SKIP",
+    "native_checkpoint_consumers": "118PASS69.53test74.77wall",
+    "guards": "All6PASS; mypy192/default613",
+    "reviews": "Fresh static core/owner/consumer/native proof scopedAPPROVE, exactR4source, no unresolved scopedP1/P2; requiredX04/T15stillOPEN",
+    "preflight": "95source/doc/DATA,9reviewartifacts,573configs,10protectedartifacts,14worktree registry;4CPUquota16GiBRAM, no competing runtime",
+    "full": "PASS; exact postflight/source and docs releases recorded"
+  },
+  "T14_preparation": {
+    "original_proposal": "wave08-preparation/T14-interface-proposal.md",
+    "original_sha256": "3fbe22738279e03c9e6f412f64e96b3549b3c5f33d81d947da25c19fb83a86df",
+    "r0_review": "wave08-preparation/T14-interface-astra-review-r0.md",
+    "r0_sha256": "2eb6149fd456d7c0526bc915184ecedd2533939edc7aeac8e930102aee0ae828",
+    "clarification": "wave08-preparation/T14-interface-admission-clarification.md",
+    "clarification_sha256": "6015050b1a95312d019e04646223d6bf7eaef1bf4374d794d5c834fbd4479f43",
+    "root_disposition": "Adopt smallest preservation-consistent correction: beta0/B1 scratch probability-support probe for persistent state; actual B/current beta weights only at sample. Preserve fullN/beta0/fractionalbeta; clock does not block on hypotheticalB1. Original/r0 unchanged. Revised proposal r1 being authored in ignored prose only, one bounded Astra r1 review next.",
+    "HC_fact_correction": "One shared _CURRENT_REPLAY_VERSIONS predicate serves two admission gateways; sequential(6,7) amendment later. Raw POP producer/validator6 versus planned HC demo10/pop7 must stay distinct. Bounded explicit-factory rawPOP6 codec proof is not automatic recurrentPER/fullC07; existingT15/T24/T25 own those. Root source verified.",
+    "source_budget": "Adopted core5/3850 and separately resliced HC/native3/3229; native consumer reads HC+POP+counted new700-line test, consumes SB source-verified public/opaque-protocol receipts without opening producer implementation. SB actual source is independently reviewed in five-file core. No hidden fourth helper; laterT15/F06 recount before dispatch.",
+    "no_source_authoring": "T13 full active; only prose preparation/review permitted.",
+    "r1_proposal": "wave08-preparation/T14-interface-proposal-r1.md",
+    "r1_sha256": "d6708084cb8bb63ba3febf8860b24a5f8b7a846da609c18ac2988aca35e77239",
+    "r1_review": "wave08-preparation/T14-interface-astra-review-r1.md",
+    "r1_review_sha256": "37d9bda30b9a7b00f2a084f1c70fb754d16cf293082b43e2892823346a50d2a8",
+    "r1_verdict": "Astra MEDIUM APPROVE exact R1; root adopts additive interface under existing authorization, no product reduction. Implementation not started and remains gated on T13 qualification."
+  },
+  "T14_HC_preparation": {
+    "path": "wave08-preparation/T14-HC-native-preparation.md",
+    "sha256": "b3a5e3e238e25d9ece19dee987bbecd69599539dfbe42c0ecd8cb5b8518868d7",
+    "status": "Complete static three-source facts; no code or runtime. New configured incompatibility must refuse during validation/materialization before actualPOP mutates learned fields, not only at replay installer. Source POP has no public mode-taking loader; greedy selector only bounded inference use."
+  },
+  "T14_current6_capture": {
+    "owner": "bac_t14_hc_preparation",
+    "phase": "Actual capturePASS on qualified code during docs-only guard phase; installed DATA after docs release. External helper/manifest preserved; new13 protected artifact baseline for next gate.",
+    "directory": "/workspace/bac-review-2026-11-01/qualification/t14-current6-fixtures",
+    "purpose": "Authentic unchanged captured6 DATA plain+genuineold5archive before new7; preserveoriginalartifacts/capacity, use public interfaces, deterministic2episodes total6 rows/tailcap3. Install in repo only with future T14 after T13 release.",
+    "external_manifest_sha256": "fad6db2b72b20bbaeb1804d70e5d09f4e924d99955cf4a7289583b867f03059d",
+    "installed_hashes": {
+      "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json": "426f8b8ec2db1d0e0800300b4a85b825d2d1cb594a8339add27e159d2bd6c875",
+      "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+      "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434"
+    },
+    "geometry": {
+      "action_dim": 12,
+      "capacity": 3,
+      "device": "cpu",
+      "observation_dim": 118
+    }
+  },
+  "T14_tests_only_inventories": {
+    "core": "5/2593, countedtest677",
+    "native": "3/3176, countedtest647",
+    "guarded_paths": 112,
+    "changed_paths": 5,
+    "protected_artifacts": 13
+  },
+  "T14_red_spec": "/workspace/bac-review-2026-11-01/qualification/wave08-red-r0-spec.json",
+  "wave08_r0_results": {
+    "collection": "132selectedPASS:69core+63native",
+    "core": "69FAIL all explicit intended missing public prioritized factory; no import/fixture failure",
+    "native": "31FAIL32PASS:25missingfactory+2missingHCseq7admission+4fixtureprerequisites (2obs105vs118,2legacyNonecomponent inputs)",
+    "existing_owners": "131PASS,62.56test78.93wall",
+    "failed_evidence_preserved": "/workspace/bac-review-2026-11-01/qualification/wave08-red-r0",
+    "repair": "Native test647 SHAa2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d. New valid native current6 uses actual105env publicproducer; synthetic3row old5 history labelled. Original118/34DATA HC/core controls unchanged. Legacy calls omitNone only. Added2atomic geometry refusal controls.",
+    "narrow_selection": "6/65selected,59deselected collectionPASS; earlier4case collection kept, no runtime under wrongselector."
+  },
+  "T14_core_implementation_owner": {
+    "name": "bac_t14_core_implementation",
+    "status": "Read-only preparation stationary; five sources2593lines. No production edits/runtime. Await root actual corrected RED clearance.",
+    "preparation": "wave08-preparation/T14-core-implementation-preparation.md",
+    "sha256": "9e403399a69444fc59ad690d441bb6fafc0e28d8435b93ff53567143ab8aeb09"
+  },
+  "wave08_red_clearance": "wave08/causal-red-clearance.json",
+  "wave08_r1_narrow": "4intendedmissingfactoryFAIL2correctgeometryPASS59deselected,4.86test9.93wall; collection6/65PASS",
+  "wave08_r0_implementation": {
+    "SB": "1805lines SHA485c8f63722dcad32e7fffe3d98ebabfdb8071833aaa974aa28f8e682205c607",
+    "HC": "675lines SHA74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+    "core_inventory": "5/3161",
+    "native_inventory": "3/3176",
+    "core_static_review": "FreshAstra staticclear SHA3d2ff1b56bd8c928db6c8581352cb3806113f4d28c0768281c762a3c29c47b7b; no runtime.",
+    "qualification": "NOT YET; first actual GREEN/owners/6guards runtime starts now."
+  },
+  "green_spec": "/workspace/bac-review-2026-11-01/qualification/wave08-green-r1-spec.json",
+  "wave08_green_r0_results": {
+    "core": "69PASS2.61test7.50wall",
+    "native": "64PASS1locatedcodecdiagnosticregex failure; actual early ValueError semantics correct",
+    "sequence_owners": "128PASS5stale supportedversionmessage expectations",
+    "native_consumers": "117PASS1oldunsupported7loop expectation",
+    "guards": "Ruff/Black/CLI/expressiondocPASS; mypy1known:set[int] needed;4newlintconstructs count617vs613",
+    "repairs": "SB1815 SHAf958... correcttype+explicitbranches/membership+codeccontext;whitelist/ratchetunchanged613. Unit611/compact868 maintenance preservesallpriorasserts/functions and addsstrict7/mixedkeyset/future8controls.",
+    "full": "NOTRUN; R1 actualverification before costliergate."
+  },
+  "wave08_r1_inventories": {
+    "core": "5/3171",
+    "native": "3/3176",
+    "existing_owners": "3/3294",
+    "guarded_paths": 112,
+    "changed_paths": 9
+  },
+  "wave08_green_r1_results": {
+    "core": "69PASS3.05test7.88wall",
+    "native": "65PASS12.93test20.03wall",
+    "sequence_HC_owners": "136PASS44.81test51.60wall",
+    "native_checkpoint_consumers": "118PASS82.43test87.69wall",
+    "guards": "All6PASS, mypy192/default613 unchanged",
+    "fresh_reviews": "Core5/3171, native3/3176, existingowner3/3294 each scopedclear; independent actualcore69/native65/owner63PASS atsameR1candidate",
+    "preflight": "112guardedpaths,7review/execution/binding artifacts,573configdigests,13protectedartifacts,14worktree registry;4CPUquota16GiBRAM9.67GBcurrent,no competing qualificationjobs",
+    "full": "FAILED:1failed6622passed16skipped16warnings;1981.36test1991.9018wall, sole stale T13 HC sequential7 refusal. Full stopped before6712; not complete/qualified. Original evidence and custody preserved.",
+    "proof": "/workspace/bac-review-2026-11-01/qualification/wave08-full-r1/fixture-resource-preflight.json"
+  },
+  "active_read_only_preparation": {
+    "bounded_API_readers": "Static exact-provider/policy/action/position/history API supplements complete; main consumes prose, no sixth implementation read."
+  },
+  "remote_checkpoint_request": {
+    "authorization": "John requested durable remote publication at next checkpoint",
+    "current_local_branch": "project-recovery-bac-2026-11-01",
+    "origin": "https://github.com/foundryside-dev/hamlet.git",
+    "remote_branch_exists": true,
+    "specific_creation_question": "John approved publishing this exact one remote branch; subsequently authorized pushing any/all work",
+    "status": "PUSHED sourceb3003550 and31docs/handoffs75bc8e43, exactremote SHAverified; no PR/merge",
+    "remote_sha": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+    "bundle": "/workspace/bac-review-2026-11-01/git-backups/bac-before-email-rewrite-01f2f64f.bundle",
+    "identity_mapping": "/workspace/bac-review-2026-11-01/git-backups/email-only-rewrite.json",
+    "CI": "ALL3workflows/everyjob SUCCESS at exact75bc8e43; qualification/remote-ci-75bc-final.json. Earlier b300 sourceCI alsoallgreen. No PR/merge."
+  },
+  "wave08_r2_results": {
+    "estimator_owner": "146PASS7.66test19.02wall",
+    "core": "69PASS",
+    "native": "65PASS",
+    "sequence_HC_owners": "136PASS",
+    "native_checkpoint_consumers": "118PASS82.89test89.66wall",
+    "guards": "All6PASS,mypy192/default613 unchanged,CLI147.11wall",
+    "new_fresh_review": "Astra MEDIUM exact2/1913 scopedclear, independent146PASS6.89test12.99wall; 3prior R1 source scopes unchanged, actualoriginalidentitiespreserved",
+    "collection": "6712/6713selected,1defaultdeselected PASS",
+    "preflight": "112source/10review/573configs13artifacts14worktrees,4CPU16GiB10.36GBcurrent,no competing qualification runtime",
+    "full": "FAILED environment prerequisite:3failed4938passed12skipped13warnings1error;1035.89test1041.06wall. /tmp ENOSPC causes compiler cache/config copy/Torch checkpoint writes; no BAC defect inferred, not PASS. Custody postflight exact112source10review5process573configs13artifacts14worktrees PASS."
+  },
+  "T15_interface_review": {
+    "proposal": "wave09-preparation/T15-interface-proposal.md",
+    "proposal_sha256": "50a694075cf2f73885ddff4f2934408e22c4fdb55172c5cf2067079a98f67e21",
+    "Astra_medium_review": "wave09-preparation/T15-interface-astra-review-r0.md",
+    "review_sha256": "25f1524240071ee9c14341078929dc768a9d9f210b2415e09cb093f4e06b90ba",
+    "verdict": "APPROVE R1: root adopts finite additive interface including lazy binding/adoption of loaded/attached state, no reseed/replace/reset merely on first-step or zero occupancy. Technical approval, implementation still gated on T14qualification.",
+    "bounded_correction": "All bounded runtime/unit/supplier/root-factory bridge receipts complete. All actual runtime callers and ordinary named unit suppliers have actual training carriers; no explicit missing-carrier unit learner found. Preserve live inference nullable limits/no early learner requirements, central authored policy, passed-brain role. Original4-source preparer writing confined R1 table and finite fixture-owner handoff, then same Astra medium review.",
+    "proposal_r1": "wave09-preparation/T15-interface-proposal-r1.md",
+    "proposal_r1_sha256": "70b155234f553855675a235d980674afdc3588d92e71dd054bba5b69f0e56d0a",
+    "review_r1": "wave09-preparation/T15-interface-astra-review-r1.md",
+    "review_r1_sha256": "42c211db2a3326cbf018bb94cd774f522fe2bf56fdcacf2e84d0c23c7791e818",
+    "root_disposition": "R1 adopted; T14 fullyqualified; main author nowimplementing with exact state-preserving lazyadoption. Finite schema/ICM extension approved3daa2e21."
+  },
+  "environment_prerequisite": {
+    "record": "/workspace/bac-review-2026-11-01/qualification/wave08-enospc-prerequisite-r3.json",
+    "old_tmp": "8.8GiB full; preserve all existing data/checkouts/backups",
+    "new_tmp": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+    "new_filesystem_available_bytes": 31762993152,
+    "probe": "8MiB allocate/read PASS",
+    "action": "TMPDIR and pytest basetemp on new workspace filesystem, collect/run exact4 stopped nodes before fullR3",
+    "scope": "Test DATA only, no source checkout copies/branch/worktree/deletion",
+    "runtime": "4PASS, nofailures, exact5identities/module/Torch1, sourceunchanged",
+    "full_R3": "CLOSED PASS6696/16; sourceb300/doc75bc qualified. Preserve oldtmp, all14worktrees; useworkspaceTMPDIR for all future QA."
+  },
+  "future_R3_scripts": {
+    "postflight": "/workspace/bac-review-2026-11-01/qualification/wave08_postflight_r3.py",
+    "source_qualification": "/workspace/bac-review-2026-11-01/qualification/qualify_wave08_source_r3.py",
+    "publish_docs": "/workspace/bac-review-2026-11-01/qualification/publish_wave08_docs_r3.py",
+    "stage_docs": "/workspace/bac-review-2026-11-01/qualification/stage_wave08_docs_r3.py",
+    "release_docs": "/workspace/bac-review-2026-11-01/qualification/release_wave08_docs_r3.py",
+    "status": "ALL previously executed; qualification/docs committed and pushed. Do not rerun non-idempotent publishers/releases."
+  },
+  "active_full_runtime": "CLOSED",
+  "wave08_r3_results": {
+    "full": "PASS; exact postflight/source qualification and docs release recorded; original R2 ENOSPC failure preserved",
+    "source": "b3003550/aecfaaa8",
+    "environment": "Explicit workspace TMPDIR and pytest basetemp; original scratch/checkouts/backups preserved"
+  },
+  "active_documentation_runtime": "CLOSED",
+  "T15_current_author": "Reuse bac_t15_implementation, actualfresh5sourcecontext POP/RC/QT/OP/newtest only. Readiness66lines SHA f66f2a2e276e4c3fe7c9ac71f4535afb01cc8e0d88de3b21e562eef11bedb854.",
+  "new_API_supplements": [
+    "T15-provider-construction-api.md",
+    "T15-epsilon-construction-api.md",
+    "T15-action-metadata-api.md",
+    "T15-completion-reason-api.md",
+    "T15-exploration-policy-producer-api.md",
+    "T15-position-fixture-api.md",
+    "T15-grid-boundary-fixture-bridge.md",
+    "T15-history-load-api.md"
+  ],
+  "T15_test_authoring": {
+    "test_lines": 1059,
+    "test_sha256": "5724687f98e668c7dc6ab56139b57eeb6367db14d02b1b38175827ef1d1e9d90",
+    "actual_scope": "5/3509",
+    "projected_scope": "5/4950 withOP300/test1300",
+    "production": "UNCHANGED",
+    "runtime": "R2 fullRED complete123FAIL4PASS, not Green; existing prior controls/history retained",
+    "receipt": "wave09-preparation/T15-test-authoring.md",
+    "collection": "127PASS5.25wall"
+  },
+  "wave09_red_r0": {
+    "candidate_tree": "d4f144831a56068f845285297b20bcad4a5f2702",
+    "narrow": "6FAIL13.06test17.52wall; same CompilationError exploration.epsilon_decay<1 stops before assertions",
+    "classification": "FIXTURE PREREQUISITE FAILURE, not intended defect RED",
+    "production": "UNCHANGED",
+    "failed_evidence": "/workspace/bac-review-2026-11-01/qualification/wave09-red-r0-narrow",
+    "next": "Narrow repair to authored fixture only, repeat exact6 after sourceidentity refresh; no broadattempt yet"
+  },
+  "root_command_correction": "Initial narrow harness invocation mistyped nonexistent external script path; no project tests ran. Corrected exact locked wrapper invocation; source unaffected. Not counted as RED.",
+  "wave09_red_r1_narrow": {
+    "exit_code": 1,
+    "result": "4intendedFAIL2PASS,41.01test46.26wall",
+    "fixtures": "Validafterepsilon.99; noimport/schemafixturefailures in exact6",
+    "failures": [
+      "bothglobal/state masked target expected3 differs48",
+      "declaredretainedmin12 ignored:optimizerupdate1",
+      "X04reportsInf vsfinite1.9999999360571385e38"
+    ],
+    "positive_controls": [
+      "actualmodest2updateHuber/Adam/finite metric",
+      "nullableconstructor/globalPERinspection role"
+    ],
+    "source": "75bc8e43/5c0720d6,142sourceguards/5identities/Torch1",
+    "production": "UNCHANGED"
+  },
+  "wave09_fixture_r2": {
+    "changes": "Exactly2 inner replay version references corrected to actualformat_version, no acceptancechange",
+    "refuted_hypothesis": "Unconfigured SequentialReplayBuffer canadoptcurrent7; preservedvalidlowlevelrole peractualsource",
+    "selectedsix_helpers": "ASTbyte-equivalent to meaningfulR1narrow",
+    "test_sha256": "3eca5e812faf5b6fbcab9fa48731da75fbcb6a232c7d1ff94e59cbcd3d0cc8bc",
+    "actual_scope": "5/3509",
+    "production": "UNCHANGED"
+  },
+  "wave09_red_r2": {
+    "source_head": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+    "candidate_tree": "f806eee411521cba094c753651f2c93b735c1123",
+    "result": "123FAIL4PASS;332.30685wall;5processidentities142guardedpaths unchanged",
+    "log_sha256": "96d39a8ff367f9b6a16b156b4e28a94db9ef2d8293bbadb7a6ef74eabd5c79ea",
+    "classification": "Valid target/warmup/X04/B1/selection/clock/stable-feedback/archive REDs; separately5schema-blocked and1ICMfuture-owned reward-boundary prerequisite. Earlier narrow4intendedFAIL2PASS unchanged."
+  },
+  "T15_schema_selector_extension": {
+    "review": "wave09-preparation/T15-schema-and-selector-extension-review-r1.md",
+    "sha256": "3daa2e2184fdc28d50d74ee5bf05a7aff208e32558504796c0771244f3749c79",
+    "verdict": "APPROVE",
+    "root_disposition": "Adopt exact additive authoring correction and truthful selection-only ICM boundary. Required fullICM T18e/T18f unchanged.",
+    "actual_schema_review": {
+      "verdict": "APPROVE staticspec/quality; runtimeowed",
+      "sha256": "79dfc73618e108638bd24fb34c7f3cf377fff4eed028feaa4351b8ff8165068d",
+      "scope": "5wholefiles2605lines"
+    }
+  },
+  "active_T15_runtime": {
+    "status": "Alllocal full/native/docsguards CLOSED/PASS; remoteCI ACTIVE atf575ecef",
+    "CI_ids": [
+      41381852766,
+      41381852888,
+      41381852998
+    ],
+    "remote_sha": "f575ecefda7844fbd5b7b6138ad0c6bf7b1bafd8"
+  },
+  "wave09_green_r0": {
+    "HEAD": "75bc8e438caaf4eadf8f4e0f6b522f84c680c1e7",
+    "tree": "f4ae7e65c2f2a1ffc944c19342490b8f48d6c9bf",
+    "collection": "150PASS4.52wall",
+    "focused": "33PASS54.70wall, all144source/5processidentities unchanged",
+    "owned": "CLOSED29FAIL121PASS,591.2001wall;16dtype,8SB archiveAPI,1SB betaAPI,4unresolved paired post-step model discrepancies",
+    "guards": "CLOSED5PASS1defaultsFAIL623>613; no new parameter defaults;11new assignment ternaries to equivalent branches, ratchet may fall to612",
+    "fresh_review": "AstraMEDIUM5/3815 REQUESTCHANGES,a799826d: correctfloat64oracle/addrecurrentretained3-oneL3window-B2lawcontrast; no confirmedproductionP1/P2. Independentadversarialruntimepending",
+    "B03": "CLOSED42FAIL125PASS,541.9376wall; failures shared eligibleK helper, missingcollector masks, stale sample/loss/forward-topology observers and copied YAML warmup1000 for63-row learning control. No general no-update production conclusion from stale observers."
+  },
+  "T15_optimizer_ownership_hypothesis": {
+    "status": "CONFIRMED4storageRED; repaired deepcopy beforeTorchload;4strictownershipGREEN66.1563wall plus independent main4PASS58.4443wall exactR2source unchangedR5. No unresolvedownershipfinding from thesecontrols.",
+    "evidence": "Astra source: shallow dict optimizer mapping then same-dtype CPU optimizer.load_state_dict may share tensor storage across saved/lazy/eager; predicts four active flat paired discrepancies across uniform/ownedPER",
+    "next": "No repeat repair; rawPOPscope only, complete native10/7 continuation T24/T25 stillowed."
+  },
+  "wave09_r1a": {
+    "tree": "096cdb7d98a9725181658c44b3ed84a6d0d72e82",
+    "collection": "319PASS",
+    "ownership_RED": "4FAIL112.1739wall; exact CPU storage overlap with saved/eager, logcc0d546b",
+    "owner_causal": "12PASS1FAIL271.9868wall; only authored fullN forward vsK witness, correction nowstationary",
+    "required_window_law": "2PASS69.7789wall; same retained3/oneL3window/B2, correctlawreadiness, noRNG/update onskip, vectortick/beta advances",
+    "default_ratchet": "Actual612; lowered613to612, no waiver/increase",
+    "fresh_unit_fixture_review": "AstraMEDIUM5/3313 no blockingdefect; actualruntimequalification/otherT15evidence stillopen"
+  },
+  "wave09_r1": {
+    "tree": "35d10aaf7656b53259eb90b4ff6a9b8199c33842",
+    "collection": "319PASS9.8513wall",
+    "actualmainreview": "AstraMEDIUM5/3940 APPROVE scoped repairs,9f2e7353; independent selected4 runtime owed on finalglobalcandidate",
+    "ownership_GREEN": "4PASS66.1563wall, strictstorage/saved/eagercontinuation, loga196a074",
+    "forward_GREEN": "2PASS13.0609wall, fullN/eligibleK independent actualentrymask, loge0153650",
+    "defaults": "612PASS",
+    "remaining_evidence_gap": "Astra5test-source1518line review: L8BPTT max-anyhidden can miss earliest-historydetach. Existing owner now strengthens firstrealprefix dependency across actualfulllength windows, no prodchange or new requirement."
+  },
+  "wave09_r2": {
+    "collection": "319PASS9.3729wall",
+    "main_scope": "5/3940 identical to approvedR1source",
+    "integration_scope": "fresh5test sources1537 staticPASS; firstrealprefixgradient gapclosed",
+    "independent_other_model": "AstraMEDIUM4PASS58.4443wall, logebc14d04, runtime receiptb83ff744; exact3process identities",
+    "BPTT": "4PASS134.116wall, log45b68e65; exactfirstprefix L2/L8, threeprocessidentities",
+    "custody": "151source/573configs13protectedartifacts14worktrees allPASS after independent/BPTT executions",
+    "guards": "All6PASS,mypy192/default612/Black65.23wall/CLI176.05wall",
+    "owner_suite": "163PASS176.0869wall plus alreadyBPTT4PASS samecandidate gives full167, log5b08a7de, custodyPASS",
+    "owned_suite": "152PASS850.7259wall, loge4e8979f;151source3process573configs13artifacts14worktrees custodyPASS",
+    "checker_preservation": "Static3source3394audit b520a008 confirms eligibleK hook and oldinstance push observer stale. Unitregression authoring first, script fix aftercausalRED. Clean-source identity preserved; genuine nativecapture onlyafterlocal exact-treecommit with requiredgatesPASS, beforepush. Never neworaclecheckout/worktree or .oracle writes.",
+    "native_owner": "65PASS25.4105wall, log77891bcc",
+    "checkpoint_consumers": "2FAIL47PASS88.9967wall, logd90bc2c8; onlydeclaredwarmup1000 vs150ticks and newcaptured6 vsold5 expectations, exactboundedownerrepairactive"
+  },
+  "wave09_r3a": {
+    "tree": "d0bb822eb387153342fb2aa82186d3df9b6bb30b",
+    "collection": "67PASS5.9316wall",
+    "checkpoint_two_causes": "2PASS42.4749wall, logbb5a7ac2; genuine warmup optimizer/counters/owned snapshot and currentcaptured6 roundtrip",
+    "checker_RED": "4intendedFAIL28.5289wall, log0aa04ee8;3eligibleK selector IndexError controls and1actual recorded-write reportNone. Production script unchanged until after actualRED.",
+    "new_review": "Fresh Astra3source3073: tests/checkpoint repairs staticallyacceptable, known checker2blockers; no proved false qualification from diagnostic overwrite, no scope expansion",
+    "R2_scope_bindings": "All6original bounded scopes exactlysame hashes as tested R2source; preserve originalHEAD/tree in proofs, finalfullgate and clean source capture stillowed"
+  },
+  "wave09_r3": {
+    "tree": "c6beac9d65c88a7063c27f4d64750cb49b7ae97a",
+    "consumer_collection": "67PASS4.5234wall",
+    "independent_othermodel": "Astra4PASS21.3546wall,custody156source3process573configs13artifacts14worktreesPASS",
+    "consumer_owners": "67PASS70.9668wall,custodyPASS",
+    "guards": "all6PASS,mypy192/default612/Black51.70wall/CLI173.70wall",
+    "fresh_consumer_review": "Astra3source3091 spec/qualityPASS no materialfinding",
+    "full_collection": "6861/6862selected,1defaultdeselectedPASS8.0496wall",
+    "full_preflight": "156source10review573configs13artifacts14worktreesPASS;4CPU16GiBRAM30.38GBworkspacefree,nocompetingruntime;workspaceTMPDIR/basetemp",
+    "full": "CLOSED FAILED/INTERRUPTED; see wave09_full_r0_failure",
+    "native_checker": "Genuine cleancommittedcapture stillOWED afterlocalexacttreecommit; doNOTadddirtybypass or neworaclecheckout"
+  },
+  "wave09_full_r0_failure": {
+    "source": "75bc8e43/c6beac9d",
+    "result": "CLOSED exit2 FAILED/INTERRUPTED;1setupERROR3536PASS11SKIP13warnings870.28wall, neverqualified",
+    "cause": "Separate recording/artifact helper still expected full2 selector rows beforeartifactassertions",
+    "custody": "156source10reviews5process573configs13artifacts14worktreesPASS",
+    "owner_action": "SinglegracefulSIGINT to verified root-owned alreadyfailedpytestcontroller only; no unrelated cancellation/deletion",
+    "evidence": "/workspace/bac-review-2026-11-01/qualification/wave09-full-r0/failed-postflight.json"
+  },
+  "wave09_r4": {
+    "tree": "f4032499a9800e8a8398b812a8dcc7ebfe9c4974",
+    "only_extra_change": "sinks helper304lines SHA29b8fd69; actualworldeligibility+scheduleprojection+K-localmasks; artifactmoduleunchanged",
+    "source_inventory": "4/3031; core6source scopes exact R2bindings, consumer3scopeexactR3binding",
+    "fresh_review": "AstraMEDIUM4/3031 noactionablefinding",
+    "independent_failed_artifact": "1PASS14.3359wall, actual controlleridentity/hashcustodyPASS",
+    "focused_direct_consumers": "20PASS33.6667wall, log068e75a5; all queue/file-index/SQL/TB/lifecycle/corruptionassertions retained",
+    "guards": "all6PASS,mypy192/default612/Black48.46wall/CLI174.25wall",
+    "full_collection": "6861/6862selected1defaultdeselectedPASS12.119wall",
+    "preflight": "156source12review573configs13artifacts14worktreesPASS,4CPU/16GiBRAM30.12GBworkspacefree,no competingruntime",
+    "full": "CLOSED FAILED/INTERRUPTED; see wave09_full_r1_failure",
+    "documentation_draft": "wave09-preparation/T15-documentation-draft.md SHA6c9f648d, ignored94lines source-verified5/3991; no tracked edits"
+  },
+  "wave09_full_r1_failure": {
+    "source": "75bc8e43/f4032499",
+    "result": "CLOSED exit2;1FAIL6222PASS14SKIP15warnings1395.9261wall; neverqualified",
+    "cause": "Ten episodes capped50 cannot reach compiledwarmup1000; four learning fixtures audited/repaired with private copied YAML and strict real optimizer assertions",
+    "log_sha256": "2844399d49923c22c550598aa982b68b050afd582bbcc0ca1ac0cde7654930c4",
+    "custody": "156source12review5process573configs13artifacts14worktrees PASS",
+    "evidence": "/workspace/bac-review-2026-11-01/qualification/wave09-full-r1/failed-postflight.json"
+  },
+  "wave09_r5": {
+    "tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+    "only_extra_change": "training_loop641 lines SHA207500289444d904f33d1961164fec493433a3f1514562ff541ce5fced11c722;4strict copied-YAML/progress fixture repairs; all budgets/tolerances preserved",
+    "static_review": "AstraMEDIUM5/3672 PASS; runtimeowed",
+    "collection": "8cases PASS",
+    "guards": "all6 PASS",
+    "independent_runtime": "4PASS37.63test46.4069wall;157source3process573configs13artifacts14worktrees custodyPASS",
+    "owner_runtime": "8PASS36.4073wall; exactsource custodyPASS",
+    "full_preflight": "PASS157source14review5expectedprocess573configs13artifacts14worktrees;6861/6862selected",
+    "documentation_draft": "Literal source-verified replacements corrected; SHAabbd8a78e4fa9b833d020203e7f6b6d323fc8d4798db91fc76133f466e90668d",
+    "documentation_review": {
+      "path": "wave09-preparation/T15-documentation-independent-review.md",
+      "sha256": "d77cf792aed82f55d5ba49878aa77ecfd16d4810a379f67a3dfc106ebbec49d7",
+      "verdict": "Fresh5/3991; initial geometryP2 NOT SUSTAINED as accepted-contractgap after same-sourceQ4clarification; publicroutesgenerateQinternally. PreservefullNinvariant; literalP3wordingcorrections adopted. No finalREADMEorBACacceptance."
+    },
+    "native_preparation": {
+      "script": "/workspace/bac-review-2026-11-01/qualification/run_wave09_native.py",
+      "status": "External291lineprobe staticPASS after filedcausalrepairs; harnesscoordinate/arithmetic/strictJSON prerequisitePASS. ExecuteonlyafteractualfullPASS/localexacttreecommit.",
+      "workers": 4,
+      "script_sha256": "028b5803cfbe50a98da49e0dcd1e046943f770507ee319b2b11cc8a53bc49d81",
+      "review_sha256": "4326cde7990ea6ef5e766fc05debe38764537c3cd95e50b5d09d97babfed9057"
+    },
+    "documentation_patch": {
+      "path": "wave09-preparation/T15-source-docs.patch",
+      "sha256": "63b8ad46aa001e4bce463b5a3986d00f0f8457fed9c7b1f08a3509c12a686577",
+      "status": "Prepared/unapplied; gitapplycheckPASS. Rootwillremoveconversationalcode-gapwarningparagraph while preservingprecise producer/validatorgeometry; applyonlyafterfull/native."
+    },
+    "full": "PASS6845passed16skipped16warnings2267.9633wall;157source14review5process573configs13artifacts14worktrees postflightPASS",
+    "source_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327",
+    "native": "All6actualcleancommittedcaptures+independent rootvalidatorPASS; source/config/instrument/import/worktreepostflightPASS"
+  },
+  "T16_preparation": "Read-only actual4/3877 RR/POP/BC/optimizerfactory; futuretest700,5/4900. MissingownedPCG64 observablecontract; actualPER/scheduler schema verified, no additional supplier owed. No sourceedit/runtime clearance yet.",
+  "current_remote_checkpoint": {
+    "sha": "bc47e44662f7bea953156a668610a20e6bced9f2",
+    "tree": "e0cfbe0f835872c5540d81188b6c7fa620035b21",
+    "branch": "project-recovery-bac-2026-11-01",
+    "push": "PASS existing-branch fast-forward; exact provider SHA verified",
+    "ci": "bc47 lint/configsuccess/tests in progress; previousa080 all three workflows/jobs success",
+    "previous_a080_ci": "All three workflows/jobs terminal success with exact SHA, durable qualification/remote-ci-a080-terminal.json",
+    "jobs_record": "qualification/remote-ci-bc47-initial.json"
+  },
+  "active_T16_runtime": "CLOSED; G2, native6 and six documentation guards PASS",
+  "T17_preparation": "Complete source4/1507, approved P4 seam from_resolved_encoder, same5/projected2662 withtest800, full DATA/API supplier prose ready; no authoringbeforeT16qualification.",
+  "T16_next_publication": "a0802a44 pushed; no new checkout/branch",
+  "T17_supplier_binding_clarification": {
+    "sha256": "c1ab2fd929960627c8e9a3bc7e96aff0680061bada5ffd7b8dbd4494c4a7ff88",
+    "refs": [
+      "pulse_left",
+      "pulse_right"
+    ],
+    "proof": "static supplier; actual compile assertions owed in first runtime"
+  },
+  "T19_preparation": {
+    "readiness": "wave12-preparation/T19-interface-readiness.md",
+    "state": "read-only supplier clarifications; no implementation until T17 complete",
+    "supplier_inventory": "wave12-preparation/T19-supplier-source-baseline.json",
+    "supplier_budget": "5 whole files/3983 source lines",
+    "provider_attribution_correction": "T17 is representation; existing RND service comes from T18/T18a, later private bank integrations stay separate",
+    "readiness_addendum": "Corrected provider attribution; T18/T18a service API already exists, later per-world integration remains separately owned",
+    "supplier_handoff": {
+      "path": "wave12-preparation/T19-public-api-handoff.md",
+      "sha256": "dc634d17296bd81df17698752df38e7a548aaf4abfe3b03d956de61414128a65",
+      "scope": "five whole sources/3983 lines; read-only, no runtime"
+    },
+    "entropy_handoff": "wave12-preparation/T19-entropy-api-handoff.md: three sources/794 lines; existing normalized softmax entropy unmasked, no public accessor",
+    "adopted_seam": "Explicit caller bind_episode_worlds then begin_batch_episode, concrete mandatory identity/owned snapshots; authoritative predictor minibatch deltas use receipt.optimizer_updates"
+  },
+  "T17_tests_status": {
+    "owner": "bac_t17_readiness",
+    "phase": "633-line tests authored; owner readback/receipt pending, no runtime cleared",
+    "supplier_blockers": [],
+    "expected_next": "Stationary receipt then root exact snapshot, collection/style and meaningful RED"
+  },
+  "active_T17_runtime": "ALL CLOSED; source joint38/independent4 and six source+six doc guards PASS",
+  "wave11_red_r0": {
+    "candidate_tree": "55e3c6c4fe5f69a171dc59faa32082f959a9ca39",
+    "collection": 34,
+    "owned": {
+      "failed": 28,
+      "passed": 6,
+      "errors": 0,
+      "seconds": 20.850724935531616
+    },
+    "custody": "PASS164source/573configs/13artifacts/14worktrees/5processes",
+    "defects": "missing resolved construction API and factory ignored interaction_mlp",
+    "style": "Ruff PASS; Black formatting owed",
+    "proof": "/workspace/bac-review-2026-11-01/qualification/wave11-r0-owned/owned-negative-custody.json"
+  },
+  "wave11_r1_green": {
+    "owned": {
+      "passed": 34,
+      "skipped": 0,
+      "seconds": 21.562583923339844
+    },
+    "custody": "PASS164 sources/573 configs/13 artifacts/14 worktrees/3 actual processes",
+    "review": "Astra medium static no confirmed P1/P2; independent runtime12 proposed",
+    "affected": {
+      "passed": 407,
+      "failed": 2,
+      "seconds": 358.7036814689636,
+      "cause": "both __init__ observers never attach under resolved construction",
+      "negative_custody": "PASS; original negative retained"
+    },
+    "optional_P3": "Historical linear test uses shared current initializer; static diff preserves old history, golden oracle optional",
+    "independent": {
+      "passed": 12,
+      "seconds": 22.76939368247986,
+      "custody": "PASS; Astra medium actual execution, three process identities"
+    },
+    "guards": "ALL SIX PASS; source/config/artifact/worktree postflight PASS"
+  },
+  "T17_current_checkpoint": {
+    "source": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+    "tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+    "docs_tree": "acf61be6345a79e3aabe165af4faa6e6bb67dc4a",
+    "source_gate": "Scoped PASS; full pytest explicitly deferred G3 under reviewed owner-approved cadence",
+    "next": "T19 tests-first active; then production/review/repair/appropriate gates",
+    "documentation_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+    "documentation_tree": "e0cfbe0f835872c5540d81188b6c7fa620035b21",
+    "publication": "PUSHED exact remote SHA verified; all six documentation guards PASS"
+  },
+  "last_full_repository_gate_source": {
+    "sha": "6b5fdf62f046ec158b8c3378d65add06faebd591",
+    "tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+    "full_result": {
+      "passed": 6857,
+      "skipped": 16,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 16
+    },
+    "proof": "/workspace/bac-review-2026-11-01/qualification/wave10-full-r1/final-postflight.json",
+    "native_proof": "/workspace/bac-review-2026-11-01/qualification/wave10-native-r0/postflight.json"
+  },
+  "current_scoped_source": {
+    "sha": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6",
+    "tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+    "scope": "T17 source, scoped qualified; full pytest deferredG3, not repository green",
+    "checkpoint": "bc47e44662f7bea953156a668610a20e6bced9f2"
+  },
+  "T19_tests_status": {
+    "owned_test_lines": 323,
+    "source_files": 5,
+    "current_total_lines": 2711,
+    "collection": "10PASS actual; source/index/import/config/artifact/worktree custody PASS; newCL still absent",
+    "style": "Ruff import ordering and Black formatting owed only; no source repair while RED active"
+  },
+  "active_T19_runtime": "NONE",
+  "wave12_red_r0": {
+    "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+    "candidate_tree": "8feee4b66c0eebc6957c8a87c010ec1ad2872e97",
+    "exit_code": 1,
+    "counts": {
+      "failed": 9,
+      "passed": 1,
+      "errors": 0
+    },
+    "wall_seconds": 49.092506647109985,
+    "log_sha256": "9e7a47393c486d9898288338728cd19dd78aeac313e10259b8563d0be60961b7",
+    "source_guards": 165,
+    "absent_sources_verified": [
+      "src/townlet/training/clock_ledger.py"
+    ],
+    "process_identities": 5,
+    "configs": 573,
+    "artifacts": 13,
+    "worktrees": 14,
+    "custody": "PASS",
+    "interpretation": "Meaningful RED: nine cases complete real legacy2/5 fixture prerequisites, then fail the missing owned LaneOutcome interface assertion. Existing direct legacy one-minibatch control passes. No fixture/collection error.",
+    "style_owed": "Ruff import ordering only plus Black formatting; no semantic test relaxation authorized."
+  },
+  "wave12_accounting_red_r1": {
+    "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+    "candidate_tree": "3e59b4d80c315036dcaa9355bb770446c3f68a1d",
+    "counts": {
+      "failed": 1,
+      "errors": 0
+    },
+    "wall_seconds": 12.582795858383179,
+    "log_sha256": "203d09bf6c847ef7556ce7aa3fe610ef1dd108057ea0aea6c5d91f3a294571e1",
+    "source_guards": 167,
+    "process_identities": 1,
+    "configs": 573,
+    "artifacts": 13,
+    "worktrees": 14,
+    "custody": "PASS",
+    "cause": "Actual legacy update on7rows/batch3 called real Adam once, advanced moments and changed parameters; then in-test missing public pure counter view assertion failed. No source/fixture/import failure.",
+    "style": "RuffPASS; Black formatting owed"
+  },
+  "T19_main_frozen_inventory": [
+    {
+      "path": "src/townlet/population/vectorized.py",
+      "lines": 2315,
+      "sha256": "97e6c64c746414f1163b27a3c83329f8ccb2bce70676b53c1ffc34074caa9ede",
+      "present": true
+    },
+    {
+      "path": "src/townlet/training/episode.py",
+      "lines": 66,
+      "sha256": "5db951b4e76f88a2339ee5f77fe6515a726b5e2d1a006dbe283ea07d022f7fa9",
+      "present": true
+    },
+    {
+      "path": "src/townlet/training/clock_ledger.py",
+      "lines": 36,
+      "sha256": "117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571",
+      "present": true
+    },
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "lines": 222,
+      "sha256": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+      "lines": 329,
+      "sha256": "b4f05ea4400b3aafa4696244b7a3ce897c36c9dbd209f1195f09ca427e1ef6c2",
+      "present": true
+    }
+  ],
+  "T19_accounting_inventory": [
+    {
+      "path": "src/townlet/exploration/rnd.py",
+      "lines": 661,
+      "sha256": "3a774dfb042cdbf20b66555c41f75c2d537b6ff49472395877dfcf5595e26e72"
+    },
+    {
+      "path": "src/townlet/config/bac_options.py",
+      "lines": 294,
+      "sha256": "10dc3ef7dc288d954147046c95bc8362df2162f3829986be26b2724e86dd4916"
+    },
+    {
+      "path": "src/townlet/exploration/adaptive_intrinsic.py",
+      "lines": 226,
+      "sha256": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+      "lines": 599,
+      "sha256": "85026bb3b203edfaa168c2b0cf8b0bd17e20bcb7e7680ae507b458c8c2e59684"
+    }
+  ],
+  "T19_accounting_projection": "RND800/OP294/AI300/test800=4files2194lines; no new finite task",
+  "stop_after_packet": null,
+  "halt_requested": false,
+  "halt_condition": null,
+  "T19_required_full_gate": {
+    "required": true,
+    "reason": "Astra actual configured POP service/clock consumption triggers addendumSection3 existing consumed meaning/material cross-slice repair",
+    "next": "after core fixes+owner+independent checks, before T19 release/halt"
+  },
+  "wave12_r2_results": {
+    "joint": "65PASS2warnings48.2053wall; custodyPASS167source/573configs/13artifacts/14worktrees/3processes",
+    "guards": "fivePASS; no-defaultsFAIL613>612",
+    "producer_review": "no defects; independent12PASS14.7362wall, five actualprocess identities, four hashes unchanged",
+    "core_review": "request changes; three material core findings; full required"
+  },
+  "wave12_r3_red": {
+    "base_commit": "bc47e44662f7bea953156a668610a20e6bced9f2",
+    "candidate_tree": "fcffa0ee0b53a03947ae53426343f834a8d7494a",
+    "counts": {
+      "failed": 7,
+      "passed": 7,
+      "errors": 0
+    },
+    "wall_seconds": 30.360689401626587,
+    "log_sha256": "aab700af7d0f6340b23b83051baf84d18bdee26f43076915979bb895f97c7433",
+    "failure_categories": {
+      "tensor": 4,
+      "late_commit": 2,
+      "singleton_entropy": 1
+    },
+    "singleton_fixture": "Normal authored compilation emitted actual WAIT-only A=1 and bool[N,1] mask; finite world failed specifically at old entropy0/log1 gate. No config failure relabeled as RED.",
+    "passing_controls": "Scalar forgery refusal before/aftercommit; duplicate begin/ordinary reset/history accessor; actual POP unconfigured short-tail/optimizer accounting; nonfinite singleton Q refusals before physics",
+    "custody": "PASS167source/573configs/13artifacts/14worktrees/5actualprocesses",
+    "producer_four_sources": "unchanged from independently12PASS R2",
+    "clearance": "Core production repair round1 permitted, preserve all24 cases and reset/latecommit capabilities; full gate required before release"
+  },
+  "wave12_r4_results": {
+    "joint": "79PASS2observerwarnings53.6282wall",
+    "guards": "all sixPASS, default ceiling612 unchanged",
+    "core_rereview": "bac_astra_t19_main pending",
+    "producer_four_sources": "byte-identical to R2 independently12PASS",
+    "full_helper": "Astra scoped four findings repaired, no material findings;SHA81fdb2c535590960c13fcc8137870fb66be62436f2217656022d872758408305",
+    "current_obligation": "owner/direct checks, independent core runtime, required full gate, docs/evidence/commit/push then HALT"
+  },
+  "T19_full_helper": {
+    "path": "qualification/qualify_wave12_full.py",
+    "sha256": "4c8a99ce6ea846d15df2a4729675acdcf2ee1c6889318ebde6d157620bb90fd1",
+    "review": "T19-full-orchestration-independent-rereview.md",
+    "status": "updated explicit source-commit and availability-custody binding; independent review pending"
+  },
+  "temporary_checkout_custody": {
+    "registered": 14,
+    "available": 1,
+    "unavailable_historical": 13,
+    "cause": "not established",
+    "records_refs_source_unchanged": true,
+    "workspace_history_bundle_verified": true,
+    "record": "qualification/wave12-environment-custody-transition.json",
+    "no_recreation_or_prune": true,
+    "later_observation": "Full preflight process IDs/cgroup counters reset and memory baseline222818304; old/tmp paths unavailable in normal and approved host read. Cause not conclusively established; runtime context transition recorded, source/bundle unchanged."
+  },
+  "T19_source_checkpoint": {
+    "sha": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+    "tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+    "qualified": "NOTYET; requiredfullpending",
+    "focused_owner_reviews": "PASS at originalactual identities, separate registryavailability discrepancy recorded"
+  },
+  "source_qualified": "39e61662299fb1429a9041e4add795f5c8efb8c6",
+  "remaining_after_T19": 38,
+  "final_checkpoint": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+  "remote_verified_sha": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+  "remote_verified_tree": "14d834f55a5e0a3a7dcae33fd6e69058471ed488",
+  "final_checkpoint_ci": "All3exact-SHAworkflow/jobrowsIN_PROGRESS at halt. No green/integratedrelease claim.",
+  "halted": false,
+  "current_task": "T21/DTO bounded handoffs accepted; checkpoint then compiled transport",
+  "resume_authority": "Latest user: I want you to keep delivering the work that you had planned. Continue full remaining approved BAC programme without routine package halts.",
+  "active_T20_runtime": "NONE",
+  "instruction_commit": "383d21acc07a8568adf0056f00c73114ff4bbfc5",
+  "approved_no_compat_amendment": "2a33daacf77c0e8823917a6e27cf3b3a1eb2bbd5a05e071a06010ada9405410d",
+  "last_wip_checkpoint": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+  "T20_current_only": {
+    "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+    "red": "r2:80collected46FAIL34PASS13.0982wall;4nativecorruption DIDNOTRAISE witnesses, allsource/import/custodyverified",
+    "author": "/root/bac_t20_owner",
+    "production_source_paths": [
+      "src/townlet/curriculum/base.py",
+      "src/townlet/curriculum/adversarial.py",
+      "src/townlet/curriculum/static.py",
+      "src/townlet/training/episode.py"
+    ],
+    "test_path": "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+    "projected_files": 5,
+    "projected_lines": 2520,
+    "test_ceiling": 1000,
+    "EP_ceiling": 200,
+    "no_runtime_until_stationary": true,
+    "fresh_review_owner": "/root/bac_astra_t20_review",
+    "removals": "Old tracker/legacy_step/old7-state/configure probing/ignored-Q decision compatibility protocol; currentcaller/nativeintegration pending",
+    "readiness": {
+      "world": "wave13-preparation/WORLD-IDENTITY-READINESS.md",
+      "T21": "wave13-preparation/T21-READINESS.md"
+    },
+    "qualification": "Boundedproducerhandoffaccepted; NOTINTEGRATEDQUALIFIED/NOTRELEASED;28/66unchanged",
+    "current_review": "SAMEAstra R11 ACCEPTED bounded producer; zero unresolvedownedP1/P2/blockingP3",
+    "current_red": "R10targeted1FAIL174deselected/175collected3.4221wall: exactgenuine7event currentnative false refusal;custodyPASS",
+    "current_green": "R11tree763ed2ce:175ownedPASS/130independentPASS45deselected;fourlocalguardsPASS601;global6oldfactoryerrorsOPEN",
+    "current_fix_round": 3,
+    "source_inventory": [
+      {
+        "path": "src/townlet/curriculum/base.py",
+        "lines": 66,
+        "sha256": "d961844d5738ac85d26d5dd57520d1954718ee93e482e5133d4323d14c149268",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/adversarial.py",
+        "lines": 537,
+        "sha256": "2194cc4075096670181a50cf1be2158cd68334a07111818ad75382cd73890f4f",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/static.py",
+        "lines": 64,
+        "sha256": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/episode.py",
+        "lines": 176,
+        "sha256": "53b52a8a56d5fc2714604198fc4516c5c4d48258537a9dcbe4ccd00dae743cbf",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+        "lines": 985,
+        "sha256": "57750efea277a256969851ba8413eb17aa5d8810f02b673d6f02639838807ffd",
+        "present": true
+      }
+    ]
+  },
+  "next_owner": "T21 prep/readiness exists, no implementation started. Reuse existing authorized checkout; no extra branch/worktree creation.",
+  "active_T21_runtime": "NONE; allroot/reviewer/author sessionsclosed",
+  "T21_current_only": {
+    "base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+    "author": "/root/bac_t21_owner",
+    "inventory": "OP1200/TC900/EF500/CF200/test650=5/3450",
+    "red": "R0tree987a2ae0:52collected47FAIL5PASS7.4610wall;1invalidcustomrewardfixtureseparatelyrefuted,46actualnewcontractgaps",
+    "corrected_control": "R1tree91dd2072:customsparse1PASS51deselected3.7913wall, source/index/import/fixturecustodyPASS",
+    "qualification": "Boundedproducerhandoffsaccepted; NOTINTEGRATEDQUALIFIED/NOTRELEASED;28/66originalreleasesunchanged",
+    "design": "PureOPoptionsresolution + separatecanonicalOPstaticbaseline; EFactualdeclaredrosterrequired; v2hash/transport, explicitfactoryinputs; oldEFscopecompatremoved inownedfile",
+    "compiler_followup": "Actualsource-readerhandoff complete, separate serialowner4/4400. Preservecurrentcacheautorebuild; directoldformatrefusal; originalartifactbytesprotected.",
+    "world_followup": "Astra source-based realidentitydesign approved bySol independentR3;4finitehandoffgapsclosed. Futuretestsfirst5/5000, no implementation yet.",
+    "first_green": "R2:53collected2FAIL51PASS14.2728wall; fourlocalguardsPASS601; sixoldfactorytypeerrorsclosed,1compiledEFcallererrorOPEN",
+    "dto_red": "R3:64collected6FAIL58PASS10.7527wall at exactempty/seven-meter/zero12DTOValidationErrors;176source573configs13artifacts/3processcustodyPASS",
+    "current_green": "R4treeb7a8c677:239jointPASS,48SolindependentPASS,23AstraDTOindependentPASS;4localguards601PASS,global1compiledargOPEN",
+    "next_delivery": "Serialboundedcompiler/compiledrosterconsumerplusrealcompiledfactorywitness; preservecurrentcacheautorebuild and originalhistoricalartifacts whiledirectoldformatsrefuse"
+  }
+}

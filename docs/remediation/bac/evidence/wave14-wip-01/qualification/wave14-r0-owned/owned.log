@@ -1,0 +1,1304 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [52 items]
+
+F...FFFFFFFFFFFF.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFF                     [100%]
+=================================== FAILURES ===================================
+________________ test_legacy_step_refuses_at_authored_boundary _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_legacy_step_refuses_at_authored_boundary():
+>       with pytest.raises(ValidationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'pydantic_core._pydantic_core.ValidationError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:99: Failed
+_ test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.1-0.25-True] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+via_effective = True, mode = 'rate_limited', rate = 0.1, expected = 0.25
+
+    @pytest.mark.parametrize("via_effective", [False, True])
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+>       curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+__________ test_current_resolution_and_named_policy_provenance[True] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+omitted = True
+
+    @pytest.mark.parametrize("omitted", [True, False])
+    def test_current_resolution_and_named_policy_provenance(omitted):
+        training = training_config(omitted=omitted)
+        resolved = resolve(training)
+>       assert resolved.schema_version == "bac-options-v2"
+E       AssertionError: assert 'bac-options-v1' == 'bac-options-v2'
+E         
+E         - bac-options-v2
+E         ?              ^
+E         + bac-options-v1
+E         ?              ^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:113: AssertionError
+__________ test_current_resolution_and_named_policy_provenance[False] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+omitted = False
+
+    @pytest.mark.parametrize("omitted", [True, False])
+    def test_current_resolution_and_named_policy_provenance(omitted):
+        training = training_config(omitted=omitted)
+        resolved = resolve(training)
+>       assert resolved.schema_version == "bac-options-v2"
+E       AssertionError: assert 'bac-options-v1' == 'bac-options-v2'
+E         
+E         - bac-options-v2
+E         ?              ^
+E         + bac-options-v1
+E         ?              ^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:113: AssertionError
+_________ test_singleton_bounds_and_current_native_future[stage_band] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+mode = 'stage_band'
+
+    @pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
+    def test_singleton_bounds_and_current_native_future(mode):
+        data = training_config(strategy="adversarial", mode=mode).model_dump()
+        data["curriculum"]["adversarial"].update(min_difficulty=0.6, max_difficulty=0.6)
+        training = TrainingV2Config.model_validate(data)
+>       original = manager(training)
+                   ^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:210: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+_ test_static_factory_transports_exact_roster_and_fixed_policy[False-roster0] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = (), via_effective = False
+
+    @pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+>       curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+________ test_singleton_bounds_and_current_native_future[rate_limited] _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+mode = 'rate_limited'
+
+    @pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
+    def test_singleton_bounds_and_current_native_future(mode):
+        data = training_config(strategy="adversarial", mode=mode).model_dump()
+        data["curriculum"]["adversarial"].update(min_difficulty=0.6, max_difficulty=0.6)
+        training = TrainingV2Config.model_validate(data)
+>       original = manager(training)
+                   ^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:210: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+_ test_static_factory_transports_exact_roster_and_fixed_policy[False-roster1] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('custom_reserve', 'thermal_budget'), via_effective = False
+
+    @pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+>       curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+_ test_authored_dwell_entropy_and_threshold_reach_runtime[min_steps_at_stage-11] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'min_steps_at_stage', value = 11
+
+    @pytest.mark.parametrize("field,value", [("min_steps_at_stage", 11), ("entropy_gate", 0.1), ("survival_advance_threshold", 0.95)])
+    def test_authored_dwell_entropy_and_threshold_reach_runtime(field, value):
+        data = training_config(strategy="adversarial").model_dump()
+        data["curriculum"]["adversarial"][field] = value
+>       curriculum = manager(TrainingV2Config.model_validate(data))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...ntropy_gate=0.5, min_steps_at_stage=11)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+_ test_static_factory_transports_exact_roster_and_fixed_policy[False-roster2] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('thermal_budget', 'custom_reserve'), via_effective = False
+
+    @pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+>       curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+__ test_authored_dwell_entropy_and_threshold_reach_runtime[entropy_gate-0.1] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'entropy_gate', value = 0.1
+
+    @pytest.mark.parametrize("field,value", [("min_steps_at_stage", 11), ("entropy_gate", 0.1), ("survival_advance_threshold", 0.95)])
+    def test_authored_dwell_entropy_and_threshold_reach_runtime(field, value):
+        data = training_config(strategy="adversarial").model_dump()
+        data["curriculum"]["adversarial"][field] = value
+>       curriculum = manager(TrainingV2Config.model_validate(data))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.1, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+__ test_static_factory_transports_exact_roster_and_fixed_policy[True-roster0] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = (), via_effective = True
+
+    @pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+>       curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ()
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_ test_authored_dwell_entropy_and_threshold_reach_runtime[survival_advance_threshold-0.95] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+field = 'survival_advance_threshold', value = 0.95
+
+    @pytest.mark.parametrize("field,value", [("min_steps_at_stage", 11), ("entropy_gate", 0.1), ("survival_advance_threshold", 0.95)])
+    def test_authored_dwell_entropy_and_threshold_reach_runtime(field, value):
+        data = training_config(strategy="adversarial").model_dump()
+        data["curriculum"]["adversarial"][field] = value
+>       curriculum = manager(TrainingV2Config.model_validate(data))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+__ test_static_factory_transports_exact_roster_and_fixed_policy[True-roster1] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('custom_reserve', 'thermal_budget'), via_effective = True
+
+    @pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+>       curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_________________ test_static_roles_are_truthful[True-derived] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+omitted = True, status = 'derived'
+
+    @pytest.mark.parametrize("omitted,status", [(True, "derived"), (False, "active")])
+    def test_static_roles_are_truthful(omitted, status):
+>       current = effective(training_config(omitted=omitted))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+__ test_static_factory_transports_exact_roster_and_fixed_policy[True-roster2] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('thermal_budget', 'custom_reserve'), via_effective = True
+
+    @pytest.mark.parametrize("roster", [(), ROSTER, tuple(reversed(ROSTER))])
+    @pytest.mark.parametrize("via_effective", [False, True])
+    def test_static_factory_transports_exact_roster_and_fixed_policy(roster, via_effective):
+>       curriculum = manager(training_config(), roster=roster, via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('thermal_budget', 'custom_reserve')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+________________ test_invalid_declared_rosters_refuse[roster0] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('duplicate', 'duplicate')
+
+    @pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
+    def test_invalid_declared_rosters_refuse(roster):
+        with pytest.raises((TypeError, ValueError)):
+>           op.resolve_static_baseline_policy(declared_meter_names=roster)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:155: AttributeError
+_________________ test_static_roles_are_truthful[False-active] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+omitted = False, status = 'active'
+
+    @pytest.mark.parametrize("omitted,status", [(True, "derived"), (False, "active")])
+    def test_static_roles_are_truthful(omitted, status):
+>       current = effective(training_config(omitted=omitted))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+________________ test_invalid_declared_rosters_refuse[roster1] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('',)
+
+    @pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
+    def test_invalid_declared_rosters_refuse(roster):
+        with pytest.raises((TypeError, ValueError)):
+>           op.resolve_static_baseline_policy(declared_meter_names=roster)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:155: AttributeError
+________________ test_invalid_declared_rosters_refuse[roster2] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('  ',)
+
+    @pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
+    def test_invalid_declared_rosters_refuse(roster):
+        with pytest.raises((TypeError, ValueError)):
+>           op.resolve_static_baseline_policy(declared_meter_names=roster)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:155: AttributeError
+________________ test_invalid_declared_rosters_refuse[roster3] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = (7,)
+
+    @pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
+    def test_invalid_declared_rosters_refuse(roster):
+        with pytest.raises((TypeError, ValueError)):
+>           op.resolve_static_baseline_policy(declared_meter_names=roster)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:155: AttributeError
+_____ test_inactive_presets_preserve_authoring_but_not_selected_execution ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_inactive_presets_preserve_authoring_but_not_selected_execution():
+>       first = effective(training_config(mode="stage_band", rate=0.01))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:251: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+________________ test_invalid_declared_rosters_refuse[roster4] _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ['mutable-list']
+
+    @pytest.mark.parametrize("roster", [("duplicate", "duplicate"), ("",), ("  ",), (7,), ["mutable-list"]])
+    def test_invalid_declared_rosters_refuse(roster):
+        with pytest.raises((TypeError, ValueError)):
+>           op.resolve_static_baseline_policy(declared_meter_names=roster)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:155: AttributeError
+________ test_factory_refuses_unresolved_modes_even_for_static[modes0] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+modes = CurriculumOptions(commit_mode=None, difficulty_mode=None)
+
+    @pytest.mark.parametrize("modes", [op.CurriculumOptions(), op.CurriculumOptions(commit_mode="completion")])
+    def test_factory_refuses_unresolved_modes_even_for_static(modes):
+        training = training_config()
+>       static = op.resolve_static_baseline_policy(declared_meter_names=ROSTER)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:161: AttributeError
+_ test_adversarial_rate_identity_tracks_only_selected_semantics[stage_band-False] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+mode = 'stage_band', changes = False
+
+    @pytest.mark.parametrize("mode,changes", [("stage_band", False), ("rate_limited", True)])
+    def test_adversarial_rate_identity_tracks_only_selected_semantics(mode, changes):
+>       first = effective(training_config(strategy="adversarial", mode=mode, rate=0.01))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:262: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+________ test_factory_refuses_unresolved_modes_even_for_static[modes1] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+modes = CurriculumOptions(commit_mode='completion', difficulty_mode=None)
+
+    @pytest.mark.parametrize("modes", [op.CurriculumOptions(), op.CurriculumOptions(commit_mode="completion")])
+    def test_factory_refuses_unresolved_modes_even_for_static(modes):
+        training = training_config()
+>       static = op.resolve_static_baseline_policy(declared_meter_names=ROSTER)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:161: AttributeError
+________________ test_factory_has_no_obsolete_horizon_signature ________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_factory_has_no_obsolete_horizon_signature():
+>       assert "max_steps_per_episode" not in inspect.signature(build_curriculum).parameters
+E       assert 'max_steps_per_episode' not in mappingproxy(OrderedDict({'training': <Parameter "training: 'TrainingV2Config'">, 'max_steps_per_episode': <Parameter "max_steps_per_episode: 'int'">, 'device': <Parameter "device: 'torch.device'">}))
+E        +  where mappingproxy(OrderedDict({'training': <Parameter "training: 'TrainingV2Config'">, 'max_steps_per_episode': <Parameter "max_steps_per_episode: 'int'">, 'device': <Parameter "device: 'torch.device'">})) = <Signature (training: 'TrainingV2Config', *, max_steps_per_episode: 'int', device: 'torch.device') -> 'CurriculumManager'>.parameters
+E        +    where <Signature (training: 'TrainingV2Config', *, max_steps_per_episode: 'int', device: 'torch.device') -> 'CurriculumManager'> = <function signature at 0x7f7fe0180360>(build_curriculum)
+E        +      where <function signature at 0x7f7fe0180360> = inspect.signature
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:167: AssertionError
+_________ test_custom_programmatic_static_parameters_remain_meaningful _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_custom_programmatic_static_parameters_remain_meaningful():
+        meters = ["operator_defined"]
+        curriculum = StaticCurriculum(
+            commit_mode="completion",
+            difficulty_level=0.8,
+            reward_mode="custom_reward",
+            active_meters=meters,
+            depletion_multiplier=0.37,
+        )
+        meters.append("not-owned")
+        curriculum.initialize_population(1)
+>       decision = curriculum.get_batch_decisions(None, ["agent"])[0]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.static.StaticCurriculum object at 0x7f7f21d2acf0>
+agent_states = None, agent_ids = ['agent']
+
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+>           CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for CurriculumDecision
+E       reward_mode
+E         String should match pattern '^(shaped|sparse)$' [type=string_pattern_mismatch, input_value='custom_reward', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/string_pattern_mismatch
+
+src/townlet/curriculum/static.py:51: ValidationError
+_ test_adversarial_rate_identity_tracks_only_selected_semantics[rate_limited-True] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+mode = 'rate_limited', changes = True
+
+    @pytest.mark.parametrize("mode,changes", [("stage_band", False), ("rate_limited", True)])
+    def test_adversarial_rate_identity_tracks_only_selected_semantics(mode, changes):
+>       first = effective(training_config(strategy="adversarial", mode=mode, rate=0.01))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:262: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_ test_actual_completion_demonstrates_stage_and_rate_choices[stage_band-0.01-0.25-False] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+via_effective = False, mode = 'stage_band', rate = 0.01, expected = 0.25
+
+    @pytest.mark.parametrize("via_effective", [False, True])
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+>       curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+__ test_static_execution_binds_actual_roster_while_authored_training_does_not __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_static_execution_binds_actual_roster_while_authored_training_does_not():
+        training = training_config()
+>       first = effective(training, ROSTER)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:272: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_ test_actual_completion_demonstrates_stage_and_rate_choices[stage_band-0.01-0.25-True] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+via_effective = True, mode = 'stage_band', rate = 0.01, expected = 0.25
+
+    @pytest.mark.parametrize("via_effective", [False, True])
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+>       curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+__________ test_adversarial_execution_excludes_inactive_static_roster __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_adversarial_execution_excludes_inactive_static_roster():
+        training = training_config(strategy="adversarial")
+>       assert effective(training, ROSTER).execution_hash == effective(training, ("different",)).execution_hash
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_ test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.01-0.1-False] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+via_effective = False, mode = 'rate_limited', rate = 0.01, expected = 0.1
+
+    @pytest.mark.parametrize("via_effective", [False, True])
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+>       curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+______ test_omitted_and_explicit_equal_modes_have_equal_selected_identity ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_omitted_and_explicit_equal_modes_have_equal_selected_identity():
+>       omitted = effective(training_config(omitted=True))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:287: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_ test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.01-0.1-True] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+via_effective = True, mode = 'rate_limited', rate = 0.01, expected = 0.1
+
+    @pytest.mark.parametrize("via_effective", [False, True])
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+>       curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+______________ test_portable_effective_current_roundtrip[roster0] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ()
+
+    @pytest.mark.parametrize("roster", [(), ROSTER])
+    def test_portable_effective_current_roundtrip(roster):
+>       current = effective(training_config(), roster)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:299: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ()
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_ test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.1-0.25-False] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+via_effective = False, mode = 'rate_limited', rate = 0.1, expected = 0.25
+
+    @pytest.mark.parametrize("via_effective", [False, True])
+    @pytest.mark.parametrize("mode,rate,expected", [("stage_band", 0.01, 0.25), ("rate_limited", 0.01, 0.1), ("rate_limited", 0.1, 0.25)])
+    def test_actual_completion_demonstrates_stage_and_rate_choices(via_effective, mode, rate, expected):
+>       curriculum = manager(training_config(strategy="adversarial", mode=mode, rate=rate), via_effective=via_effective)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+
+    def manager(training, *, roster=ROSTER, via_effective=False):
+        if via_effective:
+            policy = effective(training, roster)
+            options, static = policy.options, policy.static_policy
+        else:
+            options = resolve(training).options
+>           static = op.resolve_static_baseline_policy(declared_meter_names=roster)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.config.bac_options' has no attribute 'resolve_static_baseline_policy'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:67: AttributeError
+______________ test_portable_effective_current_roundtrip[roster1] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+roster = ('custom_reserve', 'thermal_budget')
+
+    @pytest.mark.parametrize("roster", [(), ROSTER])
+    def test_portable_effective_current_roundtrip(roster):
+>       current = effective(training_config(), roster)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:299: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+___________ test_forged_or_obsolete_effective_payload_refuses[hash] ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'hash'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+______ test_forged_or_obsolete_effective_payload_refuses[missing_policy] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'missing_policy'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+___________ test_forged_or_obsolete_effective_payload_refuses[role] ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'role'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+__________ test_forged_or_obsolete_effective_payload_refuses[roster] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'roster'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_______ test_forged_or_obsolete_effective_payload_refuses[legacy_commit] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'legacy_commit'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+________ test_forged_or_obsolete_effective_payload_refuses[difficulty] _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'difficulty'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+_____________ test_factory_uses_actual_declared_yaml_meter_roster ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_factory_uses_actual_declared_yaml_meter_roster():
+        bars = yaml.safe_load((LEVEL / "bars.yaml").read_text())["bars"]
+        declared = tuple(bar["name"] for bar in bars["meters"])
+>       curriculum = manager(training_config(), roster=declared, via_effective=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:63: in manager
+    policy = effective(training, roster)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('energy', 'health', 'satiation', 'hygiene', 'money', 'fitness', ...)
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+__________ test_forged_or_obsolete_effective_payload_refuses[reward] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+damage = 'reward'
+
+    @pytest.mark.parametrize("damage", ["missing_policy", "roster", "difficulty", "reward", "hash", "role", "legacy_commit"])
+    def test_forged_or_obsolete_effective_payload_refuses(damage):
+>       current = effective(training_config())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+training = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)
+roster = ('custom_reserve', 'thermal_budget')
+
+    def effective(training, roster=ROSTER):
+        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / "brain.yaml").read_text()))
+        drive = yaml.safe_load((LEVEL / "drive.yaml").read_text())["drive"]["intrinsic"]
+>       return ef.resolve_effective_run(
+            brain,
+            training,
+            primary_level="L0_0_minimal",
+            origins={"training": "test-training"},
+            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),
+            declared_meter_names=roster,
+        )
+E       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'
+
+tests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_legacy_step_refuses_at_authored_boundary
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.1-0.25-True]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_current_resolution_and_named_policy_provenance[True]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_current_resolution_and_named_policy_provenance[False]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_singleton_bounds_and_current_native_future[stage_band]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_singleton_bounds_and_current_native_future[rate_limited]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_authored_dwell_entropy_and_threshold_reach_runtime[min_steps_at_stage-11]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[False-roster2]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_authored_dwell_entropy_and_threshold_reach_runtime[entropy_gate-0.1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_authored_dwell_entropy_and_threshold_reach_runtime[survival_advance_threshold-0.95]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_roles_are_truthful[True-derived]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_factory_transports_exact_roster_and_fixed_policy[True-roster2]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_invalid_declared_rosters_refuse[roster0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_roles_are_truthful[False-active]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_invalid_declared_rosters_refuse[roster1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_invalid_declared_rosters_refuse[roster2]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_invalid_declared_rosters_refuse[roster3]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_inactive_presets_preserve_authoring_but_not_selected_execution
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_invalid_declared_rosters_refuse[roster4]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_refuses_unresolved_modes_even_for_static[modes0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_adversarial_rate_identity_tracks_only_selected_semantics[stage_band-False]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_refuses_unresolved_modes_even_for_static[modes1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_has_no_obsolete_horizon_signature
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_custom_programmatic_static_parameters_remain_meaningful
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_adversarial_rate_identity_tracks_only_selected_semantics[rate_limited-True]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_actual_completion_demonstrates_stage_and_rate_choices[stage_band-0.01-0.25-False]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_execution_binds_actual_roster_while_authored_training_does_not
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_actual_completion_demonstrates_stage_and_rate_choices[stage_band-0.01-0.25-True]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_adversarial_execution_excludes_inactive_static_roster
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.01-0.1-False]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_omitted_and_explicit_equal_modes_have_equal_selected_identity
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.01-0.1-True]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_portable_effective_current_roundtrip[roster0]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_actual_completion_demonstrates_stage_and_rate_choices[rate_limited-0.1-0.25-False]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_portable_effective_current_roundtrip[roster1]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[hash]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[missing_policy]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[role]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[roster]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[legacy_commit]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[difficulty]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_uses_actual_declared_yaml_meter_roster
+FAILED tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_forged_or_obsolete_effective_payload_refuses[reward]
+========================= 47 failed, 5 passed in 4.08s =========================

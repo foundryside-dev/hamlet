@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_static_execution_binds_actual_roster_while_authored_training_does_not",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "def test_static_execution_binds_actual_roster_while_authored_training_does_not():\n        training = training_config()\n>       first = effective(training, ROSTER)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_curriculum_factory.py:272: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\ntraining = TrainingV2Config(bac_options=BaCOptions(replay=ReplayOptions(sampling_mode='successive_without_replacement', uniform_s...entropy_gate=0.5, min_steps_at_stage=1)), run_metadata=RunMetadataConfig(output_subdir='L0_0_minimal'), recording=None)\nroster = ('custom_reserve', 'thermal_budget')\n\n    def effective(training, roster=ROSTER):\n        brain = ef.BrainConfig.model_validate(yaml.safe_load((PACK / \"brain.yaml\").read_text()))\n        drive = yaml.safe_load((LEVEL / \"drive.yaml\").read_text())[\"drive\"][\"intrinsic\"]\n>       return ef.resolve_effective_run(\n            brain,\n            training,\n            primary_level=\"L0_0_minimal\",\n            origins={\"training\": \"test-training\"},\n            drive_intrinsic=ef.IntrinsicStrategyConfig.model_validate(drive),\n            declared_meter_names=roster,\n        )\nE       TypeError: resolve_effective_run() got an unexpected keyword argument 'declared_meter_names'\n\ntests/test_townlet/regressions/bac/test_curriculum_factory.py:51: TypeError",
+  "candidate_tree": "987a2ae0ebf692b278a4689a0332c573a4a6e2d9"
+}

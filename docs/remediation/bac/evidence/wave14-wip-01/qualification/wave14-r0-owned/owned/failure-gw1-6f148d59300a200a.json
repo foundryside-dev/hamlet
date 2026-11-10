@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_factory.py::test_factory_has_no_obsolete_horizon_signature",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "def test_factory_has_no_obsolete_horizon_signature():\n>       assert \"max_steps_per_episode\" not in inspect.signature(build_curriculum).parameters\nE       assert 'max_steps_per_episode' not in mappingproxy(OrderedDict({'training': <Parameter \"training: 'TrainingV2Config'\">, 'max_steps_per_episode': <Parameter \"max_steps_per_episode: 'int'\">, 'device': <Parameter \"device: 'torch.device'\">}))\nE        +  where mappingproxy(OrderedDict({'training': <Parameter \"training: 'TrainingV2Config'\">, 'max_steps_per_episode': <Parameter \"max_steps_per_episode: 'int'\">, 'device': <Parameter \"device: 'torch.device'\">})) = <Signature (training: 'TrainingV2Config', *, max_steps_per_episode: 'int', device: 'torch.device') -> 'CurriculumManager'>.parameters\nE        +    where <Signature (training: 'TrainingV2Config', *, max_steps_per_episode: 'int', device: 'torch.device') -> 'CurriculumManager'> = <function signature at 0x7f7fe0180360>(build_curriculum)\nE        +      where <function signature at 0x7f7fe0180360> = inspect.signature\n\ntests/test_townlet/regressions/bac/test_curriculum_factory.py:167: AssertionError",
+  "candidate_tree": "987a2ae0ebf692b278a4689a0332c573a4a6e2d9"
+}

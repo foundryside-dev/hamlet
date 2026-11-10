@@ -1,0 +1,893 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [360 items]
+
+FFFFFFFFFFFFFFFF.F..s..........................F.FF.FF.F.FF..F.......... [ 20%]
+........................................................................ [ 40%]
+........................................................................ [ 60%]
+........................................................................ [ 80%]
+...........s............................................................ [100%]
+=================================== FAILURES ===================================
+________________ test_private_rng_restores_global_streams[rnd] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Fixture positive and real learning precede the intended absent-ABI RED.
+>       native = _factory(kind)(None)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = None
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+________________ test_private_rng_restores_global_streams[icm] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Fixture positive and real learning precede the intended absent-ABI RED.
+>       native = _factory(kind)(None)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = None
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+____________ test_private_rng_restores_global_streams[adaptive_rnd] ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Fixture positive and real learning precede the intended absent-ABI RED.
+>       native = _factory(kind)(None)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = None
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+_______________ test_world1_rng_independent_of_world0_calls[rnd] _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_world1_rng_independent_of_world0_calls(kind):
+        global_before = _globals(())
+>       baseline = _owner(kind, "world1", ("world1",))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:297: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e67b610>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+_______________ test_world1_rng_independent_of_world0_calls[icm] _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_world1_rng_independent_of_world0_calls(kind):
+        global_before = _globals(())
+>       baseline = _owner(kind, "world1", ("world1",))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:297: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e70b100>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+__________ test_world1_rng_independent_of_world0_calls[adaptive_rnd] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_world1_rng_independent_of_world0_calls(kind):
+        global_before = _globals(())
+>       baseline = _owner(kind, "world1", ("world1",))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:297: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e7a56d0>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+________ test_native_global_rng_counterexample_and_private_continuation ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_native_global_rng_counterexample_and_private_continuation():
+        torch.manual_seed(123)
+        state = torch.get_rng_state().clone()
+>       first = _factory("rnd")(None)
+                ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:318: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = None
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+____ test_constructor_compute_failure_restoration_and_quarantine[False-rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', after_update = False
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind)(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+>           owned_type.construct(rng=rng, factory=broken_factory)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:345: in broken_factory
+    _factory(kind)(private)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e77d6a0>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+____ test_constructor_compute_failure_restoration_and_quarantine[False-icm] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', after_update = False
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind)(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+>           owned_type.construct(rng=rng, factory=broken_factory)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:345: in broken_factory
+    _factory(kind)(private)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e490f50>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+_ test_constructor_compute_failure_restoration_and_quarantine[False-adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd', after_update = False
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind)(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+>           owned_type.construct(rng=rng, factory=broken_factory)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:345: in broken_factory
+    _factory(kind)(private)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e5ec500>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+____ test_constructor_compute_failure_restoration_and_quarantine[True-rnd] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', after_update = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind)(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+>           owned_type.construct(rng=rng, factory=broken_factory)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:345: in broken_factory
+    _factory(kind)(private)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e6e7bd0>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+____ test_constructor_compute_failure_restoration_and_quarantine[True-icm] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', after_update = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind)(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+>           owned_type.construct(rng=rng, factory=broken_factory)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:345: in broken_factory
+    _factory(kind)(private)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e41d310>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+_ test_constructor_compute_failure_restoration_and_quarantine[True-adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd', after_update = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("after_update", [False, True])
+    def test_constructor_compute_failure_restoration_and_quarantine(kind, after_update):
+        rng = _rng(kind, "world1", ("world1",))
+        _, owned_type = _api()
+        global_before = _globals(())
+    
+        def broken_factory(private):
+            _factory(kind)(private)
+            with private.activate("model_init") as sources:
+                _draw(sources)
+            raise KeyboardInterrupt("constructor cancellation")
+    
+        with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+>           owned_type.construct(rng=rng, factory=broken_factory)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:345: in broken_factory
+    _factory(kind)(private)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e3fa410>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+________ test_owned_snapshot_restore_aliases_and_late_load_failure[rnd] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_owned_snapshot_restore_aliases_and_late_load_failure(kind):
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4ca7b0>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+________ test_owned_snapshot_restore_aliases_and_late_load_failure[icm] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_owned_snapshot_restore_aliases_and_late_load_failure(kind):
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e46ea80>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+___ test_owned_snapshot_restore_aliases_and_late_load_failure[adaptive_rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_owned_snapshot_restore_aliases_and_late_load_failure(kind):
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e308650>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+___________ test_snapshot_callback_failure_restores_and_quarantines ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_snapshot_callback_failure_restores_and_quarantines():
+>       owner = _owner("rnd", "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:482: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e477d90>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+_____ test_object_array_result_does_not_alias_live_adaptive_history[plain] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+array_kind = 'plain'
+
+    @pytest.mark.parametrize("array_kind", ["plain", "structured"])
+    def test_object_array_result_does_not_alias_live_adaptive_history(array_kind):
+>       owner = _owner("adaptive_rnd", "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:690: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e476200>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+__ test_object_array_result_does_not_alias_live_adaptive_history[structured] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+array_kind = 'structured'
+
+    @pytest.mark.parametrize("array_kind", ["plain", "structured"])
+    def test_object_array_result_does_not_alias_live_adaptive_history(array_kind):
+>       owner = _owner("adaptive_rnd", "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:690: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e476f90>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+_______ test_learned_adam_mapping_keys_and_values_are_owned[native-rnd] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', composite_key = False
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+    def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+        globals_before = _globals(())
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:717: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4aee40>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+_______ test_learned_adam_mapping_keys_and_values_are_owned[native-icm] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', composite_key = False
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+    def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+        globals_before = _globals(())
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:717: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4aea50>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+___ test_learned_adam_mapping_keys_and_values_are_owned[native-adaptive_rnd] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd', composite_key = False
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+    def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+        globals_before = _globals(())
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:717: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4ae430>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+________ test_learned_adam_mapping_keys_and_values_are_owned[tuple-rnd] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', composite_key = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+    def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+        globals_before = _globals(())
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:717: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4ae580>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+________ test_learned_adam_mapping_keys_and_values_are_owned[tuple-icm] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', composite_key = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+    def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+        globals_before = _globals(())
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:717: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4ac600>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+            return AdaptiveIntrinsicExploration(**_parameters(kind))
+        policy = _icm_policy()
+>       return ICMExploration(policy, obs_dim=3, action_dim=2, device="cpu", **dict(policy.provider_parameters))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError
+___ test_learned_adam_mapping_keys_and_values_are_owned[tuple-adaptive_rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive_rnd', composite_key = True
+
+    @pytest.mark.parametrize("kind", KINDS)
+    @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+    def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+        globals_before = _globals(())
+>       owner = _owner(kind, "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:717: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4aeba0>
+
+    def create(rng):
+        if kind == "rnd":
+            return RNDExploration(**_parameters(kind))
+        if kind == "adaptive_rnd":
+>           return AdaptiveIntrinsicExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:156: TypeError
+_________ test_stale_prepared_restore_refuses_after_real_owner_update __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_stale_prepared_restore_refuses_after_real_owner_update():
+>       owner = _owner("rnd", "world1", ("world1",))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:787: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner
+    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/world_curiosity_state.py:780: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e4afa10>
+
+    def create(rng):
+        if kind == "rnd":
+>           return RNDExploration(**_parameters(kind))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_world1_rng_independent_of_world0_calls[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_world1_rng_independent_of_world0_calls[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_world1_rng_independent_of_world0_calls[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_native_global_rng_counterexample_and_private_continuation
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[False-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[False-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[False-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_snapshot_callback_failure_restores_and_quarantines
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_object_array_result_does_not_alias_live_adaptive_history[plain]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_object_array_result_does_not_alias_live_adaptive_history[structured]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[native-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[native-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[native-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[tuple-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[tuple-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[tuple-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_stale_prepared_restore_refuses_after_real_owner_update
+================== 26 failed, 332 passed, 2 skipped in 27.28s ==================

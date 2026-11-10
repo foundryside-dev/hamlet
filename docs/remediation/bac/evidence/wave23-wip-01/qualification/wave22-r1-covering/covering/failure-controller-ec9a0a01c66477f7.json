@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_native_global_rng_counterexample_and_private_continuation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_native_global_rng_counterexample_and_private_continuation():\n        torch.manual_seed(123)\n        state = torch.get_rng_state().clone()\n>       first = _factory(\"rnd\")(None)\n                ^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:318: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nrng = None\n\n    def create(rng):\n        if kind == \"rnd\":\n>           return RNDExploration(**_parameters(kind))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError",
+  "candidate_tree": "3be954f130ee8a19a03013f68d8c897ba11c2dba"
+}

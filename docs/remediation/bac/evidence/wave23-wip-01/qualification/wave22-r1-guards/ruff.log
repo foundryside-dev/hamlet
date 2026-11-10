@@ -1,0 +1,137 @@
+E501 Line too long (143 > 140)
+  --> tests/test_townlet/regressions/bac/test_pw_backend_factory.py:57:141
+   |
+55 | …
+56 | …rived_v1" if scope == "per_world" else "legacy_shared_v1"},
+57 | …, "max_pending_rows": 4, "overflow_policy": "service_before_admit"},
+   |                                                                   ^^^
+58 | …
+59 | …
+   |
+
+E501 Line too long (177 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_backend_factory.py:254:141
+    |
+253 | …
+254 | …_id", "wrong_provider", "wrong_config", "wrong_obs", "wrong_action", "corrupt_rng"))
+    |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+255 | …onkeyPatch) -> None:
+256 | …
+    |
+
+E501 Line too long (157 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_backend_factory.py:310:141
+    |
+309 | …
+310 | …n_dim", 1.5), ("action_dim", -1), ("device", "meta"), ("device", "cuda")))
+    |                                                           ^^^^^^^^^^^^^^^^^
+311 | …lue: Any) -> None:
+312 | …
+    |
+
+E501 Line too long (141 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_backend_factory.py:351:141
+    |
+349 | …
+350 | …
+351 | …dictor"}, "icm": {"model_init", "predictor"}}.get(strategy, set())
+    |                                                                   ^
+352 | …
+353 | …
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/test_townlet/regressions/bac/test_pw_rng_binding.py:3:1
+   |
+ 1 |   """Public binding preflight must compose with real owned construction without draws."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import random
+ 6 | | from collections.abc import Mapping
+ 7 | | from copy import copy, deepcopy
+ 8 | | from dataclasses import replace
+ 9 | | from pathlib import Path
+10 | | from typing import Any
+11 | |
+12 | | import numpy as np
+13 | | import pytest
+14 | | import torch
+15 | | import yaml
+16 | |
+17 | | from townlet.config.bac_options import BaCOptions
+18 | | from townlet.config.drive_as_code import IntrinsicStrategyConfig
+19 | | from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
+20 | | from townlet.config.training_v2_config import TrainingV2Config
+21 | | from townlet.exploration import world_curiosity_state as world_state
+22 | | from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+23 | | from townlet.exploration.world_curiosity_state import WORLD_SEED_COMPONENTS, OwnedWorldBackend, WorldCuriosityDescriptor, WorldRNGState, derive_world_seed
+   | |__________________________________________________________________________________________________________________________________________________________^
+help: Organize imports
+   |
+22 | from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+   - from townlet.exploration.world_curiosity_state import WORLD_SEED_COMPONENTS, OwnedWorldBackend, WorldCuriosityDescriptor, WorldRNGState, derive_world_seed
+23 + from townlet.exploration.world_curiosity_state import (
+24 +     WORLD_SEED_COMPONENTS,
+25 +     OwnedWorldBackend,
+26 +     WorldCuriosityDescriptor,
+27 +     WorldRNGState,
+28 +     derive_world_seed,
+29 + )
+30 |
+   |
+
+E501 Line too long (154 > 140)
+  --> tests/test_townlet/regressions/bac/test_pw_rng_binding.py:23:141
+   |
+21 | …
+22 | …
+23 | …dWorldBackend, WorldCuriosityDescriptor, WorldRNGState, derive_world_seed
+   |                                                             ^^^^^^^^^^^^^^
+
+E501 Line too long (152 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_rng_binding.py:210:141
+    |
+208 | …
+209 | …ion", "action", "seed", "scope",
+210 | …, "device-bool", "device-negative", "device-duplicate", "device-order"],
+    |                                                              ^^^^^^^^^^^^
+211 | …
+212 | …
+    |
+
+E501 Line too long (154 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_rng_binding.py:254:141
+    |
+252 | …
+253 | …
+254 | …service_clock_unit", {} if probe == "malformed-seeds" else "vector_tick")
+    |                                                             ^^^^^^^^^^^^^^
+255 | …
+256 | …(-1,), "device-duplicate": (0, 0), "device-order": (1, 0)}[probe]
+    |
+
+E501 Line too long (146 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_rng_binding.py:256:141
+    |
+254 | …se "service_clock_unit", {} if probe == "malformed-seeds" else "vector_tick")
+255 | …
+256 | …e": (-1,), "device-duplicate": (0, 0), "device-order": (1, 0)}[probe]
+    |                                                                 ^^^^^^
+257 | …
+258 | …
+    |
+
+E501 Line too long (151 > 140)
+   --> tests/test_townlet/regressions/bac/test_pw_rng_binding.py:321:141
+    |
+319 | …
+320 | …
+321 | …idate(candidate, descriptor, "world-A", devices), _backend(policy))[1])
+    |                                                              ^^^^^^^^^^^
+322 | …
+323 | …
+    |
+
+Found 10 errors.
+[*] 1 fixable with the `--fix` option.

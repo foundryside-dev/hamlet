@@ -1,0 +1,28 @@
+{
+  "candidate_tree": "2912e724e5bec3349e8b065b7a6e4aee6fe372ed",
+  "runs": {
+    "owned": {
+      "failed": 2,
+      "passed": 140,
+      "seconds": 12.30631685256958,
+      "processes": 3,
+      "failures": {
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_nonrandom_zero_column_geometry_remains_supported[shared-count_based]": "actualCountrejectsD0 afterfactoryaccepted",
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_nonrandom_zero_column_geometry_remains_supported[per_world-count_based]": "actualCountrejectsD0 afterfactoryaccepted"
+      }
+    },
+    "independent": {
+      "failed": 2,
+      "passed": 140,
+      "seconds": 8.880848169326782,
+      "processes": 1,
+      "failures": {
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_nonrandom_zero_column_geometry_remains_supported[per_world-count_based]": "actualCountrejectsD0 afterfactoryaccepted",
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_nonrandom_zero_column_geometry_remains_supported[shared-count_based]": "actualCountrejectsD0 afterfactoryaccepted"
+      }
+    }
+  },
+  "custody": "PASS199source/573config/13artifact/index/import/process/thread1/registry",
+  "disposition": "Required factoryCountzeroobs geometry guard + refutedunsupportedCountD0positive hypothesis; actualnoneD0positive and all5familypositiveD preserved",
+  "sessions": "CLOSED"
+}

@@ -1,0 +1,23 @@
+# Current public RNG binding contract
+
+Source: src/townlet/exploration/world_curiosity_state.py, 871 lines, SHA256 a639d6f927492cf0334a49f330f514b6472be75f624f24a2f1b5e8381af93b2c. Public method is at line645. This source identity is the implemented bridge, not a proposed ABI.
+
+```python
+def validate_binding(
+    self, *, descriptor: WorldCuriosityDescriptor,
+    world_id: str,
+    cuda_devices: tuple[int, ...],
+) -> None: ...
+```
+
+All three keyword arguments are required. Success returns None. Invoke on the actual candidate WorldRNGState passed to OwnedWorldBackend.construct's factory callback. This callback already runs inside that candidate's model_init activation; validate_binding explicitly permits that same owner's active context, including nested component contexts. It also permits quiescence. It does not require or perform rng.snapshot/from_snapshot. Those public lifecycle operations still require quiescence and must not be used to preflight inside the factory callback. Pass the same actual candidate to provider constructors; do not substitute another owner or validation clone.
+
+Binding includes existing canonical descriptor identity: scope, provider_kind, provider_parameter_hash, observation_dim, action_dim, seed_policy and training_seed; plus exact actual owner world_id and CUDA device tuple. Both requested descriptor and stored descriptor must satisfy existing full descriptor schema/domain rules, including valid seed derivation, clock and ownership guarantee. Requested world_id must be present in the expected descriptor and actual owner ID must belong to the actual stored descriptor. Stable identity excludes spectator roster and row ordering, so expected descriptors with reordered/replaced/removed spectators are lawful when the same exact owner ID remains and identity otherwise agrees. Descriptor observation_dim>=0 is preserved; provider-specific geometry requirements remain the factory/provider responsibility.
+
+CUDA follows existing rules: tuple of nonnegative exact integer indices, unique and sorted; nonempty tuples require already initialized CUDA and available devices. The expected tuple must exactly match owner inventory. Empty CPU ownership does not query or initialize CUDA. Runtime owns explicit CUDA initialization at quiescence.
+
+Errors: RuntimeError for an unusable coordinator, broken RNG owner, or any active different owner (even with identical world ID/descriptor). For ordinarily structured typed descriptors and domain inputs, validation failures or identity/world/device disagreement raise ValueError. Structurally forged descriptor records (for example seeds=None or malformed world_ids) may instead raise serialization/type errors such as AttributeError or TypeError before from_dict validation; these also refuse before RNG mutation. The validators determine detailed validation messages. Frozen-descriptor bypasses do not bypass revalidation or guarantee a normalized exception type. Factory should supply actual typed inputs, reconstruct expected descriptors through the public policy/descriptor APIs, and let these errors propagate before provider allocation/draws.
+
+The method takes the existing coordination lock, checks lifecycle usability and exact active owner, validates descriptor/domain records and compares existing canonical identity. It does not clone RNG owners, draw, capture/install ambient streams, mutate owned streams or counters, change backend lifecycle state, or weaken snapshot/restore/activation/prepare/install/revision guards. Descriptor roundtrips are validation-only; no private fields become public. Transported RNG continuation component validation remains create/from_snapshot responsibility; this method is not a continuation payload loader or a backend quarantine API.
+
+Evidence reported by root for pre-format R1: root51PASS/1CUDA-skip and independent Sol51PASS/1skip with spec/quality/custody PASS. Conditional CUDA behavior is collected but unexecuted in these CPU runs. Final post-format R2 root verification:51PASS/1CUDA-skip10.0588s; custody PASS197source/573config/13artifacts/3process; scoped static PASS. Sol re-review found formatting addressed with no new breakage, and this error wording was narrowed to reflect possible serialization/type errors for structurally forged records. This bridge does not establish five-provider factory behavior, bank learning, native/runner integration, or global release qualification. Old RNG consumer fixture migration26 failures and9 known mypy errors remain external open work; no integrated release or package-count increment follows from this bridge.

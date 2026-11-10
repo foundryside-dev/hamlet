@@ -642,6 +642,30 @@ class WorldRNGState:
                 ),
             )
 
+    def validate_binding(self, *, descriptor: WorldCuriosityDescriptor, world_id: str, cuda_devices: tuple[int, ...]) -> None:
+        """Check actual ownership without draws, including inside this owner's callback.
+
+        Roster order and spectators are not stream identity. Snapshot and restore
+        remain quiescent lifecycle operations; this read never captures streams.
+        """
+        with _rng_guard:
+            _usable()
+            if self._broken:
+                raise RuntimeError("Private RNG state is unusable after failed capture")
+            stack = _stack()
+            if stack and stack[-1].owner is not self:
+                raise RuntimeError("Cross-owner nested RNG binding validation is forbidden")
+            _domain_arguments(descriptor, world_id, cuda_devices)
+            _domain_arguments(self._descriptor, self._world_id, self._cuda_devices)
+            # Validate both descriptors, including fields outside stable identity
+            # and frozen-dataclass instances forged around their constructor.
+            WorldCuriosityDescriptor.from_dict(descriptor.to_dict())
+            WorldCuriosityDescriptor.from_dict(self._descriptor.to_dict())
+            if not _same(_identity(self._descriptor), _identity(descriptor)):
+                raise ValueError("Private RNG descriptor identity disagrees")
+            if not _same(self._world_id, world_id) or not _same(self._cuda_devices, cuda_devices):
+                raise ValueError("Private RNG world/device binding disagrees")
+
     @contextmanager
     def activate(self, component: str) -> Iterator[WorldRandomSources]:
         global _rng_unusable

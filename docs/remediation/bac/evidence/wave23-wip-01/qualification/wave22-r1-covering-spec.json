@@ -1,0 +1,30 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave22/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave22-r1-covering",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "covering",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+        "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave22-r1-covering"
+      ]
+    }
+  ]
+}

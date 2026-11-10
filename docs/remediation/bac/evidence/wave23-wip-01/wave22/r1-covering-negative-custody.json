@@ -1,0 +1,40 @@
+{
+  "candidate_tree": "3be954f130ee8a19a03013f68d8c897ba11c2dba",
+  "counts": {
+    "failed": 26,
+    "passed": 332,
+    "skipped": 2
+  },
+  "cause": "all26 old PW02 RNG-domain constructor fixtures missing current required rng/service_clock_unit before original assertion; prerequisite repair REQUIRED before repeat",
+  "wall_seconds": 31.310186862945557,
+  "custody": "PASS197 immutable candidate source blobs/573config/13artifact/3process/thread1/import/index/registry14MAIN1; wrapper pre+post check completed exit0 before barrier release",
+  "postflight_qualification": "Root additional failure-ledger reconciliation occurred AFTER author style-only binding-test edits authorized. It therefore checks immutable Git candidate blobs for all197source hashes; all196 other currentsource files unchanged. Current binding test not falsely claimed as oldbytes. No runtime repeated against knownbrokenfixture.",
+  "failures": {
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[False-adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_world1_rng_independent_of_world0_calls[icm]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_world1_rng_independent_of_world0_calls[rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[False-rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_stale_prepared_restore_refuses_after_real_owner_update": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-icm]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[icm]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[native-adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[native-icm]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[tuple-adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[tuple-rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_native_global_rng_counterexample_and_private_continuation": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_snapshot_callback_failure_restores_and_quarantines": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_world1_rng_independent_of_world0_calls[adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_object_array_result_does_not_alias_live_adaptive_history[plain]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[icm]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_object_array_result_does_not_alias_live_adaptive_history[structured]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[native-rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[True-adaptive_rnd]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_learned_adam_mapping_keys_and_values_are_owned[tuple-icm]": "call",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_constructor_compute_failure_restoration_and_quarantine[False-icm]": "call"
+  }
+}

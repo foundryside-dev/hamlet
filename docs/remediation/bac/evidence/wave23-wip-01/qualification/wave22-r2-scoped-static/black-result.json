@@ -1,0 +1,22 @@
+{
+  "name": "black",
+  "exit_code": 0,
+  "seconds": 0.9219100475311279,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "--workers",
+    "1",
+    "src/townlet/exploration/world_curiosity_state.py",
+    "src/townlet/config/exploration_policy.py",
+    "tests/test_townlet/regressions/bac/test_pw_rng_binding.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave22-r2-scoped-static/black.log",
+  "sha256": "45a468fa6205768496f23f1716ebb7575e9b723449d2099b88bf2afef60b721f",
+  "candidate_tree": "efb8c926252e7aff6366978fc38b4b8f09561146",
+  "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+  "manifest_sha256": "580b4dd536f32cda74f42d032fb44fca091b6431bd6552f4480e789dea920765",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,69 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 52 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_pw_rng_binding.py>
+            <Function test_binding_fixture_prerequisite>
+            <Function test_binding_inside_actual_owned_constructor>
+            <Function test_binding_read_preserves_every_stream[model_init]>
+            <Function test_binding_read_preserves_every_stream[target]>
+            <Function test_binding_read_preserves_every_stream[predictor]>
+            <Function test_binding_read_preserves_every_stream[service]>
+            <Function test_binding_preserves_actual_candidate_domain_draws>
+            <Function test_binding_ignores_spectator_roster_and_order[ids0]>
+            <Function test_binding_ignores_spectator_roster_and_order[ids1]>
+            <Function test_binding_ignores_spectator_roster_and_order[ids2]>
+            <Function test_binding_rejects_other_owner_inside_activation>
+            <Function test_binding_refuses_mismatch_before_draws[False-id]>
+            <Function test_binding_refuses_mismatch_before_draws[False-empty-id]>
+            <Function test_binding_refuses_mismatch_before_draws[False-typed-id]>
+            <Function test_binding_refuses_mismatch_before_draws[False-missing-id]>
+            <Function test_binding_refuses_mismatch_before_draws[False-provider]>
+            <Function test_binding_refuses_mismatch_before_draws[False-config]>
+            <Function test_binding_refuses_mismatch_before_draws[False-observation]>
+            <Function test_binding_refuses_mismatch_before_draws[False-action]>
+            <Function test_binding_refuses_mismatch_before_draws[False-seed]>
+            <Function test_binding_refuses_mismatch_before_draws[False-scope]>
+            <Function test_binding_refuses_mismatch_before_draws[False-malformed-descriptor]>
+            <Function test_binding_refuses_mismatch_before_draws[False-malformed-seeds]>
+            <Function test_binding_refuses_mismatch_before_draws[False-malformed-clock]>
+            <Function test_binding_refuses_mismatch_before_draws[False-device-list]>
+            <Function test_binding_refuses_mismatch_before_draws[False-device-bool]>
+            <Function test_binding_refuses_mismatch_before_draws[False-device-negative]>
+            <Function test_binding_refuses_mismatch_before_draws[False-device-duplicate]>
+            <Function test_binding_refuses_mismatch_before_draws[False-device-order]>
+            <Function test_binding_refuses_mismatch_before_draws[True-id]>
+            <Function test_binding_refuses_mismatch_before_draws[True-empty-id]>
+            <Function test_binding_refuses_mismatch_before_draws[True-typed-id]>
+            <Function test_binding_refuses_mismatch_before_draws[True-missing-id]>
+            <Function test_binding_refuses_mismatch_before_draws[True-provider]>
+            <Function test_binding_refuses_mismatch_before_draws[True-config]>
+            <Function test_binding_refuses_mismatch_before_draws[True-observation]>
+            <Function test_binding_refuses_mismatch_before_draws[True-action]>
+            <Function test_binding_refuses_mismatch_before_draws[True-seed]>
+            <Function test_binding_refuses_mismatch_before_draws[True-scope]>
+            <Function test_binding_refuses_mismatch_before_draws[True-malformed-descriptor]>
+            <Function test_binding_refuses_mismatch_before_draws[True-malformed-seeds]>
+            <Function test_binding_refuses_mismatch_before_draws[True-malformed-clock]>
+            <Function test_binding_refuses_mismatch_before_draws[True-device-list]>
+            <Function test_binding_refuses_mismatch_before_draws[True-device-bool]>
+            <Function test_binding_refuses_mismatch_before_draws[True-device-negative]>
+            <Function test_binding_refuses_mismatch_before_draws[True-device-duplicate]>
+            <Function test_binding_refuses_mismatch_before_draws[True-device-order]>
+            <Function test_binding_refuses_broken_owner>
+            <Function test_binding_cpu_never_queries_cuda>
+            <Function test_binding_cuda_domain>
+            <Function test_binding_validates_actual_owned_descriptor>
+            <Function test_binding_refuses_quarantined_coordinator>
+
+========================= 52 tests collected in 0.09s ==========================

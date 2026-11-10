@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[icm]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'icm'\n\n    @pytest.mark.parametrize(\"kind\", KINDS)\n    def test_private_rng_restores_global_streams(kind):\n        # Fixture positive and real learning precede the intended absent-ABI RED.\n>       native = _factory(kind)(None)\n                 ^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:264: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nrng = None\n\n    def create(rng):\n        if kind == \"rnd\":\n            return RNDExploration(**_parameters(kind))\n        if kind == \"adaptive_rnd\":\n            return AdaptiveIntrinsicExploration(**_parameters(kind))\n        policy = _icm_policy()\n>       return ICMExploration(policy, obs_dim=3, action_dim=2, device=\"cpu\", **dict(policy.provider_parameters))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:158: TypeError",
+  "candidate_tree": "3be954f130ee8a19a03013f68d8c897ba11c2dba"
+}

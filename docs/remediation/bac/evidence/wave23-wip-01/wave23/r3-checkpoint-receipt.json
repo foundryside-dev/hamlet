@@ -1,0 +1,179 @@
+{
+  "status": "BOUNDED RNG BINDING AND FIVE-BACKEND FACTORY PRODUCERS ACCEPTED; INTEGRATED RELEASE AND BAC QUALIFICATION OPEN",
+  "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+  "candidate_tree": "32108b7f6a869c02e0547e6297315cc2aaabfcba",
+  "factory": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+      "candidate_tree": "32108b7f6a869c02e0547e6297315cc2aaabfcba",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.3378453254699707,
+      "source_guards": 199,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+      "candidate_tree": "32108b7f6a869c02e0547e6297315cc2aaabfcba",
+      "exit_code": 0,
+      "counts": {
+        "passed": 142,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 14.97461986541748,
+      "source_guards": 199,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+      "candidate_tree": "32108b7f6a869c02e0547e6297315cc2aaabfcba",
+      "exit_code": 0,
+      "counts": {
+        "passed": 142,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 11.373948335647583,
+      "source_guards": 199,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "binding": {
+    "final_root": {
+      "job": "owned",
+      "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+      "candidate_tree": "efb8c926252e7aff6366978fc38b4b8f09561146",
+      "exit_code": 0,
+      "counts": {
+        "passed": 51,
+        "skipped": 1,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 10.058839797973633,
+      "source_guards": 197,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+      "candidate_tree": "3be954f130ee8a19a03013f68d8c897ba11c2dba",
+      "exit_code": 0,
+      "counts": {
+        "passed": 51,
+        "skipped": 1,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 4.63776159286499,
+      "source_guards": 197,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "production_equivalence": "WS871/a639d6f927492cf0334a49f330f514b6472be75f624f24a2f1b5e8381af93b2c unchanged across bindingR1/R2 and factoryR3; bindingtest finalformat root51PASS/1CUDA skip"
+  },
+  "prior_covering": {
+    "job": "covering",
+    "base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+    "candidate_tree": "2912e724e5bec3349e8b065b7a6e4aee6fe372ed",
+    "exit_code": 0,
+    "counts": {
+      "passed": 378,
+      "skipped": 2,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 34.97544026374817,
+    "source_guards": 199,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "prior_covering_qualification": "Actual R1 result378PASS2CUDA skips; NOT claimed rerun at R3. R1->R3 changes only factory geometry guard and its two tests. Actual current factoryR3 independently142PASS.",
+  "finding_dispositions": {
+    "active_rng_preflight_conflict": "confirmed gap repaired by public nonmutating active-candidate validate_binding; all prior lifecycle/quiescence/crossowner/quarantine guards preserved",
+    "count_zero_dimension": "CountD0 operational support refuted by actual provider D>0 guard; factory mismatch confirmed/repaired via new2constructor-spyRED->GREEN cases; noneD0 and allfivepositiveD families preserved, no Count algorithm/source changed",
+    "capacity_documentation": "Confirmed all-provider live-buffer preflight overstatement corrected against actualRND/AI andICM valid-state admission/native constraints; no new supported-input defect established, no requirement waived",
+    "old_owner_fixtures": "26 old PW02 ctor/service/native fixture prerequisites REQUIRED OPEN; no repeated broad run unchanged; actual original32case migration preparedreadonly"
+  },
+  "reviews": "Fresh Sol binding spec/qualityPASS, style/docADDR; fresh Astra medium factory spec/qualityPASS and CountgeometryfindingADDR; exactfinalfactoryABI91c7fdee450119dd50352453f5c19add103adad23a9d1e5af98fbb0c2d2036f6. Publiccontract sourceverification receipts copied.",
+  "guards": {
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.07313156127929688,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 1.3045978546142578,
+      "sha256": "aca30fe7cb969b663841d9698737040a31a512ea36180c58fc6e9b4ae342a507"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 1.0106608867645264,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.28206205368042,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 41.03563046455383,
+      "sha256": "1dd8cfa60a8e1b65e25b28a60f1c55dccd5be77ca4f8c00636d04e868bb57a3c"
+    }
+  },
+  "open": "Globalmypy9realoracle/POPcallers; actualbankallfive/privatelearning/RPstamps/ENV-POP-runner/nativeparenttransactions/manifest/controller/E2E/coverage/defaultrepo/slow/hardware/CLI/fresh54requirements22lenses+synthesis/exacttipCI allrequiredOPEN; CPU only/CUDA unavailable unqualified. Original28of66releasecount unchanged.",
+  "sessions": "All named root/reviewer runtime sessions CLOSED before publication."
+}

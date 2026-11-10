@@ -1,0 +1,15 @@
+{
+  "candidate_tree": "ed02906633ded82430fb3af20c6c8f154fe40d61",
+  "failed": 2,
+  "passed": 0,
+  "errors": 0,
+  "seconds": 3.645606517791748,
+  "cause": "current factory incorrectly enters Countconstructor on D0, explicit constructor-spy AssertionError",
+  "custody": "PASS199source573config13artifact/index/1process/thread1/import/registry14MAIN1",
+  "proposal_Astra_approval_sha256": "91c7fdee450119dd50352453f5c19add103adad23a9d1e5af98fbb0c2d2036f6",
+  "failure_nodes": [
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_count_zero_width_refuses_before_allocation_or_draws[per_world]",
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_count_zero_width_refuses_before_allocation_or_draws[shared]"
+  ],
+  "sessions": "CLOSED"
+}

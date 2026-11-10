@@ -1,0 +1,96 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py FF         [100%]
+
+=================================== FAILURES ===================================
+_______ test_count_zero_width_refuses_before_allocation_or_draws[shared] _______
+
+scope = 'shared'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd0716e2fd0>
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_count_zero_width_refuses_before_allocation_or_draws(scope: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        policy = _policy("count_based", scope)
+        arguments = _arguments(policy)
+        arguments["obs_dim"] = 0
+        if scope == "per_world":
+            arguments["descriptor"] = _descriptor(policy, obs_dim=0)
+            arguments["rng"] = _rng(arguments["descriptor"], "alpha")
+        before = arguments["rng"].snapshot() if arguments["rng"] is not None else None
+        ambient_before = _ambient()
+        constructor_calls = []
+    
+        def forbidden_constructor(*args: Any, **kwargs: Any) -> None:
+            constructor_calls.append(True)
+            raise AssertionError("zero-width Count must refuse before provider allocation")
+    
+        monkeypatch.setattr(CountExploration, "__init__", forbidden_constructor)
+        with pytest.raises(ValueError):
+>           _factory().make_backend(policy, **arguments)
+
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py:526: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/provider_factory.py:92: in make_backend
+    return CountExploration(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<townlet.exploration.count_based.CountExploration object at 0x7fd071474980>, ResolvedExplorationPolicy(strategy='coun...gacy_shared_v1', service_clock_unit='vector_tick', scope_origin='authored', scope_guarantee='shared_population_state'))
+kwargs = {'device': device(type='cpu'), 'max_entries': 3, 'quantization_width': 0.125}
+
+    def forbidden_constructor(*args: Any, **kwargs: Any) -> None:
+        constructor_calls.append(True)
+>       raise AssertionError("zero-width Count must refuse before provider allocation")
+E       AssertionError: zero-width Count must refuse before provider allocation
+
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py:522: AssertionError
+_____ test_count_zero_width_refuses_before_allocation_or_draws[per_world] ______
+
+scope = 'per_world'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd0716e3a80>
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_count_zero_width_refuses_before_allocation_or_draws(scope: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        policy = _policy("count_based", scope)
+        arguments = _arguments(policy)
+        arguments["obs_dim"] = 0
+        if scope == "per_world":
+            arguments["descriptor"] = _descriptor(policy, obs_dim=0)
+            arguments["rng"] = _rng(arguments["descriptor"], "alpha")
+        before = arguments["rng"].snapshot() if arguments["rng"] is not None else None
+        ambient_before = _ambient()
+        constructor_calls = []
+    
+        def forbidden_constructor(*args: Any, **kwargs: Any) -> None:
+            constructor_calls.append(True)
+            raise AssertionError("zero-width Count must refuse before provider allocation")
+    
+        monkeypatch.setattr(CountExploration, "__init__", forbidden_constructor)
+        with pytest.raises(ValueError):
+>           _factory().make_backend(policy, **arguments)
+
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py:526: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/provider_factory.py:92: in make_backend
+    return CountExploration(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<townlet.exploration.count_based.CountExploration object at 0x7fd0714725d0>, ResolvedExplorationPolicy(strategy='coun...d_v1', service_clock_unit='world_eligible_admission', scope_origin='authored', scope_guarantee='world_id_owned_state'))
+kwargs = {'device': device(type='cpu'), 'max_entries': 3, 'quantization_width': 0.125}
+
+    def forbidden_constructor(*args: Any, **kwargs: Any) -> None:
+        constructor_calls.append(True)
+>       raise AssertionError("zero-width Count must refuse before provider allocation")
+E       AssertionError: zero-width Count must refuse before provider allocation
+
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py:522: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_count_zero_width_refuses_before_allocation_or_draws[shared]
+FAILED tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_count_zero_width_refuses_before_allocation_or_draws[per_world]
+============================== 2 failed in 0.13s ===============================

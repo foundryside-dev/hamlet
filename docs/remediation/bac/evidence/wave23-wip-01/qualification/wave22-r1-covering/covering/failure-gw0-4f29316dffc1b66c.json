@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_snapshot_callback_failure_restores_and_quarantines",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "def test_snapshot_callback_failure_restores_and_quarantines():\n>       owner = _owner(\"rnd\", \"world1\", (\"world1\",))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:482: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: in _owner\n    return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/townlet/exploration/world_curiosity_state.py:780: in construct\n    backend = cls._clone_backend(factory(candidate_rng))\n                                 ^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nrng = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7fb34e477d90>\n\n    def create(rng):\n        if kind == \"rnd\":\n>           return RNDExploration(**_parameters(kind))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE           TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/regressions/bac/test_pw_rng_domains.py:154: TypeError",
+  "candidate_tree": "3be954f130ee8a19a03013f68d8c897ba11c2dba"
+}

@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave23/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave23-r1-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave23-r1-independent"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "prerequisites",
+  "exit_code": 0,
+  "seconds": 13.248899936676025,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[icm]",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[rnd]",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[icm]",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[adaptive_rnd]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave24-r0-prerequisites"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave24-r0-prerequisites/prerequisites.log",
+  "sha256": "a49b6390f5503eac522069743c36bbaf18c7767e17057ad477ec5637cdaf4f1b",
+  "candidate_tree": "5d866cc7fe7af528fcbc2119b1ba9ddefb03062e",
+  "base_commit": "265a36ac152a4419d22a3b5753ea6d151d112f19",
+  "manifest_sha256": "fefcfb60429b77a1fa33a2a5feb69f6dacd76a782ae7bb63fbae2041a676fead",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,35 @@
+"""Publish the exact current-only RNG owner fixture repair and child custody."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave24/r2-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')};out=D/'evidence/wave24-wip-01';out.mkdir(exist_ok=True);artifacts={}
+def copy(source,dest):
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if dest.exists():assert sha(source)==sha(dest),str(dest)
+ else:dest.write_bytes(source.read_bytes())
+ assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave24-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave24-r*.json')):copy(p,out/'qualification'/p.name)
+for p in sorted((W/'wave24').glob('*')):
+ if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/'wave24'/p.name)
+for p in sorted((W/'wave22-preparation').glob('PW02-CURRENT-FIXTURE*')):
+ if p.is_file():copy(p,out/'wave22-preparation'/p.name)
+for name in ('PW05-ABI-PROPOSAL.md','PW05-brief.md','PW05-original-task.md','PW05-SOURCE-VERIFIED-PROVIDER-APIS.md'):copy(W/'wave25-preparation'/name,out/'continuation-intent-only'/name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave24_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md','tasks.json','final-review-lenses.json'):copy(W/name,out/('execution-'+name))
+receipt=json.loads((W/'wave24/r2-checkpoint-receipt.json').read_text());manifest={'status':receipt['status'],'packet':'Current32case PW02 RNG owner fixture migration, full actual subprocess source/profile custody','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original scoped releases unchanged; mandatory consumerfixture repair accepted, bank/runner/fullreleaseOPEN','publication':'Authorized existing remote branch; no newbranch/worktree/repositorycopy/PR/merge/deletion; continue plannedwork. Private Git bundle excluded.','next':'Minimal actual publicENVacceptedvalidator bridge; concretePW05all5bank proposal independentreview and actualimplementation. Continuation files are intent only, NOT approvedimplementedorqualified.'}
+mp=D/'evidence/wave24-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n');p=D/'STATUS.md';p.write_text(p.read_text()+'\n\nThe required current PW02 owner-fixture migration is accepted: all32 original identities remain,31 CPU cases pass in both root and fresh Sol runs, and the one conditional CUDA case is unverified. The four production files are unchanged. Actual candidate RNG hooks, explicit local service clocks, real learning/tails/native restore, late-load failure, quarantine and ownership checks now use the current APIs. The isolated poisoning subprocess additionally verifies its interpreter, Torch profile, candidate and346 source hashes/48 actual import paths, then emits a durable receipt only after the original poisoning assertions pass. Torch intra-op is1 and inter-op5, matched to the parent profile. A strengthened prerequisite first refused missing package-import metadata; the next immutable manifest supplied all tracked production Python hashes without weakening the check. [Evidence](evidence/wave24-wip-01.json) distinguishes pytest processes from the nonpytest child and preserves the original negatives. Four cheap globalguards and final scoped formatting checks pass; globalmypy9realcaller errors remain. **WIP — NOT INTEGRATED-QUALIFIED — NOT RELEASED.** All actual bank/private-learning, ENV/POP/runner/currentnative-parent, CLI/defaultrepo/coverage/slow/hardware/fresh final acceptance/CI gates remain required; original28/66releasecount unchanged. Continue actualPW05bank work and its concrete accepted-token authentication prerequisite.\n')
+p=D/'CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md';p.write_text(p.read_text()+'\n\nCurrent PW02 RNG-owner fixture continuation is now qualified within its original32cases:31CPU PASS plus one unverified CUDA case independently/root, all32identities retained. ProductionRND/AI/ICM/WS bytes unchanged. Candidate-domain initialization, explicit cumulative private clocks and service options, actuallearning/native restore/quarantine/noalias/late-load evidence pass against current APIs. The separate poisoning subprocess has its own346-source/48-import/interpreter/Torch-profile receipt, including intra-op1/inter-op5. See [W24 evidence](evidence/wave24-wip-01.json). This closes those26 earlier missing-constructor fixture prerequisites and their current clock/native prerequisites, while actualbank/context/POP/ordinaryrunner/native-parent integration and globalqualification remain requiredOPEN.\n')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md','docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave24-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave24-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

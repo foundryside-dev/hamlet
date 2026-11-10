@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "receipt": "/workspace/bac-review-2026-11-01/qualification/wave24-r2-prerequisites/prerequisites/subprocess-custody-poisoning-64478.json",
+  "sha256": "9985cd78bdd1a814ff04efee0093ede037bcef7b61688770789bf80200d01318",
+  "candidate_tree": "4a69520c1616ebb2c3bbd7c4868b207e80a3952d",
+  "source_hashes": 346,
+  "imports": 48,
+  "Torch_intra_threads": 1,
+  "Torch_interop_threads": 5,
+  "allactualidentity_and_poisoning_assertions": "PASS"
+}

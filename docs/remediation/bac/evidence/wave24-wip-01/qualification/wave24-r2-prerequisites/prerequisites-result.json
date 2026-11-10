@@ -1,0 +1,24 @@
+{
+  "name": "prerequisites",
+  "exit_code": 0,
+  "seconds": 7.816119432449341,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_restoration_failure_poisoning_isolated_from_pytest",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave24-r2-prerequisites"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave24-r2-prerequisites/prerequisites.log",
+  "sha256": "8e84d4519e311f883648570bb578be1c506d03225efed999ee223d88a7f534e1",
+  "candidate_tree": "4a69520c1616ebb2c3bbd7c4868b207e80a3952d",
+  "base_commit": "265a36ac152a4419d22a3b5753ea6d151d112f19",
+  "manifest_sha256": "115462d545d4c53ea10281956242ef860f1a36fd2739c8e6938932da1e5bbeaa",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

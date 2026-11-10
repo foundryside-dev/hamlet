@@ -1,0 +1,32 @@
+{
+  "owned": {
+    "counts": {
+      "passed": 31,
+      "skipped": 1,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "seconds": 13.734615564346313,
+    "pytest_processes": 3,
+    "nonpytest_children": 1,
+    "child_receipt": "/workspace/bac-review-2026-11-01/qualification/wave24-r2-owned/owned/subprocess-custody-poisoning-64775.json",
+    "child_sha256": "b88e6eae0bd4ca45865bcb0e6a040a554a4ff5fc78edc1c75dcc17d28f35453d",
+    "child_fullsource346_importpaths48_profile": "PASS intra1/interop5"
+  },
+  "independent": {
+    "counts": {
+      "passed": 31,
+      "skipped": 1,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "seconds": 11.41785478591919,
+    "pytest_processes": 1,
+    "nonpytest_children": 1,
+    "child_receipt": "/workspace/bac-review-2026-11-01/qualification/wave24-r2-independent/independent/subprocess-custody-poisoning-64894.json",
+    "child_sha256": "8432276d728c3cf7f7147bd41a8e719762b83b54cf22adb79c95b9ead9a5412f",
+    "child_fullsource346_importpaths48_profile": "PASS intra1/interop5"
+  }
+}

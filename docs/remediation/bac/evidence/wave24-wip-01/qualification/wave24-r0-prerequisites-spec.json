@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave24/r0-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave24-r0-prerequisites",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "prerequisites",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[icm]",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[adaptive_rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[icm]",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_owned_snapshot_restore_aliases_and_late_load_failure[adaptive_rnd]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave24-r0-prerequisites"
+      ]
+    }
+  ]
+}

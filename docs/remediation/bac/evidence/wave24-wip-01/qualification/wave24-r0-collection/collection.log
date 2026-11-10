@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 32 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_pw_rng_domains.py>
+            <Function test_private_rng_restores_global_streams[rnd]>
+            <Function test_private_rng_restores_global_streams[icm]>
+            <Function test_private_rng_restores_global_streams[adaptive_rnd]>
+            <Function test_world1_rng_independent_of_world0_calls[rnd]>
+            <Function test_world1_rng_independent_of_world0_calls[icm]>
+            <Function test_world1_rng_independent_of_world0_calls[adaptive_rnd]>
+            <Function test_native_global_rng_counterexample_and_private_continuation>
+            <Function test_constructor_compute_failure_restoration_and_quarantine[False-rnd]>
+            <Function test_constructor_compute_failure_restoration_and_quarantine[False-icm]>
+            <Function test_constructor_compute_failure_restoration_and_quarantine[False-adaptive_rnd]>
+            <Function test_constructor_compute_failure_restoration_and_quarantine[True-rnd]>
+            <Function test_constructor_compute_failure_restoration_and_quarantine[True-icm]>
+            <Function test_constructor_compute_failure_restoration_and_quarantine[True-adaptive_rnd]>
+            <Function test_owned_snapshot_restore_aliases_and_late_load_failure[rnd]>
+            <Function test_owned_snapshot_restore_aliases_and_late_load_failure[icm]>
+            <Function test_owned_snapshot_restore_aliases_and_late_load_failure[adaptive_rnd]>
+            <Function test_named_substream_recipe_and_activation_bound_python_facade>
+            <Function test_snapshot_callback_failure_restores_and_quarantines>
+            <Function test_invalid_rng_snapshot_is_pure_and_nested_components_resume>
+            <Function test_thread_ownership_serializes_and_releases_after_error>
+            <Function test_used_cuda_domain_restoration_when_hardware_available>
+            <Function test_restoration_failure_poisoning_isolated_from_pytest>
+            <Function test_object_array_result_does_not_alias_live_adaptive_history[plain]>
+            <Function test_object_array_result_does_not_alias_live_adaptive_history[structured]>
+            <Function test_learned_adam_mapping_keys_and_values_are_owned[native-rnd]>
+            <Function test_learned_adam_mapping_keys_and_values_are_owned[native-icm]>
+            <Function test_learned_adam_mapping_keys_and_values_are_owned[native-adaptive_rnd]>
+            <Function test_learned_adam_mapping_keys_and_values_are_owned[tuple-rnd]>
+            <Function test_learned_adam_mapping_keys_and_values_are_owned[tuple-icm]>
+            <Function test_learned_adam_mapping_keys_and_values_are_owned[tuple-adaptive_rnd]>
+            <Function test_true_a_b_a_nested_activation_preserves_both_streams>
+            <Function test_stale_prepared_restore_refuses_after_real_owner_update>
+
+========================= 32 tests collected in 0.82s ==========================

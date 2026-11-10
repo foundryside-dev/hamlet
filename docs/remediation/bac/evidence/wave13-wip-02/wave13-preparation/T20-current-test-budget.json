@@ -1,0 +1,10 @@
+{
+  "id": "T20-CURRENT-TEST-PROJECTION",
+  "task": "T20",
+  "old_test_ceiling": 650,
+  "new_test_ceiling": 750,
+  "whole_files": 5,
+  "whole_projected_lines": 2270,
+  "reason": "Readable migration of all80 substantive scenarios to current-only state plus required empty/dtype ownership roundtrips; no new helper/probe source or reduced assertions",
+  "review": "Actual complete5file context will receive fresh Astra medium source review before handoff; original approved amendment remains exacthash2a33daac, hard5/5000unchanged"
+}

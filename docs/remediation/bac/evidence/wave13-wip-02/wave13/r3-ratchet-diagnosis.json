@@ -1,0 +1,7 @@
+{
+  "old": 612,
+  "new": 601,
+  "actual_observation": "Removed obsolete protocol/default code reduced whitelisted count; one EP ternary lint violation repaired without waiver",
+  "source_log": "wave13-r3-current-guards/no-defaults.log",
+  "scope": "Derived tighter static guard ceiling; no configuration or runtime capability reduction"
+}

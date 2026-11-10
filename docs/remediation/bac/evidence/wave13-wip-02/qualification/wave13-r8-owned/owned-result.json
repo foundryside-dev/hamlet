@@ -1,0 +1,28 @@
+{
+  "name": "owned",
+  "exit_code": 1,
+  "seconds": 39.65155029296875,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "4",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave13-r8-owned"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r8-owned/owned.log",
+  "sha256": "5a8e510fe32218da2182b2c59484901a68a33aac57ee79aef0b342f1034eddfb",
+  "candidate_tree": "03e0eb3dc3364bbb61aa40c2250d0848c5a0d2b3",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "manifest_sha256": "c50f9c3fbfb7b5f250f457de96e4dca0fe2580ec17e071d2b20302e79f169a28",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "T20-CURRENT-FIX1-TEST-PROJECTION",
+  "task": "T20",
+  "old_test": 750,
+  "new_test": 900,
+  "whole_files": 5,
+  "whole_projected_lines": 2420,
+  "reason": "Current R4 P2 counter/rate consistency regression plus static/native/codec control assertions in same owned file; no new source helper/probe or reduced scenarios",
+  "scope": "Same five files, unchanged hard5/5000; full actual source context reviewed after repair"
+}

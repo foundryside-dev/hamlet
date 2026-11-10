@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[advance-0.9]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "kind = 'advance', damaged_difficulty = 0.9\n\n    @pytest.mark.parametrize(\n        \"kind,damaged_difficulty\",\n        [\n            (\"saturated\", 0.0),\n            (\"saturated\", 0.9),\n            (\"interior\", 0.01),\n            (\"interior\", 0.99),\n            (\"advance\", 0.25),\n            (\"advance\", 0.9),\n            (\"zero\", 0.3),\n            (\"zero\", 0.79),\n        ],\n    )\n    def test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact(kind, damaged_difficulty):\n        manager, future = rate_history(kind)\n        control, _ = rate_history(kind)\n        pending = prepare(manager, future)\n        damaged = current_state(manager)\n        damaged[\"completion\"][\"lanes\"][0][\"difficulty\"] = damaged_difficulty\n        before = snapshot(manager)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:937: Failed",
+  "candidate_tree": "03e0eb3dc3364bbb61aa40c2250d0848c5a0d2b3"
+}

@@ -1,28 +1,30 @@
 """Owned completion metrics, lane clocks, and explicit difficulty modes (T20)."""
 
+import hashlib
+import json
 from copy import deepcopy
 from dataclasses import replace
-from types import SimpleNamespace
 
 import pytest
 import torch
 
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.static import StaticCurriculum
-from townlet.training.episode import EpisodeCompletion, LaneOutcome
+from townlet.training.episode import EpisodeCompletion, LaneOutcome, freeze_lane_outcome, lane_outcome_fingerprint, lane_outcome_state
 
 
 def curriculum(*, lanes=1, dwell=1000, mode="stage_band", rate=0.01, low=0.0, high=1.0, commitment="completion"):
-    manager = AdversarialCurriculum(max_steps_per_episode=500)
-    manager.configure_from_training(
-        SimpleNamespace(
-            commit_mode=commitment,
-            difficulty_mode=mode,
-            adaptation_rate=rate,
-            min_difficulty=low,
-            max_difficulty=high,
-            min_steps_at_stage=dwell,
-        )
+    manager = AdversarialCurriculum(
+        commit_mode=commitment,
+        difficulty_mode=mode,
+        adaptation_rate=rate,
+        min_difficulty=low,
+        max_difficulty=high,
+        min_steps_at_stage=dwell,
+        survival_advance_threshold=0.7,
+        survival_retreat_threshold=0.3,
+        entropy_gate=0.5,
+        device=torch.device("cpu"),
     )
     manager.initialize_population(lanes)
     return manager
@@ -60,6 +62,27 @@ def decisions(manager, lanes=1):
     return manager.get_batch_decisions(None, [f"agent-{i}" for i in range(lanes)])
 
 
+def lane_values(manager, key):
+    return [manager.get_stage_info(index)[key] for index in range(manager.num_agents)]
+
+
+def advance_to_stages(manager, stages):
+    """Produce heterogeneous stages using real improving completed episodes."""
+    for lane, stage in enumerate(stages):
+        for batch, steps in enumerate((3000, 3200, 3600, 4000)[: stage - 1], start=1):
+            commit(manager, outcome(lane=lane, batch=batch, steps=steps, horizon=4000))
+
+
+def fixed_curriculum():
+    return StaticCurriculum(
+        commit_mode="completion",
+        difficulty_level=0.6,
+        reward_mode="shaped",
+        active_meters=["energy", "hygiene", "satiation", "money", "mood", "social"],
+        depletion_multiplier=0.8,
+    )
+
+
 def test_full_survival_survives_reset():
     manager = curriculum()
     commit(manager, outcome())
@@ -73,8 +96,8 @@ def test_full_survival_survives_reset():
 def test_dwell_counts_ten_transitions():
     manager = curriculum()
     commit(manager, outcome())
-    assert manager.tracker.steps_at_stage.tolist() == [10.0]
-    assert manager.tracker.episodes_at_stage.tolist() == [1]
+    assert lane_values(manager, "steps_at_stage") == [10.0]
+    assert lane_values(manager, "episodes_at_stage") == [1]
 
 
 def test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage():
@@ -83,12 +106,12 @@ def test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage():
     commit(manager, event)
     before = deepcopy(manager.get_stage_info())
     transitions = deepcopy(manager.transition_events)
-    dwell = manager.tracker.steps_at_stage.clone()
+    dwell = lane_values(manager, "steps_at_stage")
     commit(manager, event, event)
     assert manager.get_stage_info() == before
     assert manager.transition_events == transitions
-    assert torch.equal(manager.tracker.steps_at_stage, dwell)
-    assert manager.tracker.agent_stages.tolist() == [2]
+    assert lane_values(manager, "steps_at_stage") == dwell
+    assert lane_values(manager, "current_stage") == [2]
 
 
 def test_distinct_lanes_and_reordered_duplicates_are_independent():
@@ -97,13 +120,13 @@ def test_distinct_lanes_and_reordered_duplicates_are_independent():
     second = outcome(lane=1, steps=4, reason="authored_terminal")
     commit(manager, second, first)
     commit(manager, first, second)
-    assert manager.tracker.steps_at_stage.tolist() == [10.0, 4.0]
-    assert manager.tracker.episodes_at_stage.tolist() == [1, 1]
+    assert lane_values(manager, "steps_at_stage") == [10.0, 4.0]
+    assert lane_values(manager, "episodes_at_stage") == [1, 1]
     assert manager.get_stage_info(0)["survival_rate"] == pytest.approx(1.0)
     assert manager.get_stage_info(1)["survival_rate"] == pytest.approx(0.4)
     assert manager.get_stage_info(1)["completion_reason"] == "authored_terminal"
     commit(manager, outcome(lane=1, batch=2, steps=3, reason="budget"))
-    assert manager.tracker.steps_at_stage.tolist() == [10.0, 7.0]
+    assert lane_values(manager, "steps_at_stage") == [10.0, 7.0]
     assert manager.get_stage_info(0)["completion_reason"] == "cap"
     assert manager.get_stage_info(1)["completion_reason"] == "budget"
 
@@ -130,37 +153,39 @@ def test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward()
     commit(manager, outcome(steps=8, horizon=10, entropy=0.9))
     commit(manager, outcome(batch=2, steps=16, horizon=20, extrinsic=10000.0))
     assert manager.get_stage_info()["learning_progress"] == pytest.approx(0.0)
-    assert manager.tracker.agent_stages.tolist() == [1]
+    assert lane_values(manager, "current_stage") == [1]
 
 
 @pytest.mark.parametrize("entropy,steps,want", [(0.9, 10, 1), (0.1, 9, 1), (0.1, 10, 2)])
 def test_advance_requires_completion_entropy_and_eligible_dwell(entropy, steps, want):
     manager = curriculum(dwell=10)
     commit(manager, outcome(steps=steps, entropy=entropy))
-    assert manager.tracker.agent_stages.tolist() == [want]
-    assert manager.tracker.steps_at_stage.tolist() == ([0.0] if want == 2 else [float(steps)])
+    assert lane_values(manager, "current_stage") == [want]
+    assert lane_values(manager, "steps_at_stage") == ([0.0] if want == 2 else [float(steps)])
     decisions(manager)
     decisions(manager)
-    assert manager.tracker.agent_stages.tolist() == [want]
+    assert lane_values(manager, "current_stage") == [want]
     assert len(manager.transition_events) == (1 if want == 2 else 0)
 
 
 def test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate():
     manager = curriculum(dwell=10)
     commit(manager, outcome())
-    assert manager.tracker.agent_stages.tolist() == [2]
+    assert lane_values(manager, "current_stage") == [2]
     commit(manager, outcome(batch=2, steps=10, horizon=20, entropy=0.99))
-    assert manager.tracker.agent_stages.tolist() == [1]
+    assert lane_values(manager, "current_stage") == [1]
     assert [event["reason"] for event in manager.transition_events] == ["advance", "retreat"]
     assert manager.transition_events[-1]["learning_progress"] == pytest.approx(-0.5)
 
 
 def test_low_survival_retreats_even_with_positive_learning_progress():
     manager = curriculum(dwell=2)
-    manager.tracker.agent_stages[0] = 2
-    commit(manager, outcome(steps=2, entropy=0.99))
+    commit(manager, outcome(steps=8), outcome(batch=2))
+    commit(manager, outcome(batch=3, steps=2, horizon=40, entropy=0.99))
+    assert lane_values(manager, "current_stage") == [2]
+    commit(manager, outcome(batch=4, steps=5, horizon=20, entropy=0.99))
     assert manager.get_stage_info()["learning_progress"] == pytest.approx(0.2)
-    assert manager.tracker.agent_stages.tolist() == [1]
+    assert lane_values(manager, "current_stage") == [1]
     assert manager.transition_events[-1]["reason"] == "retreat"
 
 
@@ -172,19 +197,19 @@ def test_checkpoint_resume_preserves_completion_identity_and_completed_metrics()
     restored.load_state(deepcopy(manager.checkpoint_state()))
     commit(restored, event)
     assert restored.get_stage_info() == manager.get_stage_info()
-    assert restored.tracker.steps_at_stage.tolist() == [10.0]
-    assert restored.tracker.episodes_at_stage.tolist() == [1]
+    assert lane_values(restored, "steps_at_stage") == [10.0]
+    assert lane_values(restored, "episodes_at_stage") == [1]
 
 
 def test_decision_reads_do_not_commit_stage_or_dwell():
     manager = curriculum(dwell=10)
     commit(manager, outcome())
     before = deepcopy(manager.get_stage_info())
-    dwell = manager.tracker.steps_at_stage.clone()
+    dwell = lane_values(manager, "steps_at_stage")
     for _ in range(3):
         decisions(manager)
     assert manager.get_stage_info() == before
-    assert torch.equal(manager.tracker.steps_at_stage, dwell)
+    assert lane_values(manager, "steps_at_stage") == dwell
     assert len(manager.transition_events) == 1
 
 
@@ -218,7 +243,7 @@ def test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band():
 @pytest.mark.parametrize("rate", [0.01, 0.1])
 def test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate(rate):
     manager = curriculum(lanes=5, rate=rate, low=0.2, high=0.6)
-    manager.tracker.agent_stages.copy_(torch.tensor([1, 2, 3, 4, 5]))
+    advance_to_stages(manager, [1, 2, 3, 4, 5])
     result = decisions(manager, 5)
     assert [d.difficulty_level for d in result] == pytest.approx([0.2, 0.3, 0.4, 0.5, 0.6])
     assert [d.depletion_multiplier for d in result] == pytest.approx([0.2, 0.5, 0.8, 1.0, 1.0])
@@ -237,7 +262,7 @@ def test_obsolete_commit_mode_is_refused():
 
 
 def test_static_curriculum_accepts_completion_without_changing_decisions():
-    manager = StaticCurriculum(difficulty_level=0.6, depletion_multiplier=0.8)
+    manager = fixed_curriculum()
     manager.initialize_population(1)
     before = decisions(manager)[0]
     event = outcome()
@@ -268,22 +293,29 @@ def assert_same(actual, expected):
 
 
 def snapshot(manager, lanes=1):
-    return deepcopy({
-        "state": manager.checkpoint_state(),
-        "events": manager.transition_events,
-        "info": [manager.get_stage_info(i) for i in range(lanes)],
-        "decisions": [vars(item) for item in decisions(manager, lanes)],
-        "rng": torch.random.get_rng_state(),
-    })
+    return deepcopy(
+        {
+            "state": manager.checkpoint_state(),
+            "events": manager.transition_events,
+            "info": [manager.get_stage_info(i) for i in range(lanes)],
+            "decisions": [vars(item) for item in decisions(manager, lanes)],
+            "rng": torch.random.get_rng_state(),
+        }
+    )
 
 
-@pytest.mark.parametrize("field,value", [
-    ("survival_baseline", 0.0), ("learning_progress", 2.0),
-    ("learning_progress", -2.0), ("learning_progress", 1e300),
-])
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("survival_baseline", 0.0),
+        ("learning_progress", 2.0),
+        ("learning_progress", -2.0),
+        ("learning_progress", 1e300),
+    ],
+)
 def test_checkpoint_contradiction_or_impossible_progress_refuses_atomically(field, value):
-    # Keep this on R1's reachable public API: no missing new constructor/preflight
-    # can hide the reviewer's concrete malformed-restore acceptance witness.
+    # Root captured this exact R1 corruption cause before migrating initialization.
+    # Redundant fraction/progress fields are forbidden in the canonical metric row.
     manager = curriculum(dwell=10)
     commit(manager, outcome())
     damaged = deepcopy(manager.checkpoint_state())
@@ -305,7 +337,7 @@ def test_valid_point_eight_native_restore_preserves_equal_fraction_future():
     for target in (manager, restored):
         commit(target, outcome(batch=2, steps=16, horizon=20))
         assert target.get_stage_info()["learning_progress"] == pytest.approx(0.0)
-        assert target.tracker.agent_stages.tolist() == [2]
+        assert lane_values(target, "current_stage") == [2]
     assert_same(snapshot(restored), snapshot(manager))
 
 
@@ -314,8 +346,10 @@ def test_malformed_later_completion_refuses_whole_batch(change):
     manager = curriculum(lanes=2, dwell=10, mode="rate_limited")
     invalid = outcome(lane=1)
     alteration = {
-        "lane": {"agent_idx": 2}, "zero": {"survival_time": 0},
-        "excess": {"survival_time": 11}, "reason": {"reason": "undeclared"},
+        "lane": {"agent_idx": 2},
+        "zero": {"survival_time": 0},
+        "excess": {"survival_time": 11},
+        "reason": {"reason": "undeclared"},
     }[change]
     invalid = replace(invalid, outcome=replace(invalid.outcome, **alteration))
     before = snapshot(manager, 2)
@@ -324,18 +358,33 @@ def test_malformed_later_completion_refuses_whole_batch(change):
     assert_same(snapshot(manager, 2), before)
 
 
-@pytest.mark.parametrize("change", [
-    "reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping",
-    "policy_entropy", "world_id", "world_episode_seq", "planned_horizon",
-    "survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape",
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        "reward_total",
+        "reward_extrinsic",
+        "reward_intrinsic",
+        "reward_shaping",
+        "policy_entropy",
+        "world_id",
+        "world_episode_seq",
+        "planned_horizon",
+        "survival_time",
+        "reason",
+        "final_observation",
+        "final_meters",
+        "observation_dtype",
+        "observation_shape",
+    ],
+)
 def test_changed_content_duplicate_refuses_without_any_effect(change):
     manager = curriculum(dwell=10, mode="rate_limited")
     event = outcome()
     commit(manager, event)
     if change in ("survival_time", "reason", "final_observation", "final_meters", "observation_dtype", "observation_shape"):
         value = {
-            "survival_time": 9, "reason": "budget",
+            "survival_time": 9,
+            "reason": "budget",
             "final_observation": torch.tensor([0.5, 0.5]),
             "final_meters": torch.tensor([70.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
             "observation_dtype": torch.tensor([0.25, 0.75], dtype=torch.float64),
@@ -344,8 +393,7 @@ def test_changed_content_duplicate_refuses_without_any_effect(change):
         field = "final_observation" if change.startswith("observation_") else change
         changed = replace(event, outcome=replace(event.outcome, **{field: value}))
     else:
-        value = {"world_id": "other-declared-town", "world_episode_seq": 2,
-                 "planned_horizon": 20}.get(change, 0.5)
+        value = {"world_id": "other-declared-town", "world_episode_seq": 2, "planned_horizon": 20}.get(change, 0.5)
         changed = replace(event, **{change: value})
     before = snapshot(manager)
     with pytest.raises(ValueError):
@@ -384,7 +432,7 @@ def test_prepare_is_pure_and_prepared_retry_commits_once():
     once = snapshot(manager)
     accept(manager, receipt)
     assert_same(snapshot(manager), once)
-    assert manager.tracker.agent_stages.tolist() == [2]
+    assert lane_values(manager, "current_stage") == [2]
     assert decisions(manager)[0].difficulty_level == pytest.approx(0.1)
 
 
@@ -412,7 +460,7 @@ def test_prepared_receipt_owns_content_and_refuses_stale_generation():
         accept(manager, second)
     assert_same(snapshot(manager), before)
     commit(manager, outcome(batch=2))
-    assert manager.tracker.steps_at_stage.tolist() == [20.0]
+    assert lane_values(manager, "steps_at_stage") == [20.0]
 
 
 def test_prepared_receipt_from_other_owner_refuses_atomically():
@@ -445,6 +493,8 @@ def test_current_schema_has_one_canonical_completed_state_and_no_tracker_protoco
     assert state["strategy"] == "adversarial"
     assert set(state["completion"]) == {"config", "generation", "lanes", "events", "metrics"}
     assert not hasattr(manager, "tracker"), "Remove obsolete reward-as-step tracker protocol"
+    assert not hasattr(manager, "get_batch_decisions_with_qvalues")
+    assert not hasattr(manager, "configure_from_training")
     assert manager.get_stage_info()["survival_rate"] == pytest.approx(1.0)
 
 
@@ -478,8 +528,7 @@ def test_rate_limited_resume_matches_uninterrupted_future_and_duplicate_retry():
     restored.load_state(deepcopy(manager.checkpoint_state()))
     commit(restored, outcome())
     assert decisions(restored)[0].difficulty_level == pytest.approx(0.1)
-    for event in (outcome(batch=2, steps=10, horizon=20),
-                  outcome(batch=3, steps=10), outcome(batch=4, steps=10)):
+    for event in (outcome(batch=2, steps=10, horizon=20), outcome(batch=3, steps=10), outcome(batch=4, steps=10)):
         commit(manager, event)
         commit(restored, deepcopy(event))
         assert_same(snapshot(restored), snapshot(manager))
@@ -521,12 +570,28 @@ def current_state(manager):
     return state
 
 
-@pytest.mark.parametrize("change", [
-    "config", "missing_nested", "unknown_nested", "stage_low", "stage_high",
-    "negative_dwell", "negative_episodes", "bad_rate", "duplicate_event",
-    "bad_identity", "missing_metrics", "prior_low", "prior_high", "prior_infinite",
-    "event_content", "event_fingerprint", "negative_generation",
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        "config",
+        "missing_nested",
+        "unknown_nested",
+        "stage_low",
+        "stage_high",
+        "negative_dwell",
+        "negative_episodes",
+        "bad_rate",
+        "duplicate_event",
+        "bad_identity",
+        "missing_metrics",
+        "prior_low",
+        "prior_high",
+        "prior_infinite",
+        "event_content",
+        "event_fingerprint",
+        "negative_generation",
+    ],
+)
 def test_current_nested_corruption_refuses_before_installation(change):
     manager = curriculum(dwell=10, mode="rate_limited")
     commit(manager, outcome())
@@ -554,7 +619,9 @@ def test_current_nested_corruption_refuses_before_installation(change):
         body["metrics"][0] = None
     elif change in ("prior_low", "prior_high", "prior_infinite"):
         body["metrics"][0]["previous_fraction"] = {
-            "prior_low": -0.1, "prior_high": 1.1, "prior_infinite": float("inf"),
+            "prior_low": -0.1,
+            "prior_high": 1.1,
+            "prior_infinite": float("inf"),
         }[change]
     elif change == "event_content":
         body["metrics"][0]["event"]["reward_total"] = 123.0
@@ -583,18 +650,18 @@ def test_current_valid_restore_installs_one_authoritative_fraction_and_progress(
 
 
 def test_static_preparation_is_pure_and_changed_duplicate_is_still_refused():
-    manager = StaticCurriculum(difficulty_level=0.6, depletion_multiplier=0.8)
+    manager = fixed_curriculum()
     manager.initialize_population(1)
-    before = snapshot(manager, 0)
+    before = snapshot(manager)
     receipt = prepare(manager, outcome())
-    assert_same(snapshot(manager, 0), before)
+    assert_same(snapshot(manager), before)
     accept(manager, receipt)
-    once = snapshot(manager, 0)
+    once = snapshot(manager)
     accept(manager, receipt)
-    assert_same(snapshot(manager, 0), once)
+    assert_same(snapshot(manager), once)
     with pytest.raises(ValueError):
         commit(manager, replace(outcome(), reward_total=11.0))
-    assert_same(snapshot(manager, 0), once)
+    assert_same(snapshot(manager), once)
     assert decisions(manager)[0].difficulty_level == pytest.approx(0.6)
 
 
@@ -611,3 +678,308 @@ def test_current_event_tensor_snapshots_are_owned_on_save_and_load():
     before = snapshot(manager)
     saved["completion"]["metrics"][0]["event"]["outcome"]["final_meters"].zero_()
     assert_same(snapshot(manager), before)
+
+
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        torch.bool,
+        torch.uint8,
+        torch.int8,
+        torch.int16,
+        torch.int32,
+        torch.int64,
+        torch.float16,
+        torch.bfloat16,
+        torch.float32,
+        torch.float64,
+        torch.complex64,
+        torch.complex128,
+    ],
+)
+@pytest.mark.parametrize("shape", [(0,), (2, 0), (0, 3), (2,)])
+def test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership(dtype, shape):
+    event = replace(
+        outcome(),
+        outcome=replace(outcome().outcome, final_observation=torch.zeros(shape, dtype=dtype), final_meters=torch.zeros(shape, dtype=dtype)),
+    )
+    expected = lane_outcome_state(event)
+    frozen = freeze_lane_outcome(event)
+    assert frozen.fingerprint == lane_outcome_fingerprint(event)
+    event.outcome.final_observation.fill_(1)
+    assert_same(lane_outcome_state(frozen.to_outcome()), expected)
+    if event.outcome.final_observation.numel():
+        assert frozen.fingerprint != lane_outcome_fingerprint(event)
+
+
+@pytest.mark.parametrize("change", ["world", "sequence", "batch"])
+def test_preflight_refuses_new_event_with_wrong_established_lane_cursor(change):
+    manager = curriculum()
+    commit(manager, outcome())
+    event = outcome(batch=2)
+    event = replace(
+        event,
+        **{
+            "world": {"world_id": "other-declared-town"},
+            "sequence": {"world_episode_seq": 1},
+            "batch": {"batch_episode": 0},
+        }[change],
+    )
+    before = snapshot(manager)
+    with pytest.raises(ValueError):
+        prepare(manager, event)
+    assert_same(snapshot(manager), before)
+
+
+def test_current_load_invalidates_prepared_owner_even_at_equal_generation():
+    manager = curriculum()
+    commit(manager, outcome())
+    pending = prepare(manager, outcome(batch=2))
+    manager.load_state(manager.checkpoint_state())
+    before = snapshot(manager)
+    with pytest.raises(ValueError):
+        accept(manager, pending)
+    assert_same(snapshot(manager), before)
+
+
+def logical_fixture(kind):
+    manager = fixed_curriculum() if "static" in kind else curriculum(dwell=10, mode="rate_limited") if kind == "rate" else curriculum()
+    if "static" in kind:
+        manager.initialize_population(1)
+    events = (
+        (outcome(steps=4), outcome(batch=2, steps=8))
+        if kind.startswith("multi")
+        else (outcome() if "static" in kind or kind == "rate" else outcome(steps=4),)
+    )
+    commit(manager, *events)
+    return manager, outcome(batch=len(events) + 1, steps=8)
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "dwell",
+        "stage",
+        "rate",
+        "static_count",
+        "static_zero",
+        "multi_latest_dwell",
+        "multi_zero_count",
+        "multi_stage",
+        "multi_static_count",
+    ],
+)
+def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+    manager, future = logical_fixture(kind)
+    control, _ = logical_fixture(kind)
+    pending = prepare(manager, future)
+    damaged = current_state(manager)
+    lane = damaged["completion"]["lanes"][0]
+    if kind == "dwell":
+        lane["dwell"] = 1000
+    elif kind == "stage":
+        lane.update(stage=5, difficulty=1.0)
+    elif kind == "rate":
+        lane["difficulty"] = 0.9
+    elif kind == "static_count" or kind == "multi_static_count":
+        lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+    elif kind == "static_zero":
+        lane.update(episodes_at_stage=0, dwell=0)
+    elif kind == "multi_latest_dwell":
+        lane["dwell"] = 7
+    elif kind == "multi_zero_count":
+        lane["episodes_at_stage"] = 0
+    else:
+        lane.update(stage=4, difficulty=0.75)
+    before = snapshot(manager)
+    with pytest.raises(ValueError):
+        manager.load_state(damaged)
+    assert_same(snapshot(manager), before)
+    accept(manager, pending)
+    commit(control, future)
+    assert_same(snapshot(manager), snapshot(control))
+
+
+@pytest.mark.parametrize(
+    "kind,stage,dwell,count,difficulty",
+    [
+        ("dwell", 1, 4, 1, 0.0),
+        ("rate", 2, 0, 0, 0.1),
+        ("static_count", 0, 10, 1, 0.6),
+    ],
+)
+def test_genuine_first_event_native_effects_restore_exactly(kind, stage, dwell, count, difficulty):
+    manager, _ = logical_fixture(kind)
+    manager.transition_events.clear()
+    restored, _ = logical_fixture(kind)
+    restored.load_state(manager.checkpoint_state())
+    assert_same(snapshot(restored), snapshot(manager))
+    assert lane_values(restored, "current_stage") == [stage]
+    assert lane_values(restored, "steps_at_stage") == [dwell]
+    assert lane_values(restored, "episodes_at_stage") == [count]
+    assert decisions(restored)[0].difficulty_level == pytest.approx(difficulty)
+
+
+def test_static_multi_event_resume_keeps_exact_clocks_and_old_equal_retry():
+    manager, _ = logical_fixture("multi_static_count")
+    restored = fixed_curriculum()
+    restored.initialize_population(1)
+    restored.load_state(manager.checkpoint_state())
+    commit(restored, outcome(steps=4))
+    assert lane_values(restored, "steps_at_stage") == [12]
+    assert lane_values(restored, "episodes_at_stage") == [2]
+    for target in (manager, restored):
+        commit(target, outcome(batch=3, steps=3, reason="budget"))
+        assert lane_values(target, "steps_at_stage") == [15]
+        assert lane_values(target, "episodes_at_stage") == [3]
+        assert decisions(target)[0].difficulty_level == pytest.approx(0.6)
+    assert_same(snapshot(restored), snapshot(manager))
+
+
+def test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives():
+    manager = curriculum()
+    original = prepare(manager, outcome())
+    accept(manager, original)
+    commit(manager, outcome(batch=2))
+    before = snapshot(manager)
+    with pytest.raises(ValueError):
+        accept(manager, replace(original, generation=99))
+    assert_same(snapshot(manager), before)
+    accept(manager, original)
+    assert_same(snapshot(manager), before)
+
+
+@pytest.mark.parametrize(
+    "reading",
+    [
+        torch.tensor(3.25, dtype=torch.float64),
+        torch.tensor(1 + 2j, dtype=torch.complex64),
+        torch.tensor([[1 + 2j, 3 - 4j], [5 + 6j, 7 - 8j]], dtype=torch.complex128).t(),
+        torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]).t(),
+    ],
+)
+def test_codec_preserves_nonzero_complex_scalar_and_noncontiguous_logical_readings(reading):
+    event = replace(outcome(), outcome=replace(outcome().outcome, final_observation=reading, final_meters=reading))
+    expected = lane_outcome_state(event)
+    frozen = freeze_lane_outcome(event)
+    assert_same(lane_outcome_state(frozen.to_outcome()), expected)
+    contiguous = replace(event, outcome=replace(event.outcome, final_observation=reading.contiguous(), final_meters=reading.contiguous()))
+    assert lane_outcome_fingerprint(contiguous) == frozen.fingerprint
+    event.outcome.final_observation.zero_()
+    assert_same(lane_outcome_state(frozen.to_outcome()), expected)
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["fingerprint", "dtype", "negative_shape", "boolean_shape", "wrong_shape", "bad_hex", "byte_length", "unknown_field", "nonfinite"],
+)
+def test_codec_malformed_metadata_bytes_and_content_refuse(change):
+    frozen = freeze_lane_outcome(outcome())
+    data = json.loads(frozen.payload)
+    reading = data["outcome"]["final_observation"]
+    if change == "fingerprint":
+        damaged = replace(frozen, fingerprint="0" * 64)
+    else:
+        if change == "dtype":
+            reading["dtype"] = "undeclared"
+        elif change in ("negative_shape", "boolean_shape", "wrong_shape"):
+            reading["shape"] = {"negative_shape": [-1], "boolean_shape": [True], "wrong_shape": [3]}[change]
+        elif change in ("bad_hex", "byte_length"):
+            reading["data"] = "zz" if change == "bad_hex" else "00"
+        elif change == "unknown_field":
+            data["unknown"] = 1
+        else:
+            reading["data"] = torch.tensor([float("inf"), 0.75]).numpy().tobytes().hex()
+        payload = json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        damaged = replace(frozen, payload=payload, fingerprint=hashlib.sha256(payload).hexdigest())
+    with pytest.raises(ValueError):
+        damaged.to_outcome()
+
+
+def rate_history(kind):
+    rate = 1.0 if kind in ("saturated", "advance") else 0.0 if kind == "zero" else 0.01
+    low, high = (0.2, 0.8) if kind == "zero" else (0.6, 0.6) if kind == "singleton" else (0.0, 1.0)
+    manager = curriculum(dwell=8 if kind == "advance" else 10, mode="rate_limited", rate=rate, low=low, high=high)
+    steps_horizons = [(10, 10), (10, 10)]
+    if kind == "interior":
+        steps_horizons = [(10, 10), (2, 2)]
+    elif kind == "advance":
+        steps_horizons = [(8, 10), (10, 10)]
+    elif kind == "lower":
+        steps_horizons = [(10, 10), (10, 20), (10, 10)]
+    elif kind == "upper":
+        steps_horizons = [(30, 40), (32, 40), (36, 40), (40, 40), (10, 20)]
+    for batch, (steps, horizon) in enumerate(steps_horizons, start=1):
+        commit(manager, outcome(batch=batch, steps=steps, horizon=horizon))
+    return manager, outcome(batch=len(steps_horizons) + 1)
+
+
+@pytest.mark.parametrize(
+    "kind,damaged_difficulty",
+    [
+        ("saturated", 0.0),
+        ("saturated", 0.9),
+        ("interior", 0.01),
+        ("interior", 0.99),
+        ("advance", 0.25),
+        ("advance", 0.9),
+        ("zero", 0.3),
+        ("zero", 0.79),
+    ],
+)
+def test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact(kind, damaged_difficulty):
+    manager, future = rate_history(kind)
+    control, _ = rate_history(kind)
+    pending = prepare(manager, future)
+    damaged = current_state(manager)
+    damaged["completion"]["lanes"][0]["difficulty"] = damaged_difficulty
+    before = snapshot(manager)
+    with pytest.raises(ValueError):
+        manager.load_state(damaged)
+    assert_same(snapshot(manager), before)
+    accept(manager, pending)
+    commit(control, future)
+    assert_same(snapshot(manager), snapshot(control))
+
+
+@pytest.mark.parametrize(
+    "kind,stage,difficulty",
+    [
+        ("saturated", 2, 0.25),
+        ("interior", 2, 0.12),
+        ("advance", 3, 0.5),
+        ("lower", 2, 0.1),
+        ("upper", 4, 0.9),
+        ("zero", 2, 0.2),
+        ("singleton", 2, 0.6),
+    ],
+)
+def test_genuine_latest_rate_endpoint_interior_and_new_stage_native_future(kind, stage, difficulty):
+    manager, future = rate_history(kind)
+    manager.transition_events.clear()
+    restored, _ = rate_history(kind)
+    restored.load_state(manager.checkpoint_state())
+    assert lane_values(restored, "current_stage") == [stage]
+    assert decisions(restored)[0].difficulty_level == pytest.approx(difficulty)
+    assert_same(snapshot(restored), snapshot(manager))
+    commit(manager, future)
+    commit(restored, future)
+    assert_same(snapshot(restored), snapshot(manager))
+
+
+def test_genuine_seven_event_latest_rate_cancellation_native_roundtrip_and_future():
+    manager = curriculum(dwell=1, mode="rate_limited", rate=0.01, low=0.0, high=0.4)
+    advance_to_stages(manager, [5])
+    for event in (outcome(batch=5, steps=1, horizon=2), outcome(batch=6, steps=1, horizon=4), outcome(batch=7, steps=40, horizon=400)):
+        commit(manager, event)
+    assert lane_values(manager, "current_stage") == [2]
+    assert decisions(manager)[0].difficulty_level == pytest.approx(0.1)
+    manager.transition_events.clear()
+    restored = curriculum(dwell=1, mode="rate_limited", rate=0.01, low=0.0, high=0.4)
+    restored.load_state(manager.checkpoint_state())
+    assert_same(snapshot(restored), snapshot(manager))
+    for target in (manager, restored):
+        commit(target, outcome(batch=8))
+        assert lane_values(target, "current_stage") == [3]
+        assert decisions(target)[0].difficulty_level == pytest.approx(0.2)
+    assert_same(snapshot(restored), snapshot(manager))

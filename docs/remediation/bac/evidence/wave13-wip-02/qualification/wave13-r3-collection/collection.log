@@ -1,0 +1,121 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 104 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_curriculum_events.py>
+            <Function test_full_survival_survives_reset>
+            <Function test_dwell_counts_ten_transitions>
+            <Function test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage>
+            <Function test_distinct_lanes_and_reordered_duplicates_are_independent>
+            <Function test_learning_progress_compares_completed_fractions_before_baseline_update>
+            <Function test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward>
+            <Function test_advance_requires_completion_entropy_and_eligible_dwell[0.9-10-1]>
+            <Function test_advance_requires_completion_entropy_and_eligible_dwell[0.1-9-1]>
+            <Function test_advance_requires_completion_entropy_and_eligible_dwell[0.1-10-2]>
+            <Function test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate>
+            <Function test_low_survival_retreats_even_with_positive_learning_progress>
+            <Function test_checkpoint_resume_preserves_completion_identity_and_completed_metrics>
+            <Function test_decision_reads_do_not_commit_stage_or_dwell>
+            <Function test_singleton_band[stage_band]>
+            <Function test_singleton_band[rate_limited]>
+            <Function test_rate_has_declared_effect[0.01-0.1]>
+            <Function test_rate_has_declared_effect[0.1-0.25]>
+            <Function test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band>
+            <Function test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.01]>
+            <Function test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate[0.1]>
+            <Function test_obsolete_commit_mode_is_refused>
+            <Function test_static_curriculum_accepts_completion_without_changing_decisions>
+            <Function test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[survival_baseline-0.0]>
+            <Function test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-2.0]>
+            <Function test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress--2.0]>
+            <Function test_checkpoint_contradiction_or_impossible_progress_refuses_atomically[learning_progress-1e+300]>
+            <Function test_valid_point_eight_native_restore_preserves_equal_fraction_future>
+            <Function test_malformed_later_completion_refuses_whole_batch[lane]>
+            <Function test_malformed_later_completion_refuses_whole_batch[zero]>
+            <Function test_malformed_later_completion_refuses_whole_batch[excess]>
+            <Function test_malformed_later_completion_refuses_whole_batch[reason]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[reward_total]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[reward_extrinsic]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[reward_intrinsic]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[reward_shaping]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[policy_entropy]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[world_id]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[world_episode_seq]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[planned_horizon]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[survival_time]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[reason]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[final_observation]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[final_meters]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[observation_dtype]>
+            <Function test_changed_content_duplicate_refuses_without_any_effect[observation_shape]>
+            <Function test_equal_content_duplicate_uses_owned_content_not_object_identity>
+            <Function test_prepare_is_pure_and_prepared_retry_commits_once>
+            <Function test_prepare_rejects_later_invalid_lane_without_mutation>
+            <Function test_prepared_receipt_owns_content_and_refuses_stale_generation>
+            <Function test_prepared_receipt_from_other_owner_refuses_atomically>
+            <Function test_changed_duplicate_inside_single_preflight_refuses_atomically>
+            <Function test_current_schema_has_one_canonical_completed_state_and_no_tracker_protocol>
+            <Function test_current_checkpoint_schema_refuses_obsolete_or_malformed_state[version]>
+            <Function test_current_checkpoint_schema_refuses_obsolete_or_malformed_state[missing]>
+            <Function test_current_checkpoint_schema_refuses_obsolete_or_malformed_state[unknown]>
+            <Function test_current_checkpoint_schema_refuses_obsolete_or_malformed_state[strategy]>
+            <Function test_current_checkpoint_schema_refuses_obsolete_or_malformed_state[obsolete]>
+            <Function test_rate_limited_resume_matches_uninterrupted_future_and_duplicate_retry>
+            <Function test_checkpoint_snapshot_and_loaded_input_do_not_alias_live_state>
+            <Function test_completion_transition_uses_canonical_identity_without_legacy_alias>
+            <Function test_current_nested_corruption_refuses_before_installation[config]>
+            <Function test_current_nested_corruption_refuses_before_installation[missing_nested]>
+            <Function test_current_nested_corruption_refuses_before_installation[unknown_nested]>
+            <Function test_current_nested_corruption_refuses_before_installation[stage_low]>
+            <Function test_current_nested_corruption_refuses_before_installation[stage_high]>
+            <Function test_current_nested_corruption_refuses_before_installation[negative_dwell]>
+            <Function test_current_nested_corruption_refuses_before_installation[negative_episodes]>
+            <Function test_current_nested_corruption_refuses_before_installation[bad_rate]>
+            <Function test_current_nested_corruption_refuses_before_installation[duplicate_event]>
+            <Function test_current_nested_corruption_refuses_before_installation[bad_identity]>
+            <Function test_current_nested_corruption_refuses_before_installation[missing_metrics]>
+            <Function test_current_nested_corruption_refuses_before_installation[prior_low]>
+            <Function test_current_nested_corruption_refuses_before_installation[prior_high]>
+            <Function test_current_nested_corruption_refuses_before_installation[prior_infinite]>
+            <Function test_current_nested_corruption_refuses_before_installation[event_content]>
+            <Function test_current_nested_corruption_refuses_before_installation[event_fingerprint]>
+            <Function test_current_nested_corruption_refuses_before_installation[negative_generation]>
+            <Function test_current_valid_restore_installs_one_authoritative_fraction_and_progress>
+            <Function test_static_preparation_is_pure_and_changed_duplicate_is_still_refused>
+            <Function test_current_event_tensor_snapshots_are_owned_on_save_and_load>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape0-dtype0]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape0-dtype1]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape0-dtype2]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape0-dtype3]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape0-dtype4]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape1-dtype0]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape1-dtype1]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape1-dtype2]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape1-dtype3]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape1-dtype4]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape2-dtype0]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape2-dtype1]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape2-dtype2]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape2-dtype3]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape2-dtype4]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape3-dtype0]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape3-dtype1]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape3-dtype2]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape3-dtype3]>
+            <Function test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership[shape3-dtype4]>
+            <Function test_preflight_refuses_new_event_with_wrong_established_lane_cursor[world]>
+            <Function test_preflight_refuses_new_event_with_wrong_established_lane_cursor[sequence]>
+            <Function test_preflight_refuses_new_event_with_wrong_established_lane_cursor[batch]>
+            <Function test_current_load_invalidates_prepared_owner_even_at_equal_generation>
+
+========================= 104 tests collected in 0.11s =========================

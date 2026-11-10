@@ -1,0 +1,27 @@
+{
+  "status": "MEANINGFUL_FIX1_RED",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "tree": "31debaa1c1306c795c671277b151e0e37f36997b",
+  "counts": {
+    "failed": 10,
+    "passed": 149,
+    "errors": 0
+  },
+  "wall_seconds": 9.608432531356812,
+  "P2_witnesses": [
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[rate]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_stage]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[dwell]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_zero_count]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_latest_dwell]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[static_zero]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[stage]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_static_count]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[static_count]"
+  ],
+  "P3_witness": "future-generation equal receipt accepted as no-op",
+  "other_current_controls": "149PASS including all claimed12dtypes,empty/noncontiguous/scalar/complex and malformed codec; no codec failure found",
+  "custody": "172source573configs13artifacts14registry1available5processPASS",
+  "log_sha256": "ee8ab765d73d3b984097d5337e28fed76f5a47a8fd319f569c26d93d98995965",
+  "clearance": "Semantic CA fix1 permitted after real RED; preserve scenarios and current-only schema/features"
+}

@@ -1,0 +1,68 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave13/r6-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave13-r6-current-guards",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "ruff-current",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/training/episode.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py"
+      ]
+    },
+    {
+      "name": "black-current",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/training/episode.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+        "--workers",
+        "1"
+      ]
+    },
+    {
+      "name": "mypy-current",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/training/episode.py",
+        "--follow-imports=silent"
+      ]
+    },
+    {
+      "name": "mypy-global",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    },
+    {
+      "name": "no-defaults",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ]
+    }
+  ]
+}

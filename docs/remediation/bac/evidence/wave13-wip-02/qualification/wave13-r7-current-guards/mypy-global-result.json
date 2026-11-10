@@ -1,0 +1,17 @@
+{
+  "name": "mypy-global",
+  "exit_code": 1,
+  "seconds": 51.1803674697876,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "mypy",
+    "src/townlet"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r7-current-guards/mypy-global.log",
+  "sha256": "acd46c85ce2fed47ba41bd92dee887c8653ad6d82bf0caac97d529e971cc21ad",
+  "candidate_tree": "30dec57702114084aafcafa901c47db65531afc8",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "manifest_sha256": "a948c13d4f096fbe5ca8c5688e954a2013862aa755225570d1e6e96c0e0f810a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,14 @@
+{
+  "packet": "T20",
+  "owner_selections": [
+    "tests/test_townlet/unit/curriculum/test_curriculums.py",
+    "tests/test_townlet/test_curriculum/test_stage_info.py",
+    "tests/test_townlet/unit/config/test_curriculum_config_dto.py",
+    "tests/test_townlet/integration/test_curriculum_signal_purity.py",
+    "tests/test_townlet/integration/test_curriculum_transfer.py",
+    "tests/test_townlet/integration/test_curriculum_compatibility.py",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py"
+  ],
+  "execution": "After source stationarity and GREEN, verify collection/import/source/fixture first. Root owner suite2workers + static guard2workers; fresh Astra static review may overlap; independent adversarial runtime1worker after owner closes. Total runtime CPU<=4, torch threads1. No extra source/checkouts.",
+  "full_gate_assessment": "Must inspect actual candidate against approved addendum Section3. New unused completion branch alone does not trigger; existing checkpoint/schema/consumed metric/ownership changes or uncertainty require early full gate. Reviewer can require it. No automatic deferral."
+}

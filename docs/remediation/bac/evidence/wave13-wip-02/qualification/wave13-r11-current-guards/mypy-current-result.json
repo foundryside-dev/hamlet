@@ -1,0 +1,21 @@
+{
+  "name": "mypy-current",
+  "exit_code": 0,
+  "seconds": 1.0489327907562256,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "mypy",
+    "src/townlet/curriculum/base.py",
+    "src/townlet/curriculum/adversarial.py",
+    "src/townlet/curriculum/static.py",
+    "src/townlet/training/episode.py",
+    "--follow-imports=silent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-current-guards/mypy-current.log",
+  "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+  "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

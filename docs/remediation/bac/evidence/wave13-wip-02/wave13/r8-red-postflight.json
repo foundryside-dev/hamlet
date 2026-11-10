@@ -1,0 +1,25 @@
+{
+  "status": "MEANINGFUL_FIX2_RED",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "candidate_tree": "03e0eb3dc3364bbb61aa40c2250d0848c5a0d2b3",
+  "counts": {
+    "failed": 8,
+    "passed": 166,
+    "errors": 0
+  },
+  "wall_seconds": 39.65155029296875,
+  "failure_nodes": [
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[advance-0.25]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[advance-0.9]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[interior-0.01]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[interior-0.99]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[saturated-0.0]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[saturated-0.9]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[zero-0.3]",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_latest_rate_interval_or_zero_rate_corruption_refuses_with_prepared_owner_intact[zero-0.79]"
+  ],
+  "cause": "All8 missing latest-rate/zero-rate refusals reach DIDNOTRAISE in call phase;166controls pass including7new genuine history/endpoint/native-future cases",
+  "custody": "172source/573config/13artifacts/5process identity/import/thread PASS;14registry/onlyMAINavailable. Exact source/index/config/artifact checked before release to author.",
+  "log_sha256": "5a8e510fe32218da2182b2c59484901a68a33aac57ee79aef0b342f1034eddfb",
+  "clearance": "Sameauthor CA-only fix2 permitted after causalRED"
+}

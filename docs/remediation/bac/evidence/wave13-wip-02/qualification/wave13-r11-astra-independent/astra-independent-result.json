@@ -1,0 +1,26 @@
+{
+  "name": "astra-independent",
+  "exit_code": 0,
+  "seconds": 9.896140575408936,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave13-r11-astra-independent",
+    "-k",
+    "latest_rate or logically_impossible or genuine_first_event or static_multi_event or future_generation or codec or shared_fingerprint or malformed_later or changed_content_duplicate or prepare or checkpoint or rate_limited_resume or preflight"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-astra-independent/astra-independent.log",
+  "sha256": "0493ca4c598dedfce733ad2fe1f8be60260276e2bf95eea67c5db00d92500363",
+  "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

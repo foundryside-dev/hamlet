@@ -1,0 +1,12 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/curriculum/factory.py:56: error: Missing named argument "commit_mode" for "StaticCurriculum"  [call-arg]
+src/townlet/curriculum/factory.py:56: note: "StaticCurriculum" defined in "townlet.curriculum.static"
+src/townlet/curriculum/factory.py:56: error: Missing named argument "reward_mode" for "StaticCurriculum"  [call-arg]
+src/townlet/curriculum/factory.py:56: error: Missing named argument "active_meters" for "StaticCurriculum"  [call-arg]
+src/townlet/curriculum/factory.py:56: error: Missing named argument "depletion_multiplier" for "StaticCurriculum"  [call-arg]
+src/townlet/curriculum/factory.py:63: error: Unexpected keyword argument "max_steps_per_episode" for "AdversarialCurriculum"  [call-arg]
+src/townlet/curriculum/factory.py:63: note: "AdversarialCurriculum" defined in "townlet.curriculum.adversarial"
+src/townlet/curriculum/factory.py:67: error: "AdversarialCurriculum" has no attribute "configure_from_training"  [attr-defined]
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 6 errors in 1 file (checked 193 source files)

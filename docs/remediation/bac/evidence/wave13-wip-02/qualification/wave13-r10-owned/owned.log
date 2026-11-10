@@ -1,0 +1,78 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 175 items / 174 deselected / 1 selected
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py F           [100%]
+
+=================================== FAILURES ===================================
+_ test_genuine_seven_event_latest_rate_cancellation_native_roundtrip_and_future _
+
+    def test_genuine_seven_event_latest_rate_cancellation_native_roundtrip_and_future():
+        manager = curriculum(dwell=1, mode="rate_limited", rate=0.01, low=0.0, high=0.4)
+        advance_to_stages(manager, [5])
+        for event in (outcome(batch=5, steps=1, horizon=2), outcome(batch=6, steps=1, horizon=4), outcome(batch=7, steps=40, horizon=400)):
+            commit(manager, event)
+        assert lane_values(manager, "current_stage") == [2]
+        assert decisions(manager)[0].difficulty_level == pytest.approx(0.1)
+        manager.transition_events.clear()
+        restored = curriculum(dwell=1, mode="rate_limited", rate=0.01, low=0.0, high=0.4)
+>       restored.load_state(manager.checkpoint_state())
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:979: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/curriculum/adversarial.py:356: in load_state
+    self.validate_checkpoint_state(owned)
+src/townlet/curriculum/adversarial.py:285: in validate_checkpoint_state
+    self._validate_effects(lane, event, previous, completion_count)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.curriculum.adversarial.AdversarialCurriculum object at 0x7f580e0e82d0>
+lane = {'difficulty': 0.09999999999999998, 'dwell': 0, 'episodes_at_stage': 0, 'stage': 2}
+event = LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='cap', survival_time=40, final_observation=tensor([0.2500, 0...rinsic=6.0, reward_intrinsic=3.0, reward_shaping=1.0, policy_entropy=0.1, world_id='town-world-0', world_episode_seq=7)
+previous = 0.25, completion_count = 7
+
+    def _validate_effects(self, lane: dict[str, Any], event: LaneOutcome, previous: float, completion_count: int) -> None:
+        """Reconcile only effects derivable from retained current completion data."""
+        if completion_count == 1:
+            expected = self._initial_lane()
+            self._advance_lane(expected, event, 0.0)
+            if lane != expected:
+                raise ValueError("First completion effects contradict the authored initial state")
+        count, dwell, stage = lane["episodes_at_stage"], lane["dwell"], lane["stage"]
+        if self._strategy == "static":
+            if count != completion_count:
+                raise ValueError("Static completion counters cannot reset")
+        elif stage > min(5, 1 + completion_count - count):
+            raise ValueError("Committed stage is unreachable from recorded completion count")
+        if (count == 0) != (dwell == 0):
+            raise ValueError("Stage dwell and completion count must reset together")
+        if count > 0 and dwell < event.outcome.survival_time + count - 1:
+            raise ValueError("Stage dwell cannot omit the latest eligible transitions")
+        if self._strategy == "static":
+            return
+        if self._config["difficulty_mode"] == "rate_limited":
+            low, high = self._config["min_difficulty"], self._config["max_difficulty"]
+            rate = self._config["adaptation_rate"]
+            if rate == 0:
+                if lane["difficulty"] != low:
+                    raise ValueError("Zero-rate difficulty must remain at its authored initial bound")
+            else:
+                target = low + (stage - 1) / 4 * (high - low)
+                budget = rate * event.outcome.survival_time
+                # The predecessor is within the band; no older payload is needed.
+                # Permit one representable boundary step for arithmetic rounding.
+                reachable_low = math.nextafter(min(target, low + budget), -math.inf)
+                reachable_high = math.nextafter(max(target, high - budget), math.inf)
+                if lane["difficulty"] < reachable_low or lane["difficulty"] > reachable_high:
+>                   raise ValueError("Difficulty is unreachable under the latest completion rate budget")
+E                   ValueError: Difficulty is unreachable under the latest completion rate budget
+
+src/townlet/curriculum/adversarial.py:320: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_genuine_seven_event_latest_rate_cancellation_native_roundtrip_and_future
+====================== 1 failed, 174 deselected in 0.12s =======================

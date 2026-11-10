@@ -1,149 +1,64 @@
-"""
-Static curriculum manager (trivial implementation).
+"""Fixed decisions with the same current completion and retry protocol."""
 
-Always returns the same curriculum decision. Used for baseline testing
-and to validate the curriculum interface works.
-"""
-
-from __future__ import annotations
-
-import math
-from collections.abc import Sequence
 from typing import Any
 
-import torch
-
-from townlet.curriculum.base import CurriculumManager
+from townlet.curriculum.adversarial import CompletionCurriculum, finite_number
 from townlet.training.episode import LaneOutcome
 from townlet.training.state import BatchedAgentState, CurriculumDecision
 
 
-class StaticCurriculum(CurriculumManager):
-    """
-    Static curriculum - no adaptation.
-
-    Returns the same curriculum decision for all agents at all times.
-    Useful for baseline experiments and interface validation.
-    """
-
-    _CHECKPOINT_KEYS = frozenset({"difficulty_level", "reward_mode", "active_meters", "depletion_multiplier"})
+class StaticCurriculum(CompletionCurriculum):
+    """Retain completion ownership while keeping every authored decision fixed."""
 
     def __init__(
-        self,
-        difficulty_level: float = 0.5,
-        reward_mode: str = "shaped",
-        active_meters: list[str] | None = None,
-        depletion_multiplier: float = 1.0,
+        self, *, commit_mode: str, difficulty_level: float, reward_mode: str, active_meters: list[str], depletion_multiplier: float
     ):
-        """
-        Initialize static curriculum.
-
-        Args:
-            difficulty_level: Fixed difficulty (0.0-1.0)
-            reward_mode: 'shaped' or 'sparse'
-            active_meters: Which meters are active (default: all 6)
-            depletion_multiplier: Depletion rate multiplier
-        """
-        self.difficulty_level = difficulty_level
-        self.reward_mode = reward_mode
-        self.active_meters = active_meters or ["energy", "hygiene", "satiation", "money", "mood", "social"]
-        self.depletion_multiplier = depletion_multiplier
-        self.transition_events: list[dict[str, Any]] = []
-        self.num_agents: int | None = None
-        self.tracker: _StaticTracker | None = None
-
-    def initialize_population(self, num_agents: int) -> None:
-        """Static curriculum has no per-agent state; record agent count and reset events."""
-        self.num_agents = num_agents
-        self.transition_events.clear()
-        self.tracker = _StaticTracker(num_agents)
-
-    def get_batch_decisions(
-        self,
-        agent_states: BatchedAgentState,
-        agent_ids: list[str],
-    ) -> list[CurriculumDecision]:
-        """
-        Get curriculum decisions (same for all agents).
-
-        Args:
-            agent_states: Current agent state (ignored)
-            agent_ids: List of agent IDs
-
-        Returns:
-            List of identical CurriculumDecisions
-        """
-        decision = CurriculumDecision(
-            difficulty_level=self.difficulty_level,
-            active_meters=self.active_meters,
-            depletion_multiplier=self.depletion_multiplier,
-            reward_mode=self.reward_mode,
-            reason=f"Static curriculum (difficulty={self.difficulty_level})",
+        if commit_mode != "completion":
+            raise ValueError("Only the current completion protocol is supported")
+        if not finite_number(difficulty_level) or not 0 <= difficulty_level <= 1:
+            raise ValueError("Static difficulty must be within [0, 1]")
+        if not finite_number(depletion_multiplier) or depletion_multiplier < 0:
+            raise ValueError("Static depletion multiplier must be finite and nonnegative")
+        if not isinstance(reward_mode, str) or not reward_mode:
+            raise ValueError("Static reward mode must be a nonempty label")
+        if not isinstance(active_meters, list) or any(not isinstance(name, str) or not name for name in active_meters):
+            raise ValueError("Static meter labels must be a list of nonempty strings")
+        super().__init__(
+            "static",
+            {
+                "commit_mode": commit_mode,
+                "difficulty_level": float(difficulty_level),
+                "reward_mode": reward_mode,
+                "active_meters": active_meters.copy(),
+                "depletion_multiplier": float(depletion_multiplier),
+            },
         )
 
-        # Return same decision for all agents
-        return [decision] * len(agent_ids)
+    def _initial_lane(self) -> dict[str, Any]:
+        return {"stage": 0, "dwell": 0, "episodes_at_stage": 0, "difficulty": self._config["difficulty_level"]}
 
-    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
-        """Static decisions have no completion-dependent state, including on replay."""
+    def _advance_lane(self, lane: dict[str, Any], event: LaneOutcome, previous_fraction: float) -> None:
+        """Record the lane clock without changing its fixed decision or stage."""
+        lane["dwell"] += event.outcome.survival_time
+        lane["episodes_at_stage"] += 1
         return None
 
-    def checkpoint_state(self) -> dict[str, Any]:
-        """
-        Return serializable state.
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        self._body()
+        if len(agent_ids) != self.num_agents:
+            raise ValueError("Decision identities must cover initialized lanes")
+        return [
+            CurriculumDecision(
+                difficulty_level=self._config["difficulty_level"],
+                active_meters=self._config["active_meters"].copy(),
+                depletion_multiplier=self._config["depletion_multiplier"],
+                reward_mode=self._config["reward_mode"],
+                reason=f"Static curriculum (difficulty={self._config['difficulty_level']})",
+            )
+            for _ in agent_ids
+        ]
 
-        Returns:
-            Dict with all configuration
-        """
-        return {
-            "difficulty_level": self.difficulty_level,
-            "reward_mode": self.reward_mode,
-            "active_meters": self.active_meters,
-            "depletion_multiplier": self.depletion_multiplier,
-        }
-
-    def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
-        """Validate the exact static-curriculum state without mutation."""
-        if not isinstance(state, dict):
-            raise ValueError(f"Static curriculum checkpoint must be a dictionary; got {type(state).__name__}.")
-
-        state_keys = set(state)
-        if state_keys != self._CHECKPOINT_KEYS:
-            missing = sorted(self._CHECKPOINT_KEYS - state_keys)
-            unknown = sorted(state_keys - self._CHECKPOINT_KEYS)
-            raise ValueError(f"Static curriculum checkpoint key set mismatch: missing={missing}, unknown={unknown}.")
-
-        for field in ("difficulty_level", "depletion_multiplier"):
-            value = state[field]
-            if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(float(value)):
-                raise ValueError(f"Static curriculum checkpoint {field} must be a finite number.")
-        if not isinstance(state["reward_mode"], str):
-            raise ValueError("Static curriculum checkpoint reward_mode must be a string.")
-        active_meters = state["active_meters"]
-        if not isinstance(active_meters, list) or any(not isinstance(name, str) for name in active_meters):
-            raise ValueError("Static curriculum checkpoint active_meters must be a list of strings.")
-
-    def load_state(self, state: dict[str, Any]) -> None:
-        """
-        Restore from checkpoint.
-
-        Args:
-            state: Dict from checkpoint_state()
-        """
-        self.validate_checkpoint_state(state)
-        self.difficulty_level = state["difficulty_level"]
-        self.reward_mode = state["reward_mode"]
-        self.active_meters = state["active_meters"]
-        self.depletion_multiplier = state["depletion_multiplier"]
-
-
-class _StaticTracker:
-    """Minimal tracker so logging paths can read curriculum stage tensors."""
-
-    def __init__(self, num_agents: int):
-        self.num_agents = num_agents
-        self.agent_stages = torch.zeros(num_agents, dtype=torch.long)
-
-    def update_step(self, rewards: torch.Tensor, dones: torch.Tensor) -> None:  # noqa: ARG002
-        # Static curriculum does not change stage; no-op
-        return None
+    def get_stage_info(self, agent_idx: int) -> dict[str, Any]:
+        info = self._stage_info(agent_idx)
+        info.update(difficulty_mode="fixed", adaptation_rate=None, adaptation_rate_active=False, adaptation_rate_units="inactive")
+        return info

@@ -1,92 +1,66 @@
-"""
-Abstract base class for curriculum managers.
-
-Curriculum managers control environment difficulty progression based on
-agent performance metrics (survival time, learning progress, policy entropy).
-"""
+"""Current completion-driven curriculum interfaces."""
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
-from townlet.training.episode import LaneOutcome
+from townlet.training.episode import FrozenLaneOutcome, LaneOutcome
 from townlet.training.state import BatchedAgentState, CurriculumDecision
 
 
+@dataclass(frozen=True)
+class PreparedCurriculumOutcomes:
+    """An owner-bound, generation-pinned immutable completion handoff."""
+
+    owner_token: object
+    generation: int
+    outcomes: tuple[FrozenLaneOutcome, ...]
+
+
 class CurriculumManager(ABC):
-    """
-    Abstract interface for curriculum management.
-
-    Implementations control environment difficulty by returning CurriculumDecisions
-    that specify depletion rates, active meters, and reward mode.
-    """
-
-    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
-        """Consume owned completions once; legacy subclasses may opt in additively."""
-        raise NotImplementedError("This curriculum does not consume completion outcomes")
-
-    def initialize_population(self, num_agents: int) -> None:
-        """
-        Optional hook to prepare per-agent state before training starts.
-
-        Implementations can override; default is a no-op for static curricula.
-        """
-        return None
+    """One completion protocol; decisions only read previously committed state."""
 
     @abstractmethod
-    def get_batch_decisions(
-        self,
-        agent_states: BatchedAgentState,
-        agent_ids: list[str],
-    ) -> list[CurriculumDecision]:
-        """
-        Get curriculum decisions for batch of agents.
+    def initialize_population(self, num_agents: int) -> None:
+        """Start a new population with no invented completion history."""
+        raise NotImplementedError
 
-        Called once per episode (not per step) to determine environment
-        configuration for each agent.
+    @abstractmethod
+    def prepare_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> PreparedCurriculumOutcomes:
+        """Validate and own the whole sequence without mutation or RNG use."""
+        raise NotImplementedError
 
-        Args:
-            agent_states: Current state for all agents [num_agents, ...]
-            agent_ids: List of agent identifiers (for per-agent tracking)
+    @abstractmethod
+    def commit_prepared_episode_outcomes(self, prepared: PreparedCurriculumOutcomes) -> None:
+        """Install prepared effects and identity receipts once, including retries."""
+        raise NotImplementedError
 
-        Returns:
-            List of CurriculumDecisions (one per agent)
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Prepare and install an owned sequence through the one current protocol."""
+        self.commit_prepared_episode_outcomes(self.prepare_episode_outcomes(outcomes))
 
-        Note:
-            Input is GPU tensors, output is CPU DTOs. Overhead acceptable
-            since this runs once per episode, not per step.
-        """
-        pass
+    @abstractmethod
+    def get_batch_decisions(self, agent_states: BatchedAgentState | None, agent_ids: list[str]) -> list[CurriculumDecision]:
+        """Read committed decisions in lane order without changing state."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_stage_info(self, agent_idx: int) -> dict[str, Any]:
+        """Read current stage, completion metrics and truthful feature status."""
+        raise NotImplementedError
 
     @abstractmethod
     def checkpoint_state(self) -> dict[str, Any]:
-        """
-        Return serializable state for checkpoint saving.
-
-        Should include:
-        - Per-agent curriculum stage
-        - Performance history (survival times, rewards)
-        - Any internal state needed to resume
-
-        Returns:
-            Dict compatible with JSON/YAML serialization
-        """
-        pass
+        """Return independently owned current-native state."""
+        raise NotImplementedError
 
     @abstractmethod
     def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
-        """Validate checkpoint state without mutating the curriculum."""
-        pass
+        """Validate the exact current schema before any installation."""
+        raise NotImplementedError
 
     @abstractmethod
     def load_state(self, state: dict[str, Any]) -> None:
-        """
-        Restore curriculum manager from checkpoint.
-
-        Args:
-            state: Dict from checkpoint_state()
-
-        Raises:
-            ValueError: If state is invalid or incompatible
-        """
-        pass
+        """Install validated current state and invalidate prior prepared owners."""
+        raise NotImplementedError

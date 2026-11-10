@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_curriculum_events.py::test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives():\n        manager = curriculum()\n        original = prepare(manager, outcome())\n        accept(manager, original)\n        commit(manager, outcome(batch=2))\n        before = snapshot(manager)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_curriculum_events.py:811: Failed",
+  "candidate_tree": "31debaa1c1306c795c671277b151e0e37f36997b"
+}

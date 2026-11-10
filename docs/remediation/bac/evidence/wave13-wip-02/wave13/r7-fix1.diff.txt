@@ -1,0 +1,255 @@
+diff --git a/src/townlet/curriculum/adversarial.py b/src/townlet/curriculum/adversarial.py
+index 11bf0f17..b0e0a7d0 100644
+--- a/src/townlet/curriculum/adversarial.py
++++ b/src/townlet/curriculum/adversarial.py
+@@ -162,6 +162,8 @@ class CompletionCurriculum(CurriculumManager):
+             raise ValueError("Prepared outcomes belong to a different owner")
+         if not nonnegative_integer(prepared.generation) or not isinstance(prepared.outcomes, tuple):
+             raise ValueError("Invalid prepared generation/content")
++        if prepared.generation > body["generation"]:
++            raise ValueError("Prepared outcomes claim a future generation")
+         # Revalidate even a manually forged/replaced dataclass before trusting it.
+         try:
+             events = tuple(reading.to_outcome() for reading in prepared.outcomes)
+@@ -275,10 +277,44 @@ class CompletionCurriculum(CurriculumManager):
+             identity = (event.batch_episode, event.outcome.agent_idx)
+             if latest.get(index) != identity or known[identity] != freeze_lane_outcome(event).fingerprint:
+                 raise ValueError("Completed metrics contradict identity/content receipt")
+-            if sum(pair[1] == index for pair in known) == 1 and previous != 0:
++            completion_count = sum(pair[1] == index for pair in known)
++            if completion_count == 1 and previous != 0:
+                 raise ValueError("First completion cannot invent an earlier baseline")
+-            if lane["episodes_at_stage"] > sum(pair[1] == index for pair in known) or lane["dwell"] < lane["episodes_at_stage"]:
++            if lane["episodes_at_stage"] > completion_count or lane["dwell"] < lane["episodes_at_stage"]:
+                 raise ValueError("Lane counters contradict completion history")
++            self._validate_effects(lane, event, previous, completion_count)
++
++    def _validate_effects(self, lane: dict[str, Any], event: LaneOutcome, previous: float, completion_count: int) -> None:
++        """Reconcile only effects derivable from retained current completion data."""
++        if completion_count == 1:
++            expected = self._initial_lane()
++            self._advance_lane(expected, event, 0.0)
++            if lane != expected:
++                raise ValueError("First completion effects contradict the authored initial state")
++        count, dwell, stage = lane["episodes_at_stage"], lane["dwell"], lane["stage"]
++        if self._strategy == "static":
++            if count != completion_count:
++                raise ValueError("Static completion counters cannot reset")
++        elif stage > min(5, 1 + completion_count - count):
++            raise ValueError("Committed stage is unreachable from recorded completion count")
++        if (count == 0) != (dwell == 0):
++            raise ValueError("Stage dwell and completion count must reset together")
++        if count > 0 and dwell < event.outcome.survival_time + count - 1:
++            raise ValueError("Stage dwell cannot omit the latest eligible transitions")
++        if self._strategy == "static":
++            return
++        fraction = event.outcome.survival_time / event.planned_horizon
++        retreat = any((fraction < self._config["survival_retreat_threshold"], fraction - previous < 0))
++        advance = (
++            fraction > self._config["survival_advance_threshold"]
++            and fraction - previous > 0
++            and event.policy_entropy < self._config["entropy_gate"]
++        )
++        if count == 0:
++            if not ((stage < 5 and retreat) or (stage > 1 and advance)):
++                raise ValueError("Reset counters require a possible latest stage transition")
++        elif dwell >= self._config["min_steps_at_stage"] and ((stage > 1 and retreat) or (stage < 5 and advance)):
++            raise ValueError("Retained stage counters contradict the latest commitment rule")
+ 
+     def _validate_lane(self, lane: Any) -> None:
+         if not isinstance(lane, dict) or set(lane) != {"stage", "dwell", "episodes_at_stage", "difficulty"}:
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_events.py b/tests/test_townlet/regressions/bac/test_curriculum_events.py
+index 2d006a7b..419c104d 100644
+--- a/tests/test_townlet/regressions/bac/test_curriculum_events.py
++++ b/tests/test_townlet/regressions/bac/test_curriculum_events.py
+@@ -1,5 +1,7 @@
+ """Owned completion metrics, lane clocks, and explicit difficulty modes (T20)."""
+ 
++import hashlib
++import json
+ from copy import deepcopy
+ from dataclasses import replace
+ 
+@@ -678,7 +680,23 @@ def test_current_event_tensor_snapshots_are_owned_on_save_and_load():
+     assert_same(snapshot(manager), before)
+ 
+ 
+-@pytest.mark.parametrize("dtype", [torch.float32, torch.float64, torch.bfloat16, torch.int64, torch.bool])
++@pytest.mark.parametrize(
++    "dtype",
++    [
++        torch.bool,
++        torch.uint8,
++        torch.int8,
++        torch.int16,
++        torch.int32,
++        torch.int64,
++        torch.float16,
++        torch.bfloat16,
++        torch.float32,
++        torch.float64,
++        torch.complex64,
++        torch.complex128,
++    ],
++)
+ @pytest.mark.parametrize("shape", [(0,), (2, 0), (0, 3), (2,)])
+ def test_shared_fingerprint_preserves_empty_shapes_dtype_contents_and_ownership(dtype, shape):
+     event = replace(
+@@ -722,3 +740,157 @@ def test_current_load_invalidates_prepared_owner_even_at_equal_generation():
+     with pytest.raises(ValueError):
+         accept(manager, pending)
+     assert_same(snapshot(manager), before)
++
++
++def logical_fixture(kind):
++    manager = fixed_curriculum() if "static" in kind else curriculum(dwell=10, mode="rate_limited") if kind == "rate" else curriculum()
++    if "static" in kind:
++        manager.initialize_population(1)
++    events = (
++        (outcome(steps=4), outcome(batch=2, steps=8))
++        if kind.startswith("multi")
++        else (outcome() if "static" in kind or kind == "rate" else outcome(steps=4),)
++    )
++    commit(manager, *events)
++    return manager, outcome(batch=len(events) + 1, steps=8)
++
++
++@pytest.mark.parametrize(
++    "kind",
++    [
++        "dwell",
++        "stage",
++        "rate",
++        "static_count",
++        "static_zero",
++        "multi_latest_dwell",
++        "multi_zero_count",
++        "multi_stage",
++        "multi_static_count",
++    ],
++)
++def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
++    manager, future = logical_fixture(kind)
++    control, _ = logical_fixture(kind)
++    pending = prepare(manager, future)
++    damaged = current_state(manager)
++    lane = damaged["completion"]["lanes"][0]
++    if kind == "dwell":
++        lane["dwell"] = 1000
++    elif kind == "stage":
++        lane.update(stage=5, difficulty=1.0)
++    elif kind == "rate":
++        lane["difficulty"] = 0.9
++    elif kind == "static_count" or kind == "multi_static_count":
++        lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
++    elif kind == "static_zero":
++        lane.update(episodes_at_stage=0, dwell=0)
++    elif kind == "multi_latest_dwell":
++        lane["dwell"] = 7
++    elif kind == "multi_zero_count":
++        lane["episodes_at_stage"] = 0
++    else:
++        lane.update(stage=4, difficulty=0.75)
++    before = snapshot(manager)
++    with pytest.raises(ValueError):
++        manager.load_state(damaged)
++    assert_same(snapshot(manager), before)
++    accept(manager, pending)
++    commit(control, future)
++    assert_same(snapshot(manager), snapshot(control))
++
++
++@pytest.mark.parametrize(
++    "kind,stage,dwell,count,difficulty",
++    [
++        ("dwell", 1, 4, 1, 0.0),
++        ("rate", 2, 0, 0, 0.1),
++        ("static_count", 0, 10, 1, 0.6),
++    ],
++)
++def test_genuine_first_event_native_effects_restore_exactly(kind, stage, dwell, count, difficulty):
++    manager, _ = logical_fixture(kind)
++    manager.transition_events.clear()
++    restored, _ = logical_fixture(kind)
++    restored.load_state(manager.checkpoint_state())
++    assert_same(snapshot(restored), snapshot(manager))
++    assert lane_values(restored, "current_stage") == [stage]
++    assert lane_values(restored, "steps_at_stage") == [dwell]
++    assert lane_values(restored, "episodes_at_stage") == [count]
++    assert decisions(restored)[0].difficulty_level == pytest.approx(difficulty)
++
++
++def test_static_multi_event_resume_keeps_exact_clocks_and_old_equal_retry():
++    manager, _ = logical_fixture("multi_static_count")
++    restored = fixed_curriculum()
++    restored.initialize_population(1)
++    restored.load_state(manager.checkpoint_state())
++    commit(restored, outcome(steps=4))
++    assert lane_values(restored, "steps_at_stage") == [12]
++    assert lane_values(restored, "episodes_at_stage") == [2]
++    for target in (manager, restored):
++        commit(target, outcome(batch=3, steps=3, reason="budget"))
++        assert lane_values(target, "steps_at_stage") == [15]
++        assert lane_values(target, "episodes_at_stage") == [3]
++        assert decisions(target)[0].difficulty_level == pytest.approx(0.6)
++    assert_same(snapshot(restored), snapshot(manager))
++
++
++def test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives():
++    manager = curriculum()
++    original = prepare(manager, outcome())
++    accept(manager, original)
++    commit(manager, outcome(batch=2))
++    before = snapshot(manager)
++    with pytest.raises(ValueError):
++        accept(manager, replace(original, generation=99))
++    assert_same(snapshot(manager), before)
++    accept(manager, original)
++    assert_same(snapshot(manager), before)
++
++
++@pytest.mark.parametrize(
++    "reading",
++    [
++        torch.tensor(3.25, dtype=torch.float64),
++        torch.tensor(1 + 2j, dtype=torch.complex64),
++        torch.tensor([[1 + 2j, 3 - 4j], [5 + 6j, 7 - 8j]], dtype=torch.complex128).t(),
++        torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]).t(),
++    ],
++)
++def test_codec_preserves_nonzero_complex_scalar_and_noncontiguous_logical_readings(reading):
++    event = replace(outcome(), outcome=replace(outcome().outcome, final_observation=reading, final_meters=reading))
++    expected = lane_outcome_state(event)
++    frozen = freeze_lane_outcome(event)
++    assert_same(lane_outcome_state(frozen.to_outcome()), expected)
++    contiguous = replace(event, outcome=replace(event.outcome, final_observation=reading.contiguous(), final_meters=reading.contiguous()))
++    assert lane_outcome_fingerprint(contiguous) == frozen.fingerprint
++    event.outcome.final_observation.zero_()
++    assert_same(lane_outcome_state(frozen.to_outcome()), expected)
++
++
++@pytest.mark.parametrize(
++    "change",
++    ["fingerprint", "dtype", "negative_shape", "boolean_shape", "wrong_shape", "bad_hex", "byte_length", "unknown_field", "nonfinite"],
++)
++def test_codec_malformed_metadata_bytes_and_content_refuse(change):
++    frozen = freeze_lane_outcome(outcome())
++    data = json.loads(frozen.payload)
++    reading = data["outcome"]["final_observation"]
++    if change == "fingerprint":
++        damaged = replace(frozen, fingerprint="0" * 64)
++    else:
++        if change == "dtype":
++            reading["dtype"] = "undeclared"
++        elif change in ("negative_shape", "boolean_shape", "wrong_shape"):
++            reading["shape"] = {"negative_shape": [-1], "boolean_shape": [True], "wrong_shape": [3]}[change]
++        elif change in ("bad_hex", "byte_length"):
++            reading["data"] = "zz" if change == "bad_hex" else "00"
++        elif change == "unknown_field":
++            data["unknown"] = 1
++        else:
++            reading["data"] = torch.tensor([float("inf"), 0.75]).numpy().tobytes().hex()
++        payload = json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
++        damaged = replace(frozen, payload=payload, fingerprint=hashlib.sha256(payload).hexdigest())
++    with pytest.raises(ValueError):
++        damaged.to_outcome()

@@ -1,0 +1,931 @@
+T20 fixed candidate: base 506674b538b01dbfb97a1e45df1bf22060bcab5c; exact staged Git tree d5717c96be86b505b35b42936bc944a589aae769
+Source inventory:5wholefiles1362actual lines; approved finite projection1870.
+ src/townlet/curriculum/adversarial.py              | 262 ++++++++++++++++++++-
+ src/townlet/curriculum/base.py                     |   6 +
+ src/townlet/curriculum/static.py                   |   6 +
+ .../regressions/bac/test_curriculum_events.py      | 252 ++++++++++++++++++++
+ 4 files changed, 514 insertions(+), 12 deletions(-)
+
+diff --git a/src/townlet/curriculum/adversarial.py b/src/townlet/curriculum/adversarial.py
+index 9b7a63b5..2dff4273 100644
+--- a/src/townlet/curriculum/adversarial.py
++++ b/src/townlet/curriculum/adversarial.py
+@@ -1,23 +1,27 @@
+ """Adversarial curriculum that auto-tunes difficulty based on performance.
+ 
+ Tracks per-agent metrics (survival, learning, entropy) and adapts stage
+ through 5 progressive difficulty levels culminating in sparse rewards.
+ """
+ 
+-from typing import Any
++import math
++from collections.abc import Sequence
++from copy import deepcopy
++from typing import Any, get_args
+ 
+ import torch
+ import yaml
+ from pydantic import BaseModel
+ 
+ from townlet.curriculum.base import CurriculumManager
++from townlet.training.episode import CompletionReason, LaneOutcome
+ from townlet.training.state import BatchedAgentState, CurriculumDecision
+ 
+ 
+ class StageConfig(BaseModel):
+     """Configuration for a single curriculum stage."""
+ 
+     stage: int
+     active_meters: list[str]
+     depletion_multiplier: float
+     reward_mode: str  # 'shaped' or 'sparse'
+@@ -63,69 +67,79 @@ STAGE_CONFIGS = [
+     ),
+ ]
+ 
+ 
+ class PerformanceTracker:
+     """Tracks per-agent performance metrics for curriculum decisions."""
+ 
+     def __init__(self, num_agents: int, device: torch.device):
+         self.num_agents = num_agents
+         self.device = device
++        self.completion_mode = False
+ 
+         # Performance metrics (per agent)
+         self.episode_rewards = torch.zeros(num_agents, device=device)
+         self.episode_steps = torch.zeros(num_agents, device=device)
+         self.prev_avg_reward = torch.zeros(num_agents, device=device)
+         self.last_survival_rate = torch.zeros(num_agents, device=device)
++        self.completed_progress = torch.zeros(num_agents, device=device)
+ 
+         # Stage tracking
+         self.agent_stages = torch.ones(num_agents, dtype=torch.long, device=device)
+         self.steps_at_stage = torch.zeros(num_agents, device=device)
+         self.episodes_at_stage = torch.zeros(num_agents, dtype=torch.long, device=device)
+ 
+     def update_step(self, rewards: torch.Tensor, dones: torch.Tensor):
+         """Update metrics after environment step.
+ 
+         Note: rewards here are actually survival_steps, not rewards.
+         This is called from Population.update_curriculum_tracker which passes step counts.
+         """
++        if self.completion_mode:
++            return  # Completion owns metrics/dwell; this legacy clock is inactive.
+         self.episode_rewards += rewards
+         self.episode_steps += 1.0
+         self.steps_at_stage += 1.0
+ 
+         # P1.3: Update baseline BEFORE resetting (capture completed episode reward)
+         # This ensures prev_avg_reward reflects the most recent episode performance
+         current_avg = self.episode_rewards / torch.clamp(self.episode_steps, min=1.0)
+         self.prev_avg_reward = torch.where(dones, current_avg, self.prev_avg_reward)
+ 
+         # Capture survival rate before reset (rewards are actually step counts)
+         self.last_survival_rate = torch.where(dones, rewards / 100.0, self.last_survival_rate)
+ 
+         # Increment episode counter when episodes complete
+         self.episodes_at_stage += dones.long()
+ 
+         # Reset completed episodes
+         self.episode_rewards = torch.where(dones, 0.0, self.episode_rewards)
+         self.episode_steps = torch.where(dones, 0.0, self.episode_steps)
+ 
+     def get_survival_rate(self, max_steps: int) -> torch.Tensor:
+-        """Calculate survival rate (0-1) for each agent."""
++        """Completed fractions in completion mode; in-flight fractions in legacy mode."""
++        if self.completion_mode:
++            return self.last_survival_rate
+         return self.episode_steps / max_steps
+ 
+     def get_learning_progress(self) -> torch.Tensor:
+-        """Calculate learning progress (reward improvement) for each agent."""
++        """Completed fraction delta, or legacy in-flight average reward delta."""
++        if self.completion_mode:
++            return self.completed_progress
+         current_avg = self.episode_rewards / torch.clamp(self.episode_steps, min=1.0)
+         progress = current_avg - self.prev_avg_reward
+         return progress
+ 
+     def update_baseline(self):
+         """Update reward baseline for learning progress calculation."""
++        if self.completion_mode:
++            return  # Completion owns the fraction baseline, not this legacy hook.
+         current_avg = self.episode_rewards / torch.clamp(self.episode_steps, min=1.0)
+         self.prev_avg_reward = current_avg
+ 
+ 
+ class AdversarialCurriculum(CurriculumManager):
+     """Auto-tuning curriculum based on survival, learning, and entropy.
+ 
+     Advances agents through 5 stages when they demonstrate:
+     - High survival rate (>70%)
+     - Positive learning progress
+@@ -157,40 +171,70 @@ class AdversarialCurriculum(CurriculumManager):
+ 
+         # Optional difficulty configuration (v2.1 training.yaml – curriculum.adversarial)
+         # These parameters control how the internal 1–5 stage index is mapped to an
+         # external difficulty_level ∈ [min_difficulty, max_difficulty]. They do NOT
+         # change stage advancement/retreat thresholds, which remain governed by
+         # survival/learning/entropy metrics.
+         self.difficulty_metric: str | None = None
+         self.difficulty_adaptation_rate: float | None = None
+         self.difficulty_min: float | None = None
+         self.difficulty_max: float | None = None
++        self.commit_mode = "legacy_step"
++        self.difficulty_mode = "stage_band"
++        self._seen_completions: set[tuple[int, int]] = set()
++        self._completed: list[dict[str, Any]] = []
++        self._difficulty: list[float] = []
+ 
+     def configure_from_training(self, config: Any) -> None:
+         """Configure curriculum thresholds and difficulty mapping from TrainingV2Config.
+ 
+         Args:
+             config: AdversarialCurriculumConfig-like object with attributes:
+                 - difficulty_metric
+                 - adaptation_rate
+                 - min_difficulty
+                 - max_difficulty
+                 - survival_advance_threshold
+                 - survival_retreat_threshold
+                 - entropy_gate
+                 - min_steps_at_stage
++                - commit_mode: legacy_step (default) or completion
++                - difficulty_mode: stage_band (default) or rate_limited
++                  (adaptation_rate is difficulty change per eligible transition)
+         """
++        commitment = getattr(config, "commit_mode", self.commit_mode)
++        difficulty = getattr(config, "difficulty_mode", self.difficulty_mode)
++        low, high = getattr(config, "min_difficulty", 0.0), getattr(config, "max_difficulty", 1.0)
++        rate = getattr(config, "adaptation_rate", None)
++        if commitment not in ("legacy_step", "completion") or difficulty not in ("stage_band", "rate_limited"):
++            raise ValueError("Unknown curriculum commitment/difficulty mode")
++        if difficulty == "rate_limited" and commitment != "completion":
++            raise ValueError("rate_limited requires the completion transition clock")
++        if (
++            any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in (low, high))
++            or not 0 <= low <= high <= 1
++        ):
++            raise ValueError("Difficulty bounds must be finite and ordered within [0, 1]")
++        if rate is not None and (isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate < 0):
++            raise ValueError("adaptation_rate must be finite and nonnegative")
++        if difficulty == "rate_limited" and rate is None:
++            raise ValueError("rate_limited requires adaptation_rate")
++        if self.tracker is not None and (
++            self.commit_mode == "completion" or commitment != self.commit_mode or difficulty != self.difficulty_mode
++        ):
++            raise RuntimeError("Select curriculum modes before initialize_population")
++        self.commit_mode, self.difficulty_mode = commitment, difficulty
+         # Difficulty mapping configuration (v2.1)
+         self.difficulty_metric = getattr(config, "difficulty_metric", None)
+         self.difficulty_adaptation_rate = getattr(config, "adaptation_rate", None)
+-        self.difficulty_min = getattr(config, "min_difficulty", None)
+-        self.difficulty_max = getattr(config, "max_difficulty", None)
++        self.difficulty_min = low
++        self.difficulty_max = high
+ 
+         # Thresholds: override constructor defaults with config values when provided.
+         self.survival_advance_threshold = getattr(config, "survival_advance_threshold", self.survival_advance_threshold)
+         self.survival_retreat_threshold = getattr(config, "survival_retreat_threshold", self.survival_retreat_threshold)
+         self.entropy_gate = getattr(config, "entropy_gate", self.entropy_gate)
+         self.min_steps_at_stage = getattr(config, "min_steps_at_stage", self.min_steps_at_stage)
+ 
+     @classmethod
+     def from_yaml(cls, config_path: str) -> "AdversarialCurriculum":
+         """Load curriculum from YAML config file.
+@@ -215,22 +259,103 @@ class AdversarialCurriculum(CurriculumManager):
+             survival_advance_threshold=curriculum_config.get("survival_advance_threshold", 0.7),
+             survival_retreat_threshold=curriculum_config.get("survival_retreat_threshold", 0.3),
+             entropy_gate=curriculum_config.get("entropy_gate", 0.5),
+             min_steps_at_stage=curriculum_config.get("min_steps_at_stage", 1000),
+             device=device,
+         )
+ 
+     def initialize_population(self, num_agents: int):
+         """Initialize performance tracking for population."""
+         self.tracker = PerformanceTracker(num_agents, self.device)
++        self.tracker.completion_mode = self.commit_mode == "completion"
++        self._seen_completions.clear()
++        self._completed = [{} for _ in range(num_agents)]
++        self._difficulty = [self.difficulty_min if self.difficulty_min is not None else 0.0] * num_agents
+         self.transition_events.clear()
+ 
++    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
++        """Commit once per (batch episode, lane), using eligible lane transitions.
++
++        Legacy step mode keeps its original metrics and does not accept a second
++        clock. Configure completion before population initialization to opt in.
++        """
++        tracker = self.tracker
++        if tracker is None or self.commit_mode != "completion":
++            raise RuntimeError("Initialize a completion-mode population before committing")
++        for event in outcomes:
++            if not isinstance(event, LaneOutcome):
++                raise ValueError("Expected LaneOutcome")
++            lane, steps = event.outcome.agent_idx, event.outcome.survival_time
++            if (
++                type(lane) is not int
++                or not 0 <= lane < tracker.num_agents
++                or type(steps) is not int
++                or not 0 < steps <= event.planned_horizon
++            ):
++                raise ValueError("Completion lane/transitions outside declared population/horizon")
++            if event.outcome.reason not in get_args(CompletionReason):
++                raise ValueError("Unknown completion reason")
++        for event in outcomes:
++            lane, steps = event.outcome.agent_idx, event.outcome.survival_time
++            identity = (event.batch_episode, lane)
++            if identity in self._seen_completions:
++                continue
++            fraction = steps / event.planned_horizon
++            progress = fraction - self._completed[lane].get("survival_baseline", 0.0)
++            tracker.last_survival_rate[lane] = fraction
++            tracker.completed_progress[lane] = progress
++            tracker.steps_at_stage[lane] += steps
++            tracker.episodes_at_stage[lane] += 1
++            self._completed[lane] = {
++                "learning_progress": progress,
++                "completion_reason": event.outcome.reason,
++                "policy_entropy": event.policy_entropy,
++                "survival_baseline": fraction,
++                **{
++                    key: getattr(event, key)
++                    for key in ("reward_total", "reward_extrinsic", "reward_intrinsic", "reward_shaping", "world_id", "world_episode_seq")
++                },
++            }
++            stage, dwell = int(tracker.agent_stages[lane].item()), int(tracker.steps_at_stage[lane].item())
++            reason = None
++            if dwell >= self.min_steps_at_stage:
++                if stage > 1 and (fraction < self.survival_retreat_threshold or progress < 0):
++                    reason = "retreat"
++                elif stage < 5 and fraction > self.survival_advance_threshold and progress > 0 and event.policy_entropy < self.entropy_gate:
++                    reason = "advance"
++            if reason is not None:
++                tracker.agent_stages[lane] += 1 if reason == "advance" else -1
++                tracker.steps_at_stage[lane] = 0
++                tracker.episodes_at_stage[lane] = 0
++                self._record_transition_event(
++                    agent_id=None,
++                    from_stage=stage,
++                    to_stage=int(tracker.agent_stages[lane].item()),
++                    reason=reason,
++                    survival_rate=fraction,
++                    learning_progress=progress,
++                    entropy=event.policy_entropy,
++                    steps_at_stage=dwell,
++                )
++                self.transition_events[-1].update(
++                    agent_idx=lane, world_id=event.world_id, world_episode_seq=event.world_episode_seq, batch_episode=event.batch_episode
++                )
++            tracker.prev_avg_reward[lane] = fraction
++            if self.difficulty_mode == "rate_limited":
++                low, high = self.difficulty_min, self.difficulty_max
++                target = low + (int(tracker.agent_stages[lane].item()) - 1) / 4 * (high - low)
++                budget = self.difficulty_adaptation_rate * steps
++                self._difficulty[lane] = min(
++                    high, max(low, self._difficulty[lane] + max(-budget, min(budget, target - self._difficulty[lane])))
++                )
++            self._seen_completions.add(identity)
++
+     def _get_active_meters(self, stage: int) -> list[str]:
+         """Get active meters for stage."""
+         return STAGE_CONFIGS[stage - 1].active_meters
+ 
+     def _get_depletion_multiplier(self, stage: int) -> float:
+         """Get depletion multiplier for stage."""
+         return STAGE_CONFIGS[stage - 1].depletion_multiplier
+ 
+     def _get_reward_mode(self, stage: int) -> str:
+         """Get reward mode for stage."""
+@@ -312,30 +437,30 @@ class AdversarialCurriculum(CurriculumManager):
+         learning_progress = tracker.get_learning_progress()
+ 
+         decisions = []
+         for i, agent_id in enumerate(agent_ids):
+             from_stage = int(tracker.agent_stages[i].item())
+             steps_before = int(tracker.steps_at_stage[i].item())
+             entropy_value = entropies[i].item()
+             transition_reason: str | None = None
+ 
+             # Check for retreat first (takes priority)
+-            if self._should_retreat(i):
++            if self.commit_mode == "legacy_step" and self._should_retreat(i):
+                 tracker.agent_stages[i] -= 1
+                 tracker.steps_at_stage[i] = 0
+                 tracker.episodes_at_stage[i] = 0
+                 # Update baseline for retreating agent only
+                 current_avg_i = tracker.episode_rewards[i] / torch.clamp(tracker.episode_steps[i], min=1.0)
+                 tracker.prev_avg_reward[i] = current_avg_i
+                 transition_reason = "retreat"
+             # Then check for advancement
+-            elif self._should_advance(i, entropies[i].item()):
++            elif self.commit_mode == "legacy_step" and self._should_advance(i, entropies[i].item()):
+                 tracker.agent_stages[i] += 1
+                 tracker.steps_at_stage[i] = 0
+                 tracker.episodes_at_stage[i] = 0
+                 # Update baseline for advancing agent only (not all agents)
+                 current_avg_i = tracker.episode_rewards[i] / torch.clamp(tracker.episode_steps[i], min=1.0)
+                 tracker.prev_avg_reward[i] = current_avg_i
+                 transition_reason = "advance"
+ 
+             # Get current stage
+             stage = int(tracker.agent_stages[i].item())
+@@ -356,44 +481,46 @@ class AdversarialCurriculum(CurriculumManager):
+             # Normalize stage (1-5) to difficulty_level (0.0-1.0)
+             # Base mapping: Stage 1 -> 0.0 (easiest), Stage 5 -> 1.0 (hardest sparse rewards).
+             base_difficulty = (stage - 1) / 4.0
+ 
+             # If v2.1 adversarial config provided, map base_difficulty into the
+             # configured [min_difficulty, max_difficulty] range. This keeps the
+             # underlying stage logic unchanged while allowing operators to
+             # express difficulty bands declaratively.
+             low = self.difficulty_min if self.difficulty_min is not None else 0.0
+             high = self.difficulty_max if self.difficulty_max is not None else 1.0
+-            if high > low:
++            if high >= low:
+                 difficulty_level = low + base_difficulty * (high - low)
+             else:
+                 difficulty_level = base_difficulty
++            if self.difficulty_mode == "rate_limited":
++                difficulty_level = self._difficulty[i]
+ 
+             decision = CurriculumDecision(
+                 difficulty_level=difficulty_level,
+                 active_meters=config.active_meters,
+                 depletion_multiplier=config.depletion_multiplier,
+                 reward_mode=config.reward_mode,
+                 reason=f"{config.description} (agent {agent_id})",
+             )
+             decisions.append(decision)
+ 
+         # NOTE: Per-agent step counting should be handled by PerformanceTracker.update_step()
+         # which is called after each environment step. Removed global increment that was
+         # incorrectly updating all agents simultaneously.
+ 
+         return decisions
+ 
+     def _record_transition_event(
+         self,
+         *,
+-        agent_id: str,
++        agent_id: str | None,
+         from_stage: int,
+         to_stage: int,
+         reason: str,
+         survival_rate: float,
+         learning_progress: float,
+         entropy: float,
+         steps_at_stage: int,
+     ) -> None:
+         """Append structured telemetry for stage transitions."""
+         self.transition_events.append(
+@@ -467,65 +594,167 @@ class AdversarialCurriculum(CurriculumManager):
+ 
+         Every tensor in :class:`PerformanceTracker` must round-trip: telemetry
+         and stage-progression counters (``episodes_at_stage``,
+         ``last_survival_rate``) used to silently reset on resume, hiding
+         progress and confusing the recorder. Returns an empty dict only when
+         the population has not been initialised yet.
+         """
+         if self.tracker is None:
+             return {}
+ 
+-        return {field: getattr(self.tracker, field).cpu() for field in self._TRACKER_FIELDS}
++        state = {field: getattr(self.tracker, field).cpu().clone() for field in self._TRACKER_FIELDS}
++        if self.commit_mode == "completion":
++            state["completion"] = {
++                "version": 1,
++                "config": self._completion_config(),
++                "seen": sorted(self._seen_completions),
++                "metrics": deepcopy(self._completed),
++                "difficulty": self._difficulty.copy(),
++            }
++        return state
++
++    def _completion_config(self) -> dict[str, Any]:
++        """Meaning-bearing configuration must match on completion-mode resume."""
++        return {
++            key: getattr(self, key)
++            for key in (
++                "commit_mode",
++                "difficulty_mode",
++                "difficulty_adaptation_rate",
++                "difficulty_min",
++                "difficulty_max",
++                "survival_advance_threshold",
++                "survival_retreat_threshold",
++                "entropy_gate",
++                "min_steps_at_stage",
++            )
++        }
+ 
+     def load_state(self, state: dict[str, Any]) -> None:
+         """Restore curriculum manager from checkpoint.
+ 
+         The exact schema and live-population shape are validated before mutation.
+         """
+         self.validate_checkpoint_state(state)
+         assert self.tracker is not None
+         for field in self._TRACKER_FIELDS:
+             tensor = state[field]
+-            setattr(self.tracker, field, tensor.to(self.device))
++            setattr(self.tracker, field, tensor.to(self.device).clone())
++        if self.commit_mode == "completion":
++            completed = state["completion"]
++            self._seen_completions = set(completed["seen"])
++            self._completed = deepcopy(completed["metrics"])
++            self._difficulty = completed["difficulty"].copy()
++            self.tracker.completed_progress = torch.tensor(
++                [row.get("learning_progress", 0.0) for row in self._completed], device=self.device
++            )
+ 
+     def validate_checkpoint_state(self, state: dict[str, Any]) -> None:
+         """Validate exact tracker state without mutating the live curriculum."""
+         if self.tracker is None:
+             raise RuntimeError("Must initialize_population before validating state")
+         if not isinstance(state, dict):
+             raise ValueError(f"Adversarial curriculum checkpoint must be a dictionary; got {type(state).__name__}.")
+ 
+         expected_keys = set(self._TRACKER_FIELDS)
++        if self.commit_mode == "completion":
++            expected_keys.add("completion")
+         state_keys = set(state)
+         if state_keys != expected_keys:
+             missing = sorted(expected_keys - state_keys)
+             unknown = sorted(state_keys - expected_keys)
+             raise ValueError(f"Adversarial curriculum checkpoint key set mismatch: missing={missing}, unknown={unknown}.")
+ 
+         num_agents = self.tracker.num_agents
+         for field in self._TRACKER_FIELDS:
+             tensor = state[field]
+             if not isinstance(tensor, torch.Tensor):
+                 raise ValueError(f"Adversarial curriculum checkpoint {field} must be a tensor; got {type(tensor).__name__}.")
+             current = getattr(self.tracker, field)
+             if tensor.shape != (num_agents,):
+                 raise ValueError(
+                     f"Checkpoint curriculum tracker field {field!r} has shape "
+                     f"{tuple(tensor.shape)} but current tracker num_agents={num_agents}. "
+                     "Resuming into a differently-sized population is not supported."
+                 )
+             if tensor.dtype != current.dtype:
+                 raise ValueError(
+-                    f"Adversarial curriculum checkpoint {field} dtype mismatch: " f"checkpoint={tensor.dtype}, current={current.dtype}."
++                    f"Adversarial curriculum checkpoint {field} dtype mismatch: checkpoint={tensor.dtype}, current={current.dtype}."
+                 )
+             if tensor.is_floating_point() and not torch.isfinite(tensor).all().item():
+                 raise ValueError(f"Adversarial curriculum checkpoint {field} must contain only finite values.")
++        if self.commit_mode == "completion":
++            self._validate_completed_state(state["completion"])
++
++    def _validate_completed_state(self, completed: Any) -> None:
++        if not isinstance(completed, dict) or set(completed) != {"version", "config", "seen", "metrics", "difficulty"}:
++            raise ValueError("Invalid completion checkpoint envelope")
++        if type(completed["version"]) is not int or completed["version"] != 1 or completed["config"] != self._completion_config():
++            raise ValueError("Completion checkpoint version/configuration mismatch")
++        seen, metrics, difficulty = (completed[k] for k in ("seen", "metrics", "difficulty"))
++        count = self.tracker.num_agents
++        if not isinstance(seen, list) or any(
++            not isinstance(pair, tuple)
++            or len(pair) != 2
++            or type(pair[0]) is not int
++            or pair[0] < 0
++            or type(pair[1]) is not int
++            or not 0 <= pair[1] < count
++            for pair in seen
++        ):
++            raise ValueError("Invalid completion event identities")
++        if len(set(seen)) != len(seen):
++            raise ValueError("Duplicate completion identities in checkpoint")
++        if not isinstance(metrics, list) or len(metrics) != count or not isinstance(difficulty, list) or len(difficulty) != count:
++            raise ValueError("Completion checkpoint population mismatch")
++        keys = {
++            "learning_progress",
++            "completion_reason",
++            "policy_entropy",
++            "survival_baseline",
++            "reward_total",
++            "reward_extrinsic",
++            "reward_intrinsic",
++            "reward_shaping",
++            "world_id",
++            "world_episode_seq",
++        }
++        for lane, (row, value) in enumerate(zip(metrics, difficulty, strict=True)):
++            if (
++                isinstance(value, bool)
++                or not isinstance(value, (int, float))
++                or not math.isfinite(value)
++                or not (self.difficulty_min if self.difficulty_min is not None else 0.0)
++                <= value
++                <= (self.difficulty_max if self.difficulty_max is not None else 1.0)
++            ):
++                raise ValueError("Invalid checkpoint difficulty")
++            if not isinstance(row, dict) or bool(row) != any(pair[1] == lane for pair in seen) or (row and set(row) != keys):
++                raise ValueError("Missing or invalid completed metrics")
++            if not row:
++                continue
++            if (
++                row["completion_reason"] not in get_args(CompletionReason)
++                or not isinstance(row["world_id"], str)
++                or not row["world_id"].strip()
++                or type(row["world_episode_seq"]) is not int
++                or row["world_episode_seq"] < 0
++            ):
++                raise ValueError("Invalid completed world identity/reason")
++            if (
++                any(
++                    isinstance(row[k], bool) or not isinstance(row[k], (int, float)) or not math.isfinite(row[k])
++                    for k in keys - {"completion_reason", "world_id", "world_episode_seq"}
++                )
++                or not 0 <= row["survival_baseline"] <= 1
++            ):
++                raise ValueError("Invalid completed numeric metrics")
+ 
+     def get_stage_info(self, agent_idx: int = 0) -> dict:
+         """Get detailed stage information for an agent.
+ 
+         Useful for recording criteria that need to predict stage transitions.
+ 
+         Args:
+             agent_idx: Agent index to query
+ 
+         Returns:
+@@ -555,11 +784,20 @@ class AdversarialCurriculum(CurriculumManager):
+             current_stage < 5  # Not at max stage
+             and steps_at_stage >= self.min_steps_at_stage  # Enough steps at this stage
+             and survival_rate >= self.survival_advance_threshold  # High survival
+         )
+ 
+         return {
+             "current_stage": current_stage,
+             "episodes_at_stage": episodes_at_stage,
+             "survival_rate": survival_rate,
+             "likely_transition_soon": likely_transition,
++            "commit_mode": self.commit_mode,
++            "difficulty_mode": self.difficulty_mode,
++            "adaptation_rate": self.difficulty_adaptation_rate,
++            "adaptation_rate_active": self.difficulty_mode == "rate_limited",
++            "adaptation_rate_units": "difficulty_per_eligible_transition" if self.difficulty_mode == "rate_limited" else "inactive",
++            "active_meters_status": "unqualified",
++            "reward_mode_status": "unqualified",
++            "difficulty_calibrated": False,
++            **(self._completed[agent_idx] if self.commit_mode == "completion" else {}),
+         }
+diff --git a/src/townlet/curriculum/base.py b/src/townlet/curriculum/base.py
+index 467d305d..9cca8100 100644
+--- a/src/townlet/curriculum/base.py
++++ b/src/townlet/curriculum/base.py
+@@ -1,31 +1,37 @@
+ """
+ Abstract base class for curriculum managers.
+ 
+ Curriculum managers control environment difficulty progression based on
+ agent performance metrics (survival time, learning progress, policy entropy).
+ """
+ 
+ from abc import ABC, abstractmethod
++from collections.abc import Sequence
+ from typing import Any
+ 
++from townlet.training.episode import LaneOutcome
+ from townlet.training.state import BatchedAgentState, CurriculumDecision
+ 
+ 
+ class CurriculumManager(ABC):
+     """
+     Abstract interface for curriculum management.
+ 
+     Implementations control environment difficulty by returning CurriculumDecisions
+     that specify depletion rates, active meters, and reward mode.
+     """
+ 
++    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
++        """Consume owned completions once; legacy subclasses may opt in additively."""
++        raise NotImplementedError("This curriculum does not consume completion outcomes")
++
+     def initialize_population(self, num_agents: int) -> None:
+         """
+         Optional hook to prepare per-agent state before training starts.
+ 
+         Implementations can override; default is a no-op for static curricula.
+         """
+         return None
+ 
+     @abstractmethod
+     def get_batch_decisions(
+diff --git a/src/townlet/curriculum/static.py b/src/townlet/curriculum/static.py
+index a747ac4c..18a97b1c 100644
+--- a/src/townlet/curriculum/static.py
++++ b/src/townlet/curriculum/static.py
+@@ -1,25 +1,27 @@
+ """
+ Static curriculum manager (trivial implementation).
+ 
+ Always returns the same curriculum decision. Used for baseline testing
+ and to validate the curriculum interface works.
+ """
+ 
+ from __future__ import annotations
+ 
+ import math
++from collections.abc import Sequence
+ from typing import Any
+ 
+ import torch
+ 
+ from townlet.curriculum.base import CurriculumManager
++from townlet.training.episode import LaneOutcome
+ from townlet.training.state import BatchedAgentState, CurriculumDecision
+ 
+ 
+ class StaticCurriculum(CurriculumManager):
+     """
+     Static curriculum - no adaptation.
+ 
+     Returns the same curriculum decision for all agents at all times.
+     Useful for baseline experiments and interface validation.
+     """
+@@ -75,20 +77,24 @@ class StaticCurriculum(CurriculumManager):
+             difficulty_level=self.difficulty_level,
+             active_meters=self.active_meters,
+             depletion_multiplier=self.depletion_multiplier,
+             reward_mode=self.reward_mode,
+             reason=f"Static curriculum (difficulty={self.difficulty_level})",
+         )
+ 
+         # Return same decision for all agents
+         return [decision] * len(agent_ids)
+ 
++    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
++        """Static decisions have no completion-dependent state, including on replay."""
++        return None
++
+     def checkpoint_state(self) -> dict[str, Any]:
+         """
+         Return serializable state.
+ 
+         Returns:
+             Dict with all configuration
+         """
+         return {
+             "difficulty_level": self.difficulty_level,
+             "reward_mode": self.reward_mode,
+diff --git a/tests/test_townlet/regressions/bac/test_curriculum_events.py b/tests/test_townlet/regressions/bac/test_curriculum_events.py
+new file mode 100644
+index 00000000..88468296
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_curriculum_events.py
+@@ -0,0 +1,252 @@
++"""Owned completion metrics, lane clocks, and explicit difficulty modes (T20)."""
++
++from copy import deepcopy
++from types import SimpleNamespace
++
++import pytest
++import torch
++
++from townlet.curriculum.adversarial import AdversarialCurriculum
++from townlet.curriculum.static import StaticCurriculum
++from townlet.training.episode import EpisodeCompletion, LaneOutcome
++
++
++def curriculum(*, lanes=1, dwell=1000, mode="stage_band", rate=0.01, low=0.0, high=1.0, commitment="completion"):
++    manager = AdversarialCurriculum(max_steps_per_episode=500)
++    manager.configure_from_training(
++        SimpleNamespace(
++            commit_mode=commitment,
++            difficulty_mode=mode,
++            adaptation_rate=rate,
++            min_difficulty=low,
++            max_difficulty=high,
++            min_steps_at_stage=dwell,
++        )
++    )
++    manager.initialize_population(lanes)
++    return manager
++
++
++def outcome(*, lane=0, batch=1, steps=10, horizon=10, entropy=0.1, reason="cap", extrinsic=6.0, intrinsic=3.0, shaping=1.0):
++    return LaneOutcome(
++        outcome=EpisodeCompletion(
++            agent_idx=lane,
++            reason=reason,
++            survival_time=steps,
++            final_observation=torch.tensor([0.25, 0.75]),
++            final_meters=torch.tensor([80.0, 70.0, 60.0, 50.0, 40.0, 30.0]),
++        ),
++        batch_episode=batch,
++        planned_horizon=horizon,
++        reward_total=extrinsic + intrinsic + shaping,
++        reward_extrinsic=extrinsic,
++        reward_intrinsic=intrinsic,
++        reward_shaping=shaping,
++        policy_entropy=entropy,
++        world_id=f"town-world-{lane}",
++        world_episode_seq=batch,
++    )
++
++
++def commit(manager, *events):
++    consumer = getattr(manager, "commit_episode_outcomes", None)
++    assert callable(consumer), "Curriculum must consume owned LaneOutcome completions"
++    consumer(events)
++
++
++def decisions(manager, lanes=1):
++    # Both implementations ignore state; no extra state/fixture source is read.
++    return manager.get_batch_decisions(None, [f"agent-{i}" for i in range(lanes)])
++
++
++def test_full_survival_survives_reset():
++    manager = curriculum()
++    commit(manager, outcome())
++    # Population's next-episode reset must not erase the completed snapshot.
++    manager.tracker.episode_rewards.zero_()
++    manager.tracker.episode_steps.zero_()
++    decisions(manager)
++    assert manager.get_stage_info()["survival_rate"] == pytest.approx(1.0)
++    assert manager.get_stage_info()["completion_reason"] == "cap"
++
++
++def test_dwell_counts_ten_transitions():
++    manager = curriculum()
++    commit(manager, outcome())
++    assert manager.tracker.steps_at_stage.tolist() == [10.0]
++    assert manager.tracker.episodes_at_stage.tolist() == [1]
++
++
++def test_duplicate_completion_does_not_mutate_metrics_dwell_or_stage():
++    manager = curriculum(dwell=10)
++    event = outcome()
++    commit(manager, event)
++    before = deepcopy(manager.get_stage_info())
++    transitions = deepcopy(manager.transition_events)
++    dwell = manager.tracker.steps_at_stage.clone()
++    commit(manager, event, event)
++    assert manager.get_stage_info() == before
++    assert manager.transition_events == transitions
++    assert torch.equal(manager.tracker.steps_at_stage, dwell)
++    assert manager.tracker.agent_stages.tolist() == [2]
++
++
++def test_distinct_lanes_and_reordered_duplicates_are_independent():
++    manager = curriculum(lanes=2)
++    first = outcome(lane=0, steps=10)
++    second = outcome(lane=1, steps=4, reason="authored_terminal")
++    commit(manager, second, first)
++    commit(manager, first, second)
++    assert manager.tracker.steps_at_stage.tolist() == [10.0, 4.0]
++    assert manager.tracker.episodes_at_stage.tolist() == [1, 1]
++    assert manager.get_stage_info(0)["survival_rate"] == pytest.approx(1.0)
++    assert manager.get_stage_info(1)["survival_rate"] == pytest.approx(0.4)
++    assert manager.get_stage_info(1)["completion_reason"] == "authored_terminal"
++    commit(manager, outcome(lane=1, batch=2, steps=3, reason="budget"))
++    assert manager.tracker.steps_at_stage.tolist() == [10.0, 7.0]
++    assert manager.get_stage_info(0)["completion_reason"] == "cap"
++    assert manager.get_stage_info(1)["completion_reason"] == "budget"
++
++
++def test_learning_progress_compares_completed_fractions_before_baseline_update():
++    manager = curriculum()
++    commit(manager, outcome(steps=4, horizon=10, extrinsic=1000.0))
++    assert manager.get_stage_info()["learning_progress"] == pytest.approx(0.4)
++    assert manager.get_stage_info()["survival_baseline"] == pytest.approx(0.4)
++    commit(manager, outcome(batch=2, steps=12, horizon=20, extrinsic=-1000.0))
++    info = manager.get_stage_info()
++    assert info["survival_rate"] == pytest.approx(0.6)
++    assert info["learning_progress"] == pytest.approx(0.2)
++    assert info["survival_baseline"] == pytest.approx(0.6)
++    assert info["reward_total"] == pytest.approx(-996.0)
++    assert info["reward_extrinsic"] == pytest.approx(-1000.0)
++    assert info["reward_intrinsic"] == pytest.approx(3.0)
++    assert info["reward_shaping"] == pytest.approx(1.0)
++    assert info["policy_entropy"] == pytest.approx(0.1)
++
++
++def test_equal_fraction_is_not_positive_learning_despite_more_steps_and_reward():
++    manager = curriculum(dwell=10)
++    commit(manager, outcome(steps=8, horizon=10, entropy=0.9))
++    commit(manager, outcome(batch=2, steps=16, horizon=20, extrinsic=10000.0))
++    assert manager.get_stage_info()["learning_progress"] == pytest.approx(0.0)
++    assert manager.tracker.agent_stages.tolist() == [1]
++
++
++@pytest.mark.parametrize("entropy,steps,want", [(0.9, 10, 1), (0.1, 9, 1), (0.1, 10, 2)])
++def test_advance_requires_completion_entropy_and_eligible_dwell(entropy, steps, want):
++    manager = curriculum(dwell=10)
++    commit(manager, outcome(steps=steps, entropy=entropy))
++    assert manager.tracker.agent_stages.tolist() == [want]
++    assert manager.tracker.steps_at_stage.tolist() == ([0.0] if want == 2 else [float(steps)])
++    decisions(manager)
++    decisions(manager)
++    assert manager.tracker.agent_stages.tolist() == [want]
++    assert len(manager.transition_events) == (1 if want == 2 else 0)
++
++
++def test_retreat_uses_negative_fraction_progress_and_ignores_entropy_gate():
++    manager = curriculum(dwell=10)
++    commit(manager, outcome())
++    assert manager.tracker.agent_stages.tolist() == [2]
++    commit(manager, outcome(batch=2, steps=10, horizon=20, entropy=0.99))
++    assert manager.tracker.agent_stages.tolist() == [1]
++    assert [event["reason"] for event in manager.transition_events] == ["advance", "retreat"]
++    assert manager.transition_events[-1]["learning_progress"] == pytest.approx(-0.5)
++
++
++def test_low_survival_retreats_even_with_positive_learning_progress():
++    manager = curriculum(dwell=2)
++    manager.tracker.agent_stages[0] = 2
++    commit(manager, outcome(steps=2, entropy=0.99))
++    assert manager.get_stage_info()["learning_progress"] == pytest.approx(0.2)
++    assert manager.tracker.agent_stages.tolist() == [1]
++    assert manager.transition_events[-1]["reason"] == "retreat"
++
++
++def test_checkpoint_resume_preserves_completion_identity_and_completed_metrics():
++    manager = curriculum()
++    event = outcome()
++    commit(manager, event)
++    restored = curriculum()
++    restored.load_state(deepcopy(manager.checkpoint_state()))
++    commit(restored, event)
++    assert restored.get_stage_info() == manager.get_stage_info()
++    assert restored.tracker.steps_at_stage.tolist() == [10.0]
++    assert restored.tracker.episodes_at_stage.tolist() == [1]
++
++
++def test_completion_mode_step_interface_does_not_commit_stage_or_dwell():
++    manager = curriculum(dwell=10)
++    commit(manager, outcome())
++    before = deepcopy(manager.get_stage_info())
++    dwell = manager.tracker.steps_at_stage.clone()
++    for _ in range(3):
++        manager.tracker.update_step(torch.tensor([1.0]), torch.tensor([False]))
++        decisions(manager)
++    assert manager.get_stage_info() == before
++    assert torch.equal(manager.tracker.steps_at_stage, dwell)
++    assert len(manager.transition_events) == 1
++
++
++@pytest.mark.parametrize("mode", ["stage_band", "rate_limited"])
++def test_singleton_band(mode):
++    manager = curriculum(mode=mode, low=0.6, high=0.6)
++    assert decisions(manager)[0].difficulty_level == pytest.approx(0.6)
++    commit(manager, outcome())
++    assert decisions(manager)[0].difficulty_level == pytest.approx(0.6)
++
++
++@pytest.mark.parametrize("rate,want", [(0.01, 0.1), (0.1, 0.25)])
++def test_rate_has_declared_effect(rate, want):
++    manager = curriculum(dwell=10, mode="rate_limited", rate=rate)
++    assert decisions(manager)[0].difficulty_level == pytest.approx(0.0)
++    commit(manager, outcome())
++    # Stage 2 target is .25; ten transitions permit .1 or 1.0 movement.
++    assert decisions(manager)[0].difficulty_level == pytest.approx(want)
++    assert manager.get_stage_info()["adaptation_rate_active"] is True
++    assert manager.get_stage_info()["adaptation_rate_units"] == "difficulty_per_eligible_transition"
++
++
++def test_rate_limited_moves_back_toward_retreat_target_and_clamps_to_band():
++    manager = curriculum(dwell=10, mode="rate_limited", rate=0.01, low=0.2, high=0.6)
++    commit(manager, outcome())
++    assert decisions(manager)[0].difficulty_level == pytest.approx(0.3)
++    commit(manager, outcome(batch=2, steps=10, horizon=20))
++    assert decisions(manager)[0].difficulty_level == pytest.approx(0.2)
++
++
++@pytest.mark.parametrize("rate", [0.01, 0.1])
++def test_stage_band_preserves_mapping_and_truthfully_reports_inactive_rate(rate):
++    manager = curriculum(lanes=5, rate=rate, low=0.2, high=0.6)
++    manager.tracker.agent_stages.copy_(torch.tensor([1, 2, 3, 4, 5]))
++    result = decisions(manager, 5)
++    assert [d.difficulty_level for d in result] == pytest.approx([0.2, 0.3, 0.4, 0.5, 0.6])
++    assert [d.depletion_multiplier for d in result] == pytest.approx([0.2, 0.5, 0.8, 1.0, 1.0])
++    assert [d.reward_mode for d in result] == ["shaped", "shaped", "shaped", "shaped", "sparse"]
++    assert result[0].active_meters == ["energy", "hygiene"]
++    info = manager.get_stage_info()
++    assert info["commit_mode"] == "completion"
++    assert info["difficulty_mode"] == "stage_band"
++    assert info["adaptation_rate"] == pytest.approx(rate)
++    assert info["adaptation_rate_active"] is False
++
++
++def test_legacy_step_remains_an_explicit_working_interface():
++    manager = curriculum(commitment="legacy_step")
++    manager.tracker.update_step(torch.tensor([2.0]), torch.tensor([False]))
++    assert manager.tracker.episode_steps.tolist() == [1.0]
++    assert manager.tracker.steps_at_stage.tolist() == [1.0]
++    assert manager.get_stage_info()["commit_mode"] == "legacy_step"
++
++
++def test_static_curriculum_accepts_completion_without_changing_decisions():
++    manager = StaticCurriculum(difficulty_level=0.6, depletion_multiplier=0.8)
++    manager.initialize_population(1)
++    before = decisions(manager)[0]
++    event = outcome()
++    commit(manager, event, event)
++    after = decisions(manager)[0]
++    assert after.difficulty_level == before.difficulty_level == 0.6
++    assert after.depletion_multiplier == before.depletion_multiplier == 0.8
++    assert manager.transition_events == []

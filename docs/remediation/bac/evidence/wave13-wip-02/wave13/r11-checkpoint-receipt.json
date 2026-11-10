@@ -1,0 +1,222 @@
+{
+  "status": "BOUNDED PRODUCER HANDOFF ACCEPTED; WIP INTEGRATION OPEN",
+  "candidate_sha": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+  "scope": "T20 five-file current-only curriculum producer, canonical LaneOutcome codec and owned regressions; actual5/1828, projection5/2520",
+  "source_inventory": [
+    {
+      "path": "src/townlet/curriculum/base.py",
+      "lines": 66,
+      "sha256": "d961844d5738ac85d26d5dd57520d1954718ee93e482e5133d4323d14c149268",
+      "present": true
+    },
+    {
+      "path": "src/townlet/curriculum/adversarial.py",
+      "lines": 537,
+      "sha256": "2194cc4075096670181a50cf1be2158cd68334a07111818ad75382cd73890f4f",
+      "present": true
+    },
+    {
+      "path": "src/townlet/curriculum/static.py",
+      "lines": 64,
+      "sha256": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+      "present": true
+    },
+    {
+      "path": "src/townlet/training/episode.py",
+      "lines": 176,
+      "sha256": "53b52a8a56d5fc2714604198fc4516c5c4d48258537a9dcbe4ccd00dae743cbf",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+      "lines": 985,
+      "sha256": "57750efea277a256969851ba8413eb17aa5d8810f02b673d6f02639838807ffd",
+      "present": true
+    }
+  ],
+  "focused_commands": {
+    "job": "owned",
+    "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+    "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+    "exit_code": 0,
+    "counts": {
+      "passed": 175,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 13.607459306716919,
+    "source_guards": 172,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktrees": 14,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_commands": {
+    "job": "astra-independent",
+    "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+    "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+    "exit_code": 0,
+    "counts": {
+      "passed": 130,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 9.896140575408936,
+    "source_guards": 172,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktrees": 14,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "static_commands": [
+    {
+      "name": "ruff-current",
+      "exit_code": 0,
+      "seconds": 0.08924555778503418,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/training/episode.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-current-guards/ruff-current.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+      "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+      "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "black-current",
+      "exit_code": 0,
+      "seconds": 1.2238600254058838,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/training/episode.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+        "--workers",
+        "1"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-current-guards/black-current.log",
+      "sha256": "25369eabb8c122f861d58ddb255f81f4b9ee797f42f3882975bef953218258ed",
+      "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+      "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+      "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy-current",
+      "exit_code": 0,
+      "seconds": 1.0489327907562256,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet/curriculum/base.py",
+        "src/townlet/curriculum/adversarial.py",
+        "src/townlet/curriculum/static.py",
+        "src/townlet/training/episode.py",
+        "--follow-imports=silent"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-current-guards/mypy-current.log",
+      "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+      "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+      "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "mypy-global",
+      "exit_code": 1,
+      "seconds": 31.390674352645874,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-current-guards/mypy-global.log",
+      "sha256": "acd46c85ce2fed47ba41bd92dee887c8653ad6d82bf0caac97d529e971cc21ad",
+      "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+      "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+      "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 0.8226015567779541,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ],
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r11-current-guards/no-defaults.log",
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+      "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+      "manifest_sha256": "2fa88e52a277eba3d43fb655df4fb098eef12ee1eb82977f3053d98ea249ba1f",
+      "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    }
+  ],
+  "review_record": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave13-preparation/T20-current-only-independent-review-r11.md",
+  "review_sha256": "aa5b050aaa78db842724381bcdd222dc0c81a2f7dd8e9b67167fdd25d6a2e30c",
+  "review_disposition": "Astra medium final current-source/spec review and separate execution: zero unresolved owned P1/P2/blockingP3; bounded handoff accepted only",
+  "closed_findings": [
+    "Duplicated/invented native completed-fraction baseline and progress",
+    "Impossible first-event effects, multi-event dwell/stage/static counters and latest signal consistency",
+    "Multi-event latest rate reachable interval and zero-rate invariant",
+    "Future-generation equal receipt refusal; declared dtype and malformed codec coverage",
+    "Genuine native seven-event floating cancellation false refusal: direct saturated target movement"
+  ],
+  "owner_suite_commands": "Current old caller/B06 maintenance and integration owner checks remain OPEN; old R1 owner152PASS is historical on its original source, not current-core evidence.",
+  "full_suite_status": "NOT RUN for current migration; no integrated release. Earlier-triggered full gate remains REQUIRED at coherent producer/caller checkpoint.",
+  "full_suite_reason": "Shared API/native/config meaning changed; approved no-compat amendment permits explicit WIP producer publication before coherent integrated qualification. No full gate waived.",
+  "unrun_checks": [
+    "Current complete owner/direct caller suites",
+    "Unfiltered full repository pytest, global Ruff/Black, compiler CLI and expression-doc guards at coherent integration",
+    "Full current outer/nested native resume and failure atomicity",
+    "Real world roster/reset authority and all-sink retry/epsilon integration",
+    "Strict private curiosity across training updates; finite learning and E2E qualification",
+    "Final54requirements/22freshlenses+synthesis, coverage>=70%,slow and applicable hardware",
+    "New remote checkpoint CI status observed after push; no pass inferred"
+  ],
+  "curiosity_scope": "No new private-curiosity qualification; shared/private alternatives and PW05/T18d integration remain pending",
+  "curiosity_origin": "Unchanged provider origins; not exercised as current integrated runtime",
+  "world_binding": "Caller-bound LaneOutcome identity only; real declared world roster/cursor/reset authority remains named follow-up",
+  "guarantee": "Owned canonical completion snapshots, pure batch preparation, expected-refusal atomicity and equal-content receipt retry within current producer",
+  "local_clock_units": "Completed survival_time in eligible transitions; fractions divide planned_horizon; dwell counts completed eligible transitions",
+  "mode_limitations": "Completion-only current protocol. stage_band and rate_limited preserved, including rate0/singleton bands and Static explicit policy. No legacy_step/tracker/old7-state adapter.",
+  "native_limitations": "Current producer version2 exact schema; available-history constraints only, no reconstruction of discarded old payloads or global authentication guarantee. Parent complete native formats not qualified here.",
+  "optional_P3": "No new unresolved owned blockingP3; earlier whole-program optional items remain separately recorded.",
+  "qualified_progress": "28/66 scoped packages; current T20 integrated release remains open",
+  "resource_use": "Measured4CPU/16GiB. Root tests2+independent guards2; final reviewer1CPU concurrent only with remaining read-only globalmypy1CPU. No oversubscription. Root Git/custody stationary during reviewer to avoid R7 transient index-lock contention.",
+  "custody": "172 source/573config/13protectedartifacts;14 registry records, MAIN available and13 historical tmp paths unavailable; no creation/deletion/prune.",
+  "publication": "Authorized WIP checkpoint to existing branch only, no PR/merge/release. Remote exactSHA/CI verified separately after push.",
+  "status_paragraph": "T20 current-only curriculum producer has bounded independent handoff acceptance at tested tree `763ed2ce04718627f15ecf98d52b1e0333ae3fe6`: **175 owned tests passed**, and Astra independently executed **130 passed,45 deselected** (overlapping evidence, not summed). Scoped Ruff/Black/mypy and the tighter601 defaults guard passed. Native-history consistency, latest-rate reachability and a genuine floating-point round-trip defect were reproduced and repaired. **This remains WIP \u2014 NOT INTEGRATED-QUALIFIED \u2014 NOT RELEASED**: global mypy reports six old factory-call errors assigned T21; current caller/config/world/provider/runner/parent-native integration and the earlier-triggered full/final gates remain open. [Checkpoint evidence](evidence/wave13-wip-02.json) includes original negatives, exact source bindings, the final review and next-owner handoff. Previous28/66 scoped qualifications are unchanged; no whole-BAC completion or CUDA qualification is claimed. The checkpoint is being committed/pushed before a graceful pause; no T21 implementation has started."
+}

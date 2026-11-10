@@ -1,0 +1,22 @@
+{
+  "name": "ruff-current",
+  "exit_code": 0,
+  "seconds": 0.11280131340026855,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "src/townlet/curriculum/base.py",
+    "src/townlet/curriculum/adversarial.py",
+    "src/townlet/curriculum/static.py",
+    "src/townlet/training/episode.py",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave13-r6-current-guards/ruff-current.log",
+  "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "candidate_tree": "db982a663028220cbca1937d2c41cccac3cde7e0",
+  "base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+  "manifest_sha256": "6a0215c8a976656c95c7c3bf4608bd7c35701b908336c67aec23bfb779681ced",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

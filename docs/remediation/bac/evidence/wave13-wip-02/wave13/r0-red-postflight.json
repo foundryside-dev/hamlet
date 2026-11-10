@@ -1,0 +1,57 @@
+{
+  "candidate_tree": "e9b0a91ecc800f65169ef082731a8df90ffc9ad3",
+  "base_commit": "506674b538b01dbfb97a1e45df1bf22060bcab5c",
+  "counts": {
+    "failed": 22,
+    "passed": 0,
+    "errors": 0
+  },
+  "categories": {
+    "missing completion consumer": 17,
+    "missing explicit metadata or rate behavior": 3,
+    "singleton existing output mismatch": 2
+  },
+  "wall_seconds": 17.66525387763977,
+  "failure_reports": {
+    "raw": 44,
+    "unique_node_phase": 22,
+    "note": "xdist worker+controller reports deduplicated by node/phase; no rerun"
+  },
+  "custody": "PASS171source573configs13artifacts14registry1available5processes",
+  "source_inventory": {
+    "T20": [
+      {
+        "path": "src/townlet/curriculum/base.py",
+        "lines": 86,
+        "sha256": "04bfb42f3b5d4faa3728be82d6c476448011fdb0c63788a24296839375b1ae26",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/adversarial.py",
+        "lines": 565,
+        "sha256": "8ce48905b6163d25ff98f692af7986447245cc29eba47bcc248f10e4f4b8cf8b",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/static.py",
+        "lines": 143,
+        "sha256": "4bce47073d50962defe1c405ca4a5fbda480e8321e2e38ff8e3558d7fafbf1be",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/episode.py",
+        "lines": 66,
+        "sha256": "5db951b4e76f88a2339ee5f77fe6515a726b5e2d1a006dbe283ea07d022f7fa9",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+        "lines": 243,
+        "sha256": "bbb3ab360e67efd5ff4a6e1003d5226478ed2a10cba4f414a24e286b6040bdb9",
+        "present": true
+      }
+    ]
+  },
+  "log_sha256": "74e5ea5f5283f4b20faa4f740049c32329663fc03adbb0ba3ba98fdb76f89bbb",
+  "clearance": "T20 scoped production implementation permitted; same five files, existing APIs retained, metadata/persistence interactions reviewed before release"
+}

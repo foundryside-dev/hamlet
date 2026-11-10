@@ -1,0 +1,27 @@
+from pathlib import Path
+import fcntl,hashlib,json,re,subprocess,sys
+
+spec=json.loads(Path(sys.argv[1]).read_text());r=Path(spec['root']);mp=Path(spec['manifest']);m=json.loads(mp.read_text());out=Path(spec['output']);job=spec['jobs'][int(sys.argv[2]) if len(sys.argv)>2 else 0];name=job['name']
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+result=json.loads((out/(name+'-result.json')).read_text());assert result['exit_code']==0,result
+assert result['base_commit']==m['base_commit'] and result['candidate_tree']==m['candidate_tree'] and result['manifest_sha256']==sha(mp)
+assert sha(Path(result['log']))==result['sha256']
+assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=r,text=True).strip()==m['base_commit']
+with (r/'.superpowers/bac-qualification-index.lock').open('a') as lock:
+ fcntl.flock(lock.fileno(),fcntl.LOCK_EX)
+ assert subprocess.check_output(['git','write-tree'],cwd=r,text=True).strip()==m['candidate_tree']
+ fcntl.flock(lock.fileno(),fcntl.LOCK_UN)
+assert subprocess.run(['git','diff','--quiet'],cwd=r).returncode==0
+for p,h in m['source_files'].items():assert sha(r/p)==h,p
+assert subprocess.check_output(['git','worktree','list','--porcelain'],cwd=r,text=True)==m['worktree_registry']
+pre=json.loads((r/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave09/green-r0-custody-preflight.json').read_text())
+for group in ('configs','artifacts'):
+ for p,h in pre[group].items():assert sha(r/p)==h,p
+ids={p.stem.removeprefix('identity-'):json.loads(p.read_text()) for p in (out/name).glob('identity-*.json')}
+args=job['args'];workers=int(args[args.index('-n')+1]) if '-n' in args else 0
+assert set(ids)=={'controller',*('gw'+str(k) for k in range(workers))},ids.keys()
+for k,d in ids.items():assert d['sha']==m['base_commit'] and d['candidate_tree']==m['candidate_tree'] and d['threads']==1 and d['module']==str(r/'src/townlet/__init__.py'),k
+assert not list((out/name).glob('failure-*.json'))
+log=Path(result['log']).read_text();counts={n:int(re.findall(r'(\d+) '+n,log)[-1]) if re.findall(r'(\d+) '+n,log) else 0 for n in ('passed','skipped','xfailed','xpassed','warnings')}
+report={'job':name,'base_commit':m['base_commit'],'candidate_tree':m['candidate_tree'],'exit_code':0,'counts':counts,'wall_seconds':result['seconds'],'source_guards':len(m['source_files']),'process_identities':len(ids),'config_digests':len(pre['configs']),'protected_artifacts':len(pre['artifacts']),'worktrees':14,'source_index_import_threads_fixture_custody':'PASS','scope':'Only this named executable evidence; no package release or whole-BAC completion implied'}
+(out/(name+'-custody.json')).write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

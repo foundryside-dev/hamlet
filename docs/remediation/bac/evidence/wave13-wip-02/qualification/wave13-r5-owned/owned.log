@@ -1,0 +1,365 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 4/4 workers
+4 workers [159 items]
+
+........................................................................ [ 45%]
+........F...............F....................F..................F....... [ 90%]
+......F..FF.FFF                                                          [100%]
+=================================== FAILURES ===================================
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[dwell] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'dwell'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[stage] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'stage'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[rate] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rate'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[static_count] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'static_count'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[static_zero] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'static_zero'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_latest_dwell] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'multi_latest_dwell'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives():
+        manager = curriculum()
+        original = prepare(manager, outcome())
+        accept(manager, original)
+        commit(manager, outcome(batch=2))
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:811: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_zero_count] _
+[gw3] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'multi_zero_count'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_stage] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'multi_stage'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+_ test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_static_count] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'multi_static_count'
+
+    @pytest.mark.parametrize("kind", ["dwell", "stage", "rate", "static_count", "static_zero",
+                                     "multi_latest_dwell", "multi_zero_count", "multi_stage", "multi_static_count"])
+    def test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner(kind):
+        manager, future = logical_fixture(kind)
+        control, _ = logical_fixture(kind)
+        pending = prepare(manager, future)
+        damaged = current_state(manager)
+        lane = damaged["completion"]["lanes"][0]
+        if kind == "dwell":
+            lane["dwell"] = 1000
+        elif kind == "stage":
+            lane.update(stage=5, difficulty=1.0)
+        elif kind == "rate":
+            lane["difficulty"] = 0.9
+        elif kind == "static_count" or kind == "multi_static_count":
+            lane["episodes_at_stage"] = 0 if kind == "static_count" else 1
+        elif kind == "static_zero":
+            lane.update(episodes_at_stage=0, dwell=0)
+        elif kind == "multi_latest_dwell":
+            lane["dwell"] = 7
+        elif kind == "multi_zero_count":
+            lane["episodes_at_stage"] = 0
+        else:
+            lane.update(stage=4, difficulty=0.75)
+        before = snapshot(manager)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_curriculum_events.py:766: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[dwell]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[stage]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[rate]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[static_count]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[static_zero]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_latest_dwell]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_future_generation_equal_receipt_refuses_but_older_equal_retry_survives
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_zero_count]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_stage]
+FAILED tests/test_townlet/regressions/bac/test_curriculum_events.py::test_logically_impossible_native_effects_refuse_without_invalidating_prepared_owner[multi_static_count]
+======================== 10 failed, 149 passed in 5.68s ========================

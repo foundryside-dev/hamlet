@@ -1,0 +1,96 @@
+"""Publish a source-equivalent WIP checkpoint; never claim integrated release."""
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+import sys
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+tag = sys.argv[1]
+review = W / 'wave13-preparation' / sys.argv[2]
+digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave13' / (tag + '-candidate.json')).read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree']
+assert not git('diff', '--name-only')
+assert review.is_file()
+for group in ('source_files', 'configs', 'artifacts'):
+    for name, expected in m[group].items():
+        assert digest(R / name) == expected, name
+execution = {name: git('rev-parse', m['candidate_tree'] + ':' + name)
+             for name in ('src', 'tests', 'configs', 'scripts')}
+out = D / 'evidence/wave13-wip-02'
+assert not out.exists()
+out.mkdir()
+artifacts = {}
+
+def copy(source, destination):
+    assert not destination.exists()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(source.read_bytes())
+    assert digest(source) == digest(destination)
+    artifacts[destination.relative_to(R).as_posix()] = {
+        'sha256': digest(destination), 'original': str(source)}
+
+for folder in sorted(Q.glob('wave13-r*')):
+    if folder.is_dir() and folder.name.split('-')[1] not in ('r0', 'r1', 'r2'):
+        for p in sorted(folder.rglob('*')):
+            if p.is_file() and p.suffix in ('.json', '.log'):
+                copy(p, out / 'qualification' / folder.name / p.relative_to(folder))
+for p in sorted(Q.glob('wave13-r*.json')):
+    copy(p, out / 'qualification' / p.name)
+for folder in ('wave13', 'wave13-preparation', 'wave14-preparation'):
+    for p in sorted((W / folder).glob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt'):
+            copy(p, out / folder / p.name)
+for name in ('capture_wave13_after_wip.py', 'verify_wave09_run.py',
+             'run_bac_packet_checks_locked.py', 'bac_source_identity.py',
+             'publish_wave13_wip02.py'):
+    copy(Q / name, out / (name + '.txt'))
+for name in ('CURRENT-STATE.json', 'progress.md'):
+    copy(W / name, out / ('execution-' + name))
+receipt = json.loads((W / 'wave13' / (tag + '-checkpoint-receipt.json')).read_text())
+manifest = {
+    'status': 'WIP — NOT INTEGRATED-QUALIFIED — NOT RELEASED',
+    'packet': 'T20 current-only curriculum producer; no backwards compatibility',
+    'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+    'execution_subtrees': execution, 'source_inventory': m['inventories'],
+    'source_files': m['source_files'], 'receipt': receipt,
+    'review_record': str(review.relative_to(R)), 'review_sha256': digest(review),
+    'qualified_progress': '28/66 original scoped packages; no new integrated T20 release',
+    'open': [
+        'T21 current config/factory constructor transport and obsolete caller maintenance',
+        'Actual world roster/cursor/reset authority, T18d/PW05 effects and idempotent retry',
+        'T22/T23 per-world dynamics, canonical fingerprints and population/runner routing',
+        'T24–T26 current native formats, complete restore and committed-boundary saving',
+        'Earlier-triggered full gate at coherent integration; owner/full/static/native/learning/E2E checks',
+        '54 acceptance requirements, 22 fresh final review lenses plus synthesis, coverage/slow/CI',
+    ],
+    'custody': '14 registry records; MAIN available,13 historical tmp paths unavailable. No creation/deletion/prune. Private Git backup is not published.',
+    'hardware': 'CPU evidence only; CUDA unavailable/unqualified',
+    'publication': 'Authorized existing remote branch only. No PR, merge or qualified dependency release.',
+    'artifacts': artifacts,
+}
+p = D / 'evidence/wave13-wip-02.json'
+p.write_text(json.dumps(manifest, indent=2) + '\n')
+p = D / 'STATUS.md'
+p.write_text(p.read_text() + '\n\n' + receipt['status_paragraph'] + '\n')
+paths = [*artifacts, 'docs/remediation/bac/evidence/wave13-wip-02.json',
+         'docs/remediation/bac/STATUS.md']
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for name, expected in execution.items():
+    assert git('rev-parse', tree + ':' + name) == expected, name
+assert digest(R / '.defaults-ratchet') == m['source_files']['.defaults-ratchet']
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave13-wip-02/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'],
+          'publication_tree': tree, 'source_equivalence': 'PASS',
+          'artifact_count': len(artifacts),
+          'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave13-wip-02-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

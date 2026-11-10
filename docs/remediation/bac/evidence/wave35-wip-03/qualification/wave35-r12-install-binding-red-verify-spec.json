@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r12-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r12-parent-red",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "install-binding-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_initial_install_refuses_roles_bound_after_preparation",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r12-install-binding-red"
+      ]
+    }
+  ]
+}

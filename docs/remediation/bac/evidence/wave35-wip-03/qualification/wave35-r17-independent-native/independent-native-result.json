@@ -1,0 +1,25 @@
+{
+  "name": "independent-native",
+  "exit_code": 0,
+  "seconds": 15.788089036941528,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r17-independent-native"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r17-independent-native/independent-native.log",
+  "sha256": "ff30192f66f17e85d73c8fbf5ff0654715fa5b2dd0bed571f6489113de26325c",
+  "candidate_tree": "b0e3814b982eca65fa8ea3cb0dd7391a97009793",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "876aa18d6497bd123e5f4cb9defa52bcc7d6ac57ce5f0db6b1b0be942bb9d3a5",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

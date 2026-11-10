@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "candidate_tree": "8b5cc0e8d43ee617c05d1dbf6cde7fe70322932d",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "?            ^",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_direct_minibatch_and_current_native_state_refuse_diagnostic_import",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

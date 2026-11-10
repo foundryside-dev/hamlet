@@ -1,0 +1,28 @@
+{
+  "name": "native-factory",
+  "exit_code": 0,
+  "seconds": 10.041679620742798,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py",
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+    "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py",
+    "tests/test_townlet/unit/exploration/test_rnd_normalization.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r17-native-factory"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r17-independent-owner-groups/native-factory.log",
+  "sha256": "4dbe3f2fe53dbb5aab7c86dbb87f9d0915e29f8f2a33c21c0a6a87e1e63128dd",
+  "candidate_tree": "b0e3814b982eca65fa8ea3cb0dd7391a97009793",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "876aa18d6497bd123e5f4cb9defa52bcc7d6ac57ce5f0db6b1b0be942bb9d3a5",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "candidate_tree": "b0e3814b982eca65fa8ea3cb0dd7391a97009793",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/integration/test_rnd_loss_tracking.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/integration/test_rnd_loss_tracking.py::TestRNDLossTracking::test_rnd_loss_tracked_during_training",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

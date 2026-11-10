@@ -1,0 +1,27 @@
+{
+  "name": "native-red",
+  "exit_code": 1,
+  "seconds": 8.497777700424194,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+    "-k",
+    "reset_fresh_learning_retains_real_service_and_next_update",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r14-native-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r14-native-red/native-red.log",
+  "sha256": "0f80ad5fe2c447cced4272eebd519e90f59f703f5b13637f2215f075bf33c9a4",
+  "candidate_tree": "330cb0571bdfbdaa8a8cf4a1c7db8ef1f0dbbd84",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "d2bffc2a1445530eea991691e5789ad7a3cf2e4e307f86b019c973f81903afa8",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

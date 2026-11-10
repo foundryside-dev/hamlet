@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'rnd', unit = 'vector_tick'\n\n    @pytest.mark.parametrize(\"family\", FAMILIES)\n    @pytest.mark.parametrize(\"unit\", UNITS)\n    def test_reset_fresh_learning_retains_real_service_and_next_update(compiled: Any, family: str, unit: str) -> None:\n        backend = construct(compiled, family, unit)\n        train_with_tail(backend, family)\n        before = backend.checkpoint_state()\n        old_pending = list(backend._pending) if family == \"icm\" else list(inner(backend).obs_buffer)\n        fresh = construct(compiled, family, unit)\n        fresh_state = fresh.checkpoint_state()\n        source_gradients = gradients(backend)\n        # First intended causal RED: genuine learned native reaches the absent operation.\n>       prepared = backend.prepare_learning_reset(fresh=fresh)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'RNDExploration' object has no attribute 'prepare_learning_reset'\n\ntests/test_townlet/regressions/bac/test_native_learning_reset.py:203: AttributeError",
+  "candidate_tree": "330cb0571bdfbdaa8a8cf4a1c7db8ef1f0dbbd84"
+}

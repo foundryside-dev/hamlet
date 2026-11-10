@@ -1,0 +1,65 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_native_learning_reset.py F
+
+=================================== FAILURES ===================================
+__________ test_icm_real_mandatory_updates_survive_reset_and_continue __________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_icm_real_mandatory_updates_survive_reset_and_continue(compiled: Any) -> None:
+        template = policy(compiled, "icm", "shared", "paced_fifo").to_dict()
+        options_data = template["authored_parameters"]["bac_options"]
+        options_data["rnd"]["overflow_policy"] = "service_before_admit"
+        options_data["providers"]["icm"]["training_batch_size"] = 2
+        options_data["providers"]["icm"]["max_pending_transitions"] = 4
+        selected = resolve_exploration_policy(
+            drive_intrinsic=IntrinsicStrategyConfig.model_validate(template["authored_parameters"]["drive_intrinsic"]),
+            training=compiled.get_level(compiled.metadata.primary_level).training,
+            options=BaCOptions.model_validate(options_data),
+        )
+        assert selected.strategy == "icm"
+        assert selected.overflow_policy == "service_before_admit"
+        assert selected.service_mode == "paced_fifo"
+        assert selected.max_updates_per_tick == 1
+    
+        def factory() -> Any:
+            return provider_factory.make_backend(selected, world_id=None, obs_dim=3, action_dim=2, device="cpu", rng=None, descriptor=None)
+    
+        backend = factory()
+        train_with_tail(backend, "icm")
+        first_overflow = service(backend, start=3, count=4, position=7, tick=7)
+        assert first_overflow.mandatory_service_updates == 1
+        assert first_overflow.optimizer_updates == 1
+        before = backend.checkpoint_state()
+        assert before["counters"]["mandatory_service_updates"] == 1
+        assert before["counters"]["optimizer_updates"] == 2
+        assert before["ordinary_updates_at_position"] == 1
+        assert len(before["pending"]) == 3
+        assert adam_steps(backend) == {2}
+>       install_reset(backend, factory())
+
+tests/test_townlet/regressions/bac/test_native_learning_reset.py:565: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.icm.ICMExploration object at 0x7f91d692aba0>
+fresh = <townlet.exploration.icm.ICMExploration object at 0x7f91cb7b1810>
+
+    def install_reset(backend: Any, fresh: Any) -> None:
+        rng_before = ambient_rng()
+>       prepared = backend.prepare_learning_reset(fresh=fresh)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ICMExploration' object has no attribute 'prepare_learning_reset'
+
+tests/test_townlet/regressions/bac/test_native_learning_reset.py:201: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_icm_real_mandatory_updates_survive_reset_and_continue
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 6.98s ===============================

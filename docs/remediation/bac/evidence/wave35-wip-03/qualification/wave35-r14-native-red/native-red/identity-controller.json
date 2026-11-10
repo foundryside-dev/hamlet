@@ -1,0 +1,8 @@
+{
+  "sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "candidate_tree": "330cb0571bdfbdaa8a8cf4a1c7db8ef1f0dbbd84",
+  "module": "/workspace/hamlet/src/townlet/__init__.py",
+  "worker": "controller",
+  "torch": "2.11.0+cu130",
+  "threads": 1
+}

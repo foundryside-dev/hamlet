@@ -1,0 +1,25 @@
+{
+  "name": "multibatch-red",
+  "exit_code": 1,
+  "seconds": 25.470956087112427,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_identical_multi_batch_commit_request_retries_pending_child[False]",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r12-multibatch-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r12-parent-red/multibatch-red.log",
+  "sha256": "3525559c9dae8f12c959dc9e55cdc0c0fafdfbd9b9c737de2b0d69e87ecb3852",
+  "candidate_tree": "c02e638eec78ec24465b4dcd72a167d28ab85439",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "7449db600ebbd1e4534bf2a078701adc97ba091fddd95e166a0da7f24d513497",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

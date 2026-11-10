@@ -1,0 +1,27 @@
+{
+  "name": "fix2",
+  "exit_code": 0,
+  "seconds": 9.789878368377686,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "-k",
+    "identical_multi_batch_commit_request_retries_pending_child or initial_install_refuses_roles_bound_after_preparation",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r13-fix2"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r13-fix2/fix2.log",
+  "sha256": "443639863ec3f54d647221c76a880a41aee45a08e02a7404a41433273df37336",
+  "candidate_tree": "78a493251c7ee3c38b243aa55662a3e18f9fb83d",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "79f59ba7d9f6fadd3d95846abc93c5fc83cbc52f2859a04e8da9fce6ba756049",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

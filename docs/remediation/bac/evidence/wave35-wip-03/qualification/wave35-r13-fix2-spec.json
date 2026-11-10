@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r13-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r13-fix2",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix2",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "-k",
+        "identical_multi_batch_commit_request_retries_pending_child or initial_install_refuses_roles_bound_after_preparation",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r13-fix2"
+      ]
+    }
+  ]
+}

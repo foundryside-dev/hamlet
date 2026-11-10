@@ -1,13 +1,13 @@
 # T18e current canonical reward-flow API
 
-Source-verified public consumer capsule, 2026-11-10. Prose only; no source/test/index/runtime/import/probe/compile/git/branch/worktree/copy/subagent actions. Exactly the existing five whole sources,4828 lines; no sixth implementation opened. This records current declarations and qualification limits, not copied implementation or whole-programme acceptance.
+Source-verified public consumer capsule, 2026-11-10. Prose only; no source/test/index/runtime/import/probe/compile/git/branch/worktree/copy/subagent actions. Exactly the existing five whole sources,4937 lines; no sixth implementation opened. This records current declarations and qualification limits, not copied implementation or whole-programme acceptance.
 
 | Source | Whole lines | SHA256 |
 |---|---:|---|
 |src/townlet/environment/vectorized_env.py|2452|3b65e6f143edf1a1a363b6b537376f2e8f3f5dc1f7ce6f6feb8ba9c06bca5256|
 |src/townlet/environment/reward_calculator.py|68|72368cb6f10eb96ad4f772fbcf46b4229c809091ff6b5414764382141ae0b45c|
 |src/townlet/config/exploration_policy.py|1299|fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67|
-|tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py|668|a794a5a9beb5639b132c6f01f042026d436da8d7c994df2b1f2e93d930156c51|
+|tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py|777|6a4ab0be9cb9ef5d3bb0f977ab468ddfdf4e5e5e59f1e08ee660ffd00bd49780|
 |tests/test_townlet/regressions/bac/test_intrinsic_composition.py|341|9d4c9812af426a6611e4169a4b33b2d52f4762ba4157ffc1278e3891ae2d54c8|
 
 ## Required binding and accepted step
@@ -40,17 +40,21 @@ Failures after claim/physics/provider/replay/service may have real effects. No E
 
 ## Actual proof scope and pending qualification
 
-Final current fixed candidate `b2d57f456a68501fa203602b36e6c60a8f0295f7` was qualified in R10 by root and independent Astra:
+Historical R10 candidate `b2d57f456a68501fa203602b36e6c60a8f0295f7` was qualified by root and independent Astra against its then-current31ENV+44parent tests:
 
 | Executor | ENV current31 | Parent current44 |
 |---|---|---|
 |Root|31PASS,27.05925s|44PASS,25.62365s|
 |Independent Astra|31PASS,24.37632s|44PASS,20.50740s|
 
-These are the **same75 overlapping cases independently verified**, not150 unique cases. Each execution reports zero errors/skips/warnings and full custody PASS for800 sources,573 configs,13 artifacts,controller/index/import/threads and14registry MAIN1 identities. This capsule author performed no runtime. Earlier R6 partial19 and R7 rich3/originalparent41 involved distinct candidate versions; they are historical staged evidence, superseded for this bounded current75 qualification by R10. Owning ENV source SPEC/QUALITY and API/README guard clauses are approved. Original single-batch A/B3 cases passed in R8 and are included in current parent44; they are not still-pending original defects.
+Those historical runs cover the **same75 overlapping cases independently verified**, not150 unique cases. Each execution reports zero errors/skips/warnings and full custody PASS for800 sources,573 configs,13 artifacts,controller/index/import/threads and14registry MAIN1 identities. This capsule author performed no runtime. Earlier R6 partial19 and R7 rich3/originalparent41 involved distinct candidate versions; they are historical staged evidence, superseded for that historical bounded75 qualification by R10. Owning ENV source SPEC/QUALITY and API/README guard clauses are approved. Original single-batch A/B3 cases passed in R8 and were included in that historical parent44; they are not still-pending original defects.
 
-Root reports global Ruff/Black/NoDefaults600/Expr PASS. Global mypy retains6 failures in the existing oracle caller. Compiler CLI34packs/35processes passed in152.12084s with each source/import/thread/config/artifact identity checked. These checks do not qualify stale oracle/current caller migration, full repository tests or complete T18e acceptance.
+Current root R17 candidate **b0e3814b982eca65fa8ea3cb0dd7391a97009793**, base1938, qualified the coherent **139 cases** (native61+parent47+ENV31): **139PASS in46.656654s**. Separate Astra ran the **same61 native cases**,61PASS in15.788089s; this overlaps root's61 and is not61 additional unique cases. Root reports all801source/573config/13artifact/controller/index/import/thread/14registry MAIN1 custody checks PASS. Source API and ENV/RWC/RP/ENV-test hashes above are unchanged; counted parent test is now777 lines with the current table hash. The new parent test body is not an additional implementation dependency; parent execution and source judgments below are attributed to its bounded owner/reviewer.
 
-Parent review remains **CHANGES REQUIRED** for new A2 identical multi-batch retry and D2 install/bind race, with C authentic mixed lifecycle, fullD restored role/native custody, E transfer and F native history/clock correlations still open. Ordinary runner/current caller migration, additional original finite stats/admission/queue/zero-scale/rollover/item/aspatial/coincidence witnesses, actual HC/T26/all-child publication/recovery and all final global gates remain owed. The initial callback remains trusted actual constructor capability; no callback-owner introspection or generic authority framework is claimed.
+Parent A2 multi-batch retry and D2 install/bind race fixes2+3 are now approved by owning source and actual-execution Astra review. Public owning report supplies POP2612/SHA prefixfcbd0b0c; POP body was **not inspected in this ENV context**. They are no longer listed as unfixed defects. Native N1 controlled model-reset source API is approved in public `T18e-N1-CURRENT-CONTRACT-DRAFT.md`; that native evidence does not establish ENV native isolation or whole-parent native publication. B1/RNG/epochs/fullD/native-parent all-child/F requirements remain.
 
-The last authoritative full-suite baseline is still failed30a:1010failed/7285passed/21skipped/231errors; no broad repeat through known prerequisites is represented as a new full result. CUDA is unavailable and unqualified. No full-repository GREEN, whole-parent approval, whole-T18e closure or release/accounting change follows; original28qualified/38remaining66 remains unchanged. Source/guard hashes above are unchanged; this prose now freezes for root checkpoint/publication custody.
+Current global Ruff/Black/Expr and NoDefaults600 checks PASS. Global mypy retains6 failures in the existing oracle caller. Historical compiler CLI34packs/35processes passed in152.12084s with each source/import/thread/config/artifact identity checked; that separately qualified historical compiler run is not a new R17 full-suite result. Required owner233-suite execution reached29PASS/1FAIL at an obsolete ENV constructor **before** the required DemoRunner checkpoint assertion. Owner/native integration is therefore not passing; repairing only the constructor would still not prove the unexecuted checkpoint assertion.
+
+C authentic mixed lifecycle, fullD restored role/native custody, E transfer and F native history/clock/epoch correlations, B1 and native-parent/all-child work remain open, alongside ordinary runner/current caller migration, additional original finite stats/admission/queue/zero-scale/rollover/item/aspatial/coincidence witnesses, actual HC/T26 publication/recovery and all final global gates. The initial callback remains trusted actual constructor capability; no callback-owner introspection or generic authority framework is claimed. This update does not treat a new native capsule as ENV isolation qualification.
+
+The last authoritative full-suite baseline is still failed30a:1010failed/7285passed/21skipped/231errors; no broad repeat through known prerequisites is represented as a new full result. CUDA is unavailable and unqualified. No full-repository GREEN, whole-parent approval, whole-T18e closure or release/accounting change follows; original28qualified/38remaining66 remains unchanged. Current prose now freezes for bounded adversarial source-truth review and root WIP3 checkpoint/publication custody.

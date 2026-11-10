@@ -1,0 +1,89 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py F
+
+=================================== FAILURES ===================================
+____ test_identical_multi_batch_commit_request_retries_pending_child[False] ____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f324b32bbb0>
+after_child = False
+
+    @pytest.mark.parametrize("after_child", (False, True))
+    def test_identical_multi_batch_commit_request_retries_pending_child(compiled: Any, monkeypatch: Any, after_child: bool) -> None:
+        rig = make_parent(compiled)
+        rig.enter()
+        rig.population.step_population(rig.env)
+        settled = rig.complete()
+        rig.enter(batch=1)
+        assert rig.record.accepted.world_episode_seqs == (2,) * len(IDS)
+        assert rig.env.global_tick == 0 and rig.population.total_steps == 1
+        rig.population.step_population(rig.env)
+        for lane in range(len(IDS)):
+            rig.population.flush_episode(lane, reason="budget")
+        request = settled + rig.population.completed_outcomes
+        before, commit, attempts = rig.runtime.epsilon, rig.runtime.commit_batch_episode, []
+        selected = policy(compiled, "none", "shared", "paced_fifo")
+        expected = max(selected.epsilon_end, before * selected.epsilon_decay)
+    
+        def fail_once(**kwargs: Any) -> None:
+            attempts.append(kwargs["batch_episode"])
+            if len(attempts) == 1:
+                if after_child:
+                    commit(**kwargs)
+                raise RuntimeError("delegated second-batch failure")
+            commit(**kwargs)
+    
+        monkeypatch.setattr(rig.runtime, "commit_batch_episode", fail_once)
+        with pytest.raises(RuntimeError, match="second-batch"):
+            rig.population.commit_episode_outcomes(request)
+        assert rig.population.clock_ledger.completed_batch_episodes == 1
+        assert rig.runtime.epsilon == (expected if after_child else before)
+        with pytest.raises(RuntimeError):
+            rig.population.commit_episode_outcomes(settled)
+>       rig.population.commit_episode_outcomes(request)
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:747: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f324b172270>
+outcomes = (LaneOutcome(outcome=EpisodeCompletion(agent_idx=0, reason='budget', survival_time=1, final_observation=tensor([ 1.000...d_intrinsic=0.0, reward_shaping=0.0, policy_entropy=0.9654654264450073, world_id='parent-F', world_episode_seq=1), ...)
+
+    def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
+        """Retain exact child retry custody; publish parent completion only after its return."""
+        if (
+            self._step_active
+            or self._failed_step
+            or self._preparing_checkpoint is not None
+            or self._batch_commit_active
+            or self._vector_steps
+        ):
+            raise RuntimeError("Cannot commit outcomes during running, pending or failed population work")
+        incoming = tuple(outcomes)
+        prepared: dict[tuple[int, int], str] = {}
+        for event in incoming:
+            if not isinstance(event, LaneOutcome):
+                raise ValueError("Only owned LaneOutcome events may be committed")
+            identity = event.batch_episode, event.outcome.agent_idx
+            fingerprint = self._outcome_fingerprint(event)
+            expected = self._published_outcome_fingerprints.get(identity)
+            if expected is None or fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
+                raise ValueError("Outcome was not published or its owned content changed")
+            prepared[identity] = fingerprint
+        batches = {identity[0] for identity in prepared}
+        if self._pending_batch_commit is not None and batches != {self._pending_batch_commit["batch"]}:
+>           raise RuntimeError("Resolve the retained batch commitment before unrelated parent work")
+E           RuntimeError: Resolve the retained batch commitment before unrelated parent work
+
+src/townlet/population/vectorized.py:1121: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_identical_multi_batch_commit_request_retries_pending_child[False]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 4.45s ===============================

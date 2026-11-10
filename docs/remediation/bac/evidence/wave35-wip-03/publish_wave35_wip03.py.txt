@@ -1,0 +1,127 @@
+"""Preserve the R17 native-reset and parent-repair WIP without release claims."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave35/r17-candidate.json').read_text())
+receipt = json.loads((W / 'wave35/r17-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['status'] == 'UNRELEASED WIP; no package or repository release'
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+assert receipt['root_coherent']['counts']['passed'] == 139
+assert receipt['independent_native']['counts']['passed'] == 61
+assert receipt['native_factory']['counts']['passed'] == 176
+assert receipt['owner_failed']['counts']['passed'] == 29
+assert receipt['owner_failed']['counts']['failed'] == 1
+assert receipt['loss_failed']['counts']['failed'] == 1
+assert receipt['static']['all_passed'] is False
+for row in receipt['documents'].values():
+    assert sha(W / row['draft']) == row['sha256'], row['draft']
+for path, digest in receipt['review_sha256'].items():
+    assert sha(W / path) == digest, path
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p)
+             for p in ('src', 'tests', 'configs', 'scripts', '.defaults-ratchet')}
+out = D / 'evidence/wave35-wip-03'
+assert not out.exists()
+assert not (D / 'evidence/wave35-wip-03.json').exists()
+out.mkdir()
+artifacts = {}
+
+def copy(source, target, *, replace=False):
+    assert source.is_file() and (replace or not target.exists()), str(target)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+    assert sha(source) == sha(target)
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': sha(target), 'original': str(source)}
+
+for p in sorted(Q.glob('wave35-r*')):
+    match = re.match(r'wave35-r([0-9]+)(?:-|$)', p.name)
+    if match is None:
+        continue
+    number = int(match.group(1))
+    if number < 11:
+        continue
+    if p.is_dir():
+        for f in sorted(p.rglob('*')):
+            if f.is_file() and f.suffix in ('.json', '.log'):
+                copy(f, out / 'qualification' / p.name / f.relative_to(p))
+    elif p.suffix == '.json':
+        copy(p, out / 'qualification' / p.name)
+for folder in ('wave35', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'verify_bac_failed_run.py',
+             'verify_bac_static_run.py', 'run_bac_packet_checks_locked.py',
+             'bac_source_identity.py', 'publish_wave35_wip03.py'):
+    copy(Q / name, out / (name + '.txt'))
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+copy(W / receipt['documents']['reward_flow']['draft'], D / 'CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md', replace=True)
+copy(W / receipt['documents']['native']['draft'], D / 'CURRENT-NATIVE-LEARNING-RESET-CONTRACT.md')
+draft = (W / receipt['documents']['README']['draft']).read_text().splitlines()
+quoted = []
+for line in draft:
+    if line.startswith('>'):
+        quoted.append(line[2:] if line.startswith('> ') else line[1:])
+    elif quoted:
+        break
+replacement = '\n'.join(quoted).strip() + '\n'
+assert replacement.startswith('T19 exposes caller-bound ')
+assert '139' in replacement and 'remains unreleased' in replacement
+readme = R / 'README.md'
+before = readme.read_text()
+start = before.index('T19 exposes caller-bound ')
+end = before.index('\nThe token type schema is the transfer contract;', start)
+readme.write_text(before[:start] + replacement + before[end:])
+status = D / 'STATUS.md'
+before_status = status.read_text()
+assert before_status.startswith('# BAC implementation status\n')
+current = '''
+
+Latest checkpoint: model-native learning reset and the additional parent retry/binding repairs have bounded source/specification approval and executable evidence at candidate `b0e3814b982eca65fa8ea3cb0dd7391a97009793`. This is **unreleased work in progress**, with original **28 qualified / 38 remaining / 66 total** unchanged. The [checkpoint evidence](evidence/wave35-wip-03.json), [native reset contract](CURRENT-NATIVE-LEARNING-RESET-CONTRACT.md), and refreshed [reward-flow contract](CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md) distinguish component proof from remaining integration.
+
+Root passed 139 cases (61 native reset, 47 parent, 31 environment); independent Astra passed the same 61 native cases. A separate existing ICM/factory/RND unit selection passed 176 cases. These overlapping selections are recorded separately. All named executions have 801-source/573-configuration/13-artifact/controller/index/import/thread/14-registry MAIN1 custody. Current Ruff, Black, expression documentation and unchanged 600 defaults ratchet pass; mypy retains six oracle caller errors. Parent A2/D2 and the new ordering/defaults defect are repaired and independently reviewed. Native reset keeps exact lifetime service, FIFO work, clocks and spent budgets while replacing learning, using explicit optimizer epoch origins and preserving supported signed RND manual displacement.
+
+Required owner integration remains failed: the 233-case selection stopped at 29 passes and one old environment-constructor failure before its native DemoRunner checkpoint assertion. A separate loss integration check fails at the same constructor prerequisite before training assertions. A constructor-only edit cannot establish still-missing stable-owner bound restore. B1 native reset/RNG/provenance/correlation, nonmodel reset, genuine mixed participation, stable-owner completed restore, all-child publication, current runner/oracle consumers and the remaining finite packages stay required. The earlier failed full baseline is preserved, not relabeled current or green. Full/default, coverage at least 70%, slow/applicable hardware, supported learning/end-to-end evidence, 54 requirements, 22 fresh final review lenses plus synthesis, and exact-final-remote CI remain owed. CUDA is unavailable and unqualified. Earlier entries below are historical checkpoints.
+'''
+status.write_text('# BAC implementation status' + current + before_status[len('# BAC implementation status'):])
+manifest = {'status': receipt['status'], 'packet': 'Native model reset and bounded parent retry/binding repairs',
+            'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+            'execution_subtrees': execution, 'inventories': m['inventories'],
+            'source_files': m['source_files'], 'config_changes': m['config_changes'],
+            'receipt': receipt, 'artifacts': artifacts,
+            'qualified_progress': '28 qualified original packages,38 remaining,66 total unchanged; required owner integration remains failed.',
+            'publication': 'Existing authorized remote branch only; no new project branch/worktree/checkout/source copy/PR/merge/deletion. Private history bundle excluded.',
+            'next': 'Nonmodel reset, BANK/CP/RNG/reset provenance and history correlation, real stable parent/outer owners, current callers, remaining finite programme and final gates.'}
+mp = D / 'evidence/wave35-wip-03.json'
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+paths = [*artifacts, str(mp.relative_to(R)), 'README.md', 'docs/remediation/bac/STATUS.md']
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for path, digest in execution.items():
+    assert git('rev-parse', tree + ':' + path) == digest, path
+for path, row in artifacts.items():
+    assert sha(R / path) == row['sha256'], path
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave35-wip-03/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'],
+          'publication_tree': tree, 'source_equivalence': 'PASS',
+          'artifact_count': len(artifacts), 'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave35-wip-03-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

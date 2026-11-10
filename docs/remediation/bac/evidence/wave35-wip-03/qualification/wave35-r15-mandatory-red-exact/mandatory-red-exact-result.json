@@ -1,0 +1,25 @@
+{
+  "name": "mandatory-red-exact",
+  "exit_code": 1,
+  "seconds": 12.898873090744019,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_icm_real_mandatory_updates_survive_reset_and_continue",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r15-mandatory-red-exact"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r15-mandatory-red-exact/mandatory-red-exact.log",
+  "sha256": "73b739ff6c7d4aa1aaca7443c4909ed9d2bf1f7caf3ca018b911432038eb7245",
+  "candidate_tree": "65ed6770bae6a59b043ff89b06e28c4edd9a546e",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "e2ef1f9e9f8fd884b4373c32532903354cc321ec5762e7eadae7e5852a42e3f9",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

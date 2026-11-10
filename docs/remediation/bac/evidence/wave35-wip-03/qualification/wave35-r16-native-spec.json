@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r16-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r16-native",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "native",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r16-native"
+      ]
+    }
+  ]
+}

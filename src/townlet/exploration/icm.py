@@ -117,6 +117,7 @@ class ICMExploration(EpsilonGreedyExploration):
         self.optimizer = torch.optim.Adam(self._parameters(), lr=self.learning_rate)
         self._pending: deque[dict[str, Any]] = deque()
         self._counters = dict.fromkeys(_COUNTERS, 0)
+        self._optimizer_epoch_origin = 0
         self._last_loss = 0.0
         self._service_position: int | None
         if service_clock_unit == "world_eligible_admission":
@@ -293,7 +294,7 @@ class ICMExploration(EpsilonGreedyExploration):
             dict[str, Any],
             _owned(
                 {
-                    "schema": "icm-state-v2",
+                    "schema": "icm-state-v3",
                     "policy": self.policy.to_dict(),
                     "policy_identity": self.policy.policy_identity,
                     "config": self._config(),
@@ -306,6 +307,7 @@ class ICMExploration(EpsilonGreedyExploration):
                     "epsilon_min": self.epsilon_min,
                     "pending": list(self._pending),
                     "counters": self._counters,
+                    "optimizer_epoch_origin": self._optimizer_epoch_origin,
                     "last_loss": self._last_loss,
                     "service_clock_unit": self.service_clock_unit,
                     "service_position": self._service_position,
@@ -384,8 +386,8 @@ class ICMExploration(EpsilonGreedyExploration):
         """Validate and own every transported field before any live installation."""
         try:
             state = _owned(state)
-            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v2":
-                raise ValueError("ICM requires complete icm-state-v2 checkpoint")
+            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v3":
+                raise ValueError("ICM requires complete icm-state-v3 checkpoint")
             if not isinstance(state["policy"], dict) or state["policy"].keys() != self.policy.to_dict().keys():
                 raise ValueError("ICM checkpoint requires current complete policy fields")
             policy = ResolvedExplorationPolicy.from_dict(state["policy"])
@@ -426,6 +428,11 @@ class ICMExploration(EpsilonGreedyExploration):
                     ):
                         raise ValueError("ICM checkpoint pending observation has invalid geometry/dtype/value")
             updates = counters["optimizer_updates"]
+            origin = state["optimizer_epoch_origin"]
+            _number(origin, "optimizer epoch origin", True, 0)
+            if origin > updates:
+                raise ValueError("ICM optimizer epoch origin exceeds retained lifetime updates")
+            epoch_updates = updates - origin
             if counters["consumed_rows"] != updates * self.training_batch_size or counters["mandatory_service_updates"] > updates:
                 raise ValueError("ICM checkpoint service counters disagree")
             if counters["admitted_rows"] != counters["consumed_rows"] + counters["dropped_rows"] + len(pending):
@@ -454,12 +461,12 @@ class ICMExploration(EpsilonGreedyExploration):
                 or not policy.epsilon_end <= state["epsilon"] <= policy.epsilon_start
             ):
                 raise ValueError("ICM checkpoint epsilon schedule disagrees with selected policy")
-            if not updates and state["last_loss"] != 0:
+            if not epoch_updates and state["last_loss"] != 0:
                 raise ValueError("ICM checkpoint has loss without a successful update")
             encoder = self._model_state(self.encoder, state["encoder"])
             inverse = self._model_state(self.inverse_model, state["inverse_model"])
             forward = self._model_state(self.forward_model, state["forward_model"])
-            optimizer = self._optimizer_state((encoder, inverse, forward), state["optimizer"], updates)
+            optimizer = self._optimizer_state((encoder, inverse, forward), state["optimizer"], epoch_updates)
             owned_pending = deque(_owned(pending))
         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
             raise ValueError("ICM checkpoint is malformed") from error
@@ -468,8 +475,61 @@ class ICMExploration(EpsilonGreedyExploration):
         candidate.policy, candidate._source_device = policy, config["device"]
         candidate.epsilon, candidate.epsilon_decay, candidate.epsilon_min = state["epsilon"], state["epsilon_decay"], state["epsilon_min"]
         candidate._pending, candidate._counters, candidate._last_loss = owned_pending, dict(counters), float(state["last_loss"])
+        candidate._optimizer_epoch_origin = origin
         candidate._service_position, candidate._ordinary_updates_at_position = tick, budget
         return _PreparedICM(self, candidate.__dict__, False)
+
+    def prepare_learning_reset(self, *, fresh: ICMExploration) -> _PreparedICM:
+        """Copy real fresh learning without altering service work or consuming RNG.
+
+        The enclosing owner supplies an already-constructed factory candidate and
+        owns RNG continuation, boundary authority and final publication freshness.
+        """
+        if type(fresh) is not ICMExploration or fresh is self:
+            raise ValueError("ICM reset requires a distinct actual ICM factory candidate")
+        current = self.checkpoint_state()
+        self.validate_state(current)
+        fresh_state = fresh.checkpoint_state()
+        fresh.validate_state(fresh_state)
+        if (
+            self.policy.to_dict() != fresh.policy.to_dict()
+            or {key: value for key, value in self._config().items() if key != "device"}
+            != {key: value for key, value in fresh._config().items() if key != "device"}
+            or self.device != fresh.device
+            or self.service_clock_unit != fresh.service_clock_unit
+            or self.epsilon_min != fresh.epsilon_min
+            or self.epsilon_decay != fresh.epsilon_decay
+        ):
+            raise ValueError("ICM reset candidate differs from retained selected policy or geometry")
+        for backend in (self, fresh):
+            actual = [parameter for group in backend.optimizer.param_groups for parameter in group["params"]]
+            expected = backend._parameters()
+            if (
+                type(backend.optimizer) is not torch.optim.Adam
+                or len(actual) != len(expected)
+                or any(parameter is not reference for parameter, reference in zip(actual, expected, strict=True))
+            ):
+                raise ValueError("ICM reset requires actual model/Adam Parameter pairing")
+        if (
+            any(fresh._counters.values())
+            or fresh._optimizer_epoch_origin != 0
+            or fresh._pending
+            or fresh._last_loss != 0
+            or fresh._ordinary_updates_at_position != 0
+            or fresh._service_position != (0 if self.service_clock_unit == "world_eligible_admission" else None)
+            or fresh.optimizer.state
+            or any(parameter.grad is not None for parameter in fresh._parameters())
+        ):
+            raise ValueError("ICM reset candidate must have genuine fresh learning and no service work")
+        for key in ("encoder", "inverse_model", "forward_model", "optimizer"):
+            current[key] = fresh_state[key]
+        current["optimizer_epoch_origin"] = self._counters["optimizer_updates"]
+        current["last_loss"] = 0.0
+        prepared = self.prepare_state(current)
+        for module_name in ("encoder", "inverse_model", "forward_model"):
+            for parameter in prepared.attributes[module_name].parameters():
+                parameter.grad = None
+        return prepared
 
     def install_state(self, prepared: _PreparedICM) -> None:
         if type(prepared) is not _PreparedICM or prepared.owner is not self or prepared.consumed:

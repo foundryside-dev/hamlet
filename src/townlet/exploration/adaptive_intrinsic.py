@@ -259,7 +259,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
         """Current native snapshot with independent nested tensors and history."""
         return deepcopy(
             {
-                "schema": "adaptive-intrinsic-state-v2",
+                "schema": "adaptive-intrinsic-state-v3",
                 "rnd_state": self.rnd.checkpoint_state(),
                 **self._config(),
                 "current_intrinsic_weight": self.current_intrinsic_weight,
@@ -278,7 +278,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
             if (
                 not isinstance(state, dict)
                 or state.keys() != self.checkpoint_state().keys()
-                or state["schema"] != "adaptive-intrinsic-state-v2"
+                or state["schema"] != "adaptive-intrinsic-state-v3"
             ):
                 raise ValueError("Adaptive requires complete current native state")
             config = {name: state[name] for name in self._config()}
@@ -304,6 +304,26 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
             return _PreparedAdaptive(self, candidate.__dict__, False)
         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
             raise ValueError("Adaptive checkpoint is malformed") from error
+
+    def prepare_learning_reset(self, *, fresh: AdaptiveIntrinsicExploration) -> _PreparedAdaptive:
+        """Reset owned adaptive learning while retaining the inner service lifetime."""
+        if type(fresh) is not AdaptiveIntrinsicExploration or fresh is self:
+            raise ValueError("Adaptive reset requires a distinct actual adaptive factory candidate")
+        self.validate_state(self.checkpoint_state())
+        fresh.validate_state(fresh.checkpoint_state())
+        if self._config() != fresh._config() or self.device != fresh.device:
+            raise ValueError("Adaptive reset candidate differs from retained authored configuration")
+        if fresh.survival_history or fresh.current_intrinsic_weight != fresh.initial_intrinsic_weight:
+            raise ValueError("Adaptive reset candidate must have fresh history and initial weight")
+        prepared_rnd = self.rnd.prepare_learning_reset(fresh=fresh.rnd)
+        candidate = deepcopy(self)
+        # The nested handle is bound to the old inner owner. Its already-owned
+        # attributes become the off-side inner candidate without touching live state.
+        candidate.rnd.__dict__ = prepared_rnd.attributes
+        prepared_rnd.consumed = True
+        candidate.survival_history = []
+        candidate.current_intrinsic_weight = self.initial_intrinsic_weight
+        return _PreparedAdaptive(self, candidate.__dict__, False)
 
     def install_state(self, prepared: _PreparedAdaptive) -> None:
         if type(prepared) is not _PreparedAdaptive or prepared.owner is not self or prepared.consumed:

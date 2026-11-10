@@ -1,0 +1,47 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r17-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r17-coherent",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "coherent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r17-coherent"
+      ]
+    },
+    {
+      "name": "owners",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py",
+        "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py",
+        "tests/test_townlet/unit/exploration/test_rnd_normalization.py",
+        "tests/test_townlet/integration/test_rnd_loss_tracking.py",
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r17-owners"
+      ]
+    }
+  ]
+}

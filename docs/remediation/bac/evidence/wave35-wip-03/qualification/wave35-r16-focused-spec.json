@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r16-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r16-focused",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "focused",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd]",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_icm_real_mandatory_updates_survive_reset_and_continue",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r16-focused"
+      ]
+    }
+  ]
+}

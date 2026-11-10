@@ -394,12 +394,17 @@ and owner activation. On an accepted rollout, the environment invokes the popula
 claim before physics. The population captures the environment's canonical rewards in replay,
 services the retained curiosity context, and then advances its authoritative vector clock.
 The environment binds its runtime and claim callback once before world custody; reward
-composition receives provider raw values and per-row runtime scales separately. See the
+composition receives provider raw values and per-row runtime scales separately. Bounded
+parent repairs retain failed multi-batch request custody and refuse replacement restore
+installation after world roles become bound. See the
 [current reward-flow API](docs/remediation/bac/CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md).
 
-This integration remains unreleased. Multi-batch failure retry, restore role custody, mixed
-participation, native transfer/reset, native clock/history correlation, and the ordinary runner
-still require repairs and joint qualification recorded in [BAC status](docs/remediation/bac/STATUS.md).
+At frozen R17 candidate `b0e3814b`, root reports 139 cases passing: 61 native producer,
+47 parent and 31 ENV cases. Fix3 has Astra SPEC/QUALITY and execution approval; global
+Ruff, Black, Expr and NoDefaults600 pass. This integration remains unreleased.
+Genuine mixed participation, stable-owner completed restore, same-BANK transfer/reset, parent
+consumption of native clock/history correlation, ordinary runner/oracle callers and final joint
+qualification remain required in [BAC status](docs/remediation/bac/STATUS.md).
 The [owned-outcome reference](docs/architecture/BAC.md#owned-lane-outcomes-and-global-clocks)
 and [API units reference](docs/remediation/bac/options.md#owned-lane-outcomes-and-global-clocks)
 describe the broader completion and clock contracts.

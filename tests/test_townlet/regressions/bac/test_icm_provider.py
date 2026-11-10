@@ -118,7 +118,8 @@ def test_icm_uses_action_and_successor():
     provider = _provider(PARAMETERS, "paced_fifo", "service_before_admit")
     context = _rows(2, 0)
     before = deepcopy(provider.checkpoint_state())
-    assert before["schema"] == "icm-state-v2"
+    assert before["schema"] == "icm-state-v3"
+    assert before["optimizer_epoch_origin"] == 0
     assert before["service_clock_unit"] == "vector_tick"
     reward = provider.compute_transition_novelty(context, update_stats=False)
     _, expected = _objective(provider, context, PARAMETERS)

@@ -1,0 +1,44 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py F
+
+=================================== FAILURES ===================================
+__________ test_initial_install_refuses_roles_bound_after_preparation __________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f110d933bb0>
+
+    def test_initial_install_refuses_roles_bound_after_preparation(compiled: Any, monkeypatch: Any) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        pop = target.population
+        before = copy.deepcopy(pop.get_checkpoint_state())  # Export before preparation, never stale its child handle.
+        names = ("q_network", "optimizer", "scheduler", "replay_buffer")
+        owners = tuple(getattr(pop, name) for name in names)
+        prepared = pop.prepare_checkpoint_state(
+            source.population.get_checkpoint_state(), mode="initial", parent_restore=None, validate_parent_restore=None, initialization=None
+        )
+        target.bind()  # Actual component roles, without bootstrap/reset or a POP revision mutation.
+        assert target.env.world_phase == "fresh-bound"
+        install, publications = target.runtime.install_restore, []
+    
+        def observe_install(**kwargs: Any) -> None:
+            publications.append(None)
+            install(**kwargs)
+    
+        monkeypatch.setattr(target.runtime, "install_restore", observe_install)
+>       with pytest.raises(ValueError, match="[Bb]ound"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:773: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_initial_install_refuses_roles_bound_after_preparation
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 4.32s ===============================

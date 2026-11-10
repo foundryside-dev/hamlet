@@ -1,0 +1,25 @@
+{
+  "name": "install-binding-red",
+  "exit_code": 1,
+  "seconds": 26.100796222686768,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_initial_install_refuses_roles_bound_after_preparation",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r12-install-binding-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r12-parent-red/install-binding-red.log",
+  "sha256": "2f7abb904908364cf81a15982d7888daae7d111086f4aca3b2ff00d158e9018e",
+  "candidate_tree": "c02e638eec78ec24465b4dcd72a167d28ab85439",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "7449db600ebbd1e4534bf2a078701adc97ba091fddd95e166a0da7f24d513497",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

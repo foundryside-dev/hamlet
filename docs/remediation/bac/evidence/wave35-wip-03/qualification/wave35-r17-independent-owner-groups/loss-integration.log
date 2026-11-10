@@ -1,0 +1,71 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/integration/test_rnd_loss_tracking.py F
+
+=================================== FAILURES ===================================
+__________ TestRNDLossTracking.test_rnd_loss_tracked_during_training ___________
+
+self = <tests.test_townlet.integration.test_rnd_loss_tracking.TestRNDLossTracking object at 0x7fb9a0d51810>
+cpu_device = device(type='cpu')
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+cpu_env_factory = <function cpu_env_factory.<locals>._build_env at 0x7fb9a0cb9580>
+minimal_brain_config = BrainConfig(version='1.0', description='Minimal brain config for testing', architecture=ArchitectureConfig(type='feedf...ReplayConfig(capacity=10000, prioritized=False, priority_alpha=None, priority_beta=None, priority_beta_annealing=None))
+
+    def test_rnd_loss_tracked_during_training(self, cpu_device, test_config_pack_path, cpu_env_factory, minimal_brain_config):
+        """Verify RND predictor loss is tracked when using AdaptiveIntrinsicExploration.
+    
+        This test validates the critical contract:
+        - RND predictor loss should be computed during training
+        - Loss should be stored in population.last_rnd_loss (similar to last_loss)
+        - Loss should be available for TensorBoard logging
+        - Loss should be finite (not NaN/Inf)
+    
+        Integration point: VectorizedPopulation.step_population() trains RND
+        predictor and should track the loss for monitoring.
+        """
+>       env = cpu_env_factory(config_dir=test_config_pack_path, num_agents=1)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/integration/test_rnd_loss_tracking.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/_fixtures/environment.py:181: in _build_env
+    return env_factory(device_override=cpu_device, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build_env(
+        *,
+        config_dir: Path | str | None = None,
+        universe: CompiledUniverse | None = None,
+        num_agents: int = 1,
+        device_override: torch.device | str | None = None,
+        level_name: str | None = None,
+    ) -> VectorizedHamletEnv:
+        target_universe = universe
+        if target_universe is None:
+            pack_path = Path(config_dir) if config_dir is not None else test_config_pack_path
+            target_universe = compile_universe(pack_path, primary_level=level_name)
+    
+        target_device = device_override if device_override is not None else device
+        target_level = level_name or (target_universe.available_levels[0] if target_universe.available_levels else None)
+    
+>       return VectorizedHamletEnv.from_universe(
+            target_universe,
+            level_name=target_level,
+            num_agents=num_agents,
+            device=target_device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:166: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/integration/test_rnd_loss_tracking.py::TestRNDLossTracking::test_rnd_loss_tracked_during_training
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 1.34s ===============================

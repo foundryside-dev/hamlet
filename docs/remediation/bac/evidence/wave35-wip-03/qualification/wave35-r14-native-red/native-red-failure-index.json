@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "candidate_tree": "330cb0571bdfbdaa8a8cf4a1c7db8ef1f0dbbd84",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'RNDExploration' object has no attribute 'prepare_learning_reset'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

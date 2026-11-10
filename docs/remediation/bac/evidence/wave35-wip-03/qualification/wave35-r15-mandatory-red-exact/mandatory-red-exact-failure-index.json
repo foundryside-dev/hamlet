@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "candidate_tree": "65ed6770bae6a59b043ff89b06e28c4edd9a546e",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'ICMExploration' object has no attribute 'prepare_learning_reset'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_icm_real_mandatory_updates_survive_reset_and_continue",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

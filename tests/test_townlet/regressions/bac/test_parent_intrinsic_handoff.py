@@ -23,6 +23,7 @@ from townlet.environment.vectorized_env import WorldReceiptIssuer
 from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training import clock_ledger as clock_types
+from townlet.training.episode import freeze_lane_outcome
 from townlet.training.replay_contract import ReplayRequest
 
 IDS = ("parent-A", "parent-B", "parent-C", "parent-D", "parent-E", "parent-F", "parent-G", "parent-H")
@@ -51,7 +52,7 @@ class ParentFixture:
     release: Any = None
     record: Any = None
 
-    def enter(self) -> None:
+    def bind(self) -> None:
         pop = self.population
         self.boundary = self.env.bind_boundary_authority(
             owner=self,
@@ -68,12 +69,17 @@ class ParentFixture:
                 "selection": self.runtime,
             },
         )
-        self.release = self.boundary.bootstrap(first_batch_episode=0)
-        self.env.install_boundary_release(self.release)
-        reservation = self.env.prepare_episode(batch_episode=0, release=self.release)
+
+    def enter(self, batch: int = 0) -> None:
+        pop = self.population
+        if self.boundary is None:
+            self.bind()
+            self.release = self.boundary.bootstrap(first_batch_episode=batch)
+            self.env.install_boundary_release(self.release)
+        reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
         self.env.validate_episode_reservation(reservation)
         pop.bind_episode_worlds(world_ids=IDS, world_episode_seqs=reservation.world_episode_seqs)
-        pop.begin_batch_episode(0, planned_horizon=20)
+        pop.begin_batch_episode(batch, planned_horizon=20)
         self.record, activation = pop.reset(reservation=reservation)
         assert activation.owner is pop
         curiosity = self.runtime.begin_episode(accepted=self.record.accepted)
@@ -83,6 +89,44 @@ class ParentFixture:
             curiosity_receipt=curiosity,
         )
         equal(pop.current_obs, self.record.observation)
+
+    def complete(self) -> tuple[Any, ...]:
+        """Real component effects under a local controller; no HC/T26 native attestation."""
+        pop, accepted = self.population, self.record.accepted
+        for lane in range(len(IDS)):
+            pop.flush_episode(lane, reason="budget")
+        outcomes, key = pop.completed_outcomes, accepted.batch_episode
+        content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, outcomes))
+        curriculum = pop.curriculum.prepare_episode_outcomes(outcomes)
+        bank = self.runtime.prepare_completion(
+            accepted=accepted, boundary_key=key, completion_content=content, outcomes=outcomes, participated_world_ids=IDS
+        )
+        closing = self.env.prepare_episode_close(
+            accepted=accepted, boundary_key=key, completion_content=content, participated_world_ids=IDS, dispositions=bank.prepared_receipt
+        )
+        self.env.freeze_episode_close(closing)
+        pop.curriculum.commit_prepared_episode_outcomes(curriculum)
+        retirement = self.runtime.commit_completion(prepared=bank)
+        pop.commit_episode_outcomes(outcomes)
+        pop.sync_exploration_metrics()
+        equal(pop.current_epsilons, self.runtime.epsilon_tensor(batch_size=len(IDS), device="cpu"))
+        kinds = (
+            "curriculum_receipt",
+            "exploration_receipt",
+            "population_commit_receipt",
+            "epsilon_install_receipt",
+            "selection_sync_receipt",
+        )
+        owners = (pop.curriculum, self.runtime, pop, self.runtime, self.runtime, self)
+        self.effect_issuers = tuple(WorldReceiptIssuer(owner=owner) for owner in owners)
+        payload = dict(accepted=accepted, boundary_key=key, completion_content=content)
+        effects = {kind: issuer.issue(kind=kind, payload=payload) for kind, issuer in zip(kinds, self.effect_issuers[:-1], strict=True)}
+        closure = self.env.close_episode(closing, dispositions=retirement)
+        effects.update(batch_episode=key, accepted_identity=accepted, completion_content=content, retirement_receipt=retirement)
+        receipt = self.effect_issuers[-1].issue(kind="boundary_effects", payload=effects)
+        self.release = self.boundary.completed(closure=closure, effects=receipt)
+        self.env.install_boundary_release(self.release)
+        return outcomes
 
     def candidate(self) -> dict[str, Any]:
         masks = self.env.get_action_masks()
@@ -666,3 +710,68 @@ def test_post_env_reset_failure_never_issues_reusable_activation(compiled: Any, 
         rig.population.reset(reservation=resets[0][0])
     assert len(resets) == 1
     assert rig.population.total_steps == rig.population.clock_ledger.vector_ticks == 0
+
+
+@pytest.mark.parametrize("after_child", (False, True))
+def test_identical_multi_batch_commit_request_retries_pending_child(compiled: Any, monkeypatch: Any, after_child: bool) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    rig.population.step_population(rig.env)
+    settled = rig.complete()
+    rig.enter(batch=1)
+    assert rig.record.accepted.world_episode_seqs == (2,) * len(IDS)
+    assert rig.env.global_tick == 0 and rig.population.total_steps == 1
+    rig.population.step_population(rig.env)
+    for lane in range(len(IDS)):
+        rig.population.flush_episode(lane, reason="budget")
+    request = settled + rig.population.completed_outcomes
+    before, commit, attempts = rig.runtime.epsilon, rig.runtime.commit_batch_episode, []
+    selected = policy(compiled, "none", "shared", "paced_fifo")
+    expected = max(selected.epsilon_end, before * selected.epsilon_decay)
+
+    def fail_once(**kwargs: Any) -> None:
+        attempts.append(kwargs["batch_episode"])
+        if len(attempts) == 1:
+            if after_child:
+                commit(**kwargs)
+            raise RuntimeError("delegated second-batch failure")
+        commit(**kwargs)
+
+    monkeypatch.setattr(rig.runtime, "commit_batch_episode", fail_once)
+    with pytest.raises(RuntimeError, match="second-batch"):
+        rig.population.commit_episode_outcomes(request)
+    assert rig.population.clock_ledger.completed_batch_episodes == 1
+    assert rig.runtime.epsilon == (expected if after_child else before)
+    with pytest.raises(RuntimeError):
+        rig.population.commit_episode_outcomes(settled)
+    rig.population.commit_episode_outcomes(request)
+    assert rig.population.clock_ledger.completed_batch_episodes == 2 and rig.runtime.epsilon == expected
+    saved = rig.runtime.checkpoint_state()
+    rig.population.commit_episode_outcomes(request)
+    equal(rig.runtime.checkpoint_state(), saved)
+    assert attempts == [1, 1]
+
+
+def test_initial_install_refuses_roles_bound_after_preparation(compiled: Any, monkeypatch: Any) -> None:
+    source, target = make_parent(compiled), make_parent(compiled)
+    pop = target.population
+    before = copy.deepcopy(pop.get_checkpoint_state())  # Export before preparation, never stale its child handle.
+    names = ("q_network", "optimizer", "scheduler", "replay_buffer")
+    owners = tuple(getattr(pop, name) for name in names)
+    prepared = pop.prepare_checkpoint_state(
+        source.population.get_checkpoint_state(), mode="initial", parent_restore=None, validate_parent_restore=None, initialization=None
+    )
+    target.bind()  # Actual component roles, without bootstrap/reset or a POP revision mutation.
+    assert target.env.world_phase == "fresh-bound"
+    install, publications = target.runtime.install_restore, []
+
+    def observe_install(**kwargs: Any) -> None:
+        publications.append(None)
+        install(**kwargs)
+
+    monkeypatch.setattr(target.runtime, "install_restore", observe_install)
+    with pytest.raises(ValueError, match="[Bb]ound"):
+        pop.install_checkpoint_state(prepared=prepared)
+    assert not publications
+    assert all(getattr(pop, name) is owner for name, owner in zip(names, owners, strict=True))
+    equal(pop.get_checkpoint_state(), before)

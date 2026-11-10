@@ -1,0 +1,25 @@
+{
+  "name": "loss-integration",
+  "exit_code": 1,
+  "seconds": 4.819949150085449,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/integration/test_rnd_loss_tracking.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r17-loss-integration"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r17-independent-owner-groups/loss-integration.log",
+  "sha256": "d84a7a8bc3a05dc5bb3ec92409d87cc4a2004166eea0ea342063afe35aada832",
+  "candidate_tree": "b0e3814b982eca65fa8ea3cb0dd7391a97009793",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "876aa18d6497bd123e5f4cb9defa52bcc7d6ac57ce5f0db6b1b0be942bb9d3a5",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

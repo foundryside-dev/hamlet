@@ -1,0 +1,46 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 233 items
+
+tests/test_townlet/regressions/bac/test_rnd_service.py ................. [  7%]
+...F
+
+=================================== FAILURES ===================================
+___ test_direct_minibatch_and_current_native_state_refuse_diagnostic_import ____
+
+    def test_direct_minibatch_and_current_native_state_refuse_diagnostic_import():
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
+        rnd.update({"observations": rows(7)})
+        assert len(rnd.obs_buffer) == 4  # Preserve current one-minibatch direct update API.
+        assert rnd.update_predictor() > 0
+        assert len(rnd.obs_buffer) == 1
+        assert hasattr(rnd, "available_state"), "explicit available-state export missing"
+        diagnostic = rnd.available_state()
+        assert "predictor_service" not in diagnostic
+        restored = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
+        assert not hasattr(restored, "load_available_state")
+        for current in (rnd, restored):
+            before = current.checkpoint_state()
+            for operation in (current.validate_state, current.prepare_state, current.load_state):
+                with pytest.raises(ValueError):
+                    operation(diagnostic)
+                equal(before, current.checkpoint_state())
+        native = rnd.checkpoint_state()
+>       assert native["schema"] == "rnd-state-v2"
+E       AssertionError: assert 'rnd-state-v3' == 'rnd-state-v2'
+E         
+E         - rnd-state-v2
+E         ?            ^
+E         + rnd-state-v3
+E         ?            ^
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:192: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_rnd_service.py::test_direct_minibatch_and_current_native_state_refuse_diagnostic_import
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+========================= 1 failed, 20 passed in 1.99s =========================

@@ -1,0 +1,37 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 60 items / 54 deselected / 6 selected
+
+tests/test_townlet/regressions/bac/test_native_learning_reset.py F
+
+=================================== FAILURES ===================================
+_ test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd] _
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', unit = 'vector_tick'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("unit", UNITS)
+    def test_reset_fresh_learning_retains_real_service_and_next_update(compiled: Any, family: str, unit: str) -> None:
+        backend = construct(compiled, family, unit)
+        train_with_tail(backend, family)
+        before = backend.checkpoint_state()
+        old_pending = list(backend._pending) if family == "icm" else list(inner(backend).obs_buffer)
+        fresh = construct(compiled, family, unit)
+        fresh_state = fresh.checkpoint_state()
+        source_gradients = gradients(backend)
+        # First intended causal RED: genuine learned native reaches the absent operation.
+>       prepared = backend.prepare_learning_reset(fresh=fresh)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'RNDExploration' object has no attribute 'prepare_learning_reset'
+
+tests/test_townlet/regressions/bac/test_native_learning_reset.py:203: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+======================= 1 failed, 54 deselected in 4.01s =======================

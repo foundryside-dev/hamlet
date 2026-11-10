@@ -1,0 +1,26 @@
+{
+  "name": "focused",
+  "exit_code": 0,
+  "seconds": 8.636455774307251,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd]",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py::test_icm_real_mandatory_updates_survive_reset_and_continue",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r16-focused"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r16-focused/focused.log",
+  "sha256": "8b9d4a4a57c31a5198b3be3dda1f33b499d87b90eea3dc34a145b3587a260d5b",
+  "candidate_tree": "8b5cc0e8d43ee617c05d1dbf6cde7fe70322932d",
+  "base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "manifest_sha256": "81de3e16445a082b0df79aa8e65e77a03393e08f21097ad3b2ab23a37294db57",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

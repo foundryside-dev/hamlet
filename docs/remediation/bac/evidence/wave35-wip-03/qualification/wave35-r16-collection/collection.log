@@ -1,0 +1,78 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 61 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_native_learning_reset.py>
+            <Function test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-rnd]>
+            <Function test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-adaptive_rnd]>
+            <Function test_reset_fresh_learning_retains_real_service_and_next_update[vector_tick-icm]>
+            <Function test_reset_fresh_learning_retains_real_service_and_next_update[world_eligible_admission-rnd]>
+            <Function test_reset_fresh_learning_retains_real_service_and_next_update[world_eligible_admission-adaptive_rnd]>
+            <Function test_reset_fresh_learning_retains_real_service_and_next_update[world_eligible_admission-icm]>
+            <Function test_shared_full_deferred_batch_keeps_spent_budget[rnd]>
+            <Function test_shared_full_deferred_batch_keeps_spent_budget[adaptive_rnd]>
+            <Function test_shared_full_deferred_batch_keeps_spent_budget[icm]>
+            <Function test_overflow_adjacent_fifo_preserved_before_real_drop[rnd]>
+            <Function test_overflow_adjacent_fifo_preserved_before_real_drop[adaptive_rnd]>
+            <Function test_overflow_adjacent_fifo_preserved_before_real_drop[icm]>
+            <Function test_overflow_mandatory_real_update_after_reset[rnd]>
+            <Function test_overflow_mandatory_real_update_after_reset[adaptive_rnd]>
+            <Function test_repeated_reset_and_exact_restore_continue_learning[vector_tick-rnd]>
+            <Function test_repeated_reset_and_exact_restore_continue_learning[vector_tick-adaptive_rnd]>
+            <Function test_repeated_reset_and_exact_restore_continue_learning[vector_tick-icm]>
+            <Function test_repeated_reset_and_exact_restore_continue_learning[world_eligible_admission-rnd]>
+            <Function test_repeated_reset_and_exact_restore_continue_learning[world_eligible_admission-adaptive_rnd]>
+            <Function test_repeated_reset_and_exact_restore_continue_learning[world_eligible_admission-icm]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[self-rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[self-adaptive_rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[self-icm]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[learned-rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[learned-adaptive_rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[learned-icm]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[configuration-rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[configuration-adaptive_rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[configuration-icm]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[invalid_source-rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[invalid_source-adaptive_rnd]>
+            <Function test_refused_offside_reset_keeps_source_and_fresh[invalid_source-icm]>
+            <Function test_reset_origin_corruption_rejected_without_install[True-rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[True-adaptive_rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[True-icm]>
+            <Function test_reset_origin_corruption_rejected_without_install[-1-rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[-1-adaptive_rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[-1-icm]>
+            <Function test_reset_origin_corruption_rejected_without_install[2-rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[2-adaptive_rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[2-icm]>
+            <Function test_reset_origin_corruption_rejected_without_install[0.5-rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[0.5-adaptive_rnd]>
+            <Function test_reset_origin_corruption_rejected_without_install[0.5-icm]>
+            <Function test_real_adam_history_mismatch_and_foreign_consumed_handles_refuse[rnd]>
+            <Function test_real_adam_history_mismatch_and_foreign_consumed_handles_refuse[adaptive_rnd]>
+            <Function test_real_adam_history_mismatch_and_foreign_consumed_handles_refuse[icm]>
+            <Function test_rnd_manual_adam_displacement_survives_restore_then_reset_clears_it[rnd]>
+            <Function test_rnd_manual_adam_displacement_survives_restore_then_reset_clears_it[adaptive_rnd]>
+            <Function test_actual_shared_factory_candidates_use_native_reset_contract[rnd]>
+            <Function test_actual_shared_factory_candidates_use_native_reset_contract[adaptive_rnd]>
+            <Function test_actual_shared_factory_candidates_use_native_reset_contract[icm]>
+            <Function test_ordinary_factory_learning_epoch_zero_current_schema[vector_tick-rnd]>
+            <Function test_ordinary_factory_learning_epoch_zero_current_schema[vector_tick-adaptive_rnd]>
+            <Function test_ordinary_factory_learning_epoch_zero_current_schema[vector_tick-icm]>
+            <Function test_ordinary_factory_learning_epoch_zero_current_schema[world_eligible_admission-rnd]>
+            <Function test_ordinary_factory_learning_epoch_zero_current_schema[world_eligible_admission-adaptive_rnd]>
+            <Function test_ordinary_factory_learning_epoch_zero_current_schema[world_eligible_admission-icm]>
+            <Function test_negative_manual_displacement_is_distinct_from_learning_origin[rnd]>
+            <Function test_negative_manual_displacement_is_distinct_from_learning_origin[adaptive_rnd]>
+            <Function test_icm_real_mandatory_updates_survive_reset_and_continue>
+
+========================= 61 tests collected in 0.08s ==========================

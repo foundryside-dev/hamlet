@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave28/r4-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave28-r4-focused-positive",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "focused-positive",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "((initial_and_live_scope_roundtrip or private_restore_matches_by_world_id) and (rnd or adaptive_rnd)) or batch_zero_current_bank_resume or parent_retained_callback_view",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave28-r4-focused-positive"
+      ]
+    }
+  ]
+}

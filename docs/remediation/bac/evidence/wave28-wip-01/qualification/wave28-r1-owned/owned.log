@@ -1,0 +1,2538 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 3/3 workers
+3 workers [143 items]
+
+............F..F.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 50%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.F.FFFFFFFFF  [100%]
+=================================== FAILURES ===================================
+__________________ test_live_phase_dedup_resume[settled-none] __________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', phase = 'settled'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+______________ test_live_phase_dedup_resume[settled-count_based] _______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', phase = 'settled'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+________________ test_private_restore_matches_by_world_id[none] ________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_restore_matches_by_world_id(compiled, family):
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:722: AttributeError
+____________ test_private_restore_matches_by_world_id[count_based] _____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_restore_matches_by_world_id(compiled, family):
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:722: AttributeError
+________________ test_private_restore_matches_by_world_id[rnd] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_restore_matches_by_world_id(compiled, family):
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:722: AttributeError
+__ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-adam_step] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'adam_step'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-moment_dtype] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'moment_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____________ test_private_restore_matches_by_world_id[adaptive_rnd] ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_restore_matches_by_world_id(compiled, family):
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:722: AttributeError
+__________________ test_live_phase_dedup_resume[settled-rnd] ___________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', phase = 'settled'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-model_dtype] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'model_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+________________ test_private_restore_matches_by_world_id[icm] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_private_restore_matches_by_world_id(compiled, family):
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:722: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-adam_id_alias] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'adam_id_alias'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+______________ test_live_phase_dedup_resume[settled-adaptive_rnd] ______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', phase = 'settled'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+__ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-missing_id] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'missing_id'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-adam_step] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'adam_step'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__________________ test_live_phase_dedup_resume[settled-icm] ___________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', phase = 'settled'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+___ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-extra_id] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'extra_id'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_________________ test_live_phase_dedup_resume[inactive-none] __________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', phase = 'inactive'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-moment_dtype] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'moment_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-duplicate_id] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'duplicate_id'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+______________ test_live_phase_dedup_resume[inactive-count_based] ______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', phase = 'inactive'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-model_dtype] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'model_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+___ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-wrong_id] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'wrong_id'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__________________ test_live_phase_dedup_resume[inactive-rnd] __________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', phase = 'inactive'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-adam_id_alias] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'adam_id_alias'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-scope] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'scope'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_____________ test_live_phase_dedup_resume[inactive-adaptive_rnd] ______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', phase = 'inactive'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+__ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-adam_step] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'adam_step'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__________________ test_live_phase_dedup_resume[inactive-icm] __________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', phase = 'inactive'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+___ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-provider] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'provider'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-moment_dtype] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'moment_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-policy] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'policy'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_missing] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_missing'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_______________ test_live_phase_dedup_resume[stale_private-none] _______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', phase = 'stale_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+___ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-geometry] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'geometry'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_extra] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_extra'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+___________ test_live_phase_dedup_resume[stale_private-count_based] ____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', phase = 'stale_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-cursor] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'cursor'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_shape] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_shape'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_______________ test_live_phase_dedup_resume[stale_private-rnd] ________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', phase = 'stale_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_dtype] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-cache] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'cache'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+___________ test_live_phase_dedup_resume[stale_private-adaptive_rnd] ___________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', phase = 'stale_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_sparse] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_sparse'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-rng] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'rng'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_______________ test_live_phase_dedup_resume[stale_private-icm] ________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', phase = 'stale_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_device] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_device'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+___________ test_native_gradients_are_owned_before_next_update[rnd] ____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_native_gradients_are_owned_before_next_update(compiled, family):
+        rig = Rig(compiled, family, "per_world", IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1010: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-model] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'model'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_______ test_native_gradients_are_owned_before_next_update[adaptive_rnd] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_native_gradients_are_owned_before_next_update(compiled, family):
+        rig = Rig(compiled, family, "per_world", IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1010: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_target] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_target'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-moment] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'moment'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+___________ test_native_gradients_are_owned_before_next_update[icm] ____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_native_gradients_are_owned_before_next_update(compiled, family):
+        rig = Rig(compiled, family, "per_world", IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1010: AttributeError
+___ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'epsilon'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-queue] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'queue'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__ test_installed_actual_parameters_gradients_adam_and_source_isolation[rnd] ___
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858b021f30>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_installed_actual_parameters_gradients_adam_and_source_isolation(compiled, monkeypatch, family):
+        trace = OwnerTrace(monkeypatch)
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.train()
+        source_owners = trace.latest()
+        source_actual = {world: actual_owner_witness(source_owners[world], family) for world in IDS}
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1050: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_missing] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'epsilon_missing'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_nan] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'gradient_nan'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_installed_actual_parameters_gradients_adam_and_source_isolation[adaptive_rnd] _
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858aabc180>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_installed_actual_parameters_gradients_adam_and_source_isolation(compiled, monkeypatch, family):
+        trace = OwnerTrace(monkeypatch)
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.train()
+        source_owners = trace.latest()
+        source_actual = {world: actual_owner_witness(source_owners[world], family) for world in IDS}
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1050: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_bool] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'epsilon_bool'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__ test_installed_actual_parameters_gradients_adam_and_source_isolation[icm] ___
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858a9b1eb0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_installed_actual_parameters_gradients_adam_and_source_isolation(compiled, monkeypatch, family):
+        trace = OwnerTrace(monkeypatch)
+        source = Rig(compiled, family, "per_world", IDS)
+        source.begin(1)
+        source.train()
+        source_owners = trace.latest()
+        source_actual = {world: actual_owner_witness(source_owners[world], family) for world in IDS}
+>       saved = source.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1050: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-rng] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'rng'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_decay] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'epsilon_decay'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+________________ test_restore_token_and_input_custody[foreign] _________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'foreign'
+
+    @pytest.mark.parametrize("defect", ("foreign", "copy", "consumed", "snapshot", "real_mutation", "caller_mutation"))
+    def test_restore_token_and_input_custody(compiled, defect):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1100: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_nan] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'epsilon_nan'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__________________ test_restore_token_and_input_custody[copy] __________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'copy'
+
+    @pytest.mark.parametrize("defect", ("foreign", "copy", "consumed", "snapshot", "real_mutation", "caller_mutation"))
+    def test_restore_token_and_input_custody(compiled, defect):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1100: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_min] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'epsilon_min'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-model] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'model'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[none-gradient_extra] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', defect = 'gradient_extra'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+________________ test_restore_token_and_input_custody[consumed] ________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'consumed'
+
+    @pytest.mark.parametrize("defect", ("foreign", "copy", "consumed", "snapshot", "real_mutation", "caller_mutation"))
+    def test_restore_token_and_input_custody(compiled, defect):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1100: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-moment] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'moment'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-lru] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', defect = 'lru'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+________________ test_restore_token_and_input_custody[snapshot] ________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'snapshot'
+
+    @pytest.mark.parametrize("defect", ("foreign", "copy", "consumed", "snapshot", "real_mutation", "caller_mutation"))
+    def test_restore_token_and_input_custody(compiled, defect):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1100: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-count_width_short] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', defect = 'count_width_short'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-queue] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'queue'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_____________ test_restore_token_and_input_custody[real_mutation] ______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'real_mutation'
+
+    @pytest.mark.parametrize("defect", ("foreign", "copy", "consumed", "snapshot", "real_mutation", "caller_mutation"))
+    def test_restore_token_and_input_custody(compiled, defect):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1100: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-count_width_long] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', defect = 'count_width_long'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-gradient_nan] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', defect = 'gradient_nan'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-gradient_extra] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', defect = 'gradient_extra'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____________ test_restore_token_and_input_custody[caller_mutation] _____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'caller_mutation'
+
+    @pytest.mark.parametrize("defect", ("foreign", "copy", "consumed", "snapshot", "real_mutation", "caller_mutation"))
+    def test_restore_token_and_input_custody(compiled, defect):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1100: AttributeError
+______________ test_initial_and_live_scope_roundtrip[shared-none] ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+__________ test_initial_and_live_scope_roundtrip[shared-count_based] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+_____ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-rng] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'rng'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+______________ test_restore_allocation_refusal_is_atomic[report] _______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858a24ce20>
+allocation = 'report'
+
+    @pytest.mark.parametrize("allocation", ("report", "last_owner", "cache", "receipt", "outcome"))
+    def test_restore_allocation_refusal_is_atomic(compiled, monkeypatch, allocation):
+        trace = OwnerTrace(monkeypatch)
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        mode, parent = "live_episode", None
+        if allocation == "outcome":
+            rig.actual_step()
+            world_state, _ = rig.complete()
+            saved = rig.bank.checkpoint_state()
+            rig = Rig(compiled, "rnd", "per_world", IDS[::-1])
+            parent = Correlation(rig, world_state)
+            mode = "completed_boundary"
+        else:
+>           saved = rig.bank.checkpoint_state()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1140: AttributeError
+______________ test_initial_and_live_scope_roundtrip[shared-rnd] _______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+__________ test_initial_and_live_scope_roundtrip[shared-adaptive_rnd] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+______________ test_initial_and_live_scope_roundtrip[shared-icm] _______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-model] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'model'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+____________ test_restore_allocation_refusal_is_atomic[last_owner] _____________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858a88b680>
+allocation = 'last_owner'
+
+    @pytest.mark.parametrize("allocation", ("report", "last_owner", "cache", "receipt", "outcome"))
+    def test_restore_allocation_refusal_is_atomic(compiled, monkeypatch, allocation):
+        trace = OwnerTrace(monkeypatch)
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        mode, parent = "live_episode", None
+        if allocation == "outcome":
+            rig.actual_step()
+            world_state, _ = rig.complete()
+            saved = rig.bank.checkpoint_state()
+            rig = Rig(compiled, "rnd", "per_world", IDS[::-1])
+            parent = Correlation(rig, world_state)
+            mode = "completed_boundary"
+        else:
+>           saved = rig.bank.checkpoint_state()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1140: AttributeError
+____________ test_initial_and_live_scope_roundtrip[per_world-none] _____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+_______________ test_restore_allocation_refusal_is_atomic[cache] _______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858ab70950>
+allocation = 'cache'
+
+    @pytest.mark.parametrize("allocation", ("report", "last_owner", "cache", "receipt", "outcome"))
+    def test_restore_allocation_refusal_is_atomic(compiled, monkeypatch, allocation):
+        trace = OwnerTrace(monkeypatch)
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        mode, parent = "live_episode", None
+        if allocation == "outcome":
+            rig.actual_step()
+            world_state, _ = rig.complete()
+            saved = rig.bank.checkpoint_state()
+            rig = Rig(compiled, "rnd", "per_world", IDS[::-1])
+            parent = Correlation(rig, world_state)
+            mode = "completed_boundary"
+        else:
+>           saved = rig.bank.checkpoint_state()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1140: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-moment] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'moment'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_________ test_initial_and_live_scope_roundtrip[per_world-count_based] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+_____________ test_initial_and_live_scope_roundtrip[per_world-rnd] _____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+______________ test_restore_allocation_refusal_is_atomic[receipt] ______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f858a7f0650>
+allocation = 'receipt'
+
+    @pytest.mark.parametrize("allocation", ("report", "last_owner", "cache", "receipt", "outcome"))
+    def test_restore_allocation_refusal_is_atomic(compiled, monkeypatch, allocation):
+        trace = OwnerTrace(monkeypatch)
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        mode, parent = "live_episode", None
+        if allocation == "outcome":
+            rig.actual_step()
+            world_state, _ = rig.complete()
+            saved = rig.bank.checkpoint_state()
+            rig = Rig(compiled, "rnd", "per_world", IDS[::-1])
+            parent = Correlation(rig, world_state)
+            mode = "completed_boundary"
+        else:
+>           saved = rig.bank.checkpoint_state()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1140: AttributeError
+____ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-queue] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'queue'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+________ test_initial_and_live_scope_roundtrip[per_world-adaptive_rnd] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+_____________ test_initial_and_live_scope_roundtrip[per_world-icm] _____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_initial_and_live_scope_roundtrip(compiled, family, scope):
+        rig = Rig(compiled, family, scope, IDS)
+>       initial = rig.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError
+______________ test_restore_allocation_refusal_is_atomic[outcome] ______________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8589f09400>
+allocation = 'outcome'
+
+    @pytest.mark.parametrize("allocation", ("report", "last_owner", "cache", "receipt", "outcome"))
+    def test_restore_allocation_refusal_is_atomic(compiled, monkeypatch, allocation):
+        trace = OwnerTrace(monkeypatch)
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        mode, parent = "live_episode", None
+        if allocation == "outcome":
+            rig.actual_step()
+            world_state, _ = rig.complete()
+>           saved = rig.bank.checkpoint_state()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1135: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-gradient_nan] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', defect = 'gradient_nan'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+_________________ test_live_phase_dedup_resume[reserved-none] __________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', phase = 'reserved'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+________________ test_pending_completion_export_refuses_purely _________________
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8589f0bb60>
+
+    def test_pending_completion_export_refuses_purely(compiled, monkeypatch):
+        trace = OwnerTrace(monkeypatch)
+        rig = Rig(compiled, "adaptive_rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.actual_step()
+        rig.train()
+        arguments = rig.completion_arguments()
+        prepared = rig.bank.prepare_completion(**arguments)
+        revision, globals_before = rig.bank.mutation_revision, ambient()
+        report_count, issues = len(rig.reports), list(rig.issued)
+        trace.events.clear()
+        with pytest.raises(REFUSAL):
+>           rig.bank.checkpoint_state()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1222: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-model_dtype] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'model_dtype'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+______________ test_live_phase_dedup_resume[reserved-count_based] ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', phase = 'reserved'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+____ test_historical_completion_cannot_authorize_receiving_live_close[same] ____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+order = ('PW06/A', 'PW06/B')
+
+    @pytest.mark.parametrize("order", (IDS, IDS[::-1]), ids=("same", "reversed"))
+    def test_historical_completion_cannot_authorize_receiving_live_close(compiled, order):
+        source = Rig(compiled, "none", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        _, arguments = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1239: AttributeError
+__________________ test_live_phase_dedup_resume[reserved-rnd] __________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', phase = 'reserved'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_ test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-adam_id_alias] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', defect = 'adam_id_alias'
+
+    @pytest.mark.parametrize("family,defect", INVALID_CASES, ids=[f"{family}-{defect}" for family, defect in INVALID_CASES])
+    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       before = rig.bank.checkpoint_state()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError
+__ test_historical_completion_cannot_authorize_receiving_live_close[reversed] __
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+order = ('PW06/B', 'PW06/A')
+
+    @pytest.mark.parametrize("order", (IDS, IDS[::-1]), ids=("same", "reversed"))
+    def test_historical_completion_cannot_authorize_receiving_live_close(compiled, order):
+        source = Rig(compiled, "none", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        _, arguments = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1239: AttributeError
+_____________ test_live_phase_dedup_resume[reserved-adaptive_rnd] ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', phase = 'reserved'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+__________ test_quarantine_requires_healthy_restore_not_native_export __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_quarantine_requires_healthy_restore_not_native_export(compiled):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1308: AttributeError
+____ test_completed_parent_correlation_refuses_before_install[parent_copy] _____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'parent_copy'
+
+    @pytest.mark.parametrize("defect", ("parent_copy", "closure", "binding", "content", "prepared_status", "callback_late"))
+    def test_completed_parent_correlation_refuses_before_install(compiled, defect):
+        source = Rig(compiled, "rnd", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1267: AttributeError
+__________________ test_count_scope_coupling_positive[shared] __________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_count_scope_coupling_positive(compiled, scope):
+        rig = Rig(compiled, "count_based", scope, IDS)
+        rig.begin(1)
+        observations = torch.full((2, 3), 0.375)
+        context = IntrinsicTransitionContext(
+            predecessor=observations,
+            actions=torch.tensor([0, 0]),
+            successor=observations,
+            active_on_entry=torch.tensor([True, True]),
+            vector_tick=1,
+        )
+        stamp = rig.reserve(context)
+        reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        expected = torch.tensor([1.0, 2**-0.5 if scope == "shared" else 1.0])
+        torch.testing.assert_close(reward.raw, expected, rtol=1e-6, atol=0)
+        rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1337: AttributeError
+__________________ test_live_phase_dedup_resume[reserved-icm] __________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', phase = 'reserved'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+______ test_completed_parent_correlation_refuses_before_install[closure] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'closure'
+
+    @pytest.mark.parametrize("defect", ("parent_copy", "closure", "binding", "content", "prepared_status", "callback_late"))
+    def test_completed_parent_correlation_refuses_before_install(compiled, defect):
+        source = Rig(compiled, "rnd", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1267: AttributeError
+________________ test_count_scope_coupling_positive[per_world] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_count_scope_coupling_positive(compiled, scope):
+        rig = Rig(compiled, "count_based", scope, IDS)
+        rig.begin(1)
+        observations = torch.full((2, 3), 0.375)
+        context = IntrinsicTransitionContext(
+            predecessor=observations,
+            actions=torch.tensor([0, 0]),
+            successor=observations,
+            active_on_entry=torch.tensor([True, True]),
+            vector_tick=1,
+        )
+        stamp = rig.reserve(context)
+        reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        expected = torch.tensor([1.0, 2**-0.5 if scope == "shared" else 1.0])
+        torch.testing.assert_close(reward.raw, expected, rtol=1e-6, atol=0)
+        rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1337: AttributeError
+_________________ test_live_phase_dedup_resume[rewarded-none] __________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', phase = 'rewarded'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+______ test_completed_parent_correlation_refuses_before_install[binding] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'binding'
+
+    @pytest.mark.parametrize("defect", ("parent_copy", "closure", "binding", "content", "prepared_status", "callback_late"))
+    def test_completed_parent_correlation_refuses_before_install(compiled, defect):
+        source = Rig(compiled, "rnd", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1267: AttributeError
+______________ test_live_phase_dedup_resume[rewarded-count_based] ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based', phase = 'rewarded'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_________________ test_bank_entry_terminal_once_then_inactive __________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_bank_entry_terminal_once_then_inactive(compiled):
+        rig = Rig(compiled, "rnd", "per_world", IDS)
+        rig.begin(1)
+        rig.event(1, IDS)
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1371: AttributeError
+______ test_completed_parent_correlation_refuses_before_install[content] _______
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'content'
+
+    @pytest.mark.parametrize("defect", ("parent_copy", "closure", "binding", "content", "prepared_status", "callback_late"))
+    def test_completed_parent_correlation_refuses_before_install(compiled, defect):
+        source = Rig(compiled, "rnd", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1267: AttributeError
+__________________ test_live_phase_dedup_resume[rewarded-rnd] __________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', phase = 'rewarded'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+_________ test_current_hc_preserves_captured_rows_and_private_counters _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_current_hc_preserves_captured_rows_and_private_counters(compiled):
+        """Actual HC owned-envelope unit; not an invented full DQN parent schema."""
+        rig = Rig(compiled, "icm", "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+>       state = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1385: AttributeError
+__ test_completed_parent_correlation_refuses_before_install[prepared_status] ___
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'prepared_status'
+
+    @pytest.mark.parametrize("defect", ("parent_copy", "closure", "binding", "content", "prepared_status", "callback_late"))
+    def test_completed_parent_correlation_refuses_before_install(compiled, defect):
+        source = Rig(compiled, "rnd", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1267: AttributeError
+_____________ test_live_phase_dedup_resume[rewarded-adaptive_rnd] ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', phase = 'rewarded'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+__________________ test_live_phase_dedup_resume[rewarded-icm] __________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', phase = 'rewarded'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("phase", ("reserved", "rewarded", "settled", "inactive", "stale_private"))
+    def test_live_phase_dedup_resume(compiled, family, phase):
+        rig = Rig(compiled, family, "per_world", IDS)
+        rig.begin(1)
+        rig.train()
+        active = () if phase == "inactive" else (IDS[0],)
+        context = rig.context(6, active)
+        stamp = rig.reserve(context)
+        reward, receipts = None, None
+        if phase != "reserved":
+            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)
+        if phase in ("settled", "inactive", "stale_private"):
+            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)
+        if phase == "stale_private":
+            rig.event(7, (IDS[1],))
+>       saved = rig.bank.checkpoint_state()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError
+___ test_completed_parent_correlation_refuses_before_install[callback_late] ____
+[gw2] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+defect = 'callback_late'
+
+    @pytest.mark.parametrize("defect", ("parent_copy", "closure", "binding", "content", "prepared_status", "callback_late"))
+    def test_completed_parent_correlation_refuses_before_install(compiled, defect):
+        source = Rig(compiled, "rnd", "per_world", IDS)
+        source.begin(1)
+        source.actual_step()
+        source.train()
+        world_state, _ = source.complete()
+>       history = source.bank.checkpoint_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:1267: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[settled-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[settled-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id[count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-adam_step]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-moment_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[settled-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-model_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-adam_id_alias]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[settled-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-missing_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-adam_step]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[settled-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-extra_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[inactive-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-moment_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-duplicate_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[inactive-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-model_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-wrong_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[inactive-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-adam_id_alias]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-scope]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[inactive-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-adam_step]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[inactive-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-provider]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-moment_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-policy]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_missing]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[stale_private-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-geometry]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_extra]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[stale_private-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-cursor]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_shape]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[stale_private-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-cache]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[stale_private-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_sparse]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-rng]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[stale_private-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_device]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_native_gradients_are_owned_before_next_update[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-model]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_native_gradients_are_owned_before_next_update[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_target]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-moment]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_native_gradients_are_owned_before_next_update[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-queue]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_installed_actual_parameters_gradients_adam_and_source_isolation[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_missing]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-gradient_nan]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_installed_actual_parameters_gradients_adam_and_source_isolation[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_bool]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_installed_actual_parameters_gradients_adam_and_source_isolation[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-rng]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_decay]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody[foreign]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_nan]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody[copy]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-epsilon_min]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-model]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[none-gradient_extra]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody[consumed]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-moment]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-lru]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody[snapshot]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-count_width_short]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-queue]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody[real_mutation]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-count_width_long]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[adaptive_rnd-gradient_nan]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[count_based-gradient_extra]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody[caller_mutation]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[shared-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-rng]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic[report]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-model]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic[last_owner]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic[cache]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-moment]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic[receipt]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-queue]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[per_world-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic[outcome]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[icm-gradient_nan]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[reserved-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pending_completion_export_refuses_purely
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-model_dtype]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[reserved-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_historical_completion_cannot_authorize_receiving_live_close[same]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[reserved-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-adam_id_alias]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_historical_completion_cannot_authorize_receiving_live_close[reversed]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[reserved-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_quarantine_requires_healthy_restore_not_native_export
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install[parent_copy]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_count_scope_coupling_positive[shared]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[reserved-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install[closure]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_count_scope_coupling_positive[per_world]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[rewarded-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install[binding]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[rewarded-count_based]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_bank_entry_terminal_once_then_inactive
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install[content]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[rewarded-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_current_hc_preserves_captured_rows_and_private_counters
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install[prepared_status]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[rewarded-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[rewarded-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install[callback_late]
+======================= 126 failed, 17 passed in 23.24s ========================

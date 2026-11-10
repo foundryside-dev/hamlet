@@ -1,0 +1,193 @@
+{
+  "status": "BOUNDED PW06 SAME-SCOPE BANK CHECKPOINT COMPONENT ACCEPTED; WIP NOT PARENT/INTEGRATION QUALIFIED NOT RELEASED",
+  "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+  "candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+  "inventory": [
+    {
+      "path": "src/townlet/exploration/curiosity_checkpoint.py",
+      "lines": 901,
+      "sha256": "d0e63d86e154866656db0047194048420c2a7220a2b5958de59d524cafeb8e4c",
+      "present": true
+    },
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "lines": 1122,
+      "sha256": "5ad7ca86549c886f3dc587535ba321df5a1a6737097af38a803cea41051938cc",
+      "present": true
+    },
+    {
+      "path": "src/townlet/exploration/world_curiosity_state.py",
+      "lines": 871,
+      "sha256": "a639d6f927492cf0334a49f330f514b6472be75f624f24a2f1b5e8381af93b2c",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+      "lines": 1498,
+      "sha256": "d1036d44536bafb2f8fa85b6226cb76cc6be655dd44c4c91346287ee343a776c",
+      "present": true
+    }
+  ],
+  "review_report_sha256": "54e4b0a9a6615108022a0c5afddff085635fe2a1e697e70f1f595fe7ded32e05",
+  "source_review_verdict_initial_sha256": "862908d7b581a896532bfb4a882ad30590fb77d4b694afb755074646841ff65e",
+  "review": "FreshAstra-mediumSPEC+QUALITYAPPROVEDactualfixedsource147independent/all3findingsADDR/no materialfix-inducedbreakage",
+  "results": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+      "candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.855867624282837,
+      "source_guards": 352,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "focused-positive": {
+      "job": "focused-positive",
+      "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+      "candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 10,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 16.187025785446167,
+      "source_guards": 352,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+      "candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 147,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 65.56744384765625,
+      "source_guards": 352,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+      "candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 147,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 80.4319109916687,
+      "source_guards": 352,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "covering": {
+      "job": "covering",
+      "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+      "candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+      "exit_code": 0,
+      "counts": {
+        "passed": 635,
+        "skipped": 3,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 101.59528994560242,
+      "source_guards": 352,
+      "process_identities": 2,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "guards": {
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.07524490356445312,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 30.36275362968445,
+      "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 1.3386240005493164,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.3831472396850586,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 48.3649365901947,
+      "sha256": "362bb00e4872380971b11111a05311c6faec18e89de2d1ca3a385f710d0d0642"
+    }
+  },
+  "dispositions": {
+    "design_1": "ADDR completedfreshall-childprepare uses actualretainedENVprepared_restore and genuineparentcorrelation withacceptedNone, next genuineepisode",
+    "design_2": "ADDR imported completion is dataonly, no ordinaryliveclose receipt/committedtoken reissue",
+    "design_3": "ADDR immutableoriginalbinding separatefromreceivingdispatch,2generationpermutationexactbytes",
+    "authored_1": "ADDR activeprivatephase reversal intoactualdifferentreceivingRig",
+    "authored_2": "ADDR independentactualinstalledParameters/gradients/Adam/storage andsourceunchanged afterdestination-only6+7",
+    "authored_3": "ADDR targetedlatecache/receipt/outcomeallocation afterrealnativeprep, ownerobservation/install spies, realoddsharedtailprerequisite",
+    "code_P1": "ADDR actualcurrentOrderedDict/order/Torchmetadata+NumPyfloating same-type portableownership, actualRND/AIwholecasesGREEN",
+    "code_P2_batch0": "ADDR nonnegativebatch/completedboundary,positiveworldseq retained;genuineENVlive/completed0RED->GREEN",
+    "code_P2_alias": "ADDR perinvocationownedparentcallbackviews;retainedfirst/final mutationcannotchangeprepared/installedhistory;genuine4caseRED->GREEN"
+  },
+  "source_custody": "352source573config13artifacts/root3indep1cover2pytest andnonpytestchild352hash48imports/Python3.13.5Torch2.11intra1interop5/index/registry14MAIN1PASS",
+  "documentation": {
+    "checkpoint_sha256": "6b4fa21ac4d825bfd3f7e72289f2909c76ea78a72c64989523f92f475d8de73c",
+    "bank_sha256": "1012dc1dee861fa60caf5c06e65eb3e4078284748fcb1ec4b16bca4219529282",
+    "truth_review": "FreshAstraAPPROVEDexactbothdocs/report54e4b0a9a6615108022a0c5afddff085635fe2a1e697e70f1f595fe7ded32e05"
+  },
+  "scope": "Exact current same-scope bank API/producer component, not complete native DemoRunner/DQN parent admission. Synthetic3D/2action model traces, genuineENV+localother-role receipts and actualHCminimalcurrentreplaycontainer have explicitunitlimits. PrivateownedRNG is qualified; sharedglobalRNG andexactsimtrajectory notclaimed.",
+  "open": "PW07explicitfreshprivate/clonelearnedarchivepending andoriginrebasing; actualENV/RP/POP/runner/native-parent integration/currentcapturedreplay sampler/readiness/realordinaryrunner andQparent atomic failure/T26durability;9olderoraclePOPmypy errors;CLI/defaultrepo/coverage>=70/slow/applicablehardware/provider/freshfinal54requirements22lenses+synthesis/exact-tipCI remainREQUIRED. Original28/66releasecountunchanged. CUDAunavailable/unqualified. K01existingexactstochastic/midepisodesimqualificationpreserved, notanewwaiver.",
+  "governance": "Existingbranchpushauthorized;no newbranch/worktree/repositorycopy/deletion/PR/merge/spending/access. No userdecisionpending, continueplannedwork."
+}

@@ -1,0 +1,13 @@
+{
+  "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+  "candidate_tree": "7b29ea746c91e539e24ccd674566f143c1200d61",
+  "collected": 138,
+  "prerequisite_selection": 17,
+  "passed": 14,
+  "failed": 3,
+  "seconds": 63.68534827232361,
+  "cause": "Sharedall-active10rows/B2producesvalidemptytail;testincorrectlydemandsnonemptytail. AuthoractualoddadmissiontracebeforebroaderRED,keeprealupdates+tailrequirement.",
+  "custody": "PASS351source573config13artifact1process/index/import/intra1/registry14MAIN1",
+  "broader_RED": "NOTRUNbecausecausalprerequisitesfailed",
+  "sessions": "ALLCLOSED"
+}

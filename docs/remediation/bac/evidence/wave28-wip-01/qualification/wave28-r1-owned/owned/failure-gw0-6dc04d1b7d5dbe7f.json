@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_count_scope_coupling_positive[per_world]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nscope = 'per_world'\n\n    @pytest.mark.parametrize(\"scope\", (\"shared\", \"per_world\"))\n    def test_count_scope_coupling_positive(compiled, scope):\n        rig = Rig(compiled, \"count_based\", scope, IDS)\n        rig.begin(1)\n        observations = torch.full((2, 3), 0.375)\n        context = IntrinsicTransitionContext(\n            predecessor=observations,\n            actions=torch.tensor([0, 0]),\n            successor=observations,\n            active_on_entry=torch.tensor([True, True]),\n            vector_tick=1,\n        )\n        stamp = rig.reserve(context)\n        reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)\n        expected = torch.tensor([1.0, 2**-0.5 if scope == \"shared\" else 1.0])\n        torch.testing.assert_close(reward.raw, expected, rtol=1e-6, atol=0)\n        rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)\n>       saved = rig.bank.checkpoint_state()\n                ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:1337: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

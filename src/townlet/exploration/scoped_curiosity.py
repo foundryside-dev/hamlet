@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from copy import copy, deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import partial, wraps
 from threading import RLock
 from typing import Any, Protocol, cast
@@ -292,6 +292,9 @@ class CuriosityBank:
         self._pending: dict[str, Any] | None = None
         self._prepared: PreparedBankCompletion | None = None
         self._committed: tuple[PreparedBankCompletion, WorldOwnerReceipt] | None = None
+        self._history: dict[str, Any] | None = None
+        self._historical_step: dict[str, Any] | None = None
+        self._restore_tokens: dict[object, Any] = {}
         self._owners: dict[str, OwnedWorldBackend] = {}
         self._shared: Any = None
         self._cursor: dict[str, dict[str, Any]] = {
@@ -375,6 +378,8 @@ class CuriosityBank:
             self._cursor[world].update(accepted_episode_seq=episode, eligible_seq=0, participated=False, disposition=None)
             self._cache[world] = {}
         self._accepted, self._activation, self._pending, self._committed = accepted, receipt, None, None
+        self._history, self._historical_step = None, None
+        self._completion_payload, self._completion_outcomes, self._completion_values = {}, (), {}
         self.mutation_revision += 1
         return receipt
 
@@ -898,4 +903,220 @@ class CuriosityBank:
             cursor=deepcopy(self._cursor[world_id]),
             phase_cache=deepcopy(self._cache[world_id]),
             pending_step=pending,
+            bank_phase=self._checkpoint_phase(),
+            historical_identity=self._historical_identity(),
         )
+
+    def _checkpoint_phase(self) -> str:
+        if self._history is not None or self._committed is not None:
+            return "completed_boundary"
+        if self._accepted is not None:
+            return "live_episode"
+        return "initial"
+
+    def _historical_identity(self) -> dict[str, Any] | None:
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        if self._history is not None:
+            return cast(dict[str, Any], deepcopy(self._history["original_accepted_identity"]))
+        if self._committed is not None:
+            return checkpoint.accepted_identity(self._committed[0].accepted)
+        return None
+
+    @_serialized
+    @_observation_boundary
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Owned current transport; historical completion never transports authority."""
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        self._available()
+        phase = self._checkpoint_phase()
+        worlds = []
+        shared = None
+        try:
+            if self.scope == "shared":
+                self._observations += 1
+                shared = dict(
+                    native=checkpoint.owned(self._shared.checkpoint_state()),
+                    gradients=checkpoint.capture_gradients(self._shared, self.policy.strategy),
+                )
+            for world in self.world_ids:
+                backend = gradients = None
+                if self.scope == "per_world":
+                    self._observations += 1
+                    gradients = self._owners[world].call(
+                        lambda provider, sources: checkpoint.capture_gradients(provider, self.policy.strategy)
+                    )
+                    backend = self._owners[world].snapshot()
+                worlds.append(
+                    dict(
+                        world_id=world,
+                        backend=backend,
+                        gradients=gradients,
+                        cursor=deepcopy(self._cursor[world]),
+                        phase_cache=checkpoint.encode_cache(self._cache[world]),
+                    )
+                )
+            completion = deepcopy(self._history)
+            if self._committed is not None:
+                payload = self._completion_payload
+                completion = dict(
+                    status="committed",
+                    original_accepted_identity=checkpoint.accepted_identity(self._committed[0].accepted),
+                    boundary_key=payload["boundary_key"],
+                    completion_content=deepcopy(payload["completion_content"]),
+                    participated_world_ids=payload["participated_world_ids"],
+                    dispositions=payload["dispositions"],
+                    outcomes=tuple(lane_outcome_state(event) for event in self._completion_outcomes),
+                )
+            step = deepcopy(self._historical_step)
+            if self._pending is not None:
+                assert self._accepted is not None
+                step = checkpoint.encode_step(self._pending, checkpoint.accepted_identity(self._accepted))
+            dispatch = None
+            if phase == "live_episode":
+                assert self._accepted is not None
+                dispatch = checkpoint.accepted_identity(self._accepted)
+            return dict(
+                schema="curiosity-bank-state-v1",
+                policy=self.policy.to_dict(),
+                policy_identity=self.policy.policy_identity,
+                descriptor=self.descriptor.to_dict(),
+                source_device=str(self.device),
+                curiosity_epoch=0,
+                bank_phase=phase,
+                dispatch_identity=dispatch,
+                worlds=worlds,
+                shared_backend=shared,
+                step=step,
+                completion=completion,
+            )
+        finally:
+            self.mutation_revision += 1
+
+    @_serialized
+    def prepare_restore(
+        self,
+        *,
+        state: Any,
+        mode: str,
+        accepted: WorldAcceptedEpisode | None,
+        parent_restore: Any,
+        validate_parent_restore: Any,
+    ) -> Any:
+        """Prepare every owner and runtime value without observing live owners."""
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        _require(self._prepared is None, "completion transaction pending")
+        revision = self.mutation_revision
+        checkpoint.preflight(state, policy=self.policy, descriptor=self.descriptor, device=self.device, mode=mode)
+        checkpoint.check_mode(mode=mode, accepted=accepted, parent=parent_restore, validate=validate_parent_restore)
+        size = checkpoint.tensor_bytes(state)
+        reserve = self._allocation("restore", len(self.world_ids), 0)
+        callback_bytes = 0
+        if parent_restore is not None:
+            callback_bytes = 2 * size
+        components = reserve.components + (
+            ("owned_input_candidate_workspace", 5 * size),
+            ("two_retained_parent_callback_views", callback_bytes),
+        )
+        self._report(
+            replace(
+                reserve,
+                known_tensor_bytes=sum(value for _, value in components),
+                components=components,
+                assumptions=reserve.assumptions
+                + (
+                    "old resident plus new owners, gradients/Adam/tails, owned transport and sequential validation workspace",
+                    "five input tensor inventories reserve transport, gradients, RNG, caches, outcomes and transient copies",
+                    "both independently owned parent callback views may be retained; earlier preparations/external copies excluded",
+                ),
+                unknown_components=reserve.unknown_components + ("parent callback copies and retention from earlier preparations",),
+            )
+        )
+        saved = checkpoint.owned(state)
+
+        def correlate() -> None:
+            if mode == "live_episode":
+                assert accepted is not None
+                self._validate(accepted=accepted)
+                checkpoint.match_live(saved, accepted=accepted, descriptor=self.descriptor)
+            elif parent_restore is not None:
+                checkpoint.match_parent(saved, parent=parent_restore, descriptor=self.descriptor)
+                view = checkpoint.owned(saved)
+                _require(validate_parent_restore(prepared=parent_restore, curiosity_state=view) is None, "parent validator return")
+                _require(checkpoint.same(saved, view), "parent callback changed curiosity state")
+
+        correlate()
+        checkpoint.validate_records(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
+        owners: dict[str, OwnedWorldBackend] = {}
+        shared = None
+        devices: tuple[int, ...] = ()
+        if self.device.type == "cuda":
+            devices = (cast(int, self.device.index),)
+        records = {item["world_id"]: item for item in saved["worlds"]}
+        validator = partial(checkpoint.validate_native, policy=self.policy, descriptor=self.descriptor)
+        if self.scope == "per_world":
+            for world in sorted(self.world_ids):
+                rng = WorldRNGState.create(descriptor=self.descriptor, world_id=world, cuda_devices=devices)
+                factory = partial(self._factory, world)
+                owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+                native = owner.prepare_restore(records[world]["backend"], factory=factory, validate_backend=validator)
+                owner.install(native)
+                owner.call(
+                    lambda provider, sources: checkpoint.attach_gradients(provider, records[world]["gradients"], self.policy.strategy)
+                )
+                owners[world] = owner
+        else:
+            shared = checkpoint.clone_provider(self._shared, family=self.policy.strategy)
+            payload = saved["shared_backend"]
+            validator(shared, payload["native"])
+            shared.load_state(checkpoint.owned(payload["native"]))
+            _require(checkpoint.same(shared.checkpoint_state(), payload["native"]), "shared native transport changed")
+            checkpoint.attach_gradients(shared, payload["gradients"], self.policy.strategy)
+        runtime_values = checkpoint.runtime_data(saved, descriptor=self.descriptor, device=self.device)
+        activation = None
+        if mode == "live_episode":
+            activation = self._issuer.issue(kind="activation", payload={"accepted": accepted})
+        token = checkpoint.PreparedCuriosityRestore()
+        runtime = dict(self.__dict__)
+        runtime.update(
+            _owners=owners,
+            _shared=shared,
+            _cursor=runtime_values["cursor"],
+            _cache=runtime_values["cache"],
+            _pending=runtime_values["pending"],
+            _history=runtime_values["history"],
+            _historical_step=runtime_values["historical_step"],
+            _accepted=accepted,
+            _activation=activation,
+            _prepared=None,
+            _committed=None,
+            _failed=False,
+            _quarantine=None,
+            _completion_payload={},
+            _completion_outcomes=(),
+            _completion_values={},
+            _restore_tokens={},
+            mutation_revision=revision + 1,
+        )
+        correlate()
+        _require(self.mutation_revision == revision, "destination changed during restore preparation")
+        self._restore_tokens[token] = (revision, runtime, accepted)
+        return token
+
+    @_serialized
+    def install_restore(self, *, prepared: Any) -> None:
+        from townlet.exploration.curiosity_checkpoint import PreparedCuriosityRestore
+
+        _require(type(prepared) is PreparedCuriosityRestore and prepared in self._restore_tokens, "foreign or consumed restore token")
+        revision, runtime, accepted = self._restore_tokens[prepared]
+        _require(revision == self.mutation_revision and self._prepared is None, "stale restore token")
+        if accepted is not None:
+            self._validate(accepted=accepted)
+        _require(revision == self.mutation_revision, "destination changed during final authentication")
+        try:
+            self.__dict__ = runtime
+        except BaseException:
+            self._failed = True
+            raise

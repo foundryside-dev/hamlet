@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic[outcome]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8589f09400>\nallocation = 'outcome'\n\n    @pytest.mark.parametrize(\"allocation\", (\"report\", \"last_owner\", \"cache\", \"receipt\", \"outcome\"))\n    def test_restore_allocation_refusal_is_atomic(compiled, monkeypatch, allocation):\n        trace = OwnerTrace(monkeypatch)\n        rig = Rig(compiled, \"rnd\", \"per_world\", IDS)\n        rig.begin(1)\n        rig.train()\n        mode, parent = \"live_episode\", None\n        if allocation == \"outcome\":\n            rig.actual_step()\n            world_state, _ = rig.complete()\n>           saved = rig.bank.checkpoint_state()\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^\nE           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:1135: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

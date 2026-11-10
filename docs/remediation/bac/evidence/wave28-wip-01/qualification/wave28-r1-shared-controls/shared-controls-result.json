@@ -1,0 +1,30 @@
+{
+  "name": "shared-controls",
+  "exit_code": 0,
+  "seconds": 31.633779287338257,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "pristine_real_bank_env_producer_control and shared and (rnd or adaptive_rnd or icm)",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave28-r1-shared-controls"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave28-r1-shared-controls/shared-controls.log",
+  "sha256": "24d17e211ed1095c54878bee4436729563d6005e4fa10d2119512d98e81ac104",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b",
+  "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+  "manifest_sha256": "64c93fa8631b993bc8f9ab51fac3ecb852ffbda2c1a2399858d12b79914e8bb9",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

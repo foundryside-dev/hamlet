@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pending_completion_export_refuses_purely",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw2",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8589f0bb60>\n\n    def test_pending_completion_export_refuses_purely(compiled, monkeypatch):\n        trace = OwnerTrace(monkeypatch)\n        rig = Rig(compiled, \"adaptive_rnd\", \"per_world\", IDS)\n        rig.begin(1)\n        rig.actual_step()\n        rig.train()\n        arguments = rig.completion_arguments()\n        prepared = rig.bank.prepare_completion(**arguments)\n        revision, globals_before = rig.bank.mutation_revision, ambient()\n        report_count, issues = len(rig.reports), list(rig.issued)\n        trace.events.clear()\n        with pytest.raises(REFUSAL):\n>           rig.bank.checkpoint_state()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^\nE           AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:1222: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

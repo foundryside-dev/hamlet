@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip[per_world-adaptive_rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'adaptive_rnd', scope = 'per_world'\n\n    @pytest.mark.parametrize(\"family\", FAMILIES)\n    @pytest.mark.parametrize(\"scope\", (\"shared\", \"per_world\"))\n    def test_initial_and_live_scope_roundtrip(compiled, family, scope):\n        rig = Rig(compiled, family, scope, IDS)\n>       initial = rig.bank.checkpoint_state()\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:904: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

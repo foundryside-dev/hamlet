@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged[rnd-cache]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'rnd', defect = 'cache'\n\n    @pytest.mark.parametrize(\"family,defect\", INVALID_CASES, ids=[f\"{family}-{defect}\" for family, defect in INVALID_CASES])\n    def test_invalid_last_world_leaves_all_runtime_state_unchanged(compiled, family, defect):\n        rig = Rig(compiled, family, \"per_world\", IDS)\n        rig.begin(1)\n        rig.train()\n>       before = rig.bank.checkpoint_state()\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:891: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

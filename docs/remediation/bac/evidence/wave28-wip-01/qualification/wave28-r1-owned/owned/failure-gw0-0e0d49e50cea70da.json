@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id[count_based]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'count_based'\n\n    @pytest.mark.parametrize(\"family\", FAMILIES)\n    def test_private_restore_matches_by_world_id(compiled, family):\n        source = Rig(compiled, family, \"per_world\", IDS)\n        source.begin(1)\n        source.actual_step()\n        source.train()\n        world_state, _ = source.complete()\n>       saved = source.bank.checkpoint_state()\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:722: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

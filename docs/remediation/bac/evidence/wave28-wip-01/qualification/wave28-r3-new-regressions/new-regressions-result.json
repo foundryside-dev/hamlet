@@ -1,0 +1,30 @@
+{
+  "name": "new-regressions",
+  "exit_code": 1,
+  "seconds": 13.51754903793335,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "batch_zero_current_bank_resume or parent_retained_callback_view",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave28-r3-new-regressions"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave28-r3-new-regressions/new-regressions.log",
+  "sha256": "dca4ea281baeb90c54cdda0c568df2628631417fdcb0e2c8e7268af9015e5dd9",
+  "candidate_tree": "2453754fabb4833e7488b44e12bf8c3d8e3bc718",
+  "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+  "manifest_sha256": "4a2421ec5842f441eb6a3a667f09c511b27ac5f2b9544f92a73e1ecd8fa3116c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

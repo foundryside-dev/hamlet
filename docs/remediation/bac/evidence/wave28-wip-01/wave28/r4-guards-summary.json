@@ -1,0 +1,27 @@
+{
+  "ruff": {
+    "exit_code": 0,
+    "seconds": 0.07524490356445312,
+    "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+  },
+  "mypy": {
+    "exit_code": 1,
+    "seconds": 30.36275362968445,
+    "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+  },
+  "no-defaults": {
+    "exit_code": 0,
+    "seconds": 1.3386240005493164,
+    "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+  },
+  "expression-doc": {
+    "exit_code": 0,
+    "seconds": 2.3831472396850586,
+    "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+  },
+  "black": {
+    "exit_code": 0,
+    "seconds": 48.3649365901947,
+    "sha256": "362bb00e4872380971b11111a05311c6faec18e89de2d1ca3a385f710d0d0642"
+  }
+}

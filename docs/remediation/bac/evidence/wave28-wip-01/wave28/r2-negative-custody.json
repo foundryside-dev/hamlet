@@ -1,0 +1,49 @@
+{
+  "owned": {
+    "passed": 75,
+    "failed": 68,
+    "seconds": 63.86568760871887,
+    "process_identities": 3,
+    "cause": "CPowned109 rejects validRND/adaptive native object beforeintendedassertions",
+    "custody": "PASS352source573config13artifact/index/import/intra1/registry14MAIN1"
+  },
+  "independent": {
+    "passed": 75,
+    "failed": 68,
+    "seconds": 72.07581663131714,
+    "process_identities": 1,
+    "cause": "CPowned109 rejects validRND/adaptive native object beforeintendedassertions",
+    "custody": "PASS352source573config13artifact/index/import/intra1/registry14MAIN1"
+  },
+  "guards": {
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.06999468803405762,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 40.792293071746826,
+      "sha256": "d080e551798dc38e1f15d239a5e14eb5c54470e3e88431597687ef2f9fe4242b"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.9534831047058105,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.0998523235321045,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 55.36388373374939,
+      "sha256": "362bb00e4872380971b11111a05311c6faec18e89de2d1ca3a385f710d0d0642"
+    }
+  },
+  "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+  "candidate_tree": "9f27d612ad3527b1309bfc60219e58d45d03c834",
+  "sessions": "ALLROOTANDREVIEWCLOSED",
+  "covering": "NOTRUN:commonpositivecodecprerequisitefailed;focusedactualneuralroundtripafterrepairbeforefullrepeat"
+}

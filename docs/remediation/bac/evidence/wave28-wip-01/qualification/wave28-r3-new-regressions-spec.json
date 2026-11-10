@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave28/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave28-r3-new-regressions",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "new-regressions",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "batch_zero_current_bank_resume or parent_retained_callback_view",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave28-r3-new-regressions"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume[inactive-rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'rnd', phase = 'inactive'\n\n    @pytest.mark.parametrize(\"family\", FAMILIES)\n    @pytest.mark.parametrize(\"phase\", (\"reserved\", \"rewarded\", \"settled\", \"inactive\", \"stale_private\"))\n    def test_live_phase_dedup_resume(compiled, family, phase):\n        rig = Rig(compiled, family, \"per_world\", IDS)\n        rig.begin(1)\n        rig.train()\n        active = () if phase == \"inactive\" else (IDS[0],)\n        context = rig.context(6, active)\n        stamp = rig.reserve(context)\n        reward, receipts = None, None\n        if phase != \"reserved\":\n            reward = rig.bank.reward(context=context, stamp=stamp, accepted=rig.accepted, update_stats=True)\n        if phase in (\"settled\", \"inactive\", \"stale_private\"):\n            receipts = rig.bank.admit_and_service(context=context, stamp=stamp, accepted=rig.accepted)\n        if phase == \"stale_private\":\n            rig.event(7, (IDS[1],))\n>       saved = rig.bank.checkpoint_state()\n                ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'CuriosityBank' object has no attribute 'checkpoint_state'\n\ntests/test_townlet/regressions/bac/test_pw_scope_restore.py:949: AttributeError",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b"
+}

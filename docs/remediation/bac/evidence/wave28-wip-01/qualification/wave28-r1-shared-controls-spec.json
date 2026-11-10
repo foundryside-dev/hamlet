@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave28/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave28-r1-shared-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "shared-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-k",
+        "pristine_real_bank_env_producer_control and shared and (rnd or adaptive_rnd or icm)",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave28-r1-shared-controls"
+      ]
+    }
+  ]
+}

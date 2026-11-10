@@ -1,0 +1,16 @@
+{
+  "base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+  "candidate_tree": "35f03dd64a2a30a7f5d773b2e9086511f4e02b8b",
+  "collection": 143,
+  "pristine_and_zero_width_controls": 17,
+  "focused_repaired_shared_controls": 3,
+  "owned_passed": 17,
+  "owned_failed": 126,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 27.49582028388977,
+  "cause": "All126callphasemissingnewBank.checkpoint_state API; genuine fixturecontrolsPASS. Individualnewrestorebehaviorsremainunqualified,notspecificalgorithmdefectsproven.",
+  "custody": "PASS351source573config13artifact4process/index/import/intra1/registry14MAIN1",
+  "sessions": "ALLCLOSED",
+  "authored_review": "AstraSPEC+QUALITYAPPROVED ad1491f5/report2e6c705dall3ADDR"
+}

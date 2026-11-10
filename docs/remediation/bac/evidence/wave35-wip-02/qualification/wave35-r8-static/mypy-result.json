@@ -1,0 +1,17 @@
+{
+  "name": "mypy",
+  "exit_code": 1,
+  "seconds": 1.1550993919372559,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "mypy",
+    "src/townlet"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r8-static/mypy.log",
+  "sha256": "e2626aa971f812d4320d36ce730dff6f87486fa24436430ef37d90cf5cf56058",
+  "candidate_tree": "0b926d1c6d046207d615710caa73f72a077fc430",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "41bc757afce843c2c9865e5e2b25766ce8fe78f28a3852d81b7374403ae0b7f0",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

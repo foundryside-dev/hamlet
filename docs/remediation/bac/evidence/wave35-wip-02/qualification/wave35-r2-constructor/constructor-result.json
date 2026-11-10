@@ -1,0 +1,24 @@
+{
+  "name": "constructor",
+  "exit_code": 1,
+  "seconds": 26.172749280929565,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_current_runtime_constructor_and_telemetry",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r2-parent-constructor"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r2-constructor/constructor.log",
+  "sha256": "090a06e914a7b53577d25ff26e607b5403b4a9debf3dba5e682a0883d10baca9",
+  "candidate_tree": "7a3e3bc238a0bb76680f47bd2e8db6dfd8d425ad",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "ae8d653ccbdd59c79afd0b82059152a8525e27a99a4426e92c383cfcd0988348",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

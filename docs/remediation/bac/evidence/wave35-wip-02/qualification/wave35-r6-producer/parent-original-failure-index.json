@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "c6f197bc6a255566ba89d7758737dfefa8e1ac73",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "signatures": [
+    {
+      "error": "Input: 'Reentrant or quarantined population step'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_step_nonreentry_refuses_before_second_env_execution",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

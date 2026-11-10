@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "pack": "configs/reference/model_pack",
+  "primary_level": "L0_demo",
+  "candidate_tree": "7a3e3bc238a0bb76680f47bd2e8db6dfd8d425ad",
+  "sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "source_guards": 799,
+  "process_identities": 2,
+  "configs": 573,
+  "artifacts": 13,
+  "source_index_import_thread_registry_custody": "PASS",
+  "seconds": 5.1809282302856445,
+  "scope": "RealshippedrichconfigCURRENTcompileracceptance; noactualENVphysical/effect/equalityexecutionclaimed"
+}

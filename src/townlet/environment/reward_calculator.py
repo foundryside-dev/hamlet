@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING
 import torch
 
 if TYPE_CHECKING:
+    from townlet.config.exploration_policy import IntrinsicTransitionContext
+    from townlet.config.world_roster import WorldAcceptedEpisode
     from townlet.environment.vectorized_env import VectorizedHamletEnv
+    from townlet.exploration.world_curiosity_state import CuriosityStepStamp
 
 
 class RewardCalculator:
@@ -16,15 +19,22 @@ class RewardCalculator:
     def __init__(self, env: VectorizedHamletEnv) -> None:
         self._env = env
 
-    def _calculate_shaped_rewards(self, *, active_on_entry: torch.Tensor) -> torch.Tensor:
+    def _calculate_shaped_rewards(
+        self,
+        *,
+        active_on_entry: torch.Tensor,
+        intrinsic_context: IntrinsicTransitionContext,
+        intrinsic_stamp: CuriosityStepStamp,
+        accepted: WorldAcceptedEpisode,
+    ) -> torch.Tensor:
         """Calculate total rewards using DACEngine."""
         env = self._env
-        intrinsic_raw = torch.zeros(env.num_agents, device=env.device)
-        if env.exploration_module is not None and bool(active_on_entry.any()):
-            observations = env._get_observations()
-            intrinsic_raw[active_on_entry] = env.exploration_module.compute_intrinsic_rewards(
-                observations[active_on_entry], update_stats=True
-            )
+        intrinsic_reward = env._exploration_runtime.reward(
+            context=intrinsic_context,
+            stamp=intrinsic_stamp,
+            accepted=accepted,
+            update_stats=True,
+        )
 
         agent_positions = env.positions.to(device=env.device, dtype=torch.float32)
 
@@ -47,7 +57,8 @@ class RewardCalculator:
             step_counts=env.step_counts,
             dones=env.dones,
             meters=env.meters,
-            intrinsic_raw=intrinsic_raw,
+            intrinsic_raw=intrinsic_reward.raw,
+            runtime_intrinsic_scale=intrinsic_reward.scales,
             reward_context=kwargs,
         )
 

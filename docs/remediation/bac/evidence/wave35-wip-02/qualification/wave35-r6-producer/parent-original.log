@@ -1,0 +1,93 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items / 3 deselected / 41 selected
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py .... [  9%]
+....................F
+
+=================================== FAILURES ===================================
+___________ test_step_nonreentry_refuses_before_second_env_execution ___________
+
+args = (tensor([[-0.0847, -0.3786, -0.5437, -0.0289, -0.2405,  0.2717,  0.0819],
+        [-0.1070, -0.3694, -0.5567, -0.0234,...        [ True,  True,  True,  True, False,  True,  True],
+        [ True,  True,  True,  True, False,  True,  True]]))
+kwargs = {}
+
+    def recursive_select(*args: Any, **kwargs: Any) -> Any:
+        with pytest.raises(RuntimeError, match="reentran"):
+>           rig.population.step_population(rig.env)
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:413: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f9409cfda90>
+envs = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f9409f6de50>
+
+    def step_population(self, envs: VectorizedHamletEnv) -> BatchedAgentState:
+        """Execute once; retain truthful progress and quarantine irreversible failures."""
+        if self._step_active or self._failed_step or self._preparing_checkpoint is not None:
+>           raise RuntimeError("Reentrant or quarantined population step")
+E           RuntimeError: Reentrant or quarantined population step
+
+src/townlet/population/vectorized.py:1525: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9409f87cb0>
+
+    def test_step_nonreentry_refuses_before_second_env_execution(compiled: Any, monkeypatch: Any) -> None:
+        rig = make_parent(compiled)
+        rig.enter()
+        select = rig.runtime.select_actions
+        env_step = rig.env.step
+        executions: list[None] = []
+    
+        def recursive_select(*args: Any, **kwargs: Any) -> Any:
+            with pytest.raises(RuntimeError, match="reentran"):
+                rig.population.step_population(rig.env)
+            return select(*args, **kwargs)
+    
+        def physical_step(*args: Any, **kwargs: Any) -> Any:
+            executions.append(None)
+            return env_step(*args, **kwargs)
+    
+        monkeypatch.setattr(rig.runtime, "select_actions", recursive_select)
+        monkeypatch.setattr(rig.env, "step", physical_step)
+>       rig.population.step_population(rig.env)
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:422: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1531: in step_population
+    state = self._execute_population_step(envs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1659: in _execute_population_step
+    actions = self._select_eligible(q_values, temp_state, action_masks, active_on_entry)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1353: in _select_eligible
+    selected = self.exploration.select_actions(values[eligible], view, masks[eligible])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (tensor([[-0.0847, -0.3786, -0.5437, -0.0289, -0.2405,  0.2717,  0.0819],
+        [-0.1070, -0.3694, -0.5567, -0.0234,...        [ True,  True,  True,  True, False,  True,  True],
+        [ True,  True,  True,  True, False,  True,  True]]))
+kwargs = {}
+
+    def recursive_select(*args: Any, **kwargs: Any) -> Any:
+>       with pytest.raises(RuntimeError, match="reentran"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'reentran'
+E        Input: 'Reentrant or quarantined population step'
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:412: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_step_nonreentry_refuses_before_second_env_execution
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+================= 1 failed, 24 passed, 3 deselected in 11.10s ==================

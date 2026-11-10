@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "c986dde36aa91633a785f24d36322b9365d88a97",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'VectorizedHamletEnv' object has no attribute 'set_exploration_runtime'. Did you mean: 'set_exploration_module'?",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_provider_phase_and_transition_identity[shared-none]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

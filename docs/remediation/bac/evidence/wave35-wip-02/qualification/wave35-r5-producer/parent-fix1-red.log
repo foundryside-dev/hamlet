@@ -1,0 +1,129 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items / 41 deselected / 3 selected
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py FFF  [100%]
+
+=================================== FAILURES ===================================
+_________ test_batch_commit_failure_retains_exact_retry_custody[False] _________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faa21866ea0>
+after_child = False
+
+    @pytest.mark.parametrize("after_child", (False, True))
+    def test_batch_commit_failure_retains_exact_retry_custody(compiled: Any, monkeypatch: Any, after_child: bool) -> None:
+        rig = make_parent(compiled)
+        rig.enter()
+        rig.population.step_population(rig.env)
+        for lane in range(len(IDS)):
+            rig.population.flush_episode(lane, reason="budget")
+        events = rig.population.completed_outcomes
+        before = rig.runtime.epsilon
+        selected = policy(compiled, "none", "shared", "paced_fifo")
+        expected = max(selected.epsilon_end, before * selected.epsilon_decay)
+        commit = rig.runtime.commit_batch_episode
+        attempts: list[None] = []
+    
+        def fail_once(**kwargs: Any) -> None:
+            attempts.append(None)
+            if len(attempts) == 1:
+                if after_child:
+                    commit(**kwargs)
+                raise RuntimeError("delegated batch commitment failure")
+            commit(**kwargs)
+    
+        monkeypatch.setattr(rig.runtime, "commit_batch_episode", fail_once)
+        with pytest.raises(RuntimeError, match="delegated batch"):
+            rig.population.commit_episode_outcomes(events)
+>       assert rig.population.clock_ledger.completed_batch_episodes == 0
+E       assert 1 == 0
+E        +  where 1 = ClockLedger(vector_ticks=1, eligible_transitions=8, optimizer_updates=1, completed_batch_episodes=1, predictor_admitted_rows=0, predictor_consumed_minibatches=0, predictor_dropped_rows=0).completed_batch_episodes
+E        +    where ClockLedger(vector_ticks=1, eligible_transitions=8, optimizer_updates=1, completed_batch_episodes=1, predictor_admitted_rows=0, predictor_consumed_minibatches=0, predictor_dropped_rows=0) = <townlet.population.vectorized.VectorizedPopulation object at 0x7faa218817f0>.clock_ledger
+E        +      where <townlet.population.vectorized.VectorizedPopulation object at 0x7faa218817f0> = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7faa21d657f0>, population=<townl...00, 0.7143, 0.2857,  ..., 1.0000, 0.0000, 0.0000],\n        [1.0000, 0.2857, 1.0000,  ..., 1.0000, 0.0000, 0.0000]])}))).population
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:610: AssertionError
+_________ test_batch_commit_failure_retains_exact_retry_custody[True] __________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faa168bfbb0>
+after_child = True
+
+    @pytest.mark.parametrize("after_child", (False, True))
+    def test_batch_commit_failure_retains_exact_retry_custody(compiled: Any, monkeypatch: Any, after_child: bool) -> None:
+        rig = make_parent(compiled)
+        rig.enter()
+        rig.population.step_population(rig.env)
+        for lane in range(len(IDS)):
+            rig.population.flush_episode(lane, reason="budget")
+        events = rig.population.completed_outcomes
+        before = rig.runtime.epsilon
+        selected = policy(compiled, "none", "shared", "paced_fifo")
+        expected = max(selected.epsilon_end, before * selected.epsilon_decay)
+        commit = rig.runtime.commit_batch_episode
+        attempts: list[None] = []
+    
+        def fail_once(**kwargs: Any) -> None:
+            attempts.append(None)
+            if len(attempts) == 1:
+                if after_child:
+                    commit(**kwargs)
+                raise RuntimeError("delegated batch commitment failure")
+            commit(**kwargs)
+    
+        monkeypatch.setattr(rig.runtime, "commit_batch_episode", fail_once)
+        with pytest.raises(RuntimeError, match="delegated batch"):
+            rig.population.commit_episode_outcomes(events)
+>       assert rig.population.clock_ledger.completed_batch_episodes == 0
+E       assert 1 == 0
+E        +  where 1 = ClockLedger(vector_ticks=1, eligible_transitions=8, optimizer_updates=1, completed_batch_episodes=1, predictor_admitted_rows=0, predictor_consumed_minibatches=0, predictor_dropped_rows=0).completed_batch_episodes
+E        +    where ClockLedger(vector_ticks=1, eligible_transitions=8, optimizer_updates=1, completed_batch_episodes=1, predictor_admitted_rows=0, predictor_consumed_minibatches=0, predictor_dropped_rows=0) = <townlet.population.vectorized.VectorizedPopulation object at 0x7faa0f640050>.clock_ledger
+E        +      where <townlet.population.vectorized.VectorizedPopulation object at 0x7faa0f640050> = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7faa167f9f90>, population=<townl...00, 0.2857, 0.7143,  ..., 1.0000, 0.0000, 0.0000],\n        [1.0000, 0.2857, 0.0000,  ..., 1.0000, 0.0000, 0.0000]])}))).population
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:610: AssertionError
+_________ test_post_env_reset_failure_never_issues_reusable_activation _________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faa167871d0>
+
+    def test_post_env_reset_failure_never_issues_reusable_activation(compiled: Any, monkeypatch: Any) -> None:
+        rig = make_parent(compiled)
+        reset, issue = rig.env.reset, WorldReceiptIssuer.issue
+        resets: list[Any] = []
+        activations: list[Any] = []
+    
+        def observe_reset(**kwargs: Any) -> Any:
+            record = reset(**kwargs)
+            resets.append((kwargs["reservation"], record))
+            return record
+    
+        def observe_issue(issuer: Any, *, kind: str, payload: Any) -> Any:
+            receipt = issue(issuer, kind=kind, payload=payload)
+            if issuer.owner is rig.population and kind == "activation":
+                activations.append(receipt)
+            return receipt
+    
+        def refuse_telemetry() -> None:
+            raise RuntimeError("post-ENV-reset telemetry failure")
+    
+        monkeypatch.setattr(rig.env, "reset", observe_reset)
+        monkeypatch.setattr(WorldReceiptIssuer, "issue", observe_issue)
+        monkeypatch.setattr(rig.population, "sync_exploration_metrics", refuse_telemetry)
+        with pytest.raises(RuntimeError, match="post-ENV-reset"):
+            rig.enter()
+        assert len(resets) == 1
+        assert resets[0][1].accepted.world_episode_seqs == (1,) * len(IDS)
+>       assert not activations
+E       AssertionError: assert not [WorldOwnerReceipt(kind='activation', _owner=<townlet.population.vectorized.VectorizedPopulation object at 0x7faa1674f...0f642350>, _generation=1)}), _issuer=<townlet.environment.vectorized_env.WorldReceiptIssuer object at 0x7faa0f6d9eb0>)]
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_batch_commit_failure_retains_exact_retry_custody[False]
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_batch_commit_failure_retains_exact_retry_custody[True]
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_post_env_reset_failure_never_issues_reusable_activation
+======================= 3 failed, 41 deselected in 4.66s =======================

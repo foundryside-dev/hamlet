@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "7a3e3bc238a0bb76680f47bd2e8db6dfd8d425ad",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'VectorizedHamletEnv' object has no attribute 'set_exploration_runtime'. Did you mean: 'set_exploration_module'?",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_current_runtime_constructor_and_telemetry",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

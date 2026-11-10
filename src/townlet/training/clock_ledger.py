@@ -3,6 +3,18 @@
 from dataclasses import dataclass, fields, replace
 
 
+class PreparedVectorStep:
+    """Identity-only capability; its issuing population owns all step data."""
+
+    __slots__ = ()
+
+
+class PreparedPopulationRestore:
+    """Receiver-owned prepared current population publication."""
+
+    __slots__ = ()
+
+
 @dataclass(frozen=True, slots=True)
 class ClockLedger:
     """Immutable readings, replaced only by their population runtime owner.

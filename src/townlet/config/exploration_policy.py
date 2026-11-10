@@ -25,7 +25,9 @@ from townlet.config.drive_as_code import IntrinsicStrategyConfig
 from townlet.config.training_v2_config import TrainingV2Config
 
 if TYPE_CHECKING:
+    from townlet.config.world_roster import WorldAcceptedEpisode
     from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+    from townlet.exploration.world_curiosity_state import CuriosityStepStamp
 
 Strategy = Literal["none", "rnd", "adaptive_rnd", "count_based", "icm"]
 STRATEGIES = ("none", "rnd", "adaptive_rnd", "count_based", "icm")
@@ -351,6 +353,24 @@ class IntrinsicTransitionContext:
     @property
     def active_on_entry(self) -> Tensor:
         return self._active_on_entry.clone()
+
+
+@dataclass(frozen=True)
+class IntrinsicStepHandoff:
+    """One genuine reward event delivered unchanged to its population service owner."""
+
+    context: IntrinsicTransitionContext
+    stamp: CuriosityStepStamp
+    accepted: WorldAcceptedEpisode
+
+    def __post_init__(self) -> None:
+        from townlet.config.world_roster import WorldAcceptedEpisode
+        from townlet.exploration.world_curiosity_state import CuriosityStepStamp
+
+        if not isinstance(self.context, IntrinsicTransitionContext):
+            raise TypeError("handoff requires an actual transition context")
+        if type(self.stamp) is not CuriosityStepStamp or type(self.accepted) is not WorldAcceptedEpisode:
+            raise TypeError("handoff requires actual stamp and accepted token objects")
 
 
 @dataclass(frozen=True)

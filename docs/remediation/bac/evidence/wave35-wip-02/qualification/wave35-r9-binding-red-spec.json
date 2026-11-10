@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r9-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r9-binding-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "binding-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_runtime_binding_is_once_before_world_custody[runtime-active]",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r9-binding-red"
+      ]
+    }
+  ]
+}

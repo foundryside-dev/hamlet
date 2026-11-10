@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r6-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r6-producer",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "parent-original",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "-k",
+        "not batch_commit_failure_retains_exact_retry_custody and not post_env_reset_failure_never_issues_reusable_activation",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r6-parent"
+      ]
+    }
+  ]
+}

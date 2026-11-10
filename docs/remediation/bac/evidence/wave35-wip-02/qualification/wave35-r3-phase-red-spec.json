@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r3-phase-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "phase-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+        "-k",
+        "provider_phase_and_transition_identity",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r3-phase-red"
+      ]
+    }
+  ]
+}

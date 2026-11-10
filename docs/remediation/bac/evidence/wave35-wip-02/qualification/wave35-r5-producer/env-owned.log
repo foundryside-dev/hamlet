@@ -1,0 +1,59 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 22 items
+
+tests/test_townlet/regressions/bac/test_intrinsic_composition.py F
+
+=================================== FAILURES ===================================
+____ test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared] ____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcbbe3eeea0>
+scope = 'shared', scale = 0.5, base = 0.25, intrinsic = 0.5, total = 1.6
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize(
+        "scale,base,intrinsic,total", ((0.5, 0.25, 0.5, 1.6), (0.0, 0.25, 0.0, 1.1), (1.0, 0.25, 1.0, 2.1), (0.5, 0.5, 1.0, 2.1))
+    )
+    def test_real_composer_applies_runtime_scale_once(
+        compiled: Any, monkeypatch: Any, scope: str, scale: float, base: float, intrinsic: float, total: float
+    ) -> None:
+>       rig = make_parent(compiled, "icm", scope, selected_policy=controlled_policy(compiled, scope, scale))
+                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_intrinsic_composition.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+scope = 'shared', scale = 0.5
+
+    def controlled_policy(compiled: Any, scope: str, scale: float) -> Any:
+        """Resolve the actual authored training scale; preserve genuine scope/service declarations."""
+        selected = compiled.get_level(compiled.metadata.primary_level)
+        template = policy(compiled, "icm", scope, "paced_fifo")
+        training_data = selected.training.model_dump()
+        training_data["intrinsic"]["initial_weight"] = scale
+        training = TrainingV2Config.model_validate(training_data)
+>       options = BaCOptions.model_validate(dict(template.authored_parameters["bac_options"]))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 3 validation errors for BaCOptions
+E       rnd
+E         Input should be a valid dictionary or instance of RNDOptions [type=model_type, input_value=mappingproxy({'service_mo...policy': 'drop_oldest'}), input_type=mappingproxy]
+E           For further information visit https://errors.pydantic.dev/2.13/v/model_type
+E       providers
+E         Input should be a valid dictionary or instance of ProviderOptions [type=model_type, input_value=mappingproxy({'count_base...ding_transitions': 4})}), input_type=mappingproxy]
+E           For further information visit https://errors.pydantic.dev/2.13/v/model_type
+E       curiosity_scope
+E         Input should be a valid dictionary or instance of CuriosityScopeOptions [type=model_type, input_value=mappingproxy({'scope': 's...y': 'legacy_shared_v1'}), input_type=mappingproxy]
+E           For further information visit https://errors.pydantic.dev/2.13/v/model_type
+
+tests/test_townlet/regressions/bac/test_intrinsic_composition.py:46: ValidationError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 2.98s ===============================

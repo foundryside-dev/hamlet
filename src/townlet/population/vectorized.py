@@ -12,7 +12,7 @@ import hashlib
 import logging
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from numbers import Real
 from typing import TYPE_CHECKING, Any, cast
 
@@ -27,17 +27,14 @@ from townlet.agent.networks import RecurrentTokenQNetwork
 from townlet.agent.optimizer_factory import OptimizerFactory
 from townlet.config.bac_options import ReplayOptions, resolve_bac_options
 from townlet.config.brain_config import BrainConfig
+from townlet.config.exploration_policy import ExplorationRuntime, IntrinsicStepHandoff
 from townlet.curriculum.base import CurriculumManager
 from townlet.exploration.action_selection import epsilon_greedy_action_selection_eligible
-from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
-from townlet.exploration.base import ExplorationStrategy
-from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
-from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
-from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
-from townlet.training.clock_ledger import ClockLedger
-from townlet.training.episode import CompletionReason, EpisodeCompletion, LaneOutcome, RunnerCompletionReason
+from townlet.training.checkpoint_utils import TokenRosterReport
+from townlet.training.clock_ledger import ClockLedger, PreparedPopulationRestore, PreparedVectorStep
+from townlet.training.episode import CompletionReason, EpisodeCompletion, LaneOutcome, RunnerCompletionReason, freeze_lane_outcome
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.q_targets import legal_td_target
 from townlet.training.replay_buffer import ReplayBuffer
@@ -50,7 +47,7 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
-POPULATION_CHECKPOINT_FORMAT_VERSION = 6
+POPULATION_CHECKPOINT_FORMAT_VERSION = 7
 POPULATION_CHECKPOINT_KEYS = frozenset(
     {
         "version",
@@ -63,6 +60,8 @@ POPULATION_CHECKPOINT_KEYS = frozenset(
         "target_network",
         "training_step_counter",
         "replay_buffer",
+        "clock_ledger",
+        "vector_step_progress",
     }
 )
 POPULATION_UNIVERSE_METADATA_KEYS = frozenset(
@@ -75,38 +74,19 @@ POPULATION_UNIVERSE_METADATA_KEYS = frozenset(
         "action_dim",
     }
 )
-EPSILON_EXPLORATION_STATE_KEYS = frozenset({"epsilon", "epsilon_decay", "epsilon_min"})
-RND_EXPLORATION_STATE_KEYS = frozenset(
-    {
-        "fixed_network",
-        "predictor_network",
-        "optimizer",
-        "epsilon",
-        "epsilon_min",
-        "epsilon_decay",
-        "obs_dim",
-        "embed_dim",
-        "reward_rms_mean",
-        "reward_rms_var",
-        "reward_rms_count",
-    }
-)
-ADAPTIVE_EXPLORATION_STATE_KEYS = frozenset(
-    {
-        "rnd_state",
-        "current_intrinsic_weight",
-        "min_intrinsic_weight",
-        "variance_threshold",
-        "min_survival_fraction",
-        "max_episode_length",
-        "survival_window",
-        "decay_rate",
-        "survival_history",
-    }
-)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
 ReplayStorage = ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer
+
+
+@dataclass(frozen=True)
+class _VectorStep:
+    vector_tick: int
+    accepted: Any
+    world_ids: tuple[str, ...]
+    predecessor: torch.Tensor
+    actions: torch.Tensor
+    active_on_entry: torch.Tensor
 
 
 @dataclass(frozen=True)
@@ -163,7 +143,7 @@ class VectorizedPopulation(PopulationManager):
         self,
         env: VectorizedHamletEnv,
         curriculum: CurriculumManager,
-        exploration: ExplorationStrategy,
+        exploration: ExplorationRuntime,
         agent_ids: list[str],
         device: torch.device,
         brain_config: BrainConfig,
@@ -202,7 +182,7 @@ class VectorizedPopulation(PopulationManager):
         *,
         env: VectorizedHamletEnv,
         curriculum: CurriculumManager,
-        exploration: ExplorationStrategy,
+        exploration: ExplorationRuntime,
         agent_ids: list[str],
         device: torch.device,
         brain_config: BrainConfig,
@@ -259,7 +239,7 @@ class VectorizedPopulation(PopulationManager):
         self,
         env: VectorizedHamletEnv,
         curriculum: CurriculumManager,
-        exploration: ExplorationStrategy,
+        exploration: ExplorationRuntime,
         agent_ids: list[str],
         device: torch.device,
         brain_config: BrainConfig,
@@ -302,6 +282,8 @@ class VectorizedPopulation(PopulationManager):
                 "brain_config is required. Provide brain.yaml configuration for all training runs. "
                 "See docs/config-schemas/brain.md for examples."
             )
+        if not isinstance(exploration, ExplorationRuntime):
+            raise TypeError("Population requires the selected current ExplorationRuntime")
 
         # The compiled token artifact is the observation ABI (unit-3 cut). It is required
         # and set by VectorizedHamletEnv from the compiled universe; no alternate source exists.
@@ -335,7 +317,7 @@ class VectorizedPopulation(PopulationManager):
         self.env.attach_runtime_registry(self.runtime_registry)
 
         # Wire exploration module to environment for intrinsic reward computation
-        self.env.set_exploration_module(exploration)
+        self.env.set_exploration_runtime(exploration=exploration, claim_vector_step=self.claim_vector_step)
 
         # Training metrics (for TensorBoard logging)
         self.last_td_error = 0.0
@@ -439,12 +421,35 @@ class VectorizedPopulation(PopulationManager):
         self.episode_completions: list[EpisodeCompletion | None] = [None for _ in range(self.num_agents)]
         self._clock_ledger = ClockLedger(vector_ticks=self.total_steps)
         self._clock_ledger_restore_unavailable = self.total_steps != 0
+        self._accepted: Any = None
+        self._activation: Any = None
+        self._reset_stage: str | None = None
+        self._reset_record: Any = None
+        self._population_issuer: Any = None
+        self._empty_evidence: Any = None
+        self._vector_steps: dict[PreparedVectorStep, _VectorStep] = {}
+        self._vector_stage: str | None = None
+        self._vector_step_progress: dict[str, Any] | None = None
+        self._step_active = False
+        self._failed_step = False
+        self._returned_step: dict[str, Any] | None = None
+        self._service_receipts: tuple[Any, ...] = ()
+        self._checkpoint_revision = 0
+        self._population_restores: dict[PreparedPopulationRestore, Any] = {}
+        self._preparing_checkpoint: Any = None
+        self._pending_batch_commit: Any = None
+        self._batch_commit_active = False
+        self._batch_commit_progress: dict[str, Any] | None = None
+        self._episode_participants: set[int] = set()
+        self._batch_participants: dict[int, tuple[int, ...]] = {}
+        self._parent_cadence: dict[str, Any] = {"schema": "parent-global-epsilon-cadence-v1", "last_committed": None}
         self._next_world_binding: tuple[tuple[str, ...], tuple[int, ...]] | None = None
         self._owned_episode: tuple[int, int, tuple[str, ...], tuple[int, ...]] | None = None
         self._owned_reset_pending = False
         self._begun_batch_ids: set[int] = set()
         self._completed_outcomes: tuple[LaneOutcome, ...] = ()
         self._published_outcome_fingerprints: dict[tuple[int, int], str] = {}
+        self._published_events: dict[tuple[int, int], LaneOutcome] = {}
         self._committed_outcomes: dict[tuple[int, int], str] = {}
         self._committed_batches: set[int] = set()
         self._episode_reward_totals = torch.zeros((self.num_agents, 4), dtype=torch.float64)
@@ -792,36 +797,211 @@ class VectorizedPopulation(PopulationManager):
                 cast(PrioritizedReplayBuffer, self.replay_buffer).update_unit_priorities(handles, errors)
         self._log_network_histograms()
 
-    def reset(self) -> None:
+    def reset(self, *, reservation: Any) -> tuple[Any, Any]:
         """Reset all environments and state."""
+        from townlet.environment.vectorized_env import WorldReceiptIssuer
+
+        if self._step_active or self._failed_step or self._preparing_checkpoint is not None or self._pending_batch_commit is not None:
+            raise RuntimeError("A running or failed population attempt requires healthy boundary recovery")
         pending = (self.episode_step_counts > 0) & ~self.episode_completed
         if bool(pending.any()):
             raise RuntimeError("Complete pending lanes with an explicit stop reason before reset")
-        self.current_obs = self.env.reset()
-        self.episode_step_counts.zero_()
-        self.episode_completed.zero_()
-        self.episode_completions = [None for _ in range(self.num_agents)]
-        if not self._owned_reset_pending:
-            self._owned_episode = None
-            self._next_world_binding = None
-        self._owned_reset_pending = False
-        self._completed_outcomes = ()
-        self._episode_reward_totals.zero_()
-        self._episode_entropies.zero_()
-        self._episode_entropy_present.zero_()
+        binding = self._owned_episode
+        if binding is None or (reservation.batch_episode, reservation.world_ids, reservation.world_episode_seqs) != (
+            binding[0],
+            binding[2],
+            binding[3],
+        ):
+            raise ValueError("Reset reservation must match the explicitly begun population episode")
+        previous_stage = self._reset_stage
+        self._reset_stage, self._step_active = "preparing", True
+        record = None
+        try:
+            record = self.env.reset(reservation=reservation)
+            self._reset_record = record
+            if record.accepted is self._accepted:
+                if previous_stage != "completed" or self._activation is None:
+                    raise RuntimeError("Accepted reset has no completed population preparation")
+                self._reset_stage = "completed"
+                return record, self._activation
+            observation = record.observation
+            if observation.shape != self.current_obs.shape or observation.dtype != torch.float32 or observation.device != self.device:
+                raise ValueError("Reset observation disagrees with the selected population geometry")
+            if self._population_issuer is None:
+                self._population_issuer = WorldReceiptIssuer(owner=self)
+            self.current_obs = observation.detach().clone()
+            self._empty_evidence, self._vector_steps, self._vector_stage = None, {}, None
+            self._episode_participants = set()
+            self._checkpoint_revision += 1
+            self.episode_step_counts.zero_()
+            self.episode_completed.zero_()
+            self.episode_completions = [None for _ in range(self.num_agents)]
+            self._owned_reset_pending = False
+            self._completed_outcomes = ()
+            self._episode_reward_totals.zero_()
+            self._episode_entropies.zero_()
+            self._episode_entropy_present.zero_()
+            if self.is_recurrent:
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
+                self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
+                self.current_episodes = [self._new_episode_container() for _ in range(self.num_agents)]
+            for agent_idx in range(self.num_agents):
+                self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=0)
+            self.sync_exploration_metrics()
+            self._sync_curriculum_metrics()
+            activation = self._population_issuer.issue(kind="activation", payload={"accepted": record.accepted})
+            self._accepted, self._activation = record.accepted, activation
+            self._reset_stage = "completed"
+            return record, activation
+        except Exception as error:
+            self._reset_stage, self._failed_step, self._activation = "failed", True, None
+            if record is not None:
+                try:
+                    self.env.abandon_episode(accepted=record.accepted, reason="runtime_failure")
+                except Exception as quarantine_error:
+                    error.add_note(f"Reset quarantine failed: {quarantine_error!r}")
+            raise
+        finally:
+            self._step_active = False
 
-        # Re-seed population-owned rollout memory and empty episode containers.
-        if self.is_recurrent:
-            recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
-            self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
+    def prepare_empty_episode_evidence(self, *, accepted: Any) -> Any:
+        """Attest actual zero participation without completing or clearing any work."""
+        self.env.validate_accepted_episode(accepted=accepted)
+        if self._pending_batch_commit is not None:
+            raise RuntimeError("Resolve the pending batch commitment before another transition")
+        if accepted is None or accepted is not self._accepted or self._population_issuer is None:
+            raise ValueError("Empty evidence requires this population's actual activated acceptance")
+        if self._step_active or self._failed_step or self._preparing_checkpoint is not None or self._vector_steps:
+            raise RuntimeError("Running, failed or pending population work cannot attest an empty episode")
+        if self._owned_reset_pending or bool((self.episode_step_counts != 0).any()) or bool((self.env.step_counts != 0).any()):
+            raise RuntimeError("A participating or unprepared episode is not empty")
+        if self._completed_outcomes or any(episode["observations"] for episode in self.current_episodes):
+            raise RuntimeError("Owned outcomes or collected transitions prevent empty evidence")
+        if self._vector_step_progress is not None and self._vector_step_progress["accepted_identity"] == self._accepted_identity(accepted):
+            raise RuntimeError("An actual vector attempt is distinct from a zero-step empty episode")
+        if self._empty_evidence is None:
+            self._empty_evidence = self._population_issuer.issue(
+                kind="empty_episode", payload={"accepted": accepted, "participated_world_ids": (), "events": ()}
+            )
+        return self._empty_evidence
 
-            self.current_episodes = [self._new_episode_container() for _ in range(self.num_agents)]
-        for agent_idx in range(self.num_agents):
-            self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=0)
+    @property
+    def vector_step_progress(self) -> dict[str, Any] | None:
+        """Owned portable evidence; this reading never authenticates an execution."""
+        return copy.deepcopy(self._vector_step_progress)
 
-        # Sync telemetry + exploration metrics (initial epsilon / stage)
-        self.sync_exploration_metrics()
-        self._sync_curriculum_metrics()
+    @staticmethod
+    def _accepted_identity(accepted: Any) -> dict[str, Any]:
+        return dict(
+            batch_episode=accepted.batch_episode, world_ids=list(accepted.world_ids), world_episode_seqs=list(accepted.world_episode_seqs)
+        )
+
+    def _step_record(
+        self, *, accepted: Any, world_ids: tuple[str, ...], predecessor: torch.Tensor, actions: torch.Tensor, active_on_entry: torch.Tensor
+    ) -> _VectorStep:
+        if (
+            self._preparing_checkpoint is not None
+            or self._failed_step
+            or self._owned_reset_pending
+            or accepted is not self._accepted
+            or accepted is None
+        ):
+            raise RuntimeError("Step requires this population's healthy accepted reset")
+        self.env.validate_accepted_episode(accepted=accepted)
+        if self._pending_batch_commit is not None:
+            raise RuntimeError("Resolve the pending batch commitment before another transition")
+        if (
+            type(self.total_steps) is not int
+            or self._clock_ledger_restore_unavailable
+            or self._clock_ledger.vector_ticks != self.total_steps
+        ):
+            raise ValueError("Next step requires the authoritative complete parent vector position")
+        if type(world_ids) is not tuple or world_ids != accepted.world_ids:
+            raise ValueError("Step world order must equal the actual accepted binding")
+        for value, shape, dtype in (
+            (predecessor, (self.num_agents, self._obs_dim), torch.float32),
+            (actions, (self.num_agents,), torch.int64),
+            (active_on_entry, (self.num_agents,), torch.bool),
+        ):
+            if (
+                not isinstance(value, torch.Tensor)
+                or value.layout != torch.strided
+                or value.shape != shape
+                or value.dtype != dtype
+                or value.device != self.device
+            ):
+                raise ValueError("Step tensors require exact selected geometry, dtype and device")
+        if not bool(torch.isfinite(predecessor).all()) or not torch.equal(predecessor, self.current_obs):
+            raise ValueError("Step predecessor must equal the population's previous returned observation")
+        if not bool(((actions >= 0) & (actions < self.action_dim)).all()):
+            raise ValueError("Step actions are outside the selected action vocabulary")
+        if not torch.equal(active_on_entry, ~self.env.dones) or bool((active_on_entry & self.episode_completed).any()):
+            raise ValueError("Step activity disagrees with actual ENV/population entry state")
+        return _VectorStep(
+            self.total_steps + 1,
+            accepted,
+            world_ids,
+            predecessor.detach().clone(),
+            actions.detach().clone(),
+            active_on_entry.detach().clone(),
+        )
+
+    @staticmethod
+    def _same_step(left: _VectorStep, right: _VectorStep) -> bool:
+        return (
+            left.vector_tick == right.vector_tick
+            and left.accepted is right.accepted
+            and left.world_ids == right.world_ids
+            and all(
+                torch.equal(a, b)
+                for a, b in (
+                    (left.predecessor, right.predecessor),
+                    (left.actions, right.actions),
+                    (left.active_on_entry, right.active_on_entry),
+                )
+            )
+        )
+
+    def prepare_vector_step(
+        self, *, accepted: Any, world_ids: tuple[str, ...], predecessor: torch.Tensor, actions: torch.Tensor, active_on_entry: torch.Tensor
+    ) -> PreparedVectorStep:
+        """Own a pure candidate; equal pending preparation retains its issued identity."""
+        record = self._step_record(
+            accepted=accepted, world_ids=world_ids, predecessor=predecessor, actions=actions, active_on_entry=active_on_entry
+        )
+        if self._vector_steps:
+            handle, pending = next(iter(self._vector_steps.items()))
+            if self._vector_stage != "prepared" or not self._same_step(pending, record):
+                raise ValueError("Pending step cannot be replaced or executed twice")
+            return handle
+        handle = PreparedVectorStep()
+        self._vector_steps = {handle: record}
+        self._vector_stage = "prepared"
+        return handle
+
+    def claim_vector_step(
+        self,
+        *,
+        prepared: PreparedVectorStep,
+        accepted: Any,
+        world_ids: tuple[str, ...],
+        predecessor: torch.Tensor,
+        actions: torch.Tensor,
+        active_on_entry: torch.Tensor,
+    ) -> int:
+        """Authenticate exactly one prephysics execution of an issued candidate."""
+        if type(prepared) is not PreparedVectorStep or prepared not in self._vector_steps or self._vector_stage != "prepared":
+            raise ValueError("Foreign, consumed or already executing vector step")
+        candidate = self._step_record(
+            accepted=accepted, world_ids=world_ids, predecessor=predecessor, actions=actions, active_on_entry=active_on_entry
+        )
+        record = self._vector_steps[prepared]
+        if not self._same_step(record, candidate):
+            raise ValueError("Claim changed the owned vector step")
+        participants = self._episode_participants | set(torch.nonzero(record.active_on_entry, as_tuple=False).flatten().tolist())
+        self._episode_participants = participants
+        self._vector_stage = "executing"
+        return record.vector_tick
 
     # ------------------------------------------------------------------ #
     # Episode lifecycle helpers
@@ -842,6 +1022,8 @@ class VectorizedPopulation(PopulationManager):
 
     def bind_episode_worlds(self, *, world_ids: Sequence[str], world_episode_seqs: Sequence[int]) -> None:
         """Own actual caller identities, never infer them from row, batch or tick."""
+        if self._preparing_checkpoint is not None or self._step_active or self._pending_batch_commit is not None:
+            raise RuntimeError("Reentrant population binding")
         ids, sequences = tuple(world_ids), tuple(world_episode_seqs)
         if len(ids) != self.num_agents or len(sequences) != self.num_agents:
             raise ValueError("World identity binding must contain exactly one entry per lane")
@@ -852,9 +1034,12 @@ class VectorizedPopulation(PopulationManager):
         if self._owned_reset_pending or bool(((self.episode_step_counts > 0) & ~self.episode_completed).any()):
             raise RuntimeError("Complete the current episode before binding another episode")
         self._next_world_binding = ids, sequences
+        self._checkpoint_revision += 1
 
     def begin_batch_episode(self, index: int, planned_horizon: int) -> None:
         """Pin fresh caller binding before the next population reset and rollout."""
+        if self._preparing_checkpoint is not None or self._step_active or self._pending_batch_commit is not None:
+            raise RuntimeError("Reentrant population episode entry")
         if type(index) is not int or index < 0 or type(planned_horizon) is not int or planned_horizon < 1:
             raise ValueError("Batch index/horizon must be nonnegative/positive integers")
         if self._next_world_binding is None:
@@ -868,6 +1053,7 @@ class VectorizedPopulation(PopulationManager):
         self._next_world_binding = None
         self._owned_reset_pending = True
         self._begun_batch_ids.add(index)
+        self._checkpoint_revision += 1
 
     @staticmethod
     def _outcome_fingerprint(event: LaneOutcome) -> str:
@@ -892,8 +1078,33 @@ class VectorizedPopulation(PopulationManager):
             digest.update(reading.detach().cpu().contiguous().numpy().tobytes())
         return digest.hexdigest()
 
+    @property
+    def batch_commit_progress(self) -> dict[str, Any] | None:
+        """Owned completion custody, including an unresolved possibly mutating child call."""
+        return copy.deepcopy(self._batch_commit_progress)
+
+    def _retain_participant_roster(self) -> None:
+        if self._owned_episode is None or self._accepted is None or self._owned_episode[0] != self._accepted.batch_episode:
+            return
+        participants = tuple(torch.nonzero(self.episode_step_counts > 0, as_tuple=False).flatten().tolist())
+        if (
+            participants
+            and set(participants) == self._episode_participants
+            and all(bool(self.episode_completed[lane]) for lane in participants)
+            and all(bool(self.env.dones[lane]) for lane in range(self.num_agents) if lane not in participants)
+        ):
+            self._batch_participants[self._owned_episode[0]] = participants
+
     def commit_episode_outcomes(self, outcomes: Sequence[LaneOutcome]) -> None:
-        """Commit owned events idempotently; a batch advances only after every lane."""
+        """Retain exact child retry custody; publish parent completion only after its return."""
+        if (
+            self._step_active
+            or self._failed_step
+            or self._preparing_checkpoint is not None
+            or self._batch_commit_active
+            or self._vector_steps
+        ):
+            raise RuntimeError("Cannot commit outcomes during running, pending or failed population work")
         incoming = tuple(outcomes)
         prepared: dict[tuple[int, int], str] = {}
         for event in incoming:
@@ -902,16 +1113,73 @@ class VectorizedPopulation(PopulationManager):
             identity = event.batch_episode, event.outcome.agent_idx
             fingerprint = self._outcome_fingerprint(event)
             expected = self._published_outcome_fingerprints.get(identity)
-            if expected is None:
-                raise ValueError("Outcome was not published by this population episode")
-            if fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
-                raise ValueError("An outcome identity cannot be committed with changed content")
+            if expected is None or fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
+                raise ValueError("Outcome was not published or its owned content changed")
             prepared[identity] = fingerprint
+        batches = {identity[0] for identity in prepared}
+        if self._pending_batch_commit is not None and batches != {self._pending_batch_commit["batch"]}:
+            raise RuntimeError("Resolve the retained batch commitment before unrelated parent work")
         self._committed_outcomes.update(prepared)
-        for batch in {identity[0] for identity in prepared}:
-            if batch not in self._committed_batches and all((batch, lane) in self._committed_outcomes for lane in range(self.num_agents)):
-                self._committed_batches.add(batch)
-                self._clock_ledger = self._clock_ledger.advance(completed_batch_episodes=1)
+        self._retain_participant_roster()
+        for batch in sorted(batches):
+            participants = self._batch_participants.get(batch)
+            if (
+                batch in self._committed_batches
+                or not participants
+                or not all((batch, lane) in self._committed_outcomes for lane in participants)
+            ):
+                continue
+            if self._pending_batch_commit is None:
+                events = tuple(self._published_events[(batch, lane)] for lane in participants)
+                content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, events))
+                self._pending_batch_commit = dict(
+                    batch=batch,
+                    events=events,
+                    content=content,
+                    before=self.exploration.epsilon,
+                    ledger=self._clock_ledger.advance(completed_batch_episodes=1),
+                    batches=self._committed_batches | {batch},
+                    revision=self._checkpoint_revision + 1,
+                )
+            pending = self._pending_batch_commit
+            self._batch_commit_progress = dict(batch_episode=batch, status="pending", last_reached_stage="runtime_in_progress")
+            self._batch_commit_active = True
+            try:
+                self.exploration.commit_batch_episode(batch_episode=batch, outcomes=pending["events"])
+                cadence = dict(
+                    schema="parent-global-epsilon-cadence-v1",
+                    last_committed=dict(
+                        batch_episode=batch,
+                        completion_content=pending["content"],
+                        epsilon_before=pending["before"],
+                        epsilon_after=self.exploration.epsilon,
+                    ),
+                )
+                completed = dict(batch_episode=batch, status="completed", last_reached_stage="completed")
+                self._clock_ledger, self._committed_batches = pending["ledger"], pending["batches"]
+                self._parent_cadence, self._batch_commit_progress = cadence, completed
+                self._checkpoint_revision = pending["revision"]
+                self._pending_batch_commit = None
+            finally:
+                self._batch_commit_active = False
+
+    def validate_committed_batch(self, *, batch_episode: int, outcomes: tuple[Any, ...]) -> None:
+        content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, outcomes))
+        pending = self._pending_batch_commit
+        if not self._batch_commit_active or pending is None or (pending["batch"], pending["content"]) != (batch_episode, content):
+            raise ValueError("Global epsilon requires this population's retained complete batch")
+
+    def validate_parent_cadence(self, *, cadence: Any, mode: str, accepted: Any, parent_restore: Any) -> None:
+        if self._preparing_checkpoint is not None:
+            expected, expected_mode, expected_parent = self._preparing_checkpoint
+            if mode != expected_mode or parent_restore is not expected_parent or not self._same_replay_state(cadence, expected):
+                raise ValueError("Prepared parent and runtime cadence disagree")
+        elif not self._same_replay_state(cadence, self._parent_cadence):
+            raise ValueError("Runtime cadence does not match actual parent commitment")
+        if accepted is not None:
+            self.env.validate_accepted_episode(accepted=accepted)
+            if accepted is not self._accepted:
+                raise ValueError("Cadence accepted identity differs from this parent")
 
     def _new_episode_container(self) -> EpisodeContainer:
         """Create a fresh container for accumulating episode data.
@@ -1160,20 +1428,8 @@ class VectorizedPopulation(PopulationManager):
     # Telemetry synchronisation helpers
     # ------------------------------------------------------------------ #
     def _get_current_epsilon_value(self) -> float:
-        """Return epsilon for the closed production exploration vocabulary."""
-        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
-            return float(self.exploration.rnd.epsilon)
-        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
-            return float(self.exploration.epsilon)
-        raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
-
-    def _get_current_intrinsic_weight_value(self) -> float:
-        """Return the exact strategy-defined intrinsic reward weight."""
-        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
-            return float(self.exploration.get_intrinsic_weight())
-        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
-            return 0.0
-        raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
+        """Read the current runtime's independent global selector."""
+        return self.exploration.epsilon
 
     def _sync_curriculum_metrics(self) -> None:
         """
@@ -1208,6 +1464,8 @@ class VectorizedPopulation(PopulationManager):
 
         Also refreshes current_epsilons to keep action selection in sync with telemetry.
         """
+        if self._preparing_checkpoint is not None:
+            raise RuntimeError("Reentrant population telemetry publication")
         epsilon_tensor = torch.full(
             (self.num_agents,),
             self._get_current_epsilon_value(),
@@ -1216,11 +1474,8 @@ class VectorizedPopulation(PopulationManager):
         )
         self.current_epsilons = epsilon_tensor
 
-        intrinsic_weight = self._get_current_intrinsic_weight_value()
-
         for idx in range(self.num_agents):
             self.runtime_registry.set_epsilon(agent_idx=idx, epsilon=epsilon_tensor[idx])
-            self.runtime_registry.set_intrinsic_weight(agent_idx=idx, weight=intrinsic_weight)
 
     def _finalize_episode(self, agent_idx: int, reason: CompletionReason) -> EpisodeCompletion | None:
         """Close one nonempty lane once and retain its final owned readings."""
@@ -1264,16 +1519,19 @@ class VectorizedPopulation(PopulationManager):
             # retain authority without retaining every episode's tensor payloads.
             identity = envelope.batch_episode, envelope.outcome.agent_idx
             self._published_outcome_fingerprints[identity] = self._outcome_fingerprint(envelope)
+            self._published_events[identity] = replace(envelope)
             self._completed_outcomes = (*self._completed_outcomes, envelope)
         self.runtime_registry.record_survival_time(agent_idx=agent_idx, steps=survival_time)
-        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
-            self.exploration.update_on_episode_end(survival_time=survival_time)
         self.sync_exploration_metrics()
         self._reset_hidden_state(agent_idx)
+        self._retain_participant_roster()
         return completion
 
     def flush_episode(self, agent_idx: int, reason: RunnerCompletionReason) -> EpisodeCompletion | None:
         """Complete a surviving lane for an explicit external stop without changing replay done."""
+        if self._preparing_checkpoint is not None or self._step_active or self._failed_step or self._pending_batch_commit is not None:
+            raise RuntimeError("Cannot flush during running, restoring or failed population work")
+        self._checkpoint_revision += 1
         return self._finalize_episode(agent_idx, reason)
 
     def select_greedy_actions(self, env: VectorizedHamletEnv) -> torch.Tensor:
@@ -1289,6 +1547,9 @@ class VectorizedPopulation(PopulationManager):
         Returns:
             actions: [num_agents] tensor of selected actions
         """
+        if self._preparing_checkpoint is not None or self._step_active or self._failed_step or self._pending_batch_commit is not None:
+            raise RuntimeError("Reentrant or failed population selection")
+        self._checkpoint_revision += 1
         with torch.no_grad():
             eligible = ~env.dones & ~self.episode_completed
             q_values = self._rollout_q(eligible)
@@ -1312,6 +1573,9 @@ class VectorizedPopulation(PopulationManager):
         Returns:
             actions: [num_agents] tensor of selected actions
         """
+        if self._preparing_checkpoint is not None or self._step_active or self._failed_step or self._pending_batch_commit is not None:
+            raise RuntimeError("Reentrant or failed population selection")
+        self._checkpoint_revision += 1
         with torch.no_grad():
             eligible = ~env.dones & ~self.episode_completed
             q_values = self._rollout_q(eligible)
@@ -1324,7 +1588,50 @@ class VectorizedPopulation(PopulationManager):
                 eligible=eligible,
             )
 
-    def step_population(
+    def step_population(self, envs: VectorizedHamletEnv) -> BatchedAgentState:
+        """Execute once; retain truthful progress and quarantine irreversible failures."""
+        if self._step_active or self._failed_step or self._preparing_checkpoint is not None or self._pending_batch_commit is not None:
+            raise RuntimeError("Reentrant or quarantined population step")
+        if envs is not self.env or self._accepted is None or self._clock_ledger_restore_unavailable:
+            raise ValueError("Step requires this population's bound current ENV and complete clocks")
+        self._step_active = True
+        self._checkpoint_revision += 1
+        try:
+            state = self._execute_population_step(envs)
+            record = next(iter(self._vector_steps.values()))
+            self._vector_step_progress = dict(
+                vector_tick=record.vector_tick,
+                status="completed",
+                last_reached_stage="completed",
+                accepted_identity=self._accepted_identity(record.accepted),
+            )
+            self._vector_stage = "completed"
+            self._vector_steps = {}
+            return state
+        except Exception as error:
+            if self._vector_steps:
+                record = next(iter(self._vector_steps.values()))
+                self._vector_step_progress = dict(
+                    vector_tick=record.vector_tick,
+                    status="failed",
+                    last_reached_stage=self._vector_stage,
+                    accepted_identity=self._accepted_identity(record.accepted),
+                )
+                self._failed_step = True
+                if self._vector_stage != "prepared":
+                    for quarantine in (
+                        lambda: self.exploration.quarantine_episode(accepted=record.accepted, reason="population step failure"),
+                        lambda: self.env.abandon_episode(accepted=record.accepted, reason="runtime_failure"),
+                    ):
+                        try:
+                            quarantine()
+                        except Exception as quarantine_error:
+                            error.add_note(f"Quarantine failure retained with original step error: {quarantine_error!r}")
+            raise
+        finally:
+            self._step_active = False
+
+    def _execute_population_step(
         self,
         envs: VectorizedHamletEnv,
     ) -> BatchedAgentState:
@@ -1428,7 +1735,14 @@ class VectorizedPopulation(PopulationManager):
         # 7. Step environment with curriculum difficulty
         # Note: rewards from environment already contain full DAC composition:
         #   rewards = extrinsic + (intrinsic * base_weight * modifiers) + shaping
-        next_obs, rewards, dones, info = envs.step(actions, depletion_multiplier)
+        prepared = self.prepare_vector_step(
+            accepted=self._accepted,
+            world_ids=self._accepted.world_ids,
+            predecessor=self.current_obs,
+            actions=actions,
+            active_on_entry=active_on_entry,
+        )
+        next_obs, rewards, dones, info = envs.step(actions, depletion_multiplier, vector_step=prepared)
 
         active_on_entry = info["active_on_entry"]
         newly_terminal = info["newly_terminal"]
@@ -1440,12 +1754,40 @@ class VectorizedPopulation(PopulationManager):
             readings = torch.stack((rewards, components["extrinsic"], components["intrinsic"], components["shaping"]), dim=1)
             self._episode_reward_totals[active_cpu] += readings[active_on_entry].detach().cpu().double()
 
-        # Logging novelty and predictor admission use real predecessor transitions.
-        intrinsic_rewards = torch.zeros_like(rewards)
-        if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
-            intrinsic_rewards[active_on_entry] = self.exploration.compute_intrinsic_rewards(
-                self.current_obs[active_on_entry], update_stats=False
+        handoff = info["intrinsic_transition"]
+        if not isinstance(handoff, IntrinsicStepHandoff) or handoff.accepted is not self._accepted:
+            raise ValueError("ENV returned a foreign intrinsic handoff")
+        record = self._vector_steps[prepared]
+        context = handoff.context
+        if next_obs.shape != record.predecessor.shape or next_obs.dtype != torch.float32 or next_obs.device != self.device:
+            raise ValueError("ENV successor disagrees with the selected parent observation geometry")
+        if self._vector_stage != "executing" or context.vector_tick != record.vector_tick or handoff.stamp.world_ids != record.world_ids:
+            raise ValueError("ENV did not claim this exact vector step")
+        if any(
+            not torch.equal(a, b)
+            for a, b in (
+                (context.predecessor, record.predecessor),
+                (context.actions, record.actions),
+                (context.active_on_entry, record.active_on_entry),
+                (context.successor, next_obs),
+                (active_on_entry, record.active_on_entry),
+                (handoff.stamp.eligible, record.active_on_entry),
             )
+        ):
+            raise ValueError("ENV handoff changed the owned canonical transition")
+        self._vector_stage = "env_returned"
+        self._returned_step = copy.deepcopy(
+            dict(
+                observations=next_obs,
+                rewards=rewards,
+                dones=dones,
+                components=components,
+                successor_action_masks=info["successor_action_masks"],
+            )
+        )
+        intrinsic_rewards = components["provider_intrinsic_raw"].detach().clone()
+        for row, scale in enumerate(components["runtime_intrinsic_scale"]):
+            self.runtime_registry.set_intrinsic_weight(agent_idx=row, weight=scale)
 
         if self.tb_logger is not None:
             self._log_reward_components(components=components, intrinsic_weight=intrinsic_weight)
@@ -1482,37 +1824,22 @@ class VectorizedPopulation(PopulationManager):
                     next_action_masks=info["successor_action_masks"][chunk],
                 )
 
-        # Preserve predictor update ordering after eligible replay admission.
-        if isinstance(self.exploration, RNDExploration | AdaptiveIntrinsicExploration):
-            rnd = self.exploration.rnd if isinstance(self.exploration, AdaptiveIntrinsicExploration) else self.exploration
-            if rnd.service_options is not None:
-                receipt = rnd.admit_and_service(self.current_obs[active_on_entry], vector_tick=self.total_steps + 1)
-                self._clock_ledger = self._clock_ledger.advance(
-                    predictor_admitted_rows=receipt.admitted_rows,
-                    predictor_consumed_minibatches=receipt.optimizer_updates,
-                    predictor_dropped_rows=receipt.dropped_rows,
-                )
-                if receipt.last_loss is None:
-                    self.last_rnd_loss = 0.0
-                else:
-                    self.last_rnd_loss = receipt.last_loss
-            else:
-                # Preserve the explicitly supported unconfigured one-minibatch adapter.
-                # Pure producer counters include the caller append and real service;
-                # float loss cannot distinguish a zero-loss update from a short tail.
-                before = rnd.predictor_service_counters()
-                rnd.obs_buffer.extend(row.detach().cpu().clone() for row in self.current_obs[active_on_entry])
-                self.last_rnd_loss = rnd.update_predictor()
-                after = rnd.predictor_service_counters()
-                self._clock_ledger = self._clock_ledger.advance(
-                    predictor_admitted_rows=after.admitted_rows - before.admitted_rows,
-                    predictor_consumed_minibatches=after.optimizer_updates - before.optimizer_updates,
-                    predictor_dropped_rows=after.dropped_rows - before.dropped_rows,
-                )
-
-        # Replay clocks are vector-paced; retained readiness owns optimizer admission.
-        self.total_steps += 1
-        self._clock_ledger = self._clock_ledger.advance(vector_ticks=1, eligible_transitions=int(active_on_entry.sum().item()))
+        self._vector_stage = "replay_admitted"
+        receipts = self.exploration.admit_and_service(context=context, stamp=handoff.stamp, accepted=handoff.accepted)
+        replacement = self._clock_ledger.advance(
+            predictor_admitted_rows=sum(receipt.admitted_rows for receipt in receipts),
+            predictor_consumed_minibatches=sum(receipt.optimizer_updates for receipt in receipts),
+            predictor_dropped_rows=sum(receipt.dropped_rows for receipt in receipts),
+        )
+        self._service_receipts = receipts
+        self._clock_ledger = replacement
+        self.last_rnd_loss = receipts[-1].last_loss if receipts else 0.0
+        self._vector_stage = "serviced"
+        # Preserve the existing advancement cut; allocate/validate before either publication.
+        replacement = self._clock_ledger.advance(vector_ticks=1, eligible_transitions=int(active_on_entry.sum().item()))
+        self.total_steps = record.vector_tick
+        self._clock_ledger = replacement
+        self._vector_stage = "advanced"
         self._pace_replay()
         if self.total_steps % self.train_frequency == 0:
             self._learn()
@@ -1625,9 +1952,13 @@ class VectorizedPopulation(PopulationManager):
         Returns:
             Complete checkpoint state dictionary
         """
+        if self._step_active or self._pending_batch_commit is not None or (self._vector_steps and not self._failed_step):
+            raise RuntimeError("In-progress vector work cannot masquerade as a healthy checkpoint")
         bars_config = self.env.bars_config
         return {
             "version": POPULATION_CHECKPOINT_FORMAT_VERSION,
+            "clock_ledger": asdict(self.clock_ledger),
+            "vector_step_progress": self.vector_step_progress,
             "q_network": self.q_network.state_dict(),
             "optimizer": self.optimizer.state_dict(),
             "scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
@@ -1660,7 +1991,7 @@ class VectorizedPopulation(PopulationManager):
 
     @staticmethod
     def _require_nonnegative_int(label: str, value: object) -> int:
-        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        if type(value) is not int or value < 0:
             raise ValueError(f"Population checkpoint {label} mismatch: expected a non-negative integer, got {value!r}.")
         return value
 
@@ -1936,96 +2267,6 @@ class VectorizedPopulation(PopulationManager):
                     f"scheduler={learning_rate}, optimizer={optimizer_value}."
                 )
 
-    @classmethod
-    def _validate_rnd_exploration_state(cls, state: object, current: RNDExploration, label: str) -> None:
-        expected_keys = RND_EXPLORATION_STATE_KEYS
-        if isinstance(state, Mapping) and "predictor_service" in state:
-            expected_keys = expected_keys | {"predictor_service"}
-        rnd_state = cls._require_exact_mapping(label, state, expected_keys)
-        obs_dim = cls._require_nonnegative_int(f"{label}.obs_dim", rnd_state["obs_dim"])
-        embed_dim = cls._require_nonnegative_int(f"{label}.embed_dim", rnd_state["embed_dim"])
-        if obs_dim != current.obs_dim:
-            raise ValueError(f"Population checkpoint {label}.obs_dim mismatch: checkpoint={obs_dim}, current={current.obs_dim}.")
-        if embed_dim != current.embed_dim:
-            raise ValueError(f"Population checkpoint {label}.embed_dim mismatch: checkpoint={embed_dim}, current={current.embed_dim}.")
-        for config_key in ("epsilon_min", "epsilon_decay"):
-            value = cls._require_finite_real(f"{label}.{config_key}", rnd_state[config_key])
-            current_value = float(getattr(current, config_key))
-            if value != current_value:
-                raise ValueError(f"Population checkpoint {label}.{config_key} mismatch: checkpoint={value}, current={current_value}.")
-        epsilon = cls._require_finite_real(f"{label}.epsilon", rnd_state["epsilon"])
-        if not float(current.epsilon_min) <= epsilon <= 1.0:
-            raise ValueError(f"Population checkpoint {label}.epsilon must be within [epsilon_min, 1.0]; got {epsilon}.")
-        cls._validate_network_checkpoint_state(
-            "exploration_state.fixed_network", rnd_state["fixed_network"], current.fixed_network.state_dict()
-        )
-        cls._validate_network_checkpoint_state(
-            "exploration_state.predictor_network", rnd_state["predictor_network"], current.predictor_network.state_dict()
-        )
-        cls._validate_optimizer_checkpoint_state(f"{label}.optimizer", rnd_state["optimizer"], current.optimizer)
-        cls._require_finite_real(f"{label}.reward_rms_mean", rnd_state["reward_rms_mean"])
-        reward_var = cls._require_finite_real(f"{label}.reward_rms_var", rnd_state["reward_rms_var"])
-        reward_count = cls._require_finite_real(f"{label}.reward_rms_count", rnd_state["reward_rms_count"])
-        if reward_var < 0.0 or reward_count <= 0.0:
-            raise ValueError(f"Population checkpoint {label} reward RMS variance/count must be non-negative/positive.")
-        # RND owns strict tail/configuration/clock validation. Validate before any
-        # population fields are applied; exact historical available-state remains
-        # recognized by the provider without inventing missing historical tails.
-        current.validate_state(dict(rnd_state))
-
-    def _validate_exploration_checkpoint_state(self, incoming_state: object) -> None:
-        if isinstance(self.exploration, EpsilonGreedyExploration):
-            state = self._require_exact_mapping("exploration_state", incoming_state, EPSILON_EXPLORATION_STATE_KEYS)
-            epsilon = self._require_finite_real("exploration_state.epsilon", state["epsilon"])
-            if not float(self.exploration.epsilon_min) <= epsilon <= 1.0:
-                raise ValueError(f"Population checkpoint exploration_state.epsilon is outside the current range: {epsilon}.")
-            for config_key in ("epsilon_decay", "epsilon_min"):
-                value = self._require_finite_real(f"exploration_state.{config_key}", state[config_key])
-                current_value = float(getattr(self.exploration, config_key))
-                if value != current_value:
-                    raise ValueError(
-                        f"Population checkpoint exploration_state.{config_key} mismatch: " f"checkpoint={value}, current={current_value}."
-                    )
-            return
-
-        if isinstance(self.exploration, RNDExploration):
-            self._validate_rnd_exploration_state(incoming_state, self.exploration, "exploration_state")
-            return
-
-        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
-            state = self._require_exact_mapping("exploration_state", incoming_state, ADAPTIVE_EXPLORATION_STATE_KEYS)
-            self._validate_rnd_exploration_state(state["rnd_state"], self.exploration.rnd, "exploration_state.rnd_state")
-            for config_key in (
-                "min_intrinsic_weight",
-                "variance_threshold",
-                "min_survival_fraction",
-                "max_episode_length",
-                "survival_window",
-                "decay_rate",
-            ):
-                incoming_value = state[config_key]
-                current_value = getattr(self.exploration, config_key)
-                if type(incoming_value) is not type(current_value) or incoming_value != current_value:
-                    raise ValueError(
-                        f"Population checkpoint exploration_state.{config_key} mismatch: "
-                        f"checkpoint={incoming_value!r}, current={current_value!r}."
-                    )
-                if isinstance(incoming_value, Real):
-                    self._require_finite_real(f"exploration_state.{config_key}", incoming_value)
-            current_weight = self._require_finite_real("exploration_state.current_intrinsic_weight", state["current_intrinsic_weight"])
-            if current_weight < float(self.exploration.min_intrinsic_weight):
-                raise ValueError("Population checkpoint exploration_state.current_intrinsic_weight is below the configured minimum.")
-            survival_history = state["survival_history"]
-            if not isinstance(survival_history, list) or len(survival_history) > self.exploration.survival_window:
-                raise ValueError("Population checkpoint exploration_state.survival_history has an invalid shape.")
-            for index, value in enumerate(survival_history):
-                self._require_finite_real(f"exploration_state.survival_history[{index}]", value)
-            return
-
-        raise ValueError(
-            "Population checkpoint exploration_state cannot be validated for unsupported strategy " f"{type(self.exploration).__name__}."
-        )
-
     def _validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> Any:
         """
         Validate a complete population checkpoint without mutating runtime state.
@@ -2205,125 +2446,154 @@ class VectorizedPopulation(PopulationManager):
         if self.is_recurrent and replay_state.get("format_version") == 7:
             if replay_state["priority_state"]["current_vector_tick"] != checkpoint["total_steps"]:
                 raise ValueError("Sequential replay vector tick must equal the restored population total_steps")
-        self._validate_exploration_checkpoint_state(checkpoint["exploration_state"])
         return replay_target, validated_replay
 
+    def _checkpoint_clocks(self, checkpoint: Mapping[str, Any]) -> tuple[ClockLedger, Any]:
+        raw = self._require_exact_mapping("clock_ledger", checkpoint["clock_ledger"], frozenset(asdict(ClockLedger())))
+        ledger = ClockLedger(**{key: self._require_nonnegative_int(f"clock_ledger.{key}", value) for key, value in raw.items()})
+        if ledger.vector_ticks != checkpoint["total_steps"] or ledger.optimizer_updates != checkpoint["training_step_counter"]:
+            raise ValueError("Population counters disagree with the complete clock ledger")
+        progress = copy.deepcopy(checkpoint["vector_step_progress"])
+        if progress is None:
+            if any(asdict(ledger).values()):
+                raise ValueError("Only genuine fresh INITIAL has no vector progress")
+            return ledger, progress
+        record = self._require_exact_mapping(
+            "vector_step_progress", progress, frozenset({"vector_tick", "status", "last_reached_stage", "accepted_identity"})
+        )
+        if record["status"] != "completed" or record["last_reached_stage"] != "completed":
+            raise ValueError("Failed or in-progress work cannot enter a healthy native restore")
+        if type(record["vector_tick"]) is not int or record["vector_tick"] != ledger.vector_ticks or ledger.vector_ticks < 1:
+            raise ValueError("Completed progress must name the reached parent vector tick")
+        accepted = self._require_exact_mapping(
+            "accepted_identity", record["accepted_identity"], frozenset({"batch_episode", "world_ids", "world_episode_seqs"})
+        )
+        self._require_nonnegative_int("accepted batch", accepted["batch_episode"])
+        ids, seqs = cast(list[Any], accepted["world_ids"]), cast(list[Any], accepted["world_episode_seqs"])
+        if (
+            type(ids) is not list
+            or len(ids) != self.num_agents
+            or any(type(item) is not str for item in ids)
+            or len(set(ids)) != len(ids)
+            or set(ids) != set(self.env.world_ids)
+        ):
+            raise ValueError("Progress requires actual portable world membership")
+        if type(seqs) is not list or len(seqs) != self.num_agents or any(type(item) is not int or item < 1 for item in seqs):
+            raise ValueError("Progress requires actual positive accepted world sequences")
+        return ledger, progress
+
+    def prepare_checkpoint_state(
+        self, checkpoint: Mapping[str, Any], *, mode: str, parent_restore: Any, validate_parent_restore: Any, initialization: str | None
+    ) -> PreparedPopulationRestore:
+        """Prepare every owned child offside; external boundary authentication stays genuine."""
+        if self._step_active or self._preparing_checkpoint is not None or self._pending_batch_commit is not None:
+            raise RuntimeError("Reentrant population restore")
+        if self._accepted is not None:
+            raise ValueError("Boundary restore requires a fresh receiving population")
+        if self.env.world_phase != "fresh-unbound":
+            raise ValueError("Bound component replacement requires the genuine outer stable-owner installation protocol")
+        revision = self._checkpoint_revision
+        owned = copy.deepcopy(checkpoint)
+        replay_target, validated_replay = self._validate_checkpoint_state(owned)
+        ledger, progress = self._checkpoint_clocks(owned)
+        if mode not in {"initial", "completed_boundary", "private_initialized"} or (mode == "initial") != (progress is None):
+            raise ValueError("Healthy parent progress disagrees with requested boundary mode")
+        if mode != "initial" and (parent_restore is None or not callable(validate_parent_restore)):
+            raise ValueError("Completed/initialized restore requires genuine external parent preparation")
+        q, target, optimizer, scheduler = copy.deepcopy((self.q_network, self.target_network, self.optimizer, self.scheduler))
+        q.load_state_dict(owned["q_network"])
+        target.load_state_dict(owned["target_network"])
+        optimizer.load_state_dict(owned["optimizer"])
+        if scheduler is not None:
+            scheduler.load_state_dict(owned["scheduler"])
+        prepared_replay = replay_target.materialize_validated(validated_replay)
+        if replay_target is self.replay_buffer:
+            replay_target = copy.deepcopy(replay_target)
+        replay_target.load_prepared(prepared_replay)
+        cadence = copy.deepcopy(owned["exploration_state"]["cadence"])
+        correlation = cadence, mode, parent_restore
+        self._preparing_checkpoint = correlation
+        try:
+            if initialization is None:
+                runtime = self.exploration.prepare_restore(
+                    state=owned["exploration_state"],
+                    mode=mode,
+                    accepted=None,
+                    parent_restore=parent_restore,
+                    validate_parent_restore=validate_parent_restore,
+                )
+            else:
+                runtime = self.exploration.prepare_private_initialization(
+                    state=owned["exploration_state"],
+                    initialization=initialization,
+                    parent_restore=parent_restore,
+                    validate_parent_restore=validate_parent_restore,
+                )
+        finally:
+            self._preparing_checkpoint = None
+        if revision != self._checkpoint_revision:
+            raise ValueError("Population changed during restore preparation")
+        handle = PreparedPopulationRestore()
+        self._population_restores[handle] = (
+            revision,
+            runtime,
+            q,
+            target,
+            optimizer,
+            scheduler,
+            replay_target,
+            ledger,
+            progress,
+            correlation,
+            cadence,
+        )
+        return handle
+
+    def install_checkpoint_state(self, *, prepared: PreparedPopulationRestore) -> None:
+        if type(prepared) is not PreparedPopulationRestore or prepared not in self._population_restores or self._step_active:
+            raise ValueError("Foreign, consumed or reentrant population restore")
+        revision, runtime, q, target, optimizer, scheduler, replay, ledger, progress, correlation, cadence = self._population_restores[
+            prepared
+        ]
+        if revision != self._checkpoint_revision:
+            raise ValueError("Stale population restore")
+        # Preallocate all post-child publication state before the final runtime/BANK check.
+        empty_steps: dict[PreparedVectorStep, _VectorStep] = {}
+        empty_restores: dict[PreparedPopulationRestore, Any] = {}
+        next_revision = revision + 1
+        self._preparing_checkpoint, self._step_active = correlation, True
+        try:
+            self.exploration.install_restore(prepared=runtime)
+            self.q_network, self.target_network, self.optimizer, self.scheduler = q, target, optimizer, scheduler
+            self.replay_buffer = replay
+            self.total_steps, self._clock_ledger = ledger.vector_ticks, ledger
+            self.training_step_counter = ledger.optimizer_updates
+            self._vector_step_progress, self._parent_cadence = progress, cadence
+            self._vector_steps, self._population_restores = empty_steps, empty_restores
+            self._failed_step, self._clock_ledger_restore_unavailable = False, False
+            self._vector_stage, self._returned_step, self._service_receipts = None, None, ()
+            self._checkpoint_revision, self._last_beta_tick = next_revision, ledger.vector_ticks
+            self._bound_replay, self._replay_was_loaded = replay, True
+            self._constructor_replay, self._constructor_replay_state, self._last_readiness = None, None, None
+        finally:
+            self._preparing_checkpoint, self._step_active = None, False
+
     def validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
-        """Validate the complete current population artifact without materializing replay storage."""
-        self._validate_checkpoint_state(checkpoint)
+        """Structure/native-child INITIAL validation without publishing any child."""
+        self.prepare_checkpoint_state(checkpoint, mode="initial", parent_restore=None, validate_parent_restore=None, initialization=None)
 
     def load_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
-        """Validate, then restore every field from the exact current payload."""
-        replay_target, validated_replay = self._validate_checkpoint_state(checkpoint)
-
-        q_network_state = cast(Mapping[str, Any], checkpoint["q_network"])
-        target_network_state = cast(Mapping[str, Any], checkpoint["target_network"])
-        optimizer_state = copy.deepcopy(dict(cast(Mapping[str, Any], checkpoint["optimizer"])))
-        raw_scheduler_state = checkpoint["scheduler"]
-        scheduler_state = None if raw_scheduler_state is None else dict(cast(Mapping[str, Any], raw_scheduler_state))
-        exploration_state = dict(cast(Mapping[str, Any], checkpoint["exploration_state"]))
-        total_steps = cast(int, checkpoint["total_steps"])
-        training_step_counter = cast(int, checkpoint["training_step_counter"])
-        # Build the only full restore allocation before applying any population field.
-        # The validation pass performs structure-only replay validation, so this
-        # candidate is neither duplicated nor discarded.
-        prepared_replay: Any = replay_target.materialize_validated(validated_replay)
-        adapting = replay_target is not self.replay_buffer
-        if adapting:
-            replay_target.load_prepared(prepared_replay)
-
-        # Restore every producer-owned field from the exact current payload.
-        self.q_network.load_state_dict(q_network_state)
-        self.optimizer.load_state_dict(optimizer_state)
-        if self.scheduler is not None:
-            assert scheduler_state is not None
-            self.scheduler.load_state_dict(scheduler_state)
-        self.total_steps = total_steps
-        self.target_network.load_state_dict(target_network_state)
-        self.training_step_counter = training_step_counter
-        if not adapting:
-            replay_target.load_prepared(prepared_replay)
-        self.replay_buffer = replay_target
-        self.exploration.load_state(exploration_state)
-        self._replay_was_loaded = True
-        self._constructor_replay = None
-        self._constructor_replay_state = None
-        self._bound_replay = None
-        self._last_beta_tick = total_steps
-        self._last_readiness = None
-        self._clock_ledger_restore_unavailable = True
+        """Install genuine current INITIAL; other boundaries use explicit prepared custody."""
+        prepared = self.prepare_checkpoint_state(
+            checkpoint, mode="initial", parent_restore=None, validate_parent_restore=None, initialization=None
+        )
+        self.install_checkpoint_state(prepared=prepared)
 
     # ------------------------------------------------------------------ #
     # Cross-universe token-net load (token-obs unit 3 Task 9)
     # ------------------------------------------------------------------ #
     def load_token_network_cross_universe(self, source_q_network_state: dict[str, torch.Tensor]) -> TokenRosterReport:
-        """Load a token net trained on ANOTHER universe into this population (spec §4).
-
-        Per-type encoders and the aggregator transfer as feature extractors by
-        ModuleDict type key (intersection load, both directions reported loudly;
-        payload-schema mismatch refuses — `load_token_network_state_by_type`).
-        Because the source universe's rewards, optimizer moments and novelty
-        statistics do not describe THIS universe, a cross-universe load then:
-
-        - re-copies the target network from the freshly-loaded online network;
-        - resets the optimizer and LR schedule (fresh moments — stale Adam state
-          against re-initialized or re-purposed weights is silent corruption);
-        - resets RND state through its existing construction surface (a fresh
-          fixed/predictor pair and reward statistics; the epsilon schedule carries
-          over — it is exploration pacing, not novelty state).
-
-        This is the seam the Task-10 cut wires into the checkpoint-consumer paths;
-        nothing calls it in the live step path this task.
-        """
+        """Current transfer awaits genuine same-BANK/native boundary reset coordination."""
         if not self.is_token_native:
-            raise ValueError(
-                "load_token_network_cross_universe requires architecture.type='token_set' or 'recurrent'; "
-                f"this population runs {self.brain_config.architecture.type!r}."
-            )
-        report = load_token_network_state_by_type(self.q_network, source_q_network_state)
-
-        # Re-copy target from the loaded online net (never load the source's target).
-        self.target_network.load_state_dict(self.q_network.state_dict())
-        self.target_network.eval()
-        self.training_step_counter = 0
-
-        # Fresh optimizer + schedule over the loaded parameters.
-        self.optimizer, self.scheduler = OptimizerFactory.build(
-            config=self.brain_config.optimizer,
-            parameters=self.q_network.parameters(),
-        )
-
-        self._reset_rnd_state()
-        return report
-
-    def _reset_rnd_state(self) -> None:
-        """Reset RND novelty state via its existing construction surface.
-
-        `RNDExploration` exposes no in-place reset; a fresh instance built from the
-        live instance's own constructor parameters IS the reset surface.
-        """
-
-        def _fresh(rnd: RNDExploration) -> RNDExploration:
-            return RNDExploration(
-                obs_dim=rnd.obs_dim,
-                embed_dim=rnd.embed_dim,
-                learning_rate=float(rnd.optimizer.param_groups[0]["lr"]),
-                training_batch_size=rnd.training_batch_size,
-                epsilon_start=rnd.epsilon,
-                epsilon_min=rnd.epsilon_min,
-                epsilon_decay=rnd.epsilon_decay,
-                device=rnd.device,
-            )
-
-        exploration = self.exploration
-        if isinstance(exploration, RNDExploration):
-            fresh = _fresh(exploration)
-            self.exploration = fresh
-            self.env.set_exploration_module(fresh)
-        elif isinstance(exploration, AdaptiveIntrinsicExploration):
-            exploration.rnd = _fresh(exploration.rnd)
-            # Cross-universe load: the wrapper's annealing/survival statistics are
-            # source-universe data and must not steer the target universe (task-9
-            # review I1) — reset them alongside the inner RND.
-            exploration.current_intrinsic_weight = exploration.initial_intrinsic_weight
-            exploration.survival_history.clear()
+            raise ValueError("Cross-universe transfer requires a token-native architecture")
+        raise RuntimeError("Cross-universe transfer requires the current same-BANK novelty-reset owner protocol")

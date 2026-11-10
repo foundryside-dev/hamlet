@@ -1,0 +1,25 @@
+{
+  "name": "parent",
+  "exit_code": 0,
+  "seconds": 20.507395267486572,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r10-independent-parent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-independent/parent.log",
+  "sha256": "19c205dc70fe817015b66cc4130a488ee31b5fb06aa870a883025cf8c74f1fa3",
+  "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "5ab013f19ffb8b8544ae86a2a7f2a4588319da4bf8d7709a4ea05e5d98e552b2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

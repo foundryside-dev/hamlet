@@ -1,0 +1,16 @@
+{
+  "name": "modelpack",
+  "exit_code": 0,
+  "seconds": 5.1809282302856445,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py",
+    "configs/reference/model_pack"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r2-modelpack/modelpack.log",
+  "sha256": "32f9fbb2e1ded3e67e488cf00c781c19208b81565dbc6c00bb0eecdfb3d705fc",
+  "candidate_tree": "7a3e3bc238a0bb76680f47bd2e8db6dfd8d425ad",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "ae8d653ccbdd59c79afd0b82059152a8525e27a99a4426e92c383cfcd0988348",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

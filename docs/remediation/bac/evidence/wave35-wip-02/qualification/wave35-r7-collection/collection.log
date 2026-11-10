@@ -1,0 +1,84 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 66 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_intrinsic_composition.py>
+            <Function test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared]>
+            <Function test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-per_world]>
+            <Function test_real_composer_applies_runtime_scale_once[0.0-0.25-0.0-1.1-shared]>
+            <Function test_real_composer_applies_runtime_scale_once[0.0-0.25-0.0-1.1-per_world]>
+            <Function test_real_composer_applies_runtime_scale_once[1.0-0.25-1.0-2.1-shared]>
+            <Function test_real_composer_applies_runtime_scale_once[1.0-0.25-1.0-2.1-per_world]>
+            <Function test_real_composer_applies_runtime_scale_once[0.5-0.5-1.0-2.1-shared]>
+            <Function test_real_composer_applies_runtime_scale_once[0.5-0.5-1.0-2.1-per_world]>
+            <Function test_provider_phase_and_transition_identity[shared-none]>
+            <Function test_provider_phase_and_transition_identity[shared-count_based]>
+            <Function test_provider_phase_and_transition_identity[shared-rnd]>
+            <Function test_provider_phase_and_transition_identity[shared-adaptive_rnd]>
+            <Function test_provider_phase_and_transition_identity[shared-icm]>
+            <Function test_provider_phase_and_transition_identity[per_world-none]>
+            <Function test_provider_phase_and_transition_identity[per_world-count_based]>
+            <Function test_provider_phase_and_transition_identity[per_world-rnd]>
+            <Function test_provider_phase_and_transition_identity[per_world-adaptive_rnd]>
+            <Function test_provider_phase_and_transition_identity[per_world-icm]>
+            <Function test_claim_refusal_precedes_first_physical_write>
+            <Function test_real_effect_pending_cancellation_preserves_successor[False]>
+            <Function test_real_effect_pending_cancellation_preserves_successor[True]>
+            <Function test_retirement_preserves_live_composition_then_adds_bonus>
+          <Module test_parent_intrinsic_handoff.py>
+            <Function test_current_runtime_constructor_and_telemetry>
+            <Function test_reservation_reset_returns_actual_world_record_and_pop_receipt>
+            <Function test_equal_preparation_is_owned_pure_and_identity_only>
+            <Function test_changed_pending_content_refuses_without_new_claim[accepted]>
+            <Function test_changed_pending_content_refuses_without_new_claim[world_ids]>
+            <Function test_changed_pending_content_refuses_without_new_claim[predecessor]>
+            <Function test_changed_pending_content_refuses_without_new_claim[actions]>
+            <Function test_changed_pending_content_refuses_without_new_claim[active_on_entry]>
+            <Function test_prepare_rejects_whole_input_geometry[predecessor-shape]>
+            <Function test_prepare_rejects_whole_input_geometry[predecessor-nan]>
+            <Function test_prepare_rejects_whole_input_geometry[actions-dtype]>
+            <Function test_prepare_rejects_whole_input_geometry[actions-bounds]>
+            <Function test_prepare_rejects_whole_input_geometry[active_on_entry-dtype]>
+            <Function test_foreign_destination_cannot_claim_actual_issued_handle>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[shared-none]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[shared-count_based]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[shared-rnd]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[shared-adaptive_rnd]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[shared-icm]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[per_world-none]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[per_world-count_based]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[per_world-rnd]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[per_world-adaptive_rnd]>
+            <Function test_actual_parent_handoff_single_reward_service_and_replay[per_world-icm]>
+            <Function test_step_nonreentry_refuses_before_second_env_execution>
+            <Function test_partial_failure_records_reached_cut_and_refuses_reexecution[env-executing-0]>
+            <Function test_partial_failure_records_reached_cut_and_refuses_reexecution[replay-env_returned-0]>
+            <Function test_partial_failure_records_reached_cut_and_refuses_reexecution[service-replay_admitted-0]>
+            <Function test_partial_failure_records_reached_cut_and_refuses_reexecution[pace-advanced-1]>
+            <Function test_current_initial_transport_has_complete_exact_ledger>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[bool]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[float]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[int_subclass]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[negative]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[extra]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[missing]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[tick]>
+            <Function test_bad_current_ledger_refuses_before_population_mutation[old_version]>
+            <Function test_completed_progress_snapshot_is_owned_portable_data>
+            <Function test_initial_pop_roundtrip_preserves_ledger_and_next_real_update>
+            <Function test_preclaim_refusal_does_not_enter_env_or_advance_vector_clock>
+            <Function test_batch_commit_failure_retains_exact_retry_custody[False]>
+            <Function test_batch_commit_failure_retains_exact_retry_custody[True]>
+            <Function test_post_env_reset_failure_never_issues_reusable_activation>
+
+========================= 66 tests collected in 0.13s ==========================

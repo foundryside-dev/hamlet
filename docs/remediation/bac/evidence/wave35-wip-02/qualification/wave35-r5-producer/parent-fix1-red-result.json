@@ -1,0 +1,26 @@
+{
+  "name": "parent-fix1-red",
+  "exit_code": 1,
+  "seconds": 8.472517490386963,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "-k",
+    "batch_commit_failure_retains_exact_retry_custody or post_env_reset_failure_never_issues_reusable_activation",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r5-parent-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r5-producer/parent-fix1-red.log",
+  "sha256": "d58baeebc9dccf9713a49cc158575df8214ccfd93b44be827d630c918f1226fc",
+  "candidate_tree": "1d4100f1e1151c991daad21b49d2224c2b3ddca2",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "0b0f31b36f829271cbc2a4d3bf993ea54cadb65f3a641c37422a06380013271c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

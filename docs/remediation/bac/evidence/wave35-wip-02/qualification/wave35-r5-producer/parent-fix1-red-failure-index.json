@@ -1,0 +1,41 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "1d4100f1e1151c991daad21b49d2224c2b3ddca2",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "signatures": [
+    {
+      "error": "+      where <townlet.population.vectorized.VectorizedPopulation object at 0x7faa0f640050> = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7faa167f9f90>, population=<townl...00, 0.2857, 0.7143,  ..., 1.0000, 0.0000, 0.0000],\\n        [1.0000, 0.2857, 0.0000,  ..., 1.0000, 0.0000, 0.0000]])}))).population",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_batch_commit_failure_retains_exact_retry_custody[True]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AssertionError: assert not [WorldOwnerReceipt(kind='activation', _owner=<townlet.population.vectorized.VectorizedPopulation object at 0x7faa1674f...0f642350>, _generation=1)}), _issuer=<townlet.environment.vectorized_env.WorldReceiptIssuer object at 0x7faa0f6d9eb0>)]",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_post_env_reset_failure_never_issues_reusable_activation",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+      where <townlet.population.vectorized.VectorizedPopulation object at 0x7faa218817f0> = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7faa21d657f0>, population=<townl...00, 0.7143, 0.2857,  ..., 1.0000, 0.0000, 0.0000],\\n        [1.0000, 0.2857, 1.0000,  ..., 1.0000, 0.0000, 0.0000]])}))).population",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_batch_commit_failure_retains_exact_retry_custody[False]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

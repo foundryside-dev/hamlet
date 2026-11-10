@@ -1,0 +1,131 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py F    [100%]
+
+=================================== FAILURES ===================================
+________________ test_current_runtime_constructor_and_telemetry ________________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_current_runtime_constructor_and_telemetry(compiled: Any) -> None:
+        """First focused RED must reach actual POP's current-runtime telemetry seam."""
+>       rig = make_parent(compiled)
+              ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:150: in make_parent
+    pop = VectorizedPopulation.for_training(
+src/townlet/population/vectorized.py:220: in for_training
+    population._initialize(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7fb087a62900>
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb087fac980>
+curriculum = <townlet.curriculum.static.StaticCurriculum object at 0x7fb087a601a0>
+exploration = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fb087a60ec0>
+agent_ids = ['parent-A', 'parent-B', 'parent-C', 'parent-D', 'parent-E', 'parent-F', ...]
+device = device(type='cpu')
+brain_config = BrainConfig(version='1.0', description='token-set smoke pack — the live token_set exerciser over the compiled TokenSpe...eplayConfig(capacity=100000, prioritized=False, priority_alpha=None, priority_beta=None, priority_beta_annealing=None))
+obs_dim = 141, train_frequency = 1, batch_size = 2, sequence_length = 8
+max_grad_norm = 10.0, action_dim = 7, tb_logger = None, max_episodes = 2
+max_steps_per_episode = 20
+replay_setup = _ReplaySetup(options=ReplayOptions(sampling_mode='successive_without_replacement', uniform_sequence_adapter='legacy_ep...on=40, horizon_origin='explicit test episodes2 * declared test horizon20; vector ticks', tick=0, preserve_global=False)
+
+    def _initialize(
+        self,
+        env: VectorizedHamletEnv,
+        curriculum: CurriculumManager,
+        exploration: ExplorationRuntime,
+        agent_ids: list[str],
+        device: torch.device,
+        brain_config: BrainConfig,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
+        action_dim: int,
+        tb_logger: Any,
+        max_episodes: int | None,
+        max_steps_per_episode: int | None,
+        replay_setup: _ReplaySetup | None,
+    ) -> None:
+        """
+        Initialize vectorized population.
+    
+        Args:
+            env: Vectorized environment (must have a compiled `token_spec`)
+            curriculum: Curriculum manager
+            exploration: Exploration strategy
+            agent_ids: List of agent identifiers
+            device: PyTorch device
+            obs_dim: Observation dimension
+            action_dim: Action dimension (defaults to env.action_dim if not specified)
+            brain_config: Brain configuration (REQUIRED). Specifies network architecture,
+                optimizer, loss function, Q-learning parameters, and replay buffer settings.
+                See docs/config-schemas/brain.md for schema.
+            tb_logger: Optional TensorBoard logger
+            train_frequency: Train Q-network every N steps (required; typically from training.yaml)
+            batch_size: Batch size for experience replay (required; typically from training.yaml replay_buffer.batch_size)
+            sequence_length: Length of sequences for LSTM training (required for recurrent agents)
+            max_grad_norm: Gradient clipping threshold (required; typically from training.yaml)
+            max_episodes: Maximum training episodes (for PER beta annealing)
+            max_steps_per_episode: Maximum steps per episode (for PER beta annealing)
+        """
+        # The compiled brain configuration is mandatory runtime input.
+        if brain_config is None:
+            raise ValueError(
+                "brain_config is required. Provide brain.yaml configuration for all training runs. "
+                "See docs/config-schemas/brain.md for examples."
+            )
+        if not isinstance(exploration, ExplorationRuntime):
+            raise TypeError("Population requires the selected current ExplorationRuntime")
+    
+        # The compiled token artifact is the observation ABI (unit-3 cut). It is required
+        # and set by VectorizedHamletEnv from the compiled universe; no alternate source exists.
+        if getattr(env, "token_spec", None) is None:
+            raise ValueError(
+                "env.token_spec is required. The environment must carry the compiled TokenSpec "
+                "from the compiled universe. This is set automatically by VectorizedHamletEnv."
+            )
+        self.token_spec = env.token_spec
+    
+        self.env = env
+        self.curriculum = curriculum
+        self.exploration = exploration
+        self.agent_ids = agent_ids
+        self.num_agents = len(agent_ids)
+        self.device = device
+        self.tb_logger = tb_logger
+        self.brain_config = brain_config
+        self.max_episodes = max_episodes
+        self.max_steps_per_episode = max_steps_per_episode
+    
+        # Brain_config always provided (no else branch needed)
+        self.gamma = brain_config.q_learning.gamma
+        self.use_double_dqn = brain_config.q_learning.use_double_dqn
+        target_update_frequency = brain_config.q_learning.target_update_frequency
+    
+        self.action_dim = action_dim
+    
+        # Agent runtime metrics (telemetry + reward baseline source of truth)
+        self.runtime_registry = AgentRuntimeRegistry(agent_ids=agent_ids, device=device)
+        self.env.attach_runtime_registry(self.runtime_registry)
+    
+        # Wire exploration module to environment for intrinsic reward computation
+>       self.env.set_exploration_runtime(exploration=exploration, claim_vector_step=self.claim_vector_step)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'VectorizedHamletEnv' object has no attribute 'set_exploration_runtime'. Did you mean: 'set_exploration_module'?
+
+src/townlet/population/vectorized.py:322: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_current_runtime_constructor_and_telemetry
+============================== 1 failed in 8.07s ===============================

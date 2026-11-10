@@ -1,0 +1,57 @@
+import fcntl
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+spec_path = Path(sys.argv[1])
+spec = json.loads(spec_path.read_text())
+root = Path(spec['root'])
+manifest_path = Path(spec['manifest'])
+manifest = json.loads(manifest_path.read_text())
+out = Path(spec['output'])
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=root, text=True).strip()
+
+assert git('rev-parse', 'HEAD') == manifest['base_commit']
+with (root / '.superpowers/bac-qualification-index.lock').open('a') as lock:
+    fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+    assert git('write-tree') == manifest['candidate_tree']
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=root).returncode == 0
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in manifest[group].items():
+        assert sha(root / path) == digest, (group, path)
+assert subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=root, text=True) == manifest['worktree_registry']
+for item in manifest['worktree_availability']:
+    assert Path(item['path']).is_dir() == item['directory_exists']
+
+results = []
+for job in spec['jobs']:
+    result = json.loads((out / (job['name'] + '-result.json')).read_text())
+    assert result['name'] == job['name']
+    assert result['command'] == [str(root / '.venv/bin/python'), *job['args']]
+    assert result['base_commit'] == manifest['base_commit']
+    assert result['candidate_tree'] == manifest['candidate_tree']
+    assert result['manifest_sha256'] == sha(manifest_path)
+    assert result['harness_sha256'] == sha(spec_path.parent / 'run_bac_packet_checks_locked.py')
+    assert result['sha256'] == sha(Path(result['log']))
+    results.append({key: result[key] for key in ('name', 'exit_code', 'seconds', 'log', 'sha256')})
+
+report = {
+    'status': 'STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained',
+    'base_commit': manifest['base_commit'],
+    'candidate_tree': manifest['candidate_tree'],
+    'source_guards': len(manifest['source_files']),
+    'configs': len(manifest['configs']),
+    'artifacts': len(manifest['artifacts']),
+    'results': results,
+    'all_passed': all(item['exit_code'] == 0 for item in results),
+    'scope': 'Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed.',
+}
+(out / 'static-custody.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps(report, indent=2))

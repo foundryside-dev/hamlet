@@ -1,0 +1,950 @@
+{
+  "kind": "active22_final_independent_review_lenses",
+  "authority": {
+    "id": "X03-GROWTH-EXECUTION-R2-2026-11-01",
+    "effective": true,
+    "type": "existing_contract_X03_repair_plus_one_B_consumer_first_budget_reslice",
+    "authority": "Existing BAC-C06/C09 correctness and root bounded T09a/PW08a execution authorization; no capability reduction or new owner choice.",
+    "addendum_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/X03-execution-addendum.md",
+    "addendum_sha256": "8a024fff8eb8094baee7aaeedf2ed4e6b1cab5bbbbf3afd0e1b316e5741d08c6",
+    "proposal_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/X03-packets-proposed.json",
+    "proposal_sha256": "f807fb345153be2a716bc593abc09bc3e649c95bcf259bf3943f040f651d9b57",
+    "technical_review_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/X03-astra-review-r2.md",
+    "technical_review_sha256": "2f0d03e633f26823348f17973c0f937d7c1b81e549b8423dec034ee67ffd9f75",
+    "technical_verdict": "APPROVED \u2014 technical execution amendment",
+    "root_T09a_brief_sha256": "55ec91e55b9ee6ca3519384f693255f4adb5ee77e0dcfc0d7cf4067a0a362e5b",
+    "activated_by": "root explicit instruction after exact same-Astra MEDIUM R2 approval",
+    "prior64_metadata_archive": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/archives/pre-X03-activation-2026-11-01",
+    "approved_bytes_unchanged": true
+  },
+  "base_plan_sha256": "2dde2d80d3d14c510878c26af1f99c42217be12d3cb3a554647bc68646feedc1",
+  "common_immutable_sha_required": true,
+  "lenses": [
+    {
+      "id": "F01",
+      "title": "configuration; other model than last BC/TC owner",
+      "reads": [
+        {
+          "alias": "BC",
+          "path": "src/townlet/config/brain_config.py",
+          "projected_lines": 750,
+          "access": "read_only"
+        },
+        {
+          "alias": "TC",
+          "path": "src/townlet/config/training_v2_config.py",
+          "projected_lines": 650,
+          "access": "read_only"
+        },
+        {
+          "alias": "OP",
+          "path": "src/townlet/config/bac_options.py",
+          "projected_lines": 600,
+          "access": "read_only"
+        },
+        {
+          "alias": "EF",
+          "path": "src/townlet/config/effective_run.py",
+          "projected_lines": 400,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 2750,
+      "claim": "C01/C02: every accepted active/preset/derived knob, finite validity, effective identity, new exploration selection roles",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F02",
+      "title": "compiler/artifacts; other model than last CU owner",
+      "reads": [
+        {
+          "alias": "UC",
+          "path": "src/townlet/universe/compiler.py",
+          "projected_lines": 1100,
+          "access": "read_only"
+        },
+        {
+          "alias": "CU",
+          "path": "src/townlet/universe/compiled.py",
+          "projected_lines": 1750,
+          "access": "read_only"
+        },
+        {
+          "alias": "DS",
+          "path": "src/townlet/universe/declarations.py",
+          "projected_lines": 1000,
+          "access": "read_only"
+        },
+        {
+          "alias": "HC",
+          "path": "src/townlet/training/historical_checkpoint.py",
+          "projected_lines": 700,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 4900,
+      "claim": "C02/C03/C10/C11: lossless lowering, full replacement, old/current hash and approved archive dispatch and coherent import",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F03",
+      "title": "entry/evaluation; other model than last CLI/GE owner",
+      "reads": [
+        {
+          "alias": "LR",
+          "path": "src/townlet/config/resolved_launch.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "CLI",
+          "path": "scripts/run_demo.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "GE",
+          "path": "scripts/evaluate_policy.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "HE",
+          "path": "scripts/l2_baseline.py",
+          "projected_lines": 320,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 1570,
+      "claim": "C03/C12: all supported transports, current evaluator and preserved historical FF protocol",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F04",
+      "title": "environment/outcomes; other model than last ENV owner",
+      "reads": [
+        {
+          "alias": "ENV",
+          "path": "src/townlet/environment/vectorized_env.py",
+          "projected_lines": 2000,
+          "access": "read_only"
+        },
+        {
+          "alias": "AM",
+          "path": "src/townlet/environment/action_mask_builder.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "ST",
+          "path": "src/townlet/training/state.py",
+          "projected_lines": 350,
+          "access": "read_only"
+        },
+        {
+          "alias": "EP",
+          "path": "src/townlet/training/episode.py",
+          "projected_lines": 200,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 3150,
+      "claim": "C05/C07/C09: exact successor-mask timing, eligibility/endings, per-world action/depletion/owned outcomes",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F05",
+      "title": "flat replay/math; other model than last PB owner",
+      "reads": [
+        {
+          "alias": "RB",
+          "path": "src/townlet/training/replay_buffer.py",
+          "projected_lines": 850,
+          "access": "read_only"
+        },
+        {
+          "alias": "PB",
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "projected_lines": 1000,
+          "access": "read_only"
+        },
+        {
+          "alias": "RC",
+          "path": "src/townlet/training/replay_contract.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "PS",
+          "path": "src/townlet/training/per_sampling.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 2750,
+      "claim": "C05/C06/C10: storage/restore lifecycle, actual draw law, beta1 objective, finite numerics, approved archive query/export and zero archive sampling",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F06",
+      "title": "recurrent learner; other model than last POP owner",
+      "reads": [
+        {
+          "alias": "SB",
+          "path": "src/townlet/training/sequential_replay_buffer.py",
+          "projected_lines": 1250,
+          "access": "read_only"
+        },
+        {
+          "alias": "POP",
+          "path": "src/townlet/population/vectorized.py",
+          "projected_lines": 3000,
+          "access": "read_only"
+        },
+        {
+          "alias": "QT",
+          "path": "src/townlet/training/q_targets.py",
+          "projected_lines": 180,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 4,
+      "projected_lines": 4780,
+      "claim": "C01/C05/C06/C07/C08/C11: actual targets/direction, real short windows/context/hidden state, readiness/PER, approved archive/current-full dispatch and transfer consumer; BAC-C13/X04 finite, truthful TD diagnostic over supported real loss rows",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval.",
+      "required_findings_refresh": [
+        "X04"
+      ]
+    },
+    {
+      "id": "F07",
+      "title": "token representation; other model than last NET owner",
+      "reads": [
+        {
+          "alias": "NET",
+          "path": "src/townlet/agent/networks.py",
+          "projected_lines": 750,
+          "access": "read_only"
+        },
+        {
+          "alias": "NF",
+          "path": "src/townlet/agent/network_factory.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "test_or_public_source",
+          "path": "src/townlet/agent/token_input.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "test_or_public_source",
+          "path": "src/townlet/universe/token_hashes.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 1650,
+      "claim": "C04/C11/C12: descriptor binding existence, permutation/absence/empty, schema/context ownership and correct MLP omission key",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F08",
+      "title": "exploration; other model than last RP/RND owner",
+      "reads": [
+        {
+          "alias": "AS",
+          "path": "src/townlet/exploration/action_selection.py",
+          "projected_lines": 160,
+          "access": "read_only"
+        },
+        {
+          "alias": "RND",
+          "path": "src/townlet/exploration/rnd.py",
+          "projected_lines": 800,
+          "access": "read_only"
+        },
+        {
+          "alias": "AI",
+          "path": "src/townlet/exploration/adaptive_intrinsic.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "RP",
+          "path": "src/townlet/config/exploration_policy.py",
+          "projected_lines": 1000,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 2610,
+      "claim": "C02/C05/C08/C10: selected strategy construction, reward ownership, exact zero mass, bounded predictor/tail and continuation",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F09",
+      "title": "curriculum; other model than last CA owner",
+      "reads": [
+        {
+          "alias": "CB",
+          "path": "src/townlet/curriculum/base.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "CA",
+          "path": "src/townlet/curriculum/adversarial.py",
+          "projected_lines": 800,
+          "access": "read_only"
+        },
+        {
+          "alias": "CS",
+          "path": "src/townlet/curriculum/static.py",
+          "projected_lines": 220,
+          "access": "read_only"
+        },
+        {
+          "alias": "CF",
+          "path": "src/townlet/curriculum/factory.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 1670,
+      "claim": "C02/C07/C09: completion/step commitment modes, fractions/dwell/rates/bands and per-lane decisions",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F10",
+      "title": "runner/telemetry; other model than last RR owner",
+      "reads": [
+        {
+          "alias": "RR",
+          "path": "src/townlet/demo/runner.py",
+          "projected_lines": 1500,
+          "access": "read_only"
+        },
+        {
+          "alias": "CL",
+          "path": "src/townlet/training/clock_ledger.py",
+          "projected_lines": 180,
+          "access": "read_only"
+        },
+        {
+          "alias": "CC",
+          "path": "src/townlet/config/curriculum_config.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "REG",
+          "path": "src/townlet/population/runtime_registry.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 2430,
+      "claim": "C02/C07/C08/C09/C10/C13: real resolved-policy wiring, episode transaction, effective settings/units and cleanup ordering",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F11",
+      "title": "checkpoint/transfer; other model than last CK/TR owner",
+      "reads": [
+        {
+          "alias": "CK",
+          "path": "src/townlet/training/checkpoint_utils.py",
+          "projected_lines": 1000,
+          "access": "read_only"
+        },
+        {
+          "alias": "LM",
+          "path": "src/townlet/training/load_modes.py",
+          "projected_lines": 220,
+          "access": "read_only"
+        },
+        {
+          "alias": "TR",
+          "path": "src/townlet/training/transfer.py",
+          "projected_lines": 400,
+          "access": "read_only"
+        },
+        {
+          "alias": "RC",
+          "path": "src/townlet/training/replay_contract.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 2220,
+      "claim": "C05/C10/C11: current-full/approved-archival mode guarantees, approval/row-count/warmup clocks and atomic archive failure, complete/partial/fresh/retained transfer and numeric selection",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F12",
+      "title": "serving; other model than last LIVE owner",
+      "reads": [
+        {
+          "alias": "LIVE",
+          "path": "src/townlet/demo/live_inference.py",
+          "projected_lines": 1500,
+          "access": "read_only"
+        },
+        {
+          "alias": "EV",
+          "path": "src/townlet/demo/evaluation_view.py",
+          "projected_lines": 350,
+          "access": "read_only"
+        },
+        {
+          "alias": "SERVER",
+          "path": "src/townlet/demo/unified_server.py",
+          "projected_lines": 700,
+          "access": "read_only"
+        },
+        {
+          "alias": "IW",
+          "path": "src/townlet/demo/inference_worker.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 3200,
+      "claim": "C01/C03/C10/C12/C13: four-family mode/view/reset/memory/isolation, handoff identity and actual public paths",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F13",
+      "title": "public strategy/load APIs; other model than last loader/strategy owner",
+      "reads": [
+        {
+          "alias": "EXL",
+          "path": "src/townlet/config/exploration.py",
+          "projected_lines": 100,
+          "access": "read_only"
+        },
+        {
+          "alias": "CUL",
+          "path": "src/townlet/config/curriculum.py",
+          "projected_lines": 100,
+          "access": "read_only"
+        },
+        {
+          "alias": "test_or_public_source",
+          "path": "src/townlet/exploration/base.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "test_or_public_source",
+          "path": "src/townlet/exploration/epsilon_greedy.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 850,
+      "claim": "C03/C08/C10: retained loader/exploration APIs, effective epsilon and strategy-state protocol",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F14",
+      "title": "durability/sinks; other model than last REC/DB owner",
+      "reads": [
+        {
+          "alias": "REC",
+          "path": "src/townlet/recording/recorder.py",
+          "projected_lines": 800,
+          "access": "read_only"
+        },
+        {
+          "alias": "RT",
+          "path": "src/townlet/recording/receipts.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "DB",
+          "path": "src/townlet/demo/database.py",
+          "projected_lines": 1500,
+          "access": "read_only"
+        },
+        {
+          "alias": "TB",
+          "path": "src/townlet/training/tensorboard_logger.py",
+          "projected_lines": 700,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 3600,
+      "claim": "C07/C13: acceptance fence, scheduling/failure interleavings, matching file/index and owned sink reconciliation",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F15",
+      "title": "learning protocol; other model than T40 harness owner",
+      "reads": [
+        {
+          "alias": "GE",
+          "path": "scripts/evaluate_policy.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "EV",
+          "path": "src/townlet/demo/evaluation_view.py",
+          "projected_lines": 350,
+          "access": "read_only"
+        },
+        {
+          "alias": "test_or_public_source",
+          "path": "tests/test_townlet/regressions/bac/test_learning_comparison.py",
+          "projected_lines": 400,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 4,
+      "projected_lines": 1400,
+      "claim": "C01/C12: finite budgets/cohorts, authentic controls, separate reward metrics, qualified claims rather than historical extrapolation",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F16",
+      "title": "additive curiosity; other model than last ICM/COUNT owner",
+      "reads": [
+        {
+          "alias": "COUNT",
+          "path": "src/townlet/exploration/count_based.py",
+          "projected_lines": 300,
+          "access": "read_only"
+        },
+        {
+          "alias": "ICM",
+          "path": "src/townlet/exploration/icm.py",
+          "projected_lines": 500,
+          "access": "read_only"
+        },
+        {
+          "alias": "RP",
+          "path": "src/townlet/config/exploration_policy.py",
+          "projected_lines": 1000,
+          "access": "read_only"
+        },
+        {
+          "alias": "RND",
+          "path": "src/townlet/exploration/rnd.py",
+          "projected_lines": 800,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 2950,
+      "claim": "C01/C02/C08/C10: all five selected providers, actual count/transition effects, objective/gradient correctness, bounded service and exact owned state",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F17",
+      "title": "canonical composition; other model than last DAC/ENV owner",
+      "reads": [
+        {
+          "alias": "ENV",
+          "path": "src/townlet/environment/vectorized_env.py",
+          "projected_lines": 2000,
+          "access": "read_only"
+        },
+        {
+          "alias": "RWC",
+          "path": "src/townlet/environment/reward_calculator.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "DAC",
+          "path": "src/townlet/environment/dac_engine.py",
+          "projected_lines": 1100,
+          "access": "read_only"
+        },
+        {
+          "alias": "DRIVE",
+          "path": "src/townlet/config/drive_as_code.py",
+          "projected_lines": 750,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 4450,
+      "claim": "C02/C05/C08/C13: actual bound provider, successor/predecessor phases, zero/base/runtime/modifier scaling exactly once, true reward/replay contrast",
+      "independence": "Fresh other model than latest relevant owner; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F18",
+      "title": "private bank/RNG/factory",
+      "reads": [
+        {
+          "alias": "BANK",
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "projected_lines": 650,
+          "access": "read_only"
+        },
+        {
+          "alias": "WS",
+          "path": "src/townlet/exploration/world_curiosity_state.py",
+          "projected_lines": 750,
+          "access": "read_only"
+        },
+        {
+          "alias": "PF",
+          "path": "src/townlet/exploration/provider_factory.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "RP",
+          "path": "src/townlet/config/exploration_policy.py",
+          "projected_lines": 1000,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 3000,
+      "claim": "All private mutable ownership, RNG/global restoration, real updates/local budgets, preserved shared mode",
+      "independence": "Fresh other model; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F19",
+      "title": "private state/transfer",
+      "reads": [
+        {
+          "alias": "POP",
+          "path": "src/townlet/population/vectorized.py",
+          "projected_lines": 3000,
+          "access": "read_only"
+        },
+        {
+          "alias": "CP",
+          "path": "src/townlet/exploration/curiosity_checkpoint.py",
+          "projected_lines": 450,
+          "access": "read_only"
+        },
+        {
+          "alias": "WS",
+          "path": "src/townlet/exploration/world_curiosity_state.py",
+          "projected_lines": 750,
+          "access": "read_only"
+        },
+        {
+          "alias": "TR",
+          "path": "src/townlet/training/transfer.py",
+          "projected_lines": 400,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 4950,
+      "claim": "Strict atomic binding/resume/conversion/archives and fresh/retained transfer; shared/current resume preserved",
+      "independence": "Fresh other model; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F20",
+      "title": "physical/reward comparator",
+      "reads": [
+        {
+          "alias": "SNAP",
+          "path": "tests/test_townlet/fixtures/bac_curiosity/world_snapshot.py",
+          "projected_lines": 350,
+          "access": "read_only"
+        },
+        {
+          "alias": "ENV",
+          "path": "src/townlet/environment/vectorized_env.py",
+          "projected_lines": 2000,
+          "access": "read_only"
+        },
+        {
+          "alias": "RWC",
+          "path": "src/townlet/environment/reward_calculator.py",
+          "projected_lines": 250,
+          "access": "read_only"
+        },
+        {
+          "alias": "DAC",
+          "path": "src/townlet/environment/dac_engine.py",
+          "projected_lines": 1100,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 4050,
+      "claim": "Full named owner inventory, actual context/phase, vector scale/canonical total; no invented full-snapshot proof",
+      "independence": "Fresh other model; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F21",
+      "title": "C09/shared-policy boundary",
+      "reads": [
+        {
+          "alias": "POP",
+          "path": "src/townlet/population/vectorized.py",
+          "projected_lines": 3000,
+          "access": "read_only"
+        },
+        {
+          "alias": "CA",
+          "path": "src/townlet/curriculum/adversarial.py",
+          "projected_lines": 800,
+          "access": "read_only"
+        },
+        {
+          "alias": "CB",
+          "path": "src/townlet/curriculum/base.py",
+          "projected_lines": 150,
+          "access": "read_only"
+        },
+        {
+          "alias": "EP",
+          "path": "src/townlet/training/episode.py",
+          "projected_lines": 200,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<counted scratch probe owned by this lens>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 4500,
+      "claim": "Own-lane controller inputs/application, shared-Q feedback and controlled-mechanics differential",
+      "independence": "Fresh other model; common final immutable candidate SHA; no planner self-approval."
+    },
+    {
+      "id": "F22",
+      "title": "inactive action admission and item-owner effects",
+      "reads": [
+        {
+          "alias": "AE",
+          "path": "src/townlet/environment/action_executor.py",
+          "projected_lines": 400,
+          "access": "read_only"
+        },
+        {
+          "alias": "ENV",
+          "path": "src/townlet/environment/vectorized_env.py",
+          "projected_lines": 2000,
+          "access": "read_only"
+        },
+        {
+          "alias": "ITEM_ACTIONS",
+          "path": "src/townlet/items/action_handlers.py",
+          "actual_lines": 356,
+          "projected_lines": 500,
+          "access": "read_only"
+        },
+        {
+          "alias": "T09a_test",
+          "path": "tests/test_townlet/regressions/bac/test_inactive_action_execution.py",
+          "projected_lines": 350,
+          "access": "read_only"
+        },
+        {
+          "alias": "probe",
+          "path": "<F22 reviewer-owned counted scratch probe>",
+          "projected_lines": 350,
+          "access": "create_scratch_probe"
+        }
+      ],
+      "projected_files": 5,
+      "projected_lines": 3600,
+      "claim": "Entry-eligible physical execution across movement/velocity/items/custom and unchanged INTERACT intent timing; completed lanes frozen, live terminal action executes once; real authored lifecycle and current-source item-owner control. No whole-simulator hidden-state proof from this lens alone.",
+      "independence": "Fresh other model than latest relevant owner, common final immutable candidate SHA, independent synthesis with F01\u2013F21; source cap includes owned probe."
+    }
+  ],
+  "synthesis": "All22 lenses plus finite D/G/C/K/candidate/X01/X02/X03 ledger and joint evidence at one final immutable SHA; repair/re-review/current-SHA gates until zero unresolved P1/P2 and zero unapproved in-scope gaps.",
+  "routine_budget_updates": [
+    {
+      "id": "EF400-SOURCE-FLOOR-2026-11-01",
+      "effective": true,
+      "type": "routine_source_budget_floor_no_semantic_change",
+      "authority": "Root explicitly authorizes EF400 propagation within unchanged user5/5000 cap; no further technical design review required when all contexts fit.",
+      "old_EF_ceiling": 300,
+      "new_EF_ceiling": 400,
+      "attributed_current_EF_actual_lines": 324,
+      "affected_tasks": [
+        "T03",
+        "PW01",
+        "T24",
+        "T29",
+        "T36"
+      ],
+      "affected_final_lenses": [
+        "F01"
+      ],
+      "archive": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/archives/pre-EF400-475c387e99bc",
+      "parent_tasks_sha256": "475c387e99bcc30b5a2c99fd7d9a570df16e0f6b37a4a0bb3797c6433840cc10",
+      "no_tasks_files_interfaces_or_semantics_added": true
+    },
+    "HC700-SOURCE-FLOOR-2026-11-01",
+    "WAVE04-REVIEWED-INTERFACE-FLOORS-2026-11-01",
+    "WAVE04-PRESERVATION-SOURCE-FLOORS-2026-11-01",
+    "T33-ADDITIVE-LEGACY-PRESERVATION-2026-11-01",
+    {
+      "id": "T07-standalone-preservation-owner-amendment",
+      "capsule_sha256": "17835ffc70fc4bd7727308bd5defc3796971abc195908c4048c9724fb7cb5b4b",
+      "reason": "Full pack discovery cannot preserve accepted standalone section-only loader domain. Add explicit section producer, reuse lowering, preserve API/DTO/wrapper validation; no removal.",
+      "task": "T07",
+      "complete_files": 5,
+      "projected_lines": 2000,
+      "shared_owner_order": "T06 -> T07 on resolved_launch.py",
+      "global_caps": "All66 tasks/22 lenses at most5files/5000lines, helpers included",
+      "frozen_plan_unchanged": true
+    },
+    {
+      "id": "PW02-source-verified-private-domain-ABI",
+      "capsule_sha256": "6cc80fc89f4da857da575a5ddbdb86ea5840ed0548645527f3900754c17ee0ba",
+      "WS_floor": 650,
+      "PW02_test_floor": 500,
+      "PW02_complete_files": 5,
+      "PW02_projected_lines": 2750,
+      "required_future_owners": [
+        "PW04",
+        "PW03"
+      ],
+      "frozen_plan_unchanged": true,
+      "scope": "Additive strictB prerequisite; actual source/tests/final B qualification remain owed; no current source edit."
+    }
+  ]
+}

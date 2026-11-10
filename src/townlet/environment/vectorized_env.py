@@ -8,7 +8,7 @@ environment with tensor operations [num_agents, ...].
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from numbers import Number, Real
 from pathlib import Path
 from types import MappingProxyType
@@ -17,6 +17,7 @@ from weakref import WeakValueDictionary
 
 import torch
 
+from townlet.config.exploration_policy import ExplorationRuntime, IntrinsicStepHandoff, IntrinsicTransitionContext
 from townlet.config.world_roster import (
     WorldAcceptedEpisode,
     WorldEpisodeReservation,
@@ -69,8 +70,9 @@ from townlet.vfs.vtc import (
 )
 
 if TYPE_CHECKING:
-    from townlet.exploration.base import ExplorationStrategy
+    from townlet.exploration.world_curiosity_state import CuriosityStepStamp
     from townlet.population.runtime_registry import AgentRuntimeRegistry
+    from townlet.training.clock_ledger import PreparedVectorStep
     from townlet.universe.compiled import CompiledUniverse
     from townlet.vfs.schema import VariableDef
 
@@ -522,8 +524,10 @@ class VectorizedHamletEnv:
         self._initialize_item_subsystem(num_agents)
         self._initialize_affordance_engine(num_agents)
 
-        # Exploration module (optional, set by population or external code)
-        self.exploration_module: ExplorationStrategy | None = None
+        # Required current runtime and parent claim are bound before stepping.
+        self._exploration_bound = False
+        self._exploration_runtime: ExplorationRuntime
+        self._claim_vector_step: Callable[..., int]
 
         # Temporal mechanics state
         self.interaction_progress = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
@@ -606,17 +610,15 @@ class VectorizedHamletEnv:
         """Attach runtime registry for telemetry tracking."""
         self.runtime_registry = registry
 
-    def set_exploration_module(self, exploration: ExplorationStrategy) -> None:
-        """Set exploration module for intrinsic reward computation.
-
-        Args:
-            exploration: Exploration strategy (RND, ICM, epsilon-greedy, etc.)
-
-        Note:
-            This is typically called by VectorizedPopulation during initialization,
-            but can also be set manually for testing or custom training loops.
-        """
-        self.exploration_module = exploration
+    def set_exploration_runtime(self, *, exploration: ExplorationRuntime, claim_vector_step: Callable[..., int]) -> None:
+        """Bind once before world role custody freezes; equal rebinding also refuses."""
+        if self._exploration_bound or self._world_phase != "fresh-unbound":
+            raise ValueError("exploration runtime must bind once before world authority registration")
+        if not isinstance(exploration, ExplorationRuntime) or not callable(claim_vector_step):
+            raise TypeError("ENV requires a current exploration runtime and parent claim callback")
+        self._exploration_runtime = exploration
+        self._claim_vector_step = claim_vector_step
+        self._exploration_bound = True
 
     def _apply_configured_affordance_positions(self) -> None:
         """Load static affordance positions from config/optimization data."""
@@ -1260,6 +1262,8 @@ class VectorizedHamletEnv:
         self,
         actions: torch.Tensor,  # [num_agents]
         depletion_multiplier: float = 1.0,  # Curriculum difficulty
+        *,
+        vector_step: PreparedVectorStep,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict]:
         """
         Execute one step for all agents.
@@ -1286,9 +1290,22 @@ class VectorizedHamletEnv:
         """
         if self._world_phase != "active":
             raise ValueError("world episode must be accepted and activated before stepping")
+        accepted = self._world_accepted
+        if accepted is None:
+            raise ValueError("active world episode requires its current accepted token")
+        self._accepted(accepted)
+        predecessor = self._get_observations().detach().clone()
+        actions = actions.detach().clone()
+        active_on_entry = ~self.dones.detach().clone()
+        vector_tick = self._claim_vector_step(
+            prepared=vector_step,
+            accepted=accepted,
+            world_ids=self.world_ids,
+            predecessor=predecessor,
+            actions=actions,
+            active_on_entry=active_on_entry,
+        )
         self._world_revision += 1
-        prev_dones = self.dones.clone()
-        active_on_entry = ~prev_dones
         self.vfs_registry.reset_tick_scoped()
         refusals_before = 0
         if self.effect_manager is not None:
@@ -1366,7 +1383,26 @@ class VectorizedHamletEnv:
         newly_retired = active_on_entry & ~authored_terminal & (self.step_counts >= self.agent_lifespan)
 
         # 6. Calculate rewards (interoception-aware)
-        rewards = self._reward_calculator._calculate_shaped_rewards(active_on_entry=active_on_entry)
+        intrinsic_context = IntrinsicTransitionContext(
+            predecessor=predecessor,
+            actions=actions,
+            successor=self._get_observations(),
+            active_on_entry=active_on_entry,
+            vector_tick=vector_tick,
+        )
+        intrinsic_stamp = self._exploration_runtime.prepare_step_stamp(
+            accepted=accepted,
+            world_ids=self.world_ids,
+            active_on_entry=active_on_entry,
+            vector_tick=vector_tick,
+        )
+        intrinsic_transition = IntrinsicStepHandoff(intrinsic_context, intrinsic_stamp, accepted)
+        rewards = self._reward_calculator._calculate_shaped_rewards(
+            active_on_entry=active_on_entry,
+            intrinsic_context=intrinsic_context,
+            intrinsic_stamp=intrinsic_stamp,
+            accepted=accepted,
+        )
         bonus = newly_retired.to(dtype=rewards.dtype)
         components = self._last_reward_components
         components["extrinsic"] = components["extrinsic"] + bonus
@@ -1403,6 +1439,7 @@ class VectorizedHamletEnv:
             )
 
         info = {
+            "intrinsic_transition": intrinsic_transition,
             "successor_action_masks": successor_action_masks,
             "active_on_entry": active_on_entry.clone(),
             "newly_terminal": newly_terminal.clone(),
@@ -1654,9 +1691,21 @@ class VectorizedHamletEnv:
         """Handle INTERACT action at affordances in instant mode."""
         return self._action_executor._handle_instant_interactions(interact_mask)
 
-    def _calculate_shaped_rewards(self, *, active_on_entry: torch.Tensor) -> torch.Tensor:
-        """Calculate total rewards using DACEngine."""
-        return self._reward_calculator._calculate_shaped_rewards(active_on_entry=active_on_entry)
+    def _calculate_shaped_rewards(
+        self,
+        *,
+        active_on_entry: torch.Tensor,
+        intrinsic_context: IntrinsicTransitionContext,
+        intrinsic_stamp: CuriosityStepStamp,
+        accepted: WorldAcceptedEpisode,
+    ) -> torch.Tensor:
+        """Calculate canonical rewards for the exact accepted transition."""
+        return self._reward_calculator._calculate_shaped_rewards(
+            active_on_entry=active_on_entry,
+            intrinsic_context=intrinsic_context,
+            intrinsic_stamp=intrinsic_stamp,
+            accepted=accepted,
+        )
 
     def _get_affordance_positions(self) -> dict[str, torch.Tensor]:
         """Get current affordance positions as dict.

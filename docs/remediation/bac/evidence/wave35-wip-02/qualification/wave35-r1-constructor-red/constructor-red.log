@@ -1,0 +1,45 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py F    [100%]
+
+=================================== FAILURES ===================================
+________________ test_current_runtime_constructor_and_telemetry ________________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_current_runtime_constructor_and_telemetry(compiled: Any) -> None:
+        """First focused RED must reach actual POP's current-runtime telemetry seam."""
+        rig = make_parent(compiled)
+        assert rig.population.exploration is rig.runtime
+        assert rig.population.token_spec.total_dims == rig.population.current_obs.shape[1]
+>       rig.population.sync_exploration_metrics()
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1213: in sync_exploration_metrics
+    self._get_current_epsilon_value(),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7fb616086510>
+
+    def _get_current_epsilon_value(self) -> float:
+        """Return epsilon for the closed production exploration vocabulary."""
+        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
+            return float(self.exploration.rnd.epsilon)
+        if isinstance(self.exploration, (EpsilonGreedyExploration, RNDExploration)):
+            return float(self.exploration.epsilon)
+>       raise TypeError(f"Unsupported exploration strategy: {type(self.exploration).__name__}.")
+E       TypeError: Unsupported exploration strategy: ExplorationRuntime.
+
+src/townlet/population/vectorized.py:1168: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_current_runtime_constructor_and_telemetry
+============================== 1 failed in 4.35s ===============================

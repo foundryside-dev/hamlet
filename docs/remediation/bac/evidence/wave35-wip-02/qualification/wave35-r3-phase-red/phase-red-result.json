@@ -1,0 +1,27 @@
+{
+  "name": "phase-red",
+  "exit_code": 1,
+  "seconds": 7.236552476882935,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+    "-k",
+    "provider_phase_and_transition_identity",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r3-phase-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r3-phase-red/phase-red.log",
+  "sha256": "6c59107325b3eb6aaac9244423164460a66a75a4fac1ba5dc92ae3265d5f6c5c",
+  "candidate_tree": "c986dde36aa91633a785f24d36322b9365d88a97",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "259b2ccd46e15291b9263f6cfb4ebc3dd50aa3947759c6bad13907fa1eb5fabf",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

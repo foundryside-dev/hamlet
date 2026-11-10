@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "2d1133d790e6f12b1cff358b114daada9c485fb2",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'RuntimeError'>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_runtime_binding_is_once_before_world_custody[runtime-active]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

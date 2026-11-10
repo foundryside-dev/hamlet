@@ -1,0 +1,25 @@
+{
+  "name": "env",
+  "exit_code": 0,
+  "seconds": 27.05924963951111,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r10-env"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-owned/env.log",
+  "sha256": "59b962606f49877feb3d30e17b924d68d3bf3d57b61cf86ed2423b93ef4c8dfe",
+  "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "5ab013f19ffb8b8544ae86a2a7f2a4588319da4bf8d7709a4ea05e5d98e552b2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

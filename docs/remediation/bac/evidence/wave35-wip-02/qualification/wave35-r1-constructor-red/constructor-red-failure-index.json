@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "3f04c7f64ad59126cef5596f795249f90de83998",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: Unsupported exploration strategy: ExplorationRuntime.",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_current_runtime_constructor_and_telemetry",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

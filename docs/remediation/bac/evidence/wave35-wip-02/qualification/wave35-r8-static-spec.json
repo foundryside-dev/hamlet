@@ -1,0 +1,16 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r8-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r8-static",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    }
+  ]
+}

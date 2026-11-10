@@ -1,0 +1,25 @@
+{
+  "name": "binding-red",
+  "exit_code": 1,
+  "seconds": 10.811074495315552,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_runtime_binding_is_once_before_world_custody[runtime-active]",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r9-binding-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r9-binding-red/binding-red.log",
+  "sha256": "85097b607d9bb2be08288eee227c1c7dd71be28756e35adf68abcb2272911f39",
+  "candidate_tree": "2d1133d790e6f12b1cff358b114daada9c485fb2",
+  "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "manifest_sha256": "47a8c7c36d556d1eaa5e15e49b8ad6dd01b42735543192ea43cdca0662f607b2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,35 @@
+"""Publish reviewed pure public ENV token authentication and exact evidence."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave26/r2-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')};out=D/'evidence/wave26-wip-01';out.mkdir(exist_ok=True);artifacts={}
+def copy(source,dest):
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if dest.exists():assert sha(source)==sha(dest),str(dest)
+ else:dest.write_bytes(source.read_bytes())
+ assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave26-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave26-r*.json')):copy(p,out/'qualification'/p.name)
+for folder in ('wave26','wave26-preparation'):
+ for p in sorted((W/folder).glob('*')):
+  if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/folder/p.name)
+for p in sorted((W/'wave25-preparation').glob('*.md')):copy(p,out/'continuation-approved-design-not-implementation'/p.name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave26_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md','tasks.json','final-review-lenses.json'):copy(W/name,out/('execution-'+name))
+copy(W/'wave26-preparation/CURRENT-ENV-ACCEPTED-AUTH-CONTRACT.md',D/'CURRENT-ENV-ACCEPTED-AUTH-CONTRACT.md')
+p=D/'CURRENT-WORLD-IDENTITY-CONTRACT.md';s=p.read_text();old='Seven remaining mypy errors are in oracle constructor/reset and POP reset callers';new='Nine current mypy errors are in oracle constructor/reset and POP reset/RND-construction callers';assert s.count(old)==1;s=s.replace(old,new);p.write_text(s+'\n\n## Public current-token authentication handoff\n\nThe actual ENV now exposes validate_accepted_episode(*, accepted: WorldAcceptedEpisode) -> None as a pure delegation to its existing exact-current-object identity guard. Copies, structural lookalikes, foreign and stale tokens refuse. This authenticates identity only: operation/phase checks remain with the actual callers and ENV, including quarantined native-export and physics refusal. It creates no authority or reset/step/completion/context/outcome/owner-receipt permission. The [source-verified public contract](CURRENT-ENV-ACCEPTED-AUTH-CONTRACT.md) records exact source and four-file inventory. Root and fresh Astra independently passed16 CPU cases at the final candidate, with quarantine observability tested through permitted state/RNG witnesses and explicit forbidden-operation checks. Prior direct identity/constructor/VFS coverage passed182 with4 unverified CUDA cases at identical production bytes. [Evidence](evidence/wave26-wip-01.json) preserves exact source trees, the genuine missing-API RED and quarantine-fixture repair. Local owner fixtures qualify this producer seam; actual PW05 bank and production parent integration remain required.\n')
+receipt=json.loads((W/'wave26/r2-checkpoint-receipt.json').read_text());manifest={'status':receipt['status'],'packet':'Minimal actual public ENV accepted-token authentication prerequisite for scoped bank','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original scoped releases unchanged; bounded producer accepted, actualbank/runner/fullreleaseOPEN','publication':'Authorized existingremote branch, no newbranch/worktree/repositorycopy/PR/merge/deletion. Private Git bundle excluded. Continueplannedwork.','next':'ActualPW05bank testsfirst and implementation at exactapprovedR4ABI5b93c9032c8aadd8db0e8eaac9b0c5fe8878e7804a9e13c0937922423ee289c9. Copieddesign technicalapproval isnotimplementationqualification orparentwiringproof.'}
+mp=D/'evidence/wave26-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n');p=D/'STATUS.md';p.write_text(p.read_text()+'\n\nThe actual public ENV accepted-token authentication prerequisite is accepted: only four production lines delegate exact-current-token identity to the existing guard, with required keyword input and no phase or execution grant. Final root16PASS and fresh Astra16PASS/source/spec/quality approval close the bounded seam. The review-found quarantine test fixture was repaired to use permitted physical/identity/RNG witnesses while preserving native-export, physics and INITIAL refusals; production guard remained unchanged. Earlier direct identity/constructor/VFS182PASS4CUDA skips remain attributed to their actual candidate at identical production bytes. [Contract](CURRENT-ENV-ACCEPTED-AUTH-CONTRACT.md) and [evidence](evidence/wave26-wip-01.json) preserve scope, source and limitations. Four cheap globalguards pass, final scoped formatting passes, nine old oracle/POP mypy errors remain; CLI/defaultrepo/coverage/slow/hardware/fresh final acceptance/requiredCI are still owed. **WIP — NOT INTEGRATED-QUALIFIED — NOT RELEASED.** Original28/66releasecount unchanged. PW05 concrete bank design has completed independent review with all five material design corrections addressed; actual test-first bank implementation is next, followed by genuine parent/runner/native integration. No routine halt or further human go-ahead is needed.\n')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md','docs/remediation/bac/CURRENT-WORLD-IDENTITY-CONTRACT.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave26-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave26-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

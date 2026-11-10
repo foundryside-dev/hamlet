@@ -1,0 +1,104 @@
+{
+  "status": "BOUNDED ACTUAL PUBLIC ENV ACCEPTED-TOKEN AUTHENTICATION PRODUCER ACCEPTED; BANK/RUNNER/FULLQUALIFICATION OPEN",
+  "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+  "candidate_tree": "5028604b97fa241f00e4bae758125b4aeb2e8755",
+  "changes": "ENV2403/a7f998355bec48e3a12c5b8a57648797592bc16c84af0d3f099eb7799db9540b only4publicidentitydelegationlines; currentnewtest270/eadc370b7773eac8ebbef0eeddd60e803416dd71f7eca7875fc4244ea315d98b; role/phase/native/protocols unchanged",
+  "final_runs": {
+    "prerequisites": {
+      "job": "prerequisites",
+      "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+      "candidate_tree": "5028604b97fa241f00e4bae758125b4aeb2e8755",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 6.737951040267944,
+      "source_guards": 347,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+      "candidate_tree": "5028604b97fa241f00e4bae758125b4aeb2e8755",
+      "exit_code": 0,
+      "counts": {
+        "passed": 16,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 18.285412549972534,
+      "source_guards": 347,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+      "candidate_tree": "5028604b97fa241f00e4bae758125b4aeb2e8755",
+      "exit_code": 0,
+      "counts": {
+        "passed": 16,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 6.840346336364746,
+      "source_guards": 347,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "initial_RED": "16collected/actualENVcurrentcompiled-lifecyclefixture1PASS;15call-phaseexplicitmissingpublicABI FAIL/1PASS10.499,347source573config13artifact3process/index/import/thread1custodyPASS",
+  "repair": "R1root15PASS1fixtureFAIL10.684/freshAstra15PASS1FAIL7.219: quarantine test exportedVFSnative beforevalidator, correctlyrefused; no productiondefect. Tests-only repair usesobservablestate/RNGwitnesses andexplicitexport/physics/INITIALrefusals, validatorcalledtwice. All16originalidentities preserved.",
+  "prior_covering": {
+    "job": "covering",
+    "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+    "candidate_tree": "2f5a63a58a728af624be0262a22d9fdd6ac48833",
+    "exit_code": 0,
+    "counts": {
+      "passed": 182,
+      "skipped": 4,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 22.601120710372925,
+    "source_guards": 347,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "prior_covering_qualification": "ActualR1 oldworldidentity/constructor/VFS182PASS4CUDA skip22.601, exactsameproductionandoldtests asR2; noR2rerunclaim. CombinedR1collectionactual202\u2014notearliermanual154miscount, correctedbeforepublication.",
+  "reviews": "FreshAstra SPEC+QUALITYAPPROVED+quarantinefixtureADDR, contracttruthAPPROVED exactf9085a17150946d7266ca09d41de1b72d3012fb314381685ac33106e2b8d335e; fourwhole3841<=4450. Local9rolefixtureevidence notwholeactualBANKparentproof.",
+  "static": "R1fullRuff/Black/defaults601/expressionPASS,mypy9oldcallerssame;finalR2scopedENV+testRuff/BlackPASS. CLI/defaultrepo/coverage/slow/freshfinal/requiredCIstillowed.",
+  "authority_limit": "AuthenticatesonlyactualcurrentENVtoken identity. No phase/reset/step/completion/context/outcome/ownerreceipt grant; currentquarantinetokenmayremainauthenticwhileoperation/exportrefusals unchanged.",
+  "next": "PW05actualprivatebanktests-first/code; exactR4ABI5b93c9032c8aadd8db0e8eaac9b0c5fe8878e7804a9e13c0937922423ee289c9 Solspec+qualityapproved/all5designfindingsADDR. Parent9role/RP/ENV/POP/runner/native/full54requirements22lenses+hardware/CIremainmandatory; CUDAunqualified; original28/66releasesunchanged.",
+  "sessions": "All named root/reviewer qualificationjobsCLOSED, no sourcewriterduringpublication."
+}

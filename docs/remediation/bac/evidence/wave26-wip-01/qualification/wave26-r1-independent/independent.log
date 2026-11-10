@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 16 items
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py ........... [ 68%]
+....F                                                                    [100%]
+
+=================================== FAILURES ===================================
+______ test_identity_authentication_keeps_quarantine_and_physics_refusal _______
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_identity_authentication_keeps_quarantine_and_physics_refusal(compiled):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        run.env.abandon_episode(accepted=accepted, reason="runtime_failure")
+        assert run.env.world_phase == "quarantined"
+>       _pure_validation(run.env, accepted)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:233: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:51: in _pure_validation
+    before = _snapshot(env)
+             ^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:36: in _snapshot
+    "env": _state(env),
+           ^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:83: in _state
+    "vfs": deepcopy(env.vfs_random_state()),
+                    ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f77c5277750>
+
+    def vfs_random_state(self) -> dict[str, Any]:
+        """Export owned current identity data, excluding provisional or failed attempts."""
+        if self._world_phase in ("resetting", "restoring", "quarantined"):
+>           raise ValueError("VFS native export requires a stable authoritative context")
+E           ValueError: VFS native export requires a stable authoritative context
+
+src/townlet/environment/vectorized_env.py:1509: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_identity_authentication_keeps_quarantine_and_physics_refusal
+========================= 1 failed, 15 passed in 3.53s =========================

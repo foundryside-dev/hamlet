@@ -2149,6 +2149,10 @@ class VectorizedHamletEnv:
         if accepted is not self._world_accepted or accepted is None:
             raise ValueError("accepted episode must be this ENV's current token")
 
+    def validate_accepted_episode(self, *, accepted: WorldAcceptedEpisode) -> None:
+        """Authenticate current token identity; callers retain their phase checks."""
+        self._accepted(accepted)
+
     def activate_episode(
         self, *, accepted: WorldAcceptedEpisode, population_receipt: WorldOwnerReceipt, curiosity_receipt: WorldOwnerReceipt
     ) -> WorldRecord:

@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave26/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave26-r2-prerequisites",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "prerequisites",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_identity_authentication_keeps_quarantine_and_physics_refusal",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave26-r2-prerequisites"
+      ]
+    }
+  ]
+}

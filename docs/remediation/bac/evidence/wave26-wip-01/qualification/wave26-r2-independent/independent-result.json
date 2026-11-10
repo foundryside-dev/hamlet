@@ -1,0 +1,24 @@
+{
+  "name": "independent",
+  "exit_code": 0,
+  "seconds": 6.840346336364746,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_env_accepted_auth.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave26-r2-independent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave26-r2-independent/independent.log",
+  "sha256": "11ce7cd2a0205e070e1cff8d1d5dbfd8f13e27f6721e1a39f1078581b9b37dca",
+  "candidate_tree": "5028604b97fa241f00e4bae758125b4aeb2e8755",
+  "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+  "manifest_sha256": "7f112b4df86c2e0b668cce0455279306f99db64af831c7de85195d38416d2517",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

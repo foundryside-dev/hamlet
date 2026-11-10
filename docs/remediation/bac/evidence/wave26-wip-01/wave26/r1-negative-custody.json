@@ -1,0 +1,22 @@
+{
+  "candidate_tree": "2f5a63a58a728af624be0262a22d9fdd6ac48833",
+  "runs": {
+    "owned": {
+      "failed": 1,
+      "passed": 15,
+      "seconds": 10.684016227722168,
+      "processes": 3,
+      "cause": "quarantined snapshothelper calls legitimately prohibited VFS nativeexport BEFORE validator; no production defect established"
+    },
+    "independent": {
+      "failed": 1,
+      "passed": 15,
+      "seconds": 7.2189226150512695,
+      "processes": 1,
+      "cause": "quarantined snapshothelper calls legitimately prohibited VFS nativeexport BEFORE validator; no production defect established"
+    }
+  },
+  "custody": "PASS347source573config13artifact/index/import/process/thread1/registry14MAIN1",
+  "next": "repairquarantine-specificfixture whilepreservingphase/export refusal, not productionguard",
+  "sessions": "R1rootowned/independent CLOSED, rootcovering/guards closure checkedseparately"
+}

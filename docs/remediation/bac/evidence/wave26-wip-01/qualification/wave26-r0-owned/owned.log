@@ -1,0 +1,571 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [16 items]
+
+.FFFFFFFFFFFFFFF                                                         [100%]
+=================================== FAILURES ===================================
+____ test_public_authentication_accepts_real_token_repeatedly_without_reset ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_public_authentication_accepts_real_token_repeatedly_without_reset(compiled):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+>       _pure_validation(run.env, accepted)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:50: in _pure_validation
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb638fe79d0>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+______ test_public_authentication_refuses_unissued_identity_purely[copy] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'copy'
+
+    @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
+    def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        if kind == "copy":
+            candidate = replace(accepted)
+        elif kind == "constructed":
+            candidate = WorldAcceptedEpisode(accepted.world_ids, accepted.world_episode_seqs, accepted.batch_episode, object(), 1)
+        elif kind == "duck":
+            candidate = SimpleNamespace(
+                world_ids=accepted.world_ids, world_episode_seqs=accepted.world_episode_seqs, batch_episode=accepted.batch_episode
+            )
+        elif kind == "changed_case":
+            candidate = replace(accepted, world_ids=(IDS[0].upper(), IDS[1]))
+        elif kind == "changed_unicode":
+            candidate = replace(accepted, world_ids=("é", "e\u0301"))
+        else:
+            candidate = None
+>       _pure_refusal(run.env, candidate)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb639303750>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+___ test_public_authentication_refuses_unissued_identity_purely[constructed] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'constructed'
+
+    @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
+    def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        if kind == "copy":
+            candidate = replace(accepted)
+        elif kind == "constructed":
+            candidate = WorldAcceptedEpisode(accepted.world_ids, accepted.world_episode_seqs, accepted.batch_episode, object(), 1)
+        elif kind == "duck":
+            candidate = SimpleNamespace(
+                world_ids=accepted.world_ids, world_episode_seqs=accepted.world_episode_seqs, batch_episode=accepted.batch_episode
+            )
+        elif kind == "changed_case":
+            candidate = replace(accepted, world_ids=(IDS[0].upper(), IDS[1]))
+        elif kind == "changed_unicode":
+            candidate = replace(accepted, world_ids=("é", "e\u0301"))
+        else:
+            candidate = None
+>       _pure_refusal(run.env, candidate)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb63962cf50>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+______ test_public_authentication_refuses_unissued_identity_purely[duck] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'duck'
+
+    @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
+    def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        if kind == "copy":
+            candidate = replace(accepted)
+        elif kind == "constructed":
+            candidate = WorldAcceptedEpisode(accepted.world_ids, accepted.world_episode_seqs, accepted.batch_episode, object(), 1)
+        elif kind == "duck":
+            candidate = SimpleNamespace(
+                world_ids=accepted.world_ids, world_episode_seqs=accepted.world_episode_seqs, batch_episode=accepted.batch_episode
+            )
+        elif kind == "changed_case":
+            candidate = replace(accepted, world_ids=(IDS[0].upper(), IDS[1]))
+        elif kind == "changed_unicode":
+            candidate = replace(accepted, world_ids=("é", "e\u0301"))
+        else:
+            candidate = None
+>       _pure_refusal(run.env, candidate)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb6392ed1d0>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+______ test_public_authentication_refuses_unissued_identity_purely[none] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'none'
+
+    @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
+    def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        if kind == "copy":
+            candidate = replace(accepted)
+        elif kind == "constructed":
+            candidate = WorldAcceptedEpisode(accepted.world_ids, accepted.world_episode_seqs, accepted.batch_episode, object(), 1)
+        elif kind == "duck":
+            candidate = SimpleNamespace(
+                world_ids=accepted.world_ids, world_episode_seqs=accepted.world_episode_seqs, batch_episode=accepted.batch_episode
+            )
+        elif kind == "changed_case":
+            candidate = replace(accepted, world_ids=(IDS[0].upper(), IDS[1]))
+        elif kind == "changed_unicode":
+            candidate = replace(accepted, world_ids=("é", "e\u0301"))
+        else:
+            candidate = None
+>       _pure_refusal(run.env, candidate)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb638e4efd0>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+___ test_public_authentication_refuses_foreign_env_with_same_public_identity ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_public_authentication_refuses_foreign_env_with_same_public_identity(compiled):
+        run = _Run(_env(compiled))
+        foreign = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        other = foreign.reset(1)[1].accepted
+        assert accepted.world_ids == other.world_ids
+        assert accepted.world_episode_seqs == other.world_episode_seqs
+        assert accepted.batch_episode == other.batch_episode
+        assert run.env.semantic_execution_identity == foreign.env.semantic_execution_identity
+        foreign_before = _snapshot(foreign.env)
+>       _pure_refusal(run.env, other)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:139: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f284a312ba0>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+__ test_public_authentication_refuses_unissued_identity_purely[changed_case] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'changed_case'
+
+    @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
+    def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        if kind == "copy":
+            candidate = replace(accepted)
+        elif kind == "constructed":
+            candidate = WorldAcceptedEpisode(accepted.world_ids, accepted.world_episode_seqs, accepted.batch_episode, object(), 1)
+        elif kind == "duck":
+            candidate = SimpleNamespace(
+                world_ids=accepted.world_ids, world_episode_seqs=accepted.world_episode_seqs, batch_episode=accepted.batch_episode
+            )
+        elif kind == "changed_case":
+            candidate = replace(accepted, world_ids=(IDS[0].upper(), IDS[1]))
+        elif kind == "changed_unicode":
+            candidate = replace(accepted, world_ids=("é", "e\u0301"))
+        else:
+            candidate = None
+>       _pure_refusal(run.env, candidate)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb6392d2990>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+_ test_public_authentication_refuses_stale_token_after_valid_boundary_and_fresh_reset _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_public_authentication_refuses_stale_token_after_valid_boundary_and_fresh_reset(compiled):
+        run = _Run(_env(compiled))
+        old = run.reset(1)[1].accepted
+        run.step()
+        _, closure, dispositions = run.close(1)
+        run.release_closed(1, closure, dispositions)
+        current = run.reset(2)[1].accepted
+        assert current.world_episode_seqs == (2, 2)
+>       _pure_refusal(run.env, old)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f284a3aaad0>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+_ test_public_authentication_refuses_unissued_identity_purely[changed_unicode] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'changed_unicode'
+
+    @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
+    def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        if kind == "copy":
+            candidate = replace(accepted)
+        elif kind == "constructed":
+            candidate = WorldAcceptedEpisode(accepted.world_ids, accepted.world_episode_seqs, accepted.batch_episode, object(), 1)
+        elif kind == "duck":
+            candidate = SimpleNamespace(
+                world_ids=accepted.world_ids, world_episode_seqs=accepted.world_episode_seqs, batch_episode=accepted.batch_episode
+            )
+        elif kind == "changed_case":
+            candidate = replace(accepted, world_ids=(IDS[0].upper(), IDS[1]))
+        elif kind == "changed_unicode":
+            candidate = replace(accepted, world_ids=("é", "e\u0301"))
+        else:
+            candidate = None
+>       _pure_refusal(run.env, candidate)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb639692350>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+____ test_public_authentication_preserves_exact_case_and_unicode_ids[ids0] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+ids = ('Case', 'case')
+
+    @pytest.mark.parametrize("ids", [("Case", "case"), ("é", "e\u0301")])
+    def test_public_authentication_preserves_exact_case_and_unicode_ids(compiled, ids):
+        env = VectorizedHamletEnv(
+            universe=compiled,
+            level_name="L0_test",
+            num_agents=2,
+            device="cpu",
+            world_roster=WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)}),
+            training_seed=SEED,
+            lane_world_ids=ids,
+        )
+        run = _Run(env)
+        accepted = run.reset(1)[1].accepted
+>       _pure_validation(env, accepted)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:50: in _pure_validation
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f2849fecf50>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+________ test_public_authentication_requires_explicit_keyword_argument _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_public_authentication_requires_explicit_keyword_argument(compiled):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+>       method = _validator(run.env)
+                 ^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb6392b9d10>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+____ test_public_authentication_preserves_exact_case_and_unicode_ids[ids1] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+ids = ('é', 'é')
+
+    @pytest.mark.parametrize("ids", [("Case", "case"), ("é", "e\u0301")])
+    def test_public_authentication_preserves_exact_case_and_unicode_ids(compiled, ids):
+        env = VectorizedHamletEnv(
+            universe=compiled,
+            level_name="L0_test",
+            num_agents=2,
+            device="cpu",
+            world_roster=WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)}),
+            training_seed=SEED,
+            lane_world_ids=ids,
+        )
+        run = _Run(env)
+        accepted = run.reset(1)[1].accepted
+>       _pure_validation(env, accepted)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:50: in _pure_validation
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f2849b4f110>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+_ test_identity_authentication_does_not_activate_or_release_phase_permissions __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_identity_authentication_does_not_activate_or_release_phase_permissions(compiled):
+        run = _Run(_env(compiled))
+        reservation = run.env.prepare_episode(batch_episode=1, release=run.release)
+        receipt = run.env.reset(reservation=reservation)
+        accepted = receipt.accepted
+>       _pure_validation(run.env, accepted)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:201: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:50: in _pure_validation
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb6390d16d0>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+______________ test_initial_has_no_accepted_token_to_authenticate ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_initial_has_no_accepted_token_to_authenticate(compiled):
+        run = _Run(_env(compiled))
+        assert run.initial()["accepted_bindings"] == []
+>       _pure_refusal(run.env, None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:58: in _pure_refusal
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f284a3cae90>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+______ test_identity_authentication_keeps_quarantine_and_physics_refusal _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_identity_authentication_keeps_quarantine_and_physics_refusal(compiled):
+        run = _Run(_env(compiled))
+        accepted = run.reset(1)[1].accepted
+        run.env.abandon_episode(accepted=accepted, reason="runtime_failure")
+        assert run.env.world_phase == "quarantined"
+>       _pure_validation(run.env, accepted)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:233: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:50: in _pure_validation
+    method = _validator(env)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fb638f99090>
+
+    def _validator(env):
+        method = getattr(env, "validate_accepted_episode", None)
+>       assert callable(method), "actual ENV must expose public validate_accepted_episode"
+E       AssertionError: actual ENV must expose public validate_accepted_episode
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:45: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_accepts_real_token_repeatedly_without_reset
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_unissued_identity_purely[copy]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_unissued_identity_purely[constructed]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_unissued_identity_purely[duck]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_unissued_identity_purely[none]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_foreign_env_with_same_public_identity
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_unissued_identity_purely[changed_case]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_stale_token_after_valid_boundary_and_fresh_reset
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_refuses_unissued_identity_purely[changed_unicode]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_preserves_exact_case_and_unicode_ids[ids0]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_requires_explicit_keyword_argument
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_public_authentication_preserves_exact_case_and_unicode_ids[ids1]
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_identity_authentication_does_not_activate_or_release_phase_permissions
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_initial_has_no_accepted_token_to_authenticate
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_identity_authentication_keeps_quarantine_and_physics_refusal
+========================= 15 failed, 1 passed in 6.76s =========================

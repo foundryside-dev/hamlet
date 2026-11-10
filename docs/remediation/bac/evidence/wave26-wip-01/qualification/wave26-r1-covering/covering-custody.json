@@ -1,0 +1,22 @@
+{
+  "job": "covering",
+  "base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+  "candidate_tree": "2f5a63a58a728af624be0262a22d9fdd6ac48833",
+  "exit_code": 0,
+  "counts": {
+    "passed": 182,
+    "skipped": 4,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 22.601120710372925,
+  "source_guards": 347,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

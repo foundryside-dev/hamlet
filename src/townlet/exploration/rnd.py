@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import math
+from contextlib import nullcontext
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 import torch
@@ -15,6 +16,7 @@ import torch.nn.functional as F  # noqa: N812
 from townlet.config.bac_options import RNDOptions
 from townlet.exploration.action_selection import epsilon_greedy_action_selection
 from townlet.exploration.base import ExplorationStrategy
+from townlet.exploration.world_curiosity_state import ServiceClock, WorldRNGState
 from townlet.training.state import BatchedAgentState
 
 
@@ -47,6 +49,13 @@ class PredictorServiceReceipt:
     overflow_optimizer_updates: int
 
 
+@dataclass
+class _PreparedRND:
+    owner: object
+    attributes: dict[str, Any]
+    consumed: bool
+
+
 class RunningMeanStd:
     """Running mean and standard deviation tracker.
 
@@ -72,7 +81,7 @@ class RunningMeanStd:
         """
         batch_mean = np.mean(x)
         batch_var = np.var(x)
-        batch_count = x.size if isinstance(x.size, int) else np.prod(x.shape)
+        batch_count = int(x.size)
 
         self.update_from_moments(batch_mean, batch_var, batch_count)
 
@@ -149,6 +158,9 @@ class RNDExploration(ExplorationStrategy):
         epsilon_min: float = 0.01,
         epsilon_decay: float = 0.995,
         device: torch.device = torch.device("cpu"),
+        *,
+        rng: WorldRNGState | None,
+        service_clock_unit: Literal["vector_tick", "world_eligible_admission"],
     ):
         """Initialize RND with fixed and predictor networks.
 
@@ -162,8 +174,26 @@ class RNDExploration(ExplorationStrategy):
             epsilon_decay: Epsilon decay rate
             device: Device for tensors
         """
-        if type(training_batch_size) is not int or training_batch_size <= 0:
-            raise ValueError("RND training_batch_size must be a positive integer")
+        ServiceClock(service_clock_unit, 0)
+        if rng is not None and not isinstance(rng, WorldRNGState):
+            raise ValueError("RND rng must be an actual world RNG owner or explicit None")
+        for name, value in (("obs_dim", obs_dim), ("embed_dim", embed_dim), ("training_batch_size", training_batch_size)):
+            if type(value) is not int or value <= 0:
+                raise ValueError(f"RND {name} must be a positive integer")
+        for scalar_name, scalar_value in (
+            ("learning_rate", learning_rate),
+            ("epsilon_start", epsilon_start),
+            ("epsilon_min", epsilon_min),
+            ("epsilon_decay", epsilon_decay),
+        ):
+            if isinstance(scalar_value, bool) or not isinstance(scalar_value, (int, float)) or not math.isfinite(scalar_value):
+                raise ValueError(f"RND {scalar_name} must be finite numeric configuration")
+        if learning_rate < 0 or not 0 <= epsilon_min <= epsilon_start <= 1 or not 0 <= epsilon_decay <= 1:
+            raise ValueError("RND learning rate/epsilon configuration is invalid")
+        device = torch.device(device)
+        if device.type not in {"cpu", "cuda"}:
+            raise ValueError("RND requires a concrete CPU or CUDA destination")
+        self._service_clock_unit = service_clock_unit
         self.obs_dim = obs_dim
         self.embed_dim = embed_dim
         self.training_batch_size = training_batch_size
@@ -175,12 +205,14 @@ class RNDExploration(ExplorationStrategy):
         self.epsilon_decay = epsilon_decay
 
         # Fixed network (random, frozen)
-        self.fixed_network = RNDNetwork(obs_dim, embed_dim).to(device)
+        with rng.activate("target") if rng is not None else nullcontext():
+            self.fixed_network = RNDNetwork(obs_dim, embed_dim).to(device)
         for param in self.fixed_network.parameters():
             param.requires_grad = False
 
         # Predictor network (trained to match fixed)
-        self.predictor_network = RNDNetwork(obs_dim, embed_dim).to(device)
+        with rng.activate("predictor") if rng is not None else nullcontext():
+            self.predictor_network = RNDNetwork(obs_dim, embed_dim).to(device)
 
         # Optimizer for predictor
         self.optimizer = torch.optim.Adam(self.predictor_network.parameters(), lr=learning_rate)
@@ -193,11 +225,23 @@ class RNDExploration(ExplorationStrategy):
         self._consumed_rows = 0
         self._dropped_rows = 0
         self._optimizer_updates = 0
-        self._vector_tick: int | None = None
-        self._paced_updates_this_tick = 0
+        self._service_position: int | None
+        if service_clock_unit == "world_eligible_admission":
+            self._service_position = 0
+        else:
+            self._service_position = None
+        self._ordinary_updates_at_position = 0
 
         # Running statistics for intrinsic reward normalization
         self.reward_rms = RunningMeanStd()
+
+    @property
+    def service_clock_unit(self) -> Literal["vector_tick", "world_eligible_admission"]:
+        return self._service_clock_unit
+
+    def _require_shared(self) -> None:
+        if self.service_clock_unit != "vector_tick":
+            raise ValueError("Private RND learning requires explicit eligible-admission clock")
 
     def select_actions(
         self,
@@ -235,12 +279,21 @@ class RNDExploration(ExplorationStrategy):
         Returns:
             [batch] normalized intrinsic rewards
         """
+        self._validate_observations(observations)
+        if type(update_stats) is not bool:
+            raise ValueError("RND update_stats requires bool")
+        if observations.device != next(self.predictor_network.parameters()).device:
+            raise ValueError("RND reward observations must match the provider device")
+        if len(observations) == 0:
+            return torch.empty(0, device=observations.device, dtype=observations.dtype)
         with torch.no_grad():
             target_features: torch.Tensor = self.fixed_network(observations)
             predicted_features: torch.Tensor = self.predictor_network(observations)
             # MSE per sample (high error = novel = high reward)
             mse_per_sample = ((target_features - predicted_features) ** 2).mean(dim=1)
 
+            if not torch.isfinite(mse_per_sample).all().item():
+                raise ValueError("RND produced nonfinite novelty")
             # Optionally update running statistics (only during training rollouts)
             if update_stats:
                 mse_numpy = mse_per_sample.cpu().numpy()
@@ -258,27 +311,34 @@ class RNDExploration(ExplorationStrategy):
         Args:
             batch: Experience batch with 'observations' key
         """
+        self._require_shared()
         if "observations" not in batch:
             return
-
         observations = batch["observations"]
-
-        if self.service_options is not None:
-            # The unclocked compatibility API denotes the next local service tick.
-            if self._vector_tick is not None:
-                self.step_counter = max(self.step_counter, self._vector_tick + 1)
-            self.admit_and_service(observations, vector_tick=self.step_counter)
-            self.step_counter += 1
-            return
-        # Explicit legacy adapter: one minibatch per call, retaining its old API.
         self._validate_observations(observations)
+        self._validate_buffer()
+        if self.service_options is not None:
+            prospective = self.step_counter
+            if self._service_position is not None:
+                prospective = max(prospective, self._service_position + 1)
+            self.admit_and_service(observations, vector_tick=prospective)
+            self.step_counter = prospective + 1
+            return
         self.obs_buffer.extend(row.detach().clone() for row in observations)
         self._admitted_rows += len(observations)
         self.update_predictor()
 
+    def _validate_buffer(self) -> None:
+        for row in self.obs_buffer:
+            if not isinstance(row, torch.Tensor) or row.ndim != 1:
+                raise ValueError("RND pending observations require owned observation rows")
+            self._validate_observations(row.unsqueeze(0))
+
     def _validate_observations(self, observations: torch.Tensor) -> None:
         if (
             not isinstance(observations, torch.Tensor)
+            or observations.layout != torch.strided
+            or observations.device.type not in {"cpu", "cuda"}
             or observations.ndim != 2
             or observations.shape[1] != self.obs_dim
             or observations.dtype != next(self.predictor_network.parameters()).dtype
@@ -289,6 +349,8 @@ class RNDExploration(ExplorationStrategy):
                 raise ValueError("RND observations must be finite floating rows with matching width and dtype")
 
     def _validated_options(self, options: RNDOptions) -> RNDOptions:
+        if not isinstance(options, RNDOptions):
+            raise ValueError("RND service requires resolved RNDOptions")
         checked = RNDOptions.model_validate(options.model_dump())
         if any(value is None for value in checked.model_dump().values()):
             raise ValueError("RND service requires centrally resolved, explicit options")
@@ -324,22 +386,52 @@ class RNDExploration(ExplorationStrategy):
         )
 
     def admit_and_service(self, observations: torch.Tensor, *, vector_tick: int) -> PredictorServiceReceipt:
-        """Admit only caller-selected eligible predecessor rows in bounded chunks.
+        """Current shared grouped admission; equal ticks share ordinary budget."""
+        self._require_shared()
+        return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
 
-        The caller owns eligibility and local clocks. Repeated calls at the same
-        tick share the ordinary paced budget. Lossless mandatory overflow service
-        may exceed that budget and is reported separately. Each loop either admits,
-        consumes, or explicitly drops rows, including oversized input tensors.
-        """
+    def admit_and_service_at(self, observations: torch.Tensor, *, clock: ServiceClock) -> PredictorServiceReceipt:
+        """Validate the entire call before servicing explicit shared/private clocks."""
         self._validate_observations(observations)
+        self._validate_buffer()
+        if self.service_options is None:
+            raise ValueError("Configure resolved RND service options before admission")
+        options = self._validated_options(self.service_options)
+        assert options.max_pending_rows is not None
+        if len(self.obs_buffer) > options.max_pending_rows:
+            raise ValueError("RND existing buffer exceeds bounded service capacity")
+        if type(clock) is not ServiceClock:
+            raise ValueError("RND service requires ServiceClock")
+        ServiceClock(clock.unit, clock.position)
+        if clock.unit != self.service_clock_unit:
+            raise ValueError("RND service clock unit differs from selected unit")
+        previous = self._service_position
+        if clock.unit == "vector_tick":
+            if previous is not None and clock.position < previous:
+                raise ValueError("RND vector clock must not regress")
+            return self._admit_service_rows(observations, clock.position)
+        assert previous is not None
+        if clock.position != previous + len(observations):
+            raise ValueError("RND private clock delta must equal actual eligible admissions")
+        receipts = [self._admit_service_rows(row.unsqueeze(0), previous + index + 1) for index, row in enumerate(observations)]
+        losses = [receipt.last_loss for receipt in receipts if receipt.last_loss is not None]
+        return PredictorServiceReceipt(
+            admitted_rows=len(observations),
+            consumed_rows=sum(item.consumed_rows for item in receipts),
+            dropped_rows=sum(item.dropped_rows for item in receipts),
+            pending_rows=len(self.obs_buffer),
+            optimizer_updates=sum(item.optimizer_updates for item in receipts),
+            last_loss=losses[-1] if losses else None,
+            paced_optimizer_updates=sum(item.paced_optimizer_updates for item in receipts),
+            overflow_optimizer_updates=sum(item.overflow_optimizer_updates for item in receipts),
+        )
+
+    def _admit_service_rows(self, observations: torch.Tensor, position: int) -> PredictorServiceReceipt:
         options = self.service_options
-        if options is None:
-            raise ValueError("configure_service with resolved options before bounded RND admission")
-        if type(vector_tick) is not int or vector_tick < 0 or (self._vector_tick is not None and vector_tick < self._vector_tick):
-            raise ValueError("RND vector_tick must be a nonnegative monotone integer")
-        if vector_tick != self._vector_tick:
-            self._vector_tick = vector_tick
-            self._paced_updates_this_tick = 0
+        assert options is not None
+        if position != self._service_position:
+            self._service_position = position
+            self._ordinary_updates_at_position = 0
         capacity = options.max_pending_rows
         budget = options.max_updates_per_tick
         assert capacity is not None and budget is not None
@@ -349,17 +441,17 @@ class RNDExploration(ExplorationStrategy):
         offset = 0
         while True:
             while len(self.obs_buffer) >= self.training_batch_size:
-                if options.service_mode == "paced_fifo" and self._paced_updates_this_tick >= budget:
+                if options.service_mode == "paced_fifo" and self._ordinary_updates_at_position >= budget:
                     break
-                last_loss = self.update_predictor()
+                last_loss = self._update_predictor()
                 paced += 1
-                self._paced_updates_this_tick += 1
+                self._ordinary_updates_at_position += 1
             if offset == len(observations):
                 break
             room = capacity - len(self.obs_buffer)
             if room == 0:
                 if options.overflow_policy == "service_before_admit":
-                    last_loss = self.update_predictor()
+                    last_loss = self._update_predictor()
                     overflow += 1
                     continue
                 count = min(len(observations) - offset, capacity)
@@ -394,6 +486,11 @@ class RNDExploration(ExplorationStrategy):
         Returns:
             Prediction loss (for logging)
         """
+        self._require_shared()
+        self._validate_buffer()
+        return self._update_predictor()
+
+    def _update_predictor(self) -> float:
         # Direct callers own the public buffer and may admit rows without a tick.
         self._admitted_rows = max(self._admitted_rows, self._consumed_rows + self._dropped_rows + len(self.obs_buffer))
         if len(self.obs_buffer) < self.training_batch_size:
@@ -407,9 +504,16 @@ class RNDExploration(ExplorationStrategy):
         predicted = self.predictor_network(obs_batch)
         loss = F.mse_loss(predicted, target)
 
+        if not torch.isfinite(loss).item():
+            raise ValueError("RND objective is nonfinite")
         # Gradient step
         self.optimizer.zero_grad()
         loss.backward()
+        if any(
+            parameter.grad is not None and not torch.isfinite(parameter.grad).all().item()
+            for parameter in self.predictor_network.parameters()
+        ):
+            raise ValueError("RND objective produced nonfinite gradients")
         self.optimizer.step()
         del self.obs_buffer[: self.training_batch_size]
         self._consumed_rows += self.training_batch_size
@@ -446,6 +550,7 @@ class RNDExploration(ExplorationStrategy):
     def checkpoint_state(self) -> dict[str, Any]:
         """Owned snapshot, including FIFO order and clocks for learned-state resume."""
         state = self.available_state()
+        state["schema"] = "rnd-state-v2"
         pending = torch.empty((0, self.obs_dim), device=self.device)
         if self.obs_buffer:
             pending = torch.stack(self.obs_buffer).detach().clone()
@@ -456,7 +561,7 @@ class RNDExploration(ExplorationStrategy):
         if self.service_options is not None:
             options = self.service_options.model_dump()
         state["predictor_service"] = {
-            "version": 1,
+            "version": 2,
             "training_batch_size": self.training_batch_size,
             "options": options,
             "pending_observations": pending,
@@ -465,10 +570,11 @@ class RNDExploration(ExplorationStrategy):
             "dropped_rows": self._dropped_rows,
             "optimizer_updates": self._optimizer_updates,
             # Capture the trusted live clock, including public manual optimizer
-            # steps and historical imports. Restore validates this saved offset.
+            # steps outside recorded service updates. Restore validates this saved offset.
             "optimizer_step_offset": self._optimizer_step(self.optimizer) - self._optimizer_updates,
-            "vector_tick": self._vector_tick,
-            "paced_updates_this_tick": self._paced_updates_this_tick,
+            "service_clock_unit": self.service_clock_unit,
+            "service_position": self._service_position,
+            "ordinary_updates_at_position": self._ordinary_updates_at_position,
             "step_counter": self.step_counter,
         }
         return state
@@ -500,7 +606,11 @@ class RNDExploration(ExplorationStrategy):
         for group, reference in zip(groups, expected, strict=True):
             if not isinstance(group, dict) or set(group) != set(reference):
                 raise ValueError("RND checkpoint optimizer group fields mismatch")
-            if not isinstance(group["params"], list) or any(type(index) is not int for index in group["params"]):
+            if (
+                not isinstance(group["params"], list)
+                or any(type(index) is not int for index in group["params"])
+                or group["params"] != reference["params"]
+            ):
                 raise ValueError("RND checkpoint optimizer parameter IDs invalid")
             betas = group["betas"]
             if not isinstance(betas, (tuple, list)) or len(betas) != 2:
@@ -525,13 +635,20 @@ class RNDExploration(ExplorationStrategy):
         if set(state) != expected_keys:
             raise ValueError("RND available-state fields mismatch")
         self._finite_tree(state)
-        if state["obs_dim"] != self.obs_dim or state["embed_dim"] != self.embed_dim:
+        if (
+            type(state["obs_dim"]) is not int
+            or type(state["embed_dim"]) is not int
+            or state["obs_dim"] != self.obs_dim
+            or state["embed_dim"] != self.embed_dim
+        ):
             raise ValueError("RND checkpoint network geometry mismatch")
         for key in ("epsilon", "epsilon_min", "epsilon_decay", "reward_rms_mean", "reward_rms_var", "reward_rms_count"):
             if isinstance(state[key], bool) or not isinstance(state[key], (int, float, np.floating)):
                 raise ValueError(f"RND checkpoint {key} must be a finite scalar")
         if any(not 0 <= state[key] <= 1 for key in ("epsilon", "epsilon_min", "epsilon_decay")):
             raise ValueError("RND checkpoint epsilon settings outside [0,1]")
+        if state["epsilon"] < state["epsilon_min"]:
+            raise ValueError("RND checkpoint epsilon is below its floor")
         if state["reward_rms_var"] < 0 or state["reward_rms_count"] <= 0:
             raise ValueError("RND checkpoint normalization variance/count invalid")
         fixed, predictor, optimizer = deepcopy((self.fixed_network, self.predictor_network, self.optimizer))
@@ -547,40 +664,46 @@ class RNDExploration(ExplorationStrategy):
         if not isinstance(optimizer_state, dict) or set(optimizer_state) != {"state", "param_groups"}:
             raise ValueError("RND checkpoint optimizer fields mismatch")
         self._validate_optimizer_groups(optimizer_state["param_groups"])
-        if not isinstance(optimizer_state["state"], dict):
-            raise ValueError("RND checkpoint optimizer moments must be a mapping")
+        states = optimizer_state["state"]
+        if not isinstance(states, dict) or any(type(identifier) is not int for identifier in states):
+            raise ValueError("RND checkpoint optimizer moments require exact integer parameter IDs")
         parameter_ids = [index for group in optimizer_state["param_groups"] for index in group["params"]]
-        if len(set(parameter_ids)) != len(parameter_ids) or not set(optimizer_state["state"]).issubset(parameter_ids):
+        if len(set(parameter_ids)) != len(parameter_ids) or not set(states).issubset(parameter_ids):
             raise ValueError("RND checkpoint optimizer parameter identity mismatch")
-        if optimizer_state["state"] and set(optimizer_state["state"]) != set(parameter_ids):
+        if states and set(states) != set(parameter_ids):
             raise ValueError("RND dense predictor requires complete Adam history for every parameter")
-        optimizer.load_state_dict(deepcopy(optimizer_state))
+        # Inspect original transported tensors before Adam can cast moments to
+        # parameter dtype, losing invalid dtype/negative-underflow information.
         steps: set[int] = set()
-        for group in optimizer.param_groups:
+        for group, destination in zip(optimizer_state["param_groups"], optimizer.param_groups, strict=True):
             if group["lr"] < 0 or group["eps"] < 0 or group["weight_decay"] < 0 or any(not 0 <= beta < 1 for beta in group["betas"]):
                 raise ValueError("RND checkpoint optimizer settings invalid")
-            for parameter in group["params"]:
-                if parameter not in optimizer.state:
+            for identifier, parameter in zip(group["params"], destination["params"], strict=True):
+                if identifier not in states:
                     continue
-                moments = optimizer.state[parameter]
+                moments = states[identifier]
                 required = {"step", "exp_avg", "exp_avg_sq"}
                 if group["amsgrad"]:
                     required.add("max_exp_avg_sq")
-                if set(moments) != required:
+                if not isinstance(moments, dict) or set(moments) != required:
                     raise ValueError("RND checkpoint optimizer moment fields mismatch")
                 for name, tensor in moments.items():
-                    if not isinstance(tensor, torch.Tensor):
-                        raise ValueError("RND checkpoint optimizer moments must be tensors")
+                    if not isinstance(tensor, torch.Tensor) or tensor.layout != torch.strided or tensor.device.type not in {"cpu", "cuda"}:
+                        raise ValueError("RND checkpoint optimizer moments require concrete dense tensors")
+                    if not torch.isfinite(tensor).all().item():
+                        raise ValueError("RND checkpoint optimizer moments must be finite")
                     if name == "step":
-                        if tensor.numel() != 1 or tensor.item() < 0 or tensor.item() != int(tensor.item()):
+                        if tensor.shape != () or not tensor.is_floating_point() or tensor.item() < 0 or tensor.item() != int(tensor.item()):
                             raise ValueError("RND checkpoint optimizer step invalid")
                         steps.add(int(tensor.item()))
                     elif tensor.shape != parameter.shape or tensor.dtype != parameter.dtype:
-                        raise ValueError("RND checkpoint optimizer moment geometry mismatch")
+                        raise ValueError("RND raw optimizer moment geometry/dtype mismatch")
                     elif name in {"exp_avg_sq", "max_exp_avg_sq"} and (tensor < 0).any().item():
-                        raise ValueError("RND checkpoint optimizer squared moments must be nonnegative")
+                        raise ValueError("RND raw optimizer squared moments must be nonnegative")
         if len(steps) > 1:
             raise ValueError("RND dense predictor Adam parameter steps must agree")
+        optimizer.load_state_dict(deepcopy(optimizer_state))
+        self._finite_tree(optimizer.state_dict())
         # Exercise destination execution on disposable copies, including flags
         # whose device/version compatibility is enforced only during Adam.step.
         probe = deepcopy(optimizer)
@@ -589,6 +712,11 @@ class RNDExploration(ExplorationStrategy):
                 parameter.grad = torch.zeros_like(parameter)
         try:
             probe.step()
+            self._finite_tree(probe.state_dict())
+            for group in probe.param_groups:
+                for parameter in group["params"]:
+                    if not torch.isfinite(parameter).all().item():
+                        raise ValueError("RND checkpoint optimizer produces nonfinite destination parameters")
         except (AssertionError, RuntimeError, TypeError, ValueError) as exc:
             raise ValueError("RND checkpoint optimizer cannot execute on this destination") from exc
         return fixed, predictor, optimizer
@@ -602,45 +730,45 @@ class RNDExploration(ExplorationStrategy):
             state["reward_rms_count"],
         )
 
-    def load_available_state(self, state: dict[str, Any]) -> None:
-        """Explicit historical import of available state only; never invent old tails/RNG.
-
-        Preserves destination pending work/clocks, matching the historical API.
-        Source pending work and RNG are unavailable; this is not tail continuation.
-        """
-        prepared = self._prepare_available_state(state)
-        self._install_available_state(state, prepared)
-
     def validate_state(self, state: dict[str, Any]) -> None:
-        """Validate a full continuation payload without modifying live state."""
-        if "predictor_service" not in state:
-            self._prepare_available_state(state)
-        else:
-            self._prepare_state(state)
+        """Pure complete current-native validation, with no live installation."""
+        self.prepare_state(state)
 
     def _prepare_state(self, state: dict[str, Any]) -> tuple[tuple[Any, Any, Any], list[torch.Tensor], dict[str, Any]]:
-        if "predictor_service" not in state:
-            raise ValueError("RND continuation requires predictor_service; use load_available_state for historical imports")
-        available = {key: value for key, value in state.items() if key != "predictor_service"}
+        if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "rnd-state-v2":
+            raise ValueError("RND requires complete current rnd-state-v2 checkpoint")
+        available = {key: value for key, value in state.items() if key not in {"schema", "predictor_service"}}
         prepared = self._prepare_available_state(available)
         service = state["predictor_service"]
         if not isinstance(service, dict) or set(service) != set(self.checkpoint_state()["predictor_service"]):
             raise ValueError("RND predictor service checkpoint fields mismatch")
         if (
             type(service["version"]) is not int
-            or service["version"] != 1
+            or service["version"] != 2
             or type(service["training_batch_size"]) is not int
             or service["training_batch_size"] != self.training_batch_size
         ):
             raise ValueError("RND predictor service version/minibatch mismatch")
         options = None
         if service["options"] is not None:
-            options = self._validated_options(RNDOptions.model_validate(service["options"]))
+            if self.service_options is None:
+                raise ValueError("RND checkpoint service options differ from unconfigured destination")
+            expected_options = self.service_options.model_dump()
+            raw_options = service["options"]
+            if (
+                not isinstance(raw_options, dict)
+                or raw_options.keys() != expected_options.keys()
+                or any(
+                    type(value) is not type(expected_options[key]) or value != expected_options[key] for key, value in raw_options.items()
+                )
+            ):
+                raise ValueError("RND checkpoint requires exact selected service options")
+            options = self._validated_options(RNDOptions.model_validate(raw_options))
         if options != self.service_options:
             raise ValueError("RND checkpoint service policy differs from configured destination")
         pending = service["pending_observations"]
         self._validate_observations(pending)
-        for key in ("admitted_rows", "consumed_rows", "dropped_rows", "optimizer_updates", "paced_updates_this_tick", "step_counter"):
+        for key in ("admitted_rows", "consumed_rows", "dropped_rows", "optimizer_updates", "ordinary_updates_at_position", "step_counter"):
             if type(service[key]) is not int or service[key] < 0:
                 raise ValueError(f"RND service {key} must be a nonnegative integer")
         offset = service["optimizer_step_offset"]
@@ -648,42 +776,59 @@ class RNDExploration(ExplorationStrategy):
             raise ValueError("RND optimizer step offset must describe a nonnegative Adam clock")
         if self._optimizer_step(prepared[2]) != service["optimizer_updates"] + offset:
             raise ValueError("RND Adam history does not match versioned service optimizer updates")
-        tick = service["vector_tick"]
+        if type(service["service_clock_unit"]) is not str or service["service_clock_unit"] != self.service_clock_unit:
+            raise ValueError("RND checkpoint service unit differs from destination")
+        tick = service["service_position"]
         if tick is not None and (type(tick) is not int or tick < 0):
-            raise ValueError("RND service vector_tick invalid")
+            raise ValueError("RND service position invalid")
         if service["admitted_rows"] != service["consumed_rows"] + service["dropped_rows"] + len(pending):
             raise ValueError("RND service row accounting mismatch")
         if service["consumed_rows"] != service["optimizer_updates"] * self.training_batch_size:
             raise ValueError("RND service optimizer accounting mismatch")
-        if tick is None and service["paced_updates_this_tick"] != 0:
+        if self.service_clock_unit == "world_eligible_admission":
+            if options is None or tick != service["admitted_rows"] or service["step_counter"] != 0:
+                raise ValueError("RND private native clock/configuration disagrees with admissions")
+            if tick == 0 and (service["optimizer_updates"] or service["ordinary_updates_at_position"]):
+                raise ValueError("RND unstarted private service has work")
+        if tick is None and service["ordinary_updates_at_position"] != 0:
             raise ValueError("RND service pacing requires a tick")
-        if service["paced_updates_this_tick"] > service["optimizer_updates"]:
+        if service["ordinary_updates_at_position"] > service["optimizer_updates"]:
             raise ValueError("RND service paced updates exceed total optimizer updates")
         if options is not None:
             assert options.max_pending_rows is not None and options.max_updates_per_tick is not None
             if len(pending) > options.max_pending_rows:
                 raise ValueError("RND pending observations exceed capacity")
-            if options.service_mode == "paced_fifo" and service["paced_updates_this_tick"] > options.max_updates_per_tick:
+            if options.service_mode == "paced_fifo" and service["ordinary_updates_at_position"] > options.max_updates_per_tick:
                 raise ValueError("RND service paced budget exceeded")
             # The explicit direct one-minibatch API may leave complete batches;
             # occupancy admit_and_service drains these on its next invocation.
         pending_rows = [row.detach().to(self.device).clone() for row in pending]
         return prepared, pending_rows, service
 
+    def prepare_state(self, state: dict[str, Any]) -> _PreparedRND:
+        """Own and prepare every field off-side before a destination-bound commit."""
+        try:
+            owned = deepcopy(state)
+            prepared, pending_rows, service = self._prepare_state(owned)
+            candidate = deepcopy(self)
+            candidate._install_available_state(owned, prepared)
+            candidate.obs_buffer = pending_rows
+            candidate._admitted_rows = service["admitted_rows"]
+            candidate._consumed_rows = service["consumed_rows"]
+            candidate._dropped_rows = service["dropped_rows"]
+            candidate._optimizer_updates = service["optimizer_updates"]
+            candidate._service_position = service["service_position"]
+            candidate._ordinary_updates_at_position = service["ordinary_updates_at_position"]
+            candidate.step_counter = service["step_counter"]
+            return _PreparedRND(self, candidate.__dict__, False)
+        except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+            raise ValueError("RND checkpoint is malformed") from error
+
+    def install_state(self, prepared: _PreparedRND) -> None:
+        if type(prepared) is not _PreparedRND or prepared.owner is not self or prepared.consumed:
+            raise ValueError("RND prepared state belongs to another destination or was consumed")
+        prepared.consumed = True
+        self.__dict__ = prepared.attributes
+
     def load_state(self, state: dict[str, Any]) -> None:
-        """Validate all owned checkpoint payloads before atomic installation."""
-        if "predictor_service" not in state:
-            # Exact old schema dispatch, not recovery from malformed current state.
-            self.load_available_state(state)
-            return
-        prepared, pending_rows, service = self._prepare_state(state)
-        self._install_available_state(state, prepared)
-        self.obs_buffer = pending_rows
-        self._admitted_rows, self._consumed_rows, self._dropped_rows = (
-            service["admitted_rows"],
-            service["consumed_rows"],
-            service["dropped_rows"],
-        )
-        self._optimizer_updates = service["optimizer_updates"]
-        self._vector_tick, self._paced_updates_this_tick = service["vector_tick"], service["paced_updates_this_tick"]
-        self.step_counter = service["step_counter"]
+        self.install_state(self.prepare_state(state))

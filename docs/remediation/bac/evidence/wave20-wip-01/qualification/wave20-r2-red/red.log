@@ -1,0 +1,2949 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [48 items]
+
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                         [100%]
+=================================== FAILURES ===================================
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-int64-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg_sq', case = 'int64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebc293250>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbf6b7e0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-service_before_admit-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', overflow = 'service_before_admit'
+entrypoint = 'admit_and_service'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+>                   backend.admit_and_service(_rows(1, 520), vector_tick=7)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-int64-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg_sq', case = 'int64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701257980496: <townlet.exploration.icm.ICMExploration object at 0x7f0ebc293250>, 139701258002880: {'decay_rate': 0...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ebbfefed0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-service_before_admit-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', overflow = 'service_before_admit'
+entrypoint = 'admit_and_service'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+>                   backend.admit_and_service(_rows(1, 520), vector_tick=7)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:157: in admit_and_service
+    return self.rnd.admit_and_service(observations, vector_tick=vector_tick)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-int64-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg_sq', case = 'int64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ec7609a90>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbf6b9c0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_oldest-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', overflow = 'drop_oldest', entrypoint = 'admit_and_service'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+>                   backend.admit_and_service(_rows(1, 520), vector_tick=7)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-bool-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg_sq', case = 'bool'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebc08f350>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbf6bf60>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-bool-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg_sq', case = 'bool'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701252999424: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ebbdb5450>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_oldest-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', overflow = 'drop_oldest', entrypoint = 'admit_and_service'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+>                   backend.admit_and_service(_rows(1, 520), vector_tick=7)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:157: in admit_and_service
+    return self.rnd.admit_and_service(observations, vector_tick=vector_tick)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-bool-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg_sq', case = 'bool'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ebbdf4950>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbe69260>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_newest-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', overflow = 'drop_newest', entrypoint = 'admit_and_service'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+>                   backend.admit_and_service(_rows(1, 520), vector_tick=7)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-finite_overflow-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg', case = 'finite_overflow'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebbe18450>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbe68040>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_newest-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', overflow = 'drop_newest', entrypoint = 'admit_and_service'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+>                   backend.admit_and_service(_rows(1, 520), vector_tick=7)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1325: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:157: in admit_and_service
+    return self.rnd.admit_and_service(observations, vector_tick=vector_tick)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-finite_overflow-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg', case = 'finite_overflow'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701251329152: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ebbfefed0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_overcapacity_shared_buffer_refuses_before_service[update-service_before_admit-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', overflow = 'service_before_admit', entrypoint = 'update'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+                    backend.admit_and_service(_rows(1, 520), vector_tick=7)
+                else:
+>                   backend.update({"observations": _rows(1, 520)})
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/rnd.py:320: in update
+    self.admit_and_service(observations, vector_tick=prospective)
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-finite_overflow-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg', case = 'finite_overflow'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ebc08f650>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbe69d00>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[update-service_before_admit-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', overflow = 'service_before_admit', entrypoint = 'update'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+                    backend.admit_and_service(_rows(1, 520), vector_tick=7)
+                else:
+>                   backend.update({"observations": _rows(1, 520)})
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:204: in update
+    self.rnd.update(batch)
+src/townlet/exploration/rnd.py:320: in update
+    self.admit_and_service(observations, vector_tick=prospective)
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-negative_underflow-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg_sq', case = 'negative_underflow'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebc08e550>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbe6a0c0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[update-drop_oldest-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', overflow = 'drop_oldest', entrypoint = 'update'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+                    backend.admit_and_service(_rows(1, 520), vector_tick=7)
+                else:
+>                   backend.update({"observations": _rows(1, 520)})
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/rnd.py:320: in update
+    self.admit_and_service(observations, vector_tick=prospective)
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-negative_underflow-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg_sq', case = 'negative_underflow'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701249997312: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ebbdb5590>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_overcapacity_shared_buffer_refuses_before_service[update-drop_oldest-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', overflow = 'drop_oldest', entrypoint = 'update'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+                    backend.admit_and_service(_rows(1, 520), vector_tick=7)
+                else:
+>                   backend.update({"observations": _rows(1, 520)})
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:204: in update
+    self.rnd.update(batch)
+src/townlet/exploration/rnd.py:320: in update
+    self.admit_and_service(observations, vector_tick=prospective)
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-negative_underflow-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg_sq', case = 'negative_underflow'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ebbe3baf0>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f0ebbe6a520>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+__ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-rnd] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', identifier = 0, alias = False
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebbe18e50>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe69760>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_overcapacity_shared_buffer_refuses_before_service[update-drop_newest-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', overflow = 'drop_newest', entrypoint = 'update'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+                    backend.admit_and_service(_rows(1, 520), vector_tick=7)
+                else:
+>                   backend.update({"observations": _rows(1, 520)})
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/rnd.py:320: in update
+    self.admit_and_service(observations, vector_tick=prospective)
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+__ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-icm] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', identifier = 0, alias = False
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1400: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701258002880: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ebbfefed0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_overcapacity_shared_buffer_refuses_before_service[update-drop_newest-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', overflow = 'drop_newest', entrypoint = 'update'
+
+    @pytest.mark.parametrize("kind", ("rnd", "adaptive"))
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("entrypoint", ("admit_and_service", "update"))
+    def test_overcapacity_shared_buffer_refuses_before_service(kind: str, overflow: str, entrypoint: str) -> None:
+        backend = _make(kind, overflow=overflow, unit=SHARED)
+        provider = _rnd(backend)
+        provider.obs_buffer.extend(row.clone() for row in _rows(8, 500))
+        before, counters, ambient = _native(backend), provider.predictor_service_counters(), _ambient()
+        callbacks: list[str] = []
+    
+        def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+            callbacks.append("service-before-capacity-refusal")
+            pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+    
+        handles = [
+            provider.fixed_network.register_forward_pre_hook(forbidden_callback),
+            provider.predictor_network.register_forward_pre_hook(forbidden_callback),
+            provider.optimizer.register_step_pre_hook(forbidden_callback),
+        ]
+        try:
+            with pytest.raises(ValueError):
+                if entrypoint == "admit_and_service":
+                    backend.admit_and_service(_rows(1, 520), vector_tick=7)
+                else:
+>                   backend.update({"observations": _rows(1, 520)})
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1327: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:204: in update
+    self.rnd.update(batch)
+src/townlet/exploration/rnd.py:320: in update
+    self.admit_and_service(observations, vector_tick=prospective)
+src/townlet/exploration/rnd.py:387: in admit_and_service
+    return self.admit_and_service_at(observations, clock=ServiceClock("vector_tick", vector_tick))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:405: in admit_and_service_at
+    return self._admit_service_rows(observations, clock.position)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:439: in _admit_service_rows
+    last_loss = self._update_predictor()
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/rnd.py:496: in _update_predictor
+    target = self.fixed_network(obs_batch).detach()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1779: in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1885: in _call_impl
+    return inner()
+           ^^^^^^^
+.venv/lib/python3.13/site-packages/torch/nn/modules/module.py:1822: in inner
+    args_result = hook(self, args)
+                  ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (RNDNetwork(
+  (net): Sequential(
+    (0): Linear(in_features=3, out_features=256, bias=True)
+    (1): ReLU()
+    (2):...s=128, out_features=3, bias=True)
+  )
+), (tensor([[79.2474, 78.3000, 80.1526],
+        [79.4053, 78.4579, 80.3105]]),))
+kwargs = {}
+
+    def forbidden_callback(*args: Any, **kwargs: Any) -> None:
+        callbacks.append("service-before-capacity-refusal")
+>       pytest.fail("over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop")
+E       Failed: over-capacity admission invoked learning before preflight; stopped before its possible unbounded loop
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1315: Failed
+_ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', identifier = 0, alias = False
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ec7483ee0>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe694e0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg', case = 'float64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f7d6338f050>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d63105c60>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-icm] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg', case = 'float64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {140176505570048: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f7d630bdbd0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg', case = 'float64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f7d6314de10>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d63105620>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+___ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-0.0-rnd] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', identifier = 0, alias = 0.0
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebc08f950>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe69e40>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-int64-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg', case = 'int64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f7d63110f50>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d63105a80>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-int64-icm] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg', case = 'int64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {140176501302912: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f7d630bde50>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-int64-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg', case = 'int64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f7d6337efc0>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d63105620>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+___ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-0.0-icm] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', identifier = 0, alias = 0.0
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1400: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701253067136: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ebbdb5590>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-bool-rnd] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg', case = 'bool'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f7d63111850>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d63106480>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-bool-icm] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg', case = 'bool'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {140176505696192: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f7d630bda90>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-0.0-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', identifier = 0, alias = 0.0
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ebc0771d0>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe69800>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-bool-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg', case = 'bool'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f7d6e6581b0>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d631074c0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+__ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-True-rnd] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', identifier = 1, alias = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebbe19250>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe68b80>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-float64-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', field = 'exp_avg_sq', case = 'float64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f7d63112350>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d63105c60>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-float64-icm] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', field = 'exp_avg_sq', case = 'float64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {140176505136960: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f7d630bd090>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+__ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-True-icm] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', identifier = 1, alias = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1400: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139701250674496: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0ec7609a90>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-float64-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', field = 'exp_avg_sq', case = 'float64'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("field,case", RAW_MOMENT_CASES)
+    def test_raw_adam_moment_dtype_refuses_before_loader_coercion(kind: str, field: str, case: str) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        moments = list(_inner(damaged)["optimizer"]["state"].values())[-1]
+        original = moments[field]
+        if case == "finite_overflow":
+            moments[field] = torch.full_like(original, 1e300, dtype=torch.float64)
+            assert bool(torch.isfinite(moments[field]).all())
+            assert bool(torch.isinf(moments[field].to(torch.float32)).all())
+        elif case == "negative_underflow":
+            moments[field] = torch.full_like(original, -1e-300, dtype=torch.float64)
+            assert bool((moments[field] < 0).all())
+            assert bool((moments[field].to(torch.float32) == 0).all())
+        else:
+            dtype = {"float64": torch.float64, "int64": torch.int64, "bool": torch.bool}[case]
+            moments[field] = original.to(dtype)
+        input_before = deepcopy(damaged)
+        callbacks: list[Any] = []
+        handles = _watch_forwards(backend, callbacks)
+        try:
+            for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>               _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1388: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f7d6337f960>
+operation = <function test_raw_adam_moment_dtype_refuses_before_loader_coercion.<locals>.<lambda> at 0x7f7d631077e0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+___ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-1.0-icm] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', identifier = 1, alias = 1.0
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+>       backend, pristine = _warm_native_validation_fixture(kind)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1400: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1344: in _warm_native_validation_fixture
+    backend.validate_state(pristine)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {140176505696192: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f7d630be0d0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-1.0-adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', identifier = 1, alias = 1.0
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f7d63199440>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f7d63107ec0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+_ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-True-adaptive] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive', identifier = 1, alias = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.adaptive_intrinsic.AdaptiveIntrinsicExploration object at 0x7f0ebc076570>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe6a3e0>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+___ test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-1.0-rnd] ___
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd', identifier = 1, alias = 1.0
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("identifier,alias", ((0, False), (0, 0.0), (1, True), (1, 1.0)))
+    def test_native_optimizer_state_ids_refuse_bool_and_float_aliases(kind: str, identifier: int, alias: Any) -> None:
+        backend, pristine = _warm_native_validation_fixture(kind)
+        damaged = deepcopy(pristine)
+        optimizer = _inner(damaged)["optimizer"]
+        assert identifier in optimizer["state"]
+        optimizer["state"] = {alias if key == identifier else key: value for key, value in optimizer["state"].items()}
+        keys_before = [(type(key), key) for key in optimizer["state"]]
+        assert (type(alias), alias) in keys_before
+        input_before = deepcopy(damaged)
+        for method in (backend.validate_state, backend.prepare_state, backend.load_state):
+>           _must_refuse_unchanged(backend, lambda: method(damaged))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.rnd.RNDExploration object at 0x7f0ebc08e550>
+operation = <function test_native_optimizer_state_ids_refuse_bool_and_float_aliases.<locals>.<lambda> at 0x7f0ebbe6ab60>
+
+    def _must_refuse_unchanged(backend: Any, operation: Any) -> None:
+        before, ambient = _native(backend), _ambient()
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:393: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-int64-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-service_before_admit-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-int64-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-service_before_admit-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-int64-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_oldest-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-bool-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-bool-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_oldest-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-bool-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_newest-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-finite_overflow-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[admit_and_service-drop_newest-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-finite_overflow-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[update-service_before_admit-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-finite_overflow-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[update-service_before_admit-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-negative_underflow-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[update-drop_oldest-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-negative_underflow-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[update-drop_oldest-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-negative_underflow-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[update-drop_newest-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_overcapacity_shared_buffer_refuses_before_service[update-drop_newest-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-0.0-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-int64-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-int64-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-int64-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-0.0-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-bool-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-bool-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-0.0-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-bool-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-True-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-float64-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-float64-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-True-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg_sq-float64-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-1.0-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-1.0-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-True-adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[1-1.0-rnd]
+============================= 48 failed in 33.81s ==============================

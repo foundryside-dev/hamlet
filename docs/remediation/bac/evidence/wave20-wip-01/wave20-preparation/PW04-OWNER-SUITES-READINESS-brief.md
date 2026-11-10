@@ -1,0 +1,17 @@
+# PW04 actual owner-suite readiness: read-only five-file packet
+
+Readthisfirst. ExistingAstra backendauthor alone edits3providers+newlocalservice regression. YoumayreadONLYfollowingfivefrozenexistingtests andwriteignoredreadinessreport. No edits to tests/source, no projectimports/runtime/tests/staticformatters/Git/index/branches/worktrees/repositorycopies/deletion/subagents/installs. Existing /workspace/hamlet branchproject-recovery-bac-2026-11-01; preserveallcopies. Rootowns integration and all laterauthor/runtimeclearances. No durableuser-onlyfallbackrulewasadopted; existingproject/actualtoolapprovalrequirementsapply. No scopechangesorspending.
+
+Wholefileinventory (not partial excerpts), hard5files/5000lines, projected3200:
+- tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py<=100(current66)
+- tests/test_townlet/unit/exploration/test_rnd_normalization.py<=250(current180)
+- tests/test_townlet/unit/exploration/test_exploration_strategies.py<=1500(current1226)
+- tests/test_townlet/regressions/bac/test_rnd_service.py<=800(current610)
+- tests/test_townlet/regressions/bac/test_icm_provider.py<=550(current340)
+No6thprovider/POP/helper/RNG/newlocalservicetestimplementationread; executeexistingtestswithoutopeningextrasource onlyunderlaterrootclearance.
+
+Prose interfaces: PW04-BACKEND-ABI-PROPOSAL.md SHA44c00e460cc83940c3b1a5c8a746f48ae78014c8f1539a814ea45ff5521472bd plus PW04-NO-DEFAULTS-RULING.md, PW04-CLOCK-PREREQUISITE-RECEIPT.md, PW04-EXTERNAL-FIXTURE-RECEIPT.md. TheydeclarefutureproviderABIstillbeingimplemented, notsourcequalified. Currentbaselineremote64748bdf; runtimeproofs inwave20/r0-red-postflight.json useactualcurrentfixtures18PASSand9realpreflight/AIstatebugs. SourceAPIs afterseal willgetexactexportedreceipt; do notinferimplementationPASSfromproposal.
+
+Newsourcecontract: rng:WorldRNGState|None and service_clock_unit requiredkeyword-onlyinputs, no newargumentdefaults/oldsignatureadapter. Current shared constructor callers explicitlysupplyNone/vector_tick; genuineprivatefactory explicitowner/unit. Current shared reward/normalization/FIFO/overflow/directbuffer/Adam/target/loss behaviorpreserved. Actualschema RND rnd-state-v2/predictor_service.version2, ICM icm-state-v2, adaptive adaptive-intrinsic-state-v2; nativeexactfields incl serviceunit/position/budget replaceoldtickaliases. prepare_state/validate_state/install_state/load_state arecompletecurrent-only. Historicalavailable-state import/oldnativefallback removed underuserexplicitnobackwardscompatibility; artifactdatabytesstillpreserved. Reconcile tests tospec/currentAPI, never restoreoldformats or weakenfinitevalidation/mutation/learning/FIFO assertions tofitimplementation.
+
+Deliver ONLY PW04-OWNER-SUITES-READINESS-report.md here: fivewholelines/hashes, exactconstructorfixturecallmigration sites; whichnativeassertions/helpersneedcurrentfield/versiontransport; identifyoldcompatpositivesseparatelyfrom genuinecurrentfeaturetests; classify potentialactualproductioncaller prerequisites(e.g.factoryfunctionimportedbutnotowned), preservingallcurrentbehaviorassertions. No blankettestdeletion/skip/xfail; oldunsupportedcapabilitytestsmaptoclearrefusals or currentnativepositive proof, not vanishingcoverage. Any uninspectedsourceerror isattributedrequiredgap, notinventednewdefect. Summarizefinitefutureauthoringsequence/counts and exactrootneededinterface receipts. OriginalPW04realPOP/runner/nativequalificationstaysREQUIREDOPEN; unitcountsalonecannotcloseit. No newglobalplan/designprogrammeoruserquestion.

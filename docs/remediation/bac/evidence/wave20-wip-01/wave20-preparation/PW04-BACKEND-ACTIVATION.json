@@ -1,0 +1,10 @@
+{
+  "proposal": "PW04-BACKEND-ABI-PROPOSAL.md",
+  "sha256": "5b3aae78fc62715f5eabd752acf341327c382957a7613a1105dae83f46be3465",
+  "review": "PW04-BACKEND-ABI-REVIEW-R3.md",
+  "review_sha256": "2a9168240782a19e3cba9676ecbb4311e2abc46b62384480b34079038286c36d",
+  "root_disposition": "Adopt requiredexplicitrng/unit correctedABI; sourceproductionclearanceafterverifiedR0causalRED. All214testassertionspreserved; onlyrequiredconstructorinputtransport incountedtestauthorized.",
+  "remaining_required": "ActualcurrentPOP/ordinaryrunner/nativeartifact/nextrealupdate/deeprefusal and earlyfullgate remain OPEN.",
+  "proposal_sha256": "44c00e460cc83940c3b1a5c8a746f48ae78014c8f1539a814ea45ff5521472bd",
+  "new_defaults": "No newconstructorargumentdefaults or whitelist/ratchet relaxations; genuinecurrent shared/privatebehavior retained."
+}

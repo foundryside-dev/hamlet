@@ -1,0 +1,1894 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [214 items]
+
+......F..F...FF........................F................................ [ 33%]
+.F...........F...F...F..FF......F................F...................... [ 67%]
+...FF.F...F.....F....F.F...F..........................................   [100%]
+=================================== FAILURES ===================================
+_____________ test_local_clock_ignores_idle_vector_ticks[True-icm] _____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', full_tail = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_local_clock_ignores_idle_vector_ticks(kind: str, full_tail: bool) -> None:
+        backend = _make(kind)
+        if full_tail:
+>           _full_tail(backend)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697739082752: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...onPolicy object at 0x7f0df5d7e710>, 139697936272128: <townlet.exploration.icm.ICMExploration object at 0x7f0df5d0f950>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+____ test_native_snapshot_preparation_and_two_restores_own_every_leaf[icm] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_native_snapshot_preparation_and_two_restores_own_every_leaf(kind: str) -> None:
+        source = _make(kind)
+        _warm(source)
+        payload = _native(source)
+        pristine = deepcopy(payload)
+        first, second = _make(kind), _make(kind)
+>       prepared = first.prepare_state(payload)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:773: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139641314167936: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f00c74b3d90>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+___ test_backend_losses_and_quotas_are_world_local[service_before_admit-icm] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'service_before_admit'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    def test_backend_losses_and_quotas_are_world_local(kind: str, overflow: str) -> None:
+        world1 = _make(kind, overflow=overflow)
+        _warm(world1)
+        initial = _native(world1)
+        other_schedule = _make(kind, overflow=overflow)
+>       other_schedule.load_state(initial)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:432: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:468: in load_state
+    self.install_state(self.prepare_state(state))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697734714880: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0dea1dc7d0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_____ test_prepared_candidate_is_destination_bound_and_single_install[icm] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_prepared_candidate_is_destination_bound_and_single_install(kind: str) -> None:
+        source = _make(kind)
+        _warm(source)
+        first, second = _make(kind), _make(kind)
+>       prepared = first.prepare_state(_native(source))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:797: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139641311433536: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f00c6edc910>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_______ test_backend_losses_and_quotas_are_world_local[drop_oldest-icm] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'drop_oldest'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    def test_backend_losses_and_quotas_are_world_local(kind: str, overflow: str) -> None:
+        world1 = _make(kind, overflow=overflow)
+        _warm(world1)
+        initial = _native(world1)
+        other_schedule = _make(kind, overflow=overflow)
+>       other_schedule.load_state(initial)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:432: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:468: in load_state
+    self.install_state(self.prepare_state(state))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736548288: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...onPolicy object at 0x7f0dea1dd090>, 139697746045408: <townlet.exploration.icm.ICMExploration object at 0x7f0dea876780>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_______ test_backend_losses_and_quotas_are_world_local[drop_newest-icm] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'drop_newest'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    def test_backend_losses_and_quotas_are_world_local(kind: str, overflow: str) -> None:
+        world1 = _make(kind, overflow=overflow)
+        _warm(world1)
+        initial = _native(world1)
+        other_schedule = _make(kind, overflow=overflow)
+>       other_schedule.load_state(initial)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:432: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:468: in load_state
+    self.install_state(self.prepare_state(state))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736250368: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...ecay': 0.995, 'epsilon_min': 0.01}, 139697746046928: <townlet.exploration.icm.ICMExploration object at 0x7f0dea876d70>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_private_admission_partition_invariance[False-service_before_admit-icm] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'service_before_admit', full_tail = False
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_private_admission_partition_invariance(kind: str, overflow: str, full_tail: bool) -> None:
+        whole = _make(kind, overflow=overflow)
+        if full_tail:
+            _full_tail(whole)
+        split = _make(kind, overflow=overflow)
+>       split.load_state(_native(whole))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:474: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:468: in load_state
+    self.install_state(self.prepare_state(state))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697738356032: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0dea1dca50>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+______ test_private_admission_partition_invariance[False-drop_oldest-icm] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'drop_oldest', full_tail = False
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_private_admission_partition_invariance(kind: str, overflow: str, full_tail: bool) -> None:
+        whole = _make(kind, overflow=overflow)
+        if full_tail:
+            _full_tail(whole)
+        split = _make(kind, overflow=overflow)
+>       split.load_state(_native(whole))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:474: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:468: in load_state
+    self.install_state(self.prepare_state(state))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736833536: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...onPolicy object at 0x7f0dea1dc550>, 139697746048144: <townlet.exploration.icm.ICMExploration object at 0x7f0dea877230>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+______ test_private_admission_partition_invariance[False-drop_newest-icm] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'drop_newest', full_tail = False
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_private_admission_partition_invariance(kind: str, overflow: str, full_tail: bool) -> None:
+        whole = _make(kind, overflow=overflow)
+        if full_tail:
+            _full_tail(whole)
+        split = _make(kind, overflow=overflow)
+>       split.load_state(_native(whole))
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:474: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:468: in load_state
+    self.install_state(self.prepare_state(state))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736250368: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...onPolicy object at 0x7f0dea1ddf90>, 139697746049360: <townlet.exploration.icm.ICMExploration object at 0x7f0dea8776f0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+___ test_private_world_construction_and_owned_pressure_preserve_world1[icm] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str) -> None:
+        world1 = _owned(kind)
+        world1.call(lambda backend, sources: _warm(backend))
+        saved = world1.snapshot()
+        replay = _owned(kind)
+>       prepared = replay.prepare_restore(
+            saved,
+            factory=lambda rng: _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng),
+            validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        )
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1140: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:823: in prepare_restore
+    if validate_backend(candidate, transported) is not None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1143: in <lambda>
+    validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139641320215616: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...onPolicy object at 0x7f00c6edca50>, 139641321060384: <townlet.exploration.icm.ICMExploration object at 0x7f00c7567490>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+__ test_private_admission_partition_invariance[True-service_before_admit-icm] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'service_before_admit', full_tail = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_private_admission_partition_invariance(kind: str, overflow: str, full_tail: bool) -> None:
+        whole = _make(kind, overflow=overflow)
+        if full_tail:
+>           _full_tail(whole)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697737562112: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0dea1ddd10>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+______ test_private_admission_partition_invariance[True-drop_oldest-icm] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'drop_oldest', full_tail = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_private_admission_partition_invariance(kind: str, overflow: str, full_tail: bool) -> None:
+        whole = _make(kind, overflow=overflow)
+        if full_tail:
+>           _full_tail(whole)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736833536: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...ecay': 0.995, 'epsilon_min': 0.01}, 139697746043280: <townlet.exploration.icm.ICMExploration object at 0x7f0dea877100>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+______ test_private_admission_partition_invariance[True-drop_newest-icm] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', overflow = 'drop_newest', full_tail = True
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    @pytest.mark.parametrize("full_tail", (False, True))
+    def test_private_admission_partition_invariance(kind: str, overflow: str, full_tail: bool) -> None:
+        whole = _make(kind, overflow=overflow)
+        if full_tail:
+>           _full_tail(whole)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736017216: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...onPolicy object at 0x7f0dea1de490>, 139697746049664: <townlet.exploration.icm.ICMExploration object at 0x7f0dea876780>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+______ test_private_icm_full_imported_tail_overflow[service_before_admit] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+overflow = 'service_before_admit'
+
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    def test_private_icm_full_imported_tail_overflow(overflow: str) -> None:
+        backend = _make("icm", overflow=overflow)
+>       tail = _full_tail(backend)
+               ^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:525: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697737318656: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0dea1de490>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+__________ test_private_icm_full_imported_tail_overflow[drop_oldest] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+overflow = 'drop_oldest'
+
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    def test_private_icm_full_imported_tail_overflow(overflow: str) -> None:
+        backend = _make("icm", overflow=overflow)
+>       tail = _full_tail(backend)
+               ^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:525: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697735455616: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...onPolicy object at 0x7f0dea1dd1d0>, 139697746043280: <townlet.exploration.icm.ICMExploration object at 0x7f0dea877230>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+__________ test_private_icm_full_imported_tail_overflow[drop_newest] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+overflow = 'drop_newest'
+
+    @pytest.mark.parametrize("overflow", OVERFLOW)
+    def test_private_icm_full_imported_tail_overflow(overflow: str) -> None:
+        backend = _make("icm", overflow=overflow)
+>       tail = _full_tail(backend)
+               ^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:525: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_local_service.py:385: in _full_tail
+    backend.validate_state(state)
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736250368: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...onPolicy object at 0x7f0dea1dc7d0>, 139697746047840: <townlet.exploration.icm.ICMExploration object at 0x7f0dea8763f0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_ test_current_native_warm_adam_tail_and_next_update[world_eligible_admission-icm] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', unit = 'world_eligible_admission'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("unit", (PRIVATE, SHARED))
+    def test_current_native_warm_adam_tail_and_next_update(kind: str, unit: str) -> None:
+        source = _make(kind, unit=unit)
+        _warm(source)
+        saved = _native(source)
+        inner = _inner(saved)
+        service = _service_state(saved)
+        assert inner["schema"] == ("icm-state-v2" if kind == "icm" else "rnd-state-v2")
+        if kind == "adaptive":
+            assert saved["schema"] == "adaptive-intrinsic-state-v2"
+        assert service["service_clock_unit"] == unit
+        assert "vector_tick" not in service and "service_tick" not in service
+        pending = inner["pending"] if kind == "icm" else service["pending_observations"]
+        assert len(pending) > 0
+        destination = _make(kind, unit=unit)
+        before, ambient = _native(destination), _ambient()
+>       destination.validate_state(saved)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:562: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736140864: {'_service_clock_unit': 'world_eligible_admission', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0dea1de710>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+_____ test_current_native_warm_adam_tail_and_next_update[vector_tick-icm] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm', unit = 'vector_tick'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    @pytest.mark.parametrize("unit", (PRIVATE, SHARED))
+    def test_current_native_warm_adam_tail_and_next_update(kind: str, unit: str) -> None:
+        source = _make(kind, unit=unit)
+        _warm(source)
+        saved = _native(source)
+        inner = _inner(saved)
+        service = _service_state(saved)
+        assert inner["schema"] == ("icm-state-v2" if kind == "icm" else "rnd-state-v2")
+        if kind == "adaptive":
+            assert saved["schema"] == "adaptive-intrinsic-state-v2"
+        assert service["service_clock_unit"] == unit
+        assert "vector_tick" not in service and "service_tick" not in service
+        pending = inner["pending"] if kind == "icm" else service["pending_observations"]
+        assert len(pending) > 0
+        destination = _make(kind, unit=unit)
+        before, ambient = _native(destination), _ambient()
+>       destination.validate_state(saved)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:562: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697736158720: {'_service_clock_unit': 'vector_tick', 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon_min': 0.01},...onPolicy object at 0x7f0dea1ddd10>, 139697746044800: <townlet.exploration.icm.ICMExploration object at 0x7f0dea8763f0>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+__________ test_owned_native_real_learning_and_rng_continuation[rnd] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
+        source = _owned(kind)
+    
+        def warm_and_draw(backend: Any, sources: Any) -> None:
+            _warm(backend)
+            torch.rand(5)
+            random.random()
+            np.random.random(3)
+            sources.numpy.random(4)
+    
+        ambient = _ambient()
+        source.call(warm_and_draw)
+        _equal(ambient, _ambient())
+        saved = source.snapshot()
+        destination = _owned(kind)
+        before = destination.snapshot()
+    
+        def factory(rng: Any) -> Any:
+            return _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng)
+    
+        prepared = destination.prepare_restore(
+            saved,
+            factory=factory,
+            validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        )
+        _equal(before, destination.snapshot())
+        _equal(ambient, _ambient())
+>       destination.install(prepared)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f0dea1df110>
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f0dea1b46e0>
+
+    def install(self, prepared: PreparedWorldBackend) -> None:
+        with _rng_guard:
+            _quiescent()
+            if not isinstance(prepared, PreparedWorldBackend) or prepared._destination is not self._token:
+                raise ValueError("Prepared backend belongs to a different destination")
+            if prepared._used or prepared._revision != self._revision:
+>               raise ValueError("Prepared backend is already installed or its destination changed")
+E               ValueError: Prepared backend is already installed or its destination changed
+
+src/townlet/exploration/world_curiosity_state.py:839: ValueError
+__________ test_owned_native_real_learning_and_rng_continuation[icm] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
+        source = _owned(kind)
+    
+        def warm_and_draw(backend: Any, sources: Any) -> None:
+            _warm(backend)
+            torch.rand(5)
+            random.random()
+            np.random.random(3)
+            sources.numpy.random(4)
+    
+        ambient = _ambient()
+        source.call(warm_and_draw)
+        _equal(ambient, _ambient())
+        saved = source.snapshot()
+        destination = _owned(kind)
+        before = destination.snapshot()
+    
+        def factory(rng: Any) -> Any:
+            return _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng)
+    
+>       prepared = destination.prepare_restore(
+            saved,
+            factory=factory,
+            validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        )
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:598: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:823: in prepare_restore
+    if validate_backend(candidate, transported) is not None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_local_service.py:601: in <lambda>
+    validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/icm.py:368: in validate_state
+    self.prepare_state(state)
+src/townlet/exploration/icm.py:453: in prepare_state
+    candidate = deepcopy(self)
+                ^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:163: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:260: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:137: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+/usr/lib/python3.13/copy.py:222: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = mappingproxy({'feature_dim': 3, 'hidden_dim': 7, 'learning_rate': 0.01, 'inverse_weight': 0.8, 'forward_weight': 0.2, 'training_batch_size': 2, 'max_pending_transitions': 4})
+memo = {139697737326912: {'decay_rate': 0.995, 'drive_base_weight': 0.1, 'epsilon_decay': 0.995, 'epsilon_end': 0.01, ...}, 1...tionPolicy' object has no attribute 'strategy'") raised in repr()] ResolvedExplorationPolicy object at 0x7f0dea1df250>}
+_nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        d = id(x)
+        if memo is None:
+            memo = {}
+        else:
+            y = memo.get(d, _nil)
+            if y is not _nil:
+                return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle 'mappingproxy' object
+
+/usr/lib/python3.13/copy.py:152: TypeError
+________ test_owned_native_real_learning_and_rng_continuation[adaptive] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
+        source = _owned(kind)
+    
+        def warm_and_draw(backend: Any, sources: Any) -> None:
+            _warm(backend)
+            torch.rand(5)
+            random.random()
+            np.random.random(3)
+            sources.numpy.random(4)
+    
+        ambient = _ambient()
+        source.call(warm_and_draw)
+        _equal(ambient, _ambient())
+        saved = source.snapshot()
+        destination = _owned(kind)
+        before = destination.snapshot()
+    
+        def factory(rng: Any) -> Any:
+            return _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng)
+    
+        prepared = destination.prepare_restore(
+            saved,
+            factory=factory,
+            validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        )
+        _equal(before, destination.snapshot())
+        _equal(ambient, _ambient())
+>       destination.install(prepared)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f0de9ca31d0>
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f0dea1dee90>
+
+    def install(self, prepared: PreparedWorldBackend) -> None:
+        with _rng_guard:
+            _quiescent()
+            if not isinstance(prepared, PreparedWorldBackend) or prepared._destination is not self._token:
+                raise ValueError("Prepared backend belongs to a different destination")
+            if prepared._used or prepared._revision != self._revision:
+>               raise ValueError("Prepared backend is already installed or its destination changed")
+E               ValueError: Prepared backend is already installed or its destination changed
+
+src/townlet/exploration/world_curiosity_state.py:839: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_local_clock_ignores_idle_vector_ticks[True-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_snapshot_preparation_and_two_restores_own_every_leaf[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_backend_losses_and_quotas_are_world_local[service_before_admit-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_prepared_candidate_is_destination_bound_and_single_install[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_backend_losses_and_quotas_are_world_local[drop_oldest-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_backend_losses_and_quotas_are_world_local[drop_newest-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_admission_partition_invariance[False-service_before_admit-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_admission_partition_invariance[False-drop_oldest-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_admission_partition_invariance[False-drop_newest-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_admission_partition_invariance[True-service_before_admit-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_admission_partition_invariance[True-drop_oldest-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_admission_partition_invariance[True-drop_newest-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_icm_full_imported_tail_overflow[service_before_admit]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_icm_full_imported_tail_overflow[drop_oldest]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_icm_full_imported_tail_overflow[drop_newest]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_current_native_warm_adam_tail_and_next_update[world_eligible_admission-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_current_native_warm_adam_tail_and_next_update[vector_tick-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[adaptive]
+======================= 21 failed, 193 passed in 12.45s ========================

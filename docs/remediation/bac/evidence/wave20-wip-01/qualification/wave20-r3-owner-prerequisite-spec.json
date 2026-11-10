@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20/r3-owner-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave20-r3-owner-prerequisite",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owner-prerequisite",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py::TestRNDStatsUpdateTiming::test_stats_update_during_training_rollout",
+        "tests/test_townlet/unit/exploration/test_rnd_normalization.py::TestRNDNormalization::test_raw_mse_is_too_small_compared_to_extrinsic",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDNetworkInitialization::test_fixed_network_is_frozen",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_uses_action_and_successor",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave20-r3-owner-prerequisite"
+      ]
+    }
+  ]
+}

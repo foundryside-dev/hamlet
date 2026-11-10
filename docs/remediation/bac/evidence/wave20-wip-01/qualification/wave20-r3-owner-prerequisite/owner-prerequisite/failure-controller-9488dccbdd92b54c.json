@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/exploration/test_rnd_normalization.py::TestRNDNormalization::test_raw_mse_is_too_small_compared_to_extrinsic",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "self = <test_rnd_normalization.TestRNDNormalization object at 0x7fc51fd29d10>\n\n    def test_raw_mse_is_too_small_compared_to_extrinsic(self):\n        \"\"\"Demonstrate the bug: raw MSE is 10-100x smaller than extrinsic rewards.\n    \n        This test SHOULD FAIL initially, demonstrating the bug.\n        After implementing normalization, it should pass.\n        \"\"\"\n        obs_dim = 29\n        embed_dim = 128\n        device = torch.device(\"cpu\")\n    \n>       rnd = RNDExploration(\n            obs_dim=obs_dim,\n            embed_dim=embed_dim,\n            device=device,\n        )\nE       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/unit/exploration/test_rnd_normalization.py:25: TypeError",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6"
+}

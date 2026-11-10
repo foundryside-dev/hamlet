@@ -1,0 +1,27 @@
+{
+  "name": "prerequisites",
+  "exit_code": 0,
+  "seconds": 4.820341110229492,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_current_native_warm_adam_tail_and_next_update[world_eligible_admission-icm]",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_native_optimizer_state_ids_refuse_bool_and_float_aliases[0-False-icm]",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_raw_adam_moment_dtype_refuses_before_loader_coercion[exp_avg-float64-icm]",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[icm]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave20-r3-prerequisites"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave20-r3-prerequisites/prerequisites.log",
+  "sha256": "26feab44c60a6e08a0e5a12798debc03765e01c07c19e7eb01117f2cac05382c",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "manifest_sha256": "fa81768e9a5dde360b1c39e77cd9f3da572a0630666d50b74e304fd988e1d30e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

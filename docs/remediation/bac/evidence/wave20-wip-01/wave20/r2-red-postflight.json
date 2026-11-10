@@ -1,0 +1,25 @@
+{
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "candidate_tree": "d9f0705c8ebe4823f3a0314628720f5e174ad7e1",
+  "collection": 262,
+  "counts": {
+    "failed": 48,
+    "selected": 48,
+    "errors": 0
+  },
+  "wall_seconds": 49.20044803619385,
+  "causal_RED_credit": {
+    "bounded_overcapacity_service_spy_RND_AI": 12,
+    "rawAdammoment_acceptance_RND_AI": 16,
+    "RND_AI_nonexactID_acceptance": 8
+  },
+  "not_credited_as_native_validation_defect": {
+    "ICM_pristineMappingProxy_prerequisite_rawmoment": 8,
+    "ICM_pristineMappingProxy_prerequisite_IDcomparison": 4
+  },
+  "Owned_fixture_protocol_control": "2PASS5.5662558wall; exactstaleValueErrorthenfreshprepare/install, noWSsourcechanges",
+  "custody": "PASS193source573configs13artifacts3processes/index/import/Torch1/14registry1available",
+  "source": "all3providersbyteidenticalR1",
+  "sessions": "ALLCLOSED; no hang/cancellation/unverifiedsubprocess",
+  "next": "SameAstra sourcefixround1 coherentproductionrepair; noICMcomparisonrerunbeforecloneprerequisitefixed"
+}

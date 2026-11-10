@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_occupancy512_consumes_four_batches():\n>       rnd = provider(128, 128, \"occupancy_fifo\", \"service_before_admit\")\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_rnd_service.py:39: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nbatch = 128, capacity = 128, mode = 'occupancy_fifo'\noverflow = 'service_before_admit'\n\n    def provider(batch, capacity, mode, overflow):\n>       rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=batch)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/regressions/bac/test_rnd_service.py:13: TypeError",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6"
+}

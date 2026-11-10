@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_uses_action_and_successor",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_icm_uses_action_and_successor():\n        \"\"\"An observation-only reward or implicit reward-phase training must fail.\"\"\"\n>       provider = _provider(PARAMETERS, \"paced_fifo\", \"service_before_admit\")\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_icm_provider.py:116: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nparameters = {'feature_dim': 2, 'forward_weight': 0.3, 'hidden_dim': 5, 'inverse_weight': 0.7, ...}\nservice_mode = 'paced_fifo', overflow_policy = 'service_before_admit'\n\n    def _provider(parameters, service_mode, overflow_policy):\n        assert util.find_spec(\"townlet.exploration.icm\") is not None, \"transition-based ICM provider is missing\"\n        provider_type = import_module(\"townlet.exploration.icm\").ICMExploration\n        policy = _policy(parameters, service_mode, overflow_policy)\n>       provider = provider_type(policy, obs_dim=3, action_dim=2, **parameters, device=torch.device(\"cpu\"))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/regressions/bac/test_icm_provider.py:51: TypeError",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6"
+}

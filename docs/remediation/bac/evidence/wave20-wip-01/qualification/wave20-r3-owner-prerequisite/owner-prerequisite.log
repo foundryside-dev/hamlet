@@ -1,0 +1,115 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 5 items
+
+tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py F    [ 20%]
+tests/test_townlet/unit/exploration/test_rnd_normalization.py F          [ 40%]
+tests/test_townlet/unit/exploration/test_exploration_strategies.py F     [ 60%]
+tests/test_townlet/regressions/bac/test_rnd_service.py F                 [ 80%]
+tests/test_townlet/regressions/bac/test_icm_provider.py F                [100%]
+
+=================================== FAILURES ===================================
+______ TestRNDStatsUpdateTiming.test_stats_update_during_training_rollout ______
+
+self = <test_rnd_stats_update_timing.TestRNDStatsUpdateTiming object at 0x7fc51fd296d0>
+
+    def test_stats_update_during_training_rollout(self):
+        """Test that RND stats update when compute_intrinsic_rewards is called during training.
+    
+        BUG-22: Originally, the environment called compute_intrinsic_rewards(..., update_stats=False)
+        during training rollouts, causing normalization stats to lag behind by 2+ steps.
+    
+        This test verifies that stats are updated synchronously when computing intrinsic rewards.
+        """
+        device = torch.device("cpu")
+        obs_dim = 29
+>       rnd = RNDExploration(obs_dim=obs_dim, device=device)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py:25: TypeError
+_____ TestRNDNormalization.test_raw_mse_is_too_small_compared_to_extrinsic _____
+
+self = <test_rnd_normalization.TestRNDNormalization object at 0x7fc51fd29d10>
+
+    def test_raw_mse_is_too_small_compared_to_extrinsic(self):
+        """Demonstrate the bug: raw MSE is 10-100x smaller than extrinsic rewards.
+    
+        This test SHOULD FAIL initially, demonstrating the bug.
+        After implementing normalization, it should pass.
+        """
+        obs_dim = 29
+        embed_dim = 128
+        device = torch.device("cpu")
+    
+>       rnd = RNDExploration(
+            obs_dim=obs_dim,
+            embed_dim=embed_dim,
+            device=device,
+        )
+E       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/unit/exploration/test_rnd_normalization.py:25: TypeError
+__________ TestRNDNetworkInitialization.test_fixed_network_is_frozen ___________
+
+self = <test_exploration_strategies.TestRNDNetworkInitialization object at 0x7fc51fd2a210>
+
+    def test_fixed_network_is_frozen(self):
+        """Fixed network should have requires_grad=False for all parameters."""
+>       rnd = RNDExploration(obs_dim=10, embed_dim=8, device=torch.device("cpu"))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/unit/exploration/test_exploration_strategies.py:276: TypeError
+___________________ test_occupancy512_consumes_four_batches ____________________
+
+    def test_occupancy512_consumes_four_batches():
+>       rnd = provider(128, 128, "occupancy_fifo", "service_before_admit")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+batch = 128, capacity = 128, mode = 'occupancy_fifo'
+overflow = 'service_before_admit'
+
+    def provider(batch, capacity, mode, overflow):
+>       rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=batch)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:13: TypeError
+______________________ test_icm_uses_action_and_successor ______________________
+
+    def test_icm_uses_action_and_successor():
+        """An observation-only reward or implicit reward-phase training must fail."""
+>       provider = _provider(PARAMETERS, "paced_fifo", "service_before_admit")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_icm_provider.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+parameters = {'feature_dim': 2, 'forward_weight': 0.3, 'hidden_dim': 5, 'inverse_weight': 0.7, ...}
+service_mode = 'paced_fifo', overflow_policy = 'service_before_admit'
+
+    def _provider(parameters, service_mode, overflow_policy):
+        assert util.find_spec("townlet.exploration.icm") is not None, "transition-based ICM provider is missing"
+        provider_type = import_module("townlet.exploration.icm").ICMExploration
+        policy = _policy(parameters, service_mode, overflow_policy)
+>       provider = provider_type(policy, obs_dim=3, action_dim=2, **parameters, device=torch.device("cpu"))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: ICMExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'
+
+tests/test_townlet/regressions/bac/test_icm_provider.py:51: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py::TestRNDStatsUpdateTiming::test_stats_update_during_training_rollout
+FAILED tests/test_townlet/unit/exploration/test_rnd_normalization.py::TestRNDNormalization::test_raw_mse_is_too_small_compared_to_extrinsic
+FAILED tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDNetworkInitialization::test_fixed_network_is_frozen
+FAILED tests/test_townlet/regressions/bac/test_rnd_service.py::test_occupancy512_consumes_four_batches
+FAILED tests/test_townlet/regressions/bac/test_icm_provider.py::test_icm_uses_action_and_successor
+============================== 5 failed in 0.17s ===============================

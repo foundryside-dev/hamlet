@@ -1,0 +1,26 @@
+{
+  "name": "fixture-preflight",
+  "exit_code": 0,
+  "seconds": 4.781722784042358,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-k",
+    "test_current_provider_fixture_preflight",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave20-r0-fixtures"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave20-r0-fixture-preflight/fixture-preflight.log",
+  "sha256": "c20aae5bd1f3a094fa2ad0825aeceb8a280820e7957ccf397f651f2fbccc0fb8",
+  "candidate_tree": "0afbccc7148ee33ad50d65a9a2e6d4d533302618",
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "manifest_sha256": "f2746caecd630e84bcc9acf50735edf4d43d06500f93497a72ac1af88f2a336d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

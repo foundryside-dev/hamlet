@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_configured_shared_update_preflights_before_step_counter_change[rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'rnd'\n\n    @pytest.mark.parametrize(\"kind\", (\"rnd\", \"adaptive\"))\n    def test_configured_shared_update_preflights_before_step_counter_change(kind: str) -> None:\n        backend = _build(kind, \"service_before_admit\", SHARED)\n        provider = _rnd(backend)\n        provider.admit_and_service(_rows(3), vector_tick=50)\n        clock, before = provider.step_counter, _native(backend)\n        calls: list[Any] = []\n        handles = _watch_forwards(backend, calls)\n        rows = _rows(3, 320)\n        rows[-1, -1] = float(\"nan\")\n        try:\n            with pytest.raises(ValueError):\n                backend.update({\"observations\": rows})\n>           assert not calls and provider.step_counter == clock\nE           assert (not [] and 51 == 0)\nE            +  where 51 = <townlet.exploration.rnd.RNDExploration object at 0x7f7468d356d0>.step_counter\n\ntests/test_townlet/regressions/bac/test_pw_local_service.py:945: AssertionError",
+  "candidate_tree": "0afbccc7148ee33ad50d65a9a2e6d4d533302618"
+}

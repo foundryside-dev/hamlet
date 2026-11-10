@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py::TestRNDStatsUpdateTiming::test_stats_update_during_training_rollout",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "self = <test_rnd_stats_update_timing.TestRNDStatsUpdateTiming object at 0x7fc51fd296d0>\n\n    def test_stats_update_during_training_rollout(self):\n        \"\"\"Test that RND stats update when compute_intrinsic_rewards is called during training.\n    \n        BUG-22: Originally, the environment called compute_intrinsic_rewards(..., update_stats=False)\n        during training rollouts, causing normalization stats to lag behind by 2+ steps.\n    \n        This test verifies that stats are updated synchronously when computing intrinsic rewards.\n        \"\"\"\n        device = torch.device(\"cpu\")\n        obs_dim = 29\n>       rnd = RNDExploration(obs_dim=obs_dim, device=device)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       TypeError: RNDExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'\n\ntests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py:25: TypeError",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6"
+}

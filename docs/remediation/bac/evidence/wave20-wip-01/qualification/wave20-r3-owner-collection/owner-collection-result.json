@@ -1,0 +1,28 @@
+{
+  "name": "owner-collection",
+  "exit_code": 0,
+  "seconds": 3.234591245651245,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py",
+    "tests/test_townlet/unit/exploration/test_rnd_normalization.py",
+    "tests/test_townlet/unit/exploration/test_exploration_strategies.py",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave20-r3-owner-collection/owner-collection.log",
+  "sha256": "9763181a60633ee695d02d7588b5f053ca7ac23488f23618b1805c837224a98e",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "manifest_sha256": "b06d703ed63be2ac6617d2c8c3767a43094da0b3abbcc83c842851a38747f9c2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

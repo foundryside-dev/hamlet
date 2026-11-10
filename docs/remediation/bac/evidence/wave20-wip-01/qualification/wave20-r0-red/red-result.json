@@ -1,0 +1,28 @@
+{
+  "name": "red",
+  "exit_code": 1,
+  "seconds": 24.4291672706604,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "3",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave20-r0-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave20-r0-red/red.log",
+  "sha256": "b7b24787d4dffb46092e9ec1f4bf90cafc2743dd70e1d8a60a25fe02910303c0",
+  "candidate_tree": "0afbccc7148ee33ad50d65a9a2e6d4d533302618",
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "manifest_sha256": "f2746caecd630e84bcc9acf50735edf4d43d06500f93497a72ac1af88f2a336d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

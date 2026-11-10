@@ -1,0 +1,33 @@
+{
+  "observed": "selectedenvironment reportedstarting; wait_for_environment returnedready immediately; cause notestablished",
+  "head": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "allowed_partial_source": {
+    "src/townlet/exploration/adaptive_intrinsic.py": {
+      "before": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9",
+      "now": "1ac874970485fbdfea1c2b980b60ed4845a2dd68319dd67204dd84ac59cc5d55"
+    },
+    "src/townlet/exploration/icm.py": {
+      "before": "8004aec68d19c962df0cf6785b00af32c8553a3746fee95be39009555f9d44b8",
+      "now": "060da280dcdbfafae450e8bd17822b64d7ac0fb175c3dbb2920611d3f1e6c168"
+    },
+    "src/townlet/exploration/rnd.py": {
+      "before": "821fd3095e896a5b98d44a671906f9c5cbccec2f00fa430a6f5bb8acb24e4109",
+      "now": "b9bf1ed87d94b66e4c32fdf1a95f96e6cb39fad6c9b7cc68b8bd2a9dcf85113a"
+    },
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py": {
+      "before": "e7b9921a19b011ac2667e35cec5046c07f5135779db2ff7ddb2bb7087e378d95",
+      "now": "c4364361e06fdbfbe6b3f02cada10dd7faf2717df303282711d941fae994f481"
+    }
+  },
+  "other_guarded_source": "PASS",
+  "configs": 573,
+  "artifacts": 13,
+  "worktree_registry": "unchanged14/MAIN1available; no prune/delete/recreate",
+  "private_backup_sha256": "75ca18ad6806eed1731ae82943fbf7337762a8412ca4c9614d8d2a7c22ed2095 verified",
+  "CPU": "400000 100000",
+  "RAM_limit": "17179869184",
+  "RAM_current": "1043062784",
+  "affinity": 5,
+  "processes": "No pytest/qualification/compilerjobsactive; sourceauthor agentinterrupted, no cancellationperformed",
+  "action": "Resume sameexistingauthor frompartialsource aftercontextreconciliation, no branch/worktree/repositorycopy or workrestart"
+}

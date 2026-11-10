@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import math
 from collections import deque
+from contextlib import nullcontext
 from copy import deepcopy
-from typing import Any, cast
+from dataclasses import dataclass
+from typing import Any, Literal, cast
 
 import torch
 from torch import Tensor, nn
@@ -13,15 +15,24 @@ from torch.nn import functional
 
 from townlet.config.exploration_policy import ExplorationServiceReceipt, IntrinsicTransitionContext, ResolvedExplorationPolicy
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.exploration.world_curiosity_state import ServiceClock, WorldRNGState
 
 _COUNTERS = ("admitted_rows", "consumed_rows", "dropped_rows", "optimizer_updates", "mandatory_service_updates")
 
 
+@dataclass
+class _PreparedICM:
+    owner: object
+    attributes: dict[str, Any]
+    consumed: bool
+
+
 def _number(value: Any, name: str, integer: bool, minimum: float) -> None:
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < minimum:
+    if integer:
+        if type(value) is not int or value < minimum:
+            raise ValueError(f"ICM {name} requires an exact integer >= {minimum}")
+    elif isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < minimum:
         raise ValueError(f"ICM {name} requires a finite number >= {minimum}")
-    if integer and not isinstance(value, int):
-        raise ValueError(f"ICM {name} requires an integer")
 
 
 def _owned(value: Any) -> Any:
@@ -57,7 +68,13 @@ class ICMExploration(EpsilonGreedyExploration):
         training_batch_size: int,
         max_pending_transitions: int,
         device: torch.device | str,
+        rng: WorldRNGState | None,
+        service_clock_unit: Literal["vector_tick", "world_eligible_admission"],
     ):
+        ServiceClock(service_clock_unit, 0)
+        if rng is not None and not isinstance(rng, WorldRNGState):
+            raise ValueError("ICM rng must be an actual world RNG owner or explicit None")
+        self._service_clock_unit = service_clock_unit
         if not isinstance(policy, ResolvedExplorationPolicy) or policy.strategy != "icm":
             raise ValueError("ICM requires a resolved icm policy")
         parameters = {
@@ -76,6 +93,9 @@ class ICMExploration(EpsilonGreedyExploration):
             raise ValueError("ICM requires positive learning_rate and capacity >= training_batch_size")
         if parameters != dict(policy.provider_parameters):
             raise ValueError("ICM constructor parameters disagree with the selected policy")
+        device = torch.device(device)
+        if device.type not in {"cpu", "cuda"}:
+            raise ValueError("ICM requires a concrete CPU or CUDA destination")
         super().__init__(epsilon=policy.epsilon_start, epsilon_decay=policy.epsilon_decay, epsilon_min=policy.epsilon_end)
         self.policy = policy
         self.obs_dim, self.action_dim = obs_dim, action_dim
@@ -83,9 +103,13 @@ class ICMExploration(EpsilonGreedyExploration):
         self.learning_rate = float(learning_rate)
         self.inverse_weight, self.forward_weight = float(inverse_weight), float(forward_weight)
         self.training_batch_size, self.max_pending_transitions = training_batch_size, max_pending_transitions
-        self.encoder = nn.Sequential(nn.Linear(obs_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, feature_dim))
-        self.inverse_model = nn.Sequential(nn.Linear(2 * feature_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, action_dim))
-        self.forward_model = nn.Sequential(nn.Linear(feature_dim + action_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, feature_dim))
+        with rng.activate("model_init") if rng is not None else nullcontext():
+            self.encoder = nn.Sequential(nn.Linear(obs_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, feature_dim))
+            self.inverse_model = nn.Sequential(nn.Linear(2 * feature_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, action_dim))
+        with rng.activate("predictor") if rng is not None else nullcontext():
+            self.forward_model = nn.Sequential(
+                nn.Linear(feature_dim + action_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, feature_dim)
+            )
         for module in (self.encoder, self.inverse_model, self.forward_model):
             module.to(device=device, dtype=torch.float32)
         self.device = next(self.encoder.parameters()).device
@@ -94,8 +118,25 @@ class ICMExploration(EpsilonGreedyExploration):
         self._pending: deque[dict[str, Any]] = deque()
         self._counters = dict.fromkeys(_COUNTERS, 0)
         self._last_loss = 0.0
-        self._service_tick: int | None = None
-        self._ordinary_updates_this_tick = 0
+        self._service_position: int | None
+        if service_clock_unit == "world_eligible_admission":
+            self._service_position = 0
+        else:
+            self._service_position = None
+        self._ordinary_updates_at_position = 0
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> ICMExploration:
+        """Copy real learned state without pickling frozen policy mappings."""
+        candidate = object.__new__(type(self))
+        memo[id(self)] = candidate
+        if id(self.policy) not in memo:
+            memo[id(self.policy)] = type(self.policy).from_dict(self.policy.to_dict())
+        candidate.__dict__ = deepcopy(self.__dict__, memo)
+        return candidate
+
+    @property
+    def service_clock_unit(self) -> Literal["vector_tick", "world_eligible_admission"]:
+        return self._service_clock_unit
 
     def _parameters(self) -> list[nn.Parameter]:
         return [parameter for module in (self.encoder, self.inverse_model, self.forward_model) for parameter in module.parameters()]
@@ -104,6 +145,10 @@ class ICMExploration(EpsilonGreedyExploration):
         if not isinstance(context, IntrinsicTransitionContext):
             raise ValueError("ICM requires actual predecessor/actions/successor IntrinsicTransitionContext")
         predecessor, actions, successor, active = context.predecessor, context.actions, context.successor, context.active_on_entry
+        if any(
+            value.layout != torch.strided or value.device.type not in {"cpu", "cuda"} for value in (predecessor, actions, successor, active)
+        ):
+            raise ValueError("ICM context requires concrete dense CPU/CUDA tensors")
         if predecessor.ndim != 2 or predecessor.shape[1] != self.obs_dim or successor.shape != predecessor.shape:
             raise ValueError("ICM transition observations require [N, obs_dim] geometry")
         if (
@@ -167,16 +212,49 @@ class ICMExploration(EpsilonGreedyExploration):
         if mandatory:
             self._counters["mandatory_service_updates"] += 1
         else:
-            self._ordinary_updates_this_tick += 1
+            self._ordinary_updates_at_position += 1
 
     def admit_and_service(self, context: IntrinsicTransitionContext) -> ExplorationServiceReceipt:
+        """Current shared grouped service with explicit context vector cadence."""
+        if self.service_clock_unit != "vector_tick":
+            raise ValueError("Private ICM requires explicit eligible-admission service")
+        if not isinstance(context, IntrinsicTransitionContext):
+            raise ValueError("ICM requires an actual transition context")
+        return self.admit_and_service_at(context, clock=ServiceClock("vector_tick", context.vector_tick))
+
+    def admit_and_service_at(self, context: IntrinsicTransitionContext, *, clock: ServiceClock) -> ExplorationServiceReceipt:
         predecessor, actions, successor, active = self._context(context)
-        if self._service_tick is not None and context.vector_tick < self._service_tick:
-            raise ValueError("ICM service vector_tick must be monotonic")
+        if type(clock) is not ServiceClock:
+            raise ValueError("ICM service requires ServiceClock")
+        ServiceClock(clock.unit, clock.position)
+        ServiceClock("vector_tick", context.vector_tick)
+        if clock.unit != self.service_clock_unit:
+            raise ValueError("ICM service clock differs from selected unit")
+        indices = active.nonzero(as_tuple=False).flatten().tolist()
+        previous = self._service_position
+        if clock.unit == "vector_tick":
+            if clock.position != context.vector_tick or (previous is not None and clock.position < previous):
+                raise ValueError("ICM shared clock must match context and not regress")
+        elif previous is None or clock.position != previous + len(indices):
+            raise ValueError("ICM private clock delta must equal actual eligible admissions")
         before = dict(self._counters)
-        if context.vector_tick != self._service_tick:
-            self._service_tick, self._ordinary_updates_this_tick = context.vector_tick, 0
-        for index in active.nonzero(as_tuple=False).flatten().tolist():
+        if clock.unit == "vector_tick":
+            self._admit_rows(predecessor, actions, successor, indices, clock.position)
+        else:
+            assert previous is not None
+            for offset, index in enumerate(indices):
+                self._admit_rows(predecessor, actions, successor, [index], previous + offset + 1)
+        return ExplorationServiceReceipt(
+            provider="icm",
+            **{name: self._counters[name] - before[name] for name in _COUNTERS},
+            pending_rows=len(self._pending),
+            last_loss=self._last_loss,
+        )
+
+    def _admit_rows(self, predecessor: Tensor, actions: Tensor, successor: Tensor, indices: list[int], position: int) -> None:
+        if position != self._service_position:
+            self._service_position, self._ordinary_updates_at_position = position, 0
+        for index in indices:
             if len(self._pending) == self.max_pending_transitions:
                 if self.policy.overflow_policy == "service_before_admit":
                     self._train_batch(True)
@@ -192,15 +270,9 @@ class ICMExploration(EpsilonGreedyExploration):
             )
             self._counters["admitted_rows"] += 1
         while len(self._pending) >= self.training_batch_size:
-            if self.policy.service_mode == "paced_fifo" and self._ordinary_updates_this_tick >= self.policy.max_updates_per_tick:
+            if self.policy.service_mode == "paced_fifo" and self._ordinary_updates_at_position >= self.policy.max_updates_per_tick:
                 break
             self._train_batch(False)
-        return ExplorationServiceReceipt(
-            provider="icm",
-            **{name: self._counters[name] - before[name] for name in _COUNTERS},
-            pending_rows=len(self._pending),
-            last_loss=self._last_loss,
-        )
 
     def _config(self) -> dict[str, Any]:
         return {
@@ -221,7 +293,7 @@ class ICMExploration(EpsilonGreedyExploration):
             dict[str, Any],
             _owned(
                 {
-                    "schema": "icm-state-v1",
+                    "schema": "icm-state-v2",
                     "policy": self.policy.to_dict(),
                     "policy_identity": self.policy.policy_identity,
                     "config": self._config(),
@@ -235,8 +307,9 @@ class ICMExploration(EpsilonGreedyExploration):
                     "pending": list(self._pending),
                     "counters": self._counters,
                     "last_loss": self._last_loss,
-                    "service_tick": self._service_tick,
-                    "ordinary_updates_this_tick": self._ordinary_updates_this_tick,
+                    "service_clock_unit": self.service_clock_unit,
+                    "service_position": self._service_position,
+                    "ordinary_updates_at_position": self._ordinary_updates_at_position,
                 }
             ),
         )
@@ -262,12 +335,17 @@ class ICMExploration(EpsilonGreedyExploration):
         expected = self.optimizer.state_dict()["param_groups"]
         if not isinstance(payload, dict) or set(payload) != {"state", "param_groups"} or payload["param_groups"] != expected:
             raise ValueError("ICM optimizer parameter groups disagree with selected configuration")
+        for group, reference in zip(payload["param_groups"], expected, strict=True):
+            if any(type(group[key]) is not type(value) for key, value in reference.items()):
+                raise ValueError("ICM optimizer group field types disagree with selected configuration")
+            if any(type(value) is not int for value in group["params"]) or any(type(value) is not float for value in group["betas"]):
+                raise ValueError("ICM optimizer parameter IDs/betas require exact native types")
         states = payload["state"]
         identifiers = expected[0]["params"]
         required: set[int] = set()
         if updates:
             required = set(identifiers)
-        if not isinstance(states, dict) or set(states) != required:
+        if not isinstance(states, dict) or set(states) != required or any(type(key) is not int for key in states):
             raise ValueError("ICM optimizer state does not match successful update count")
         for identifier, parameter in zip(identifiers, parameters, strict=True):
             if not updates:
@@ -299,11 +377,17 @@ class ICMExploration(EpsilonGreedyExploration):
         optimizer.load_state_dict(_owned(payload))
         return optimizer
 
-    def load_state(self, state: dict[str, Any]) -> None:
-        """Validate all transported state off-side before replacing any live state."""
-        if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v1":
-            raise ValueError("ICM requires complete icm-state-v1 checkpoint")
+    def validate_state(self, state: dict[str, Any]) -> None:
+        self.prepare_state(state)
+
+    def prepare_state(self, state: dict[str, Any]) -> _PreparedICM:
+        """Validate and own every transported field before any live installation."""
         try:
+            state = _owned(state)
+            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v2":
+                raise ValueError("ICM requires complete icm-state-v2 checkpoint")
+            if not isinstance(state["policy"], dict) or state["policy"].keys() != self.policy.to_dict().keys():
+                raise ValueError("ICM checkpoint requires current complete policy fields")
             policy = ResolvedExplorationPolicy.from_dict(state["policy"])
             if policy.policy_identity != state["policy_identity"] or policy.policy_identity != self.policy.policy_identity:
                 raise ValueError("ICM checkpoint selected policy identity disagrees")
@@ -316,7 +400,8 @@ class ICMExploration(EpsilonGreedyExploration):
                     raise ValueError(f"ICM checkpoint configuration disagrees at {name}")
             if not isinstance(config["device"], str):
                 raise ValueError("ICM checkpoint source device requires a device string")
-            torch.device(config["device"])
+            if torch.device(config["device"]).type not in {"cpu", "cuda"}:
+                raise ValueError("ICM checkpoint source device must be CPU or CUDA")
             counters = state["counters"]
             if not isinstance(counters, dict) or set(counters) != set(_COUNTERS):
                 raise ValueError("ICM checkpoint counters are incomplete")
@@ -345,13 +430,18 @@ class ICMExploration(EpsilonGreedyExploration):
                 raise ValueError("ICM checkpoint service counters disagree")
             if counters["admitted_rows"] != counters["consumed_rows"] + counters["dropped_rows"] + len(pending):
                 raise ValueError("ICM checkpoint transition conservation failed")
-            tick, budget = state["service_tick"], state["ordinary_updates_this_tick"]
+            if type(state["service_clock_unit"]) is not str or state["service_clock_unit"] != self.service_clock_unit:
+                raise ValueError("ICM checkpoint service unit differs from destination")
+            tick, budget = state["service_position"], state["ordinary_updates_at_position"]
             _number(budget, "ordinary service budget", True, 0)
             if tick is None:
                 if counters["admitted_rows"] or updates or budget:
                     raise ValueError("ICM unstarted service has nonempty counters")
             else:
-                _number(tick, "service_tick", True, 0)
+                _number(tick, "service_position", True, 0)
+            if self.service_clock_unit == "world_eligible_admission":
+                if tick != counters["admitted_rows"] or (tick == 0 and (updates or budget)):
+                    raise ValueError("ICM private service position disagrees with admissions")
             if budget > updates - counters["mandatory_service_updates"] or (
                 policy.service_mode == "paced_fifo" and budget > policy.max_updates_per_tick
             ):
@@ -373,8 +463,19 @@ class ICMExploration(EpsilonGreedyExploration):
             owned_pending = deque(_owned(pending))
         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
             raise ValueError("ICM checkpoint is malformed") from error
-        self.encoder, self.inverse_model, self.forward_model, self.optimizer = encoder, inverse, forward, optimizer
-        self.policy, self._source_device = policy, config["device"]
-        self.epsilon, self.epsilon_decay, self.epsilon_min = state["epsilon"], state["epsilon_decay"], state["epsilon_min"]
-        self._pending, self._counters, self._last_loss = owned_pending, dict(counters), float(state["last_loss"])
-        self._service_tick, self._ordinary_updates_this_tick = tick, budget
+        candidate = deepcopy(self, {id(self.policy): policy})
+        candidate.encoder, candidate.inverse_model, candidate.forward_model, candidate.optimizer = encoder, inverse, forward, optimizer
+        candidate.policy, candidate._source_device = policy, config["device"]
+        candidate.epsilon, candidate.epsilon_decay, candidate.epsilon_min = state["epsilon"], state["epsilon_decay"], state["epsilon_min"]
+        candidate._pending, candidate._counters, candidate._last_loss = owned_pending, dict(counters), float(state["last_loss"])
+        candidate._service_position, candidate._ordinary_updates_at_position = tick, budget
+        return _PreparedICM(self, candidate.__dict__, False)
+
+    def install_state(self, prepared: _PreparedICM) -> None:
+        if type(prepared) is not _PreparedICM or prepared.owner is not self or prepared.consumed:
+            raise ValueError("ICM prepared state belongs to another destination or was consumed")
+        prepared.consumed = True
+        self.__dict__ = prepared.attributes
+
+    def load_state(self, state: dict[str, Any]) -> None:
+        self.install_state(self.prepare_state(state))

@@ -1,0 +1,162 @@
+{
+  "status": "BOUNDED BACKEND PRODUCER HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+  "results": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+      "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.1879098415374756,
+      "source_guards": 193,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "prerequisites": {
+      "job": "prerequisites",
+      "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+      "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+      "exit_code": 0,
+      "counts": {
+        "passed": 4,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 4.820341110229492,
+      "source_guards": 193,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "covering": {
+      "job": "covering",
+      "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+      "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+      "exit_code": 0,
+      "counts": {
+        "passed": 57,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 10.640973806381226,
+      "source_guards": 193,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "owned": {
+      "job": "owned",
+      "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+      "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+      "exit_code": 0,
+      "counts": {
+        "passed": 262,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 28.451725482940674,
+      "source_guards": 193,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent": {
+      "job": "independent",
+      "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+      "candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+      "exit_code": 0,
+      "counts": {
+        "passed": 262,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 20.913580179214478,
+      "source_guards": 193,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "owner_prerequisite": {
+    "collected": 151,
+    "representatives_failed": 5,
+    "wall_seconds": 4.082396507263184,
+    "cause": "Fiveunmigratedexistingownerfixtures omitnewrequiredexplicitrng/unit inputs; actualconstructorTypeError beforeassertions. Currentdata/APItestmigrationrequired; no backcompat/defaultintroduced.",
+    "custody": "PASS196source573configs13artifacts1process/index/import/Torch1/14registryMAIN1available",
+    "next": "Boundedfive-testowner migration beforeactual151suitequalification; no broadrepeatbeforecausalprerequisitesfixed",
+    "source": "No additionalproductionchange orfalseglobalPASS"
+  },
+  "guards": {
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 1.3566138744354248,
+      "sha256": "bf4dde2148e149d629daee6afcad0ecc80419f732f025d6870e01f98700868f9"
+    },
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.0821530818939209,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 1.7141122817993164,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 98.02241349220276,
+      "sha256": "d1f04ab638e70be310f1253fe35b9fc5ea6450de3beb56a89bb5059735ed8901"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.8820414543151855,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    "compiler-cli": {
+      "exit_code": 0,
+      "seconds": 174.97111320495605,
+      "sha256": "a0c4e92ce3c9c06c57971b32a3a5d1a388c3b7211e39b3affa51410f746ceca6"
+    }
+  },
+  "review": "SameSol actualfixedsource/spec/qualityPASS+262independentPASS20.91358wall; allownedmaterialfindingsclosedatR3",
+  "budget": "4wholefiles/3042actual<=4050; no5thsourcehelper",
+  "open": "Existingfiveowners151+othercallers/nativefixturesneednewexplicitAPItransport;9globaloracle/POPmypyerrorsplusknownuntypedRR/liveconstructorcalls; actualperworldfactory/bank/POP/runner/effects/nativeparent/manifest/learning/E2E/earlycoherentfullgate/finalrequirementsOPEN. CUDAunavailable/unqualified. Original28/66 releasecountunchanged.",
+  "next": "Durableexistingbranch checkpoint thenbounded5owner-testmigrationand dependencycoherentfactory/bank/runtimeintegration"
+}

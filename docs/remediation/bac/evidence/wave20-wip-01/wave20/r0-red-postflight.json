@@ -1,0 +1,23 @@
+{
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "candidate_tree": "0afbccc7148ee33ad50d65a9a2e6d4d533302618",
+  "collected": 214,
+  "fixture_preflight": "18PASS4.781722784s, nofutureAPI credit",
+  "counts": {
+    "failed": 195,
+    "passed": 19,
+    "errors": 0
+  },
+  "wall_seconds": 24.4291672706604,
+  "failure_groups": {
+    "missingadoptedserviceAPI": 186,
+    "buffer_fullinput_missing_refusal": 4,
+    "configuredstep_counter_premature0to51": 2,
+    "AIhistory_snapshot_restore_alias": 2,
+    "AIlateouter_refusal_nestedparameter_mutation": 1
+  },
+  "custody": "PASS193source573configs13artifacts4actualprocesses/index/import/Torch1/14registryMAIN1available",
+  "source": "all3providersunchanged64748bdf",
+  "sessions": "ALLCLOSED",
+  "production": "Notclearedyet: rootrequired-explicit-args no-defaults designcorrection scopedreview beforecoding"
+}

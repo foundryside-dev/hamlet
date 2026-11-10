@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20/r2-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave20-r2-owned-sequence-control",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owned-sequence-control",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-k",
+        "owned_native_real_learning_and_rng_continuation and not icm",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave20-r2-sequence"
+      ]
+    }
+  ]
+}

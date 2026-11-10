@@ -1,0 +1,19 @@
+{
+  "base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+  "candidate_tree": "82b428748d2de3f46caca601893cb3308cdbb91a",
+  "counts": {
+    "failed": 21,
+    "passed": 193,
+    "errors": 0
+  },
+  "wall_seconds": 16.280887603759766,
+  "causes": {
+    "ICMMappingProxyclone": 19,
+    "Ownedpreparedstale": 2
+  },
+  "covering_existing_defects": "9PASS6.11480069s, all nine R0currentdefects nowclosedbyactualfixedsource",
+  "guards": "Ruff/Black/expression/CLI128.9665PASS; defaultsFAIL605>601; mypy10errors3files(1ownedtyping+7priorcallers+2newPOPconstructorinputs), knownRR/liveuntypedcallersalsorequiredOPEN",
+  "independent_review": "3materialnewfindings: overcapbufferadmissionhang, rawAdamcast/finitenessbypass, nonexactstate-IDaliases; actualsource/specqualityFAIL",
+  "custody": "PASS193source573configs13artifacts3processes/index/import/Torch1/14registry1available; allrootruntimeCLOSED",
+  "next": "Testsfirstboundedregressions+ownedfixtureprotocolrepair, thenoriginalauthorproductionfixround1; no broadrepeatuntilICMcopy/stalefixtureprerequisitesrepaired"
+}

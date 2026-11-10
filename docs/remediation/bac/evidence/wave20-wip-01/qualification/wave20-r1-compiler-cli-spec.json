@@ -1,0 +1,14 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave20-r1-compiler-cli",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "compiler-cli",
+      "args": [
+        "scripts/validate_compiler_cli.py"
+      ]
+    }
+  ]
+}

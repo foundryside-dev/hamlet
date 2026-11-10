@@ -1,0 +1,35 @@
+"""Publish reviewed backend local service clocks native preparation and component RNG hooks with exact source-equivalence evidence."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave20/r3-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')};out=D/'evidence/wave20-wip-01';out.mkdir(exist_ok=True);artifacts={}
+def copy(source,dest):
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if dest.exists():assert sha(source)==sha(dest),str(dest)
+ else:dest.write_bytes(source.read_bytes())
+ assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+def update(source,dest):
+ assert dest.read_bytes()==subprocess.check_output(['git','show',m['base_commit']+':'+dest.relative_to(R).as_posix()],cwd=R);dest.write_bytes(source.read_bytes());artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave20-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave20-r*.json')):copy(p,out/'qualification'/p.name)
+for folder in ('wave20','wave20-preparation'):
+ for p in sorted((W/folder).glob('*')):
+  if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/folder/p.name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave20_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md','tasks.json','final-review-lenses.json'):copy(W/name,out/('execution-'+name))
+copy(W/'wave20-preparation/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md',D/'CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md')
+receipt=json.loads((W/'wave20/r3-checkpoint-receipt.json').read_text());manifest={'status':receipt['status'],'packet':'RND ICM and adaptive local cadence complete native preparation and real constructor RNG hooks','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original scoped releases unchanged; bounded handoff not integrated release','publication':'Authorized existingremote branch; continue planned work. No branch/worktree/copy,PR,merge or deletion.','next_abi':'Migrate five existing owner test files then factory/bank/current POP/runner/native integration; all original integrated acceptance remains required OPEN.','custody':'14 registry records/MAIN1available;13historical paths unavailable,preserved. Privatebackup excluded.'}
+mp=D/'evidence/wave20-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n');p=D/'STATUS.md';p.write_text(p.read_text()+'\n\nBackend producer checkpoint: actual RND/ICM/adaptive implementations now take explicit required clock/RNG inputs, train on own eligible-admission clocks, preserve shared grouped cadence, and initialize real networks in their declared RNG components. Current native validators/preparers own and validate complete model/Adam/tail/RMS/history/clock data before installation. Adversarial review found and repaired overcapacity admission, raw Adam coercion/ID alias acceptance and ICM immutable-policy copying; actual failed-restore/alias/preflight regressions are preserved. Fixed tree `ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6` passed262owned and262fresh independent cases,57covering and4ICM prerequisite scenarios; selections overlap and are not summed. Five non-mypy globalguards PASS, default ceiling601 unchanged; globalmypy still9requiredoracle/POP errors with knownuntypedRR/live caller work. Five existing ownerfiles collect151, but representative oldconstructor fixtures fail beforeassertions and mustmigrate next. [Current backend contract](CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md) and [evidence](evidence/wave20-wip-01.json) preserve exactsource, original failures, fixed-source independent reviews, source/fixture/process custody and requiredintegrationgaps. **WIP — NOT INTEGRATED-QUALIFIED — NOT RELEASED.** Actual factory/bank/POP/runner/native-parent/effects/manifests, fullowner/defaultsuite/coverage/slow/hardware/learning/E2E/finalacceptance remainrequired. CUDAunavailable/unqualified;28/66 originalreleasecount unchanged. Continuebounded ownerfixturemigrationanddependency-coherentplannedimplementationwithout routinehalt.\n')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave20-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave20-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

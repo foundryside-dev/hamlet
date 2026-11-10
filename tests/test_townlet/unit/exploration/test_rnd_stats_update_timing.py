@@ -22,7 +22,7 @@ class TestRNDStatsUpdateTiming:
         """
         device = torch.device("cpu")
         obs_dim = 29
-        rnd = RNDExploration(obs_dim=obs_dim, device=device)
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=obs_dim, device=device)
 
         # Record initial variance
         initial_var = rnd.reward_rms.var
@@ -45,7 +45,7 @@ class TestRNDStatsUpdateTiming:
         """Test that RND stats don't update when update_stats=False (eval mode)."""
         device = torch.device("cpu")
         obs_dim = 29
-        rnd = RNDExploration(obs_dim=obs_dim, device=device)
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=obs_dim, device=device)
 
         # Warmup: establish some statistics
         warmup_obs = torch.randn(100, obs_dim, device=device)

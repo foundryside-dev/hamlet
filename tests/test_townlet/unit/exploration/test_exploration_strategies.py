@@ -273,7 +273,7 @@ class TestRNDNetworkInitialization:
 
     def test_fixed_network_is_frozen(self):
         """Fixed network should have requires_grad=False for all parameters."""
-        rnd = RNDExploration(obs_dim=10, embed_dim=8, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, embed_dim=8, device=torch.device("cpu"))
 
         # Check all fixed network parameters are frozen
         for param in rnd.fixed_network.parameters():
@@ -281,7 +281,7 @@ class TestRNDNetworkInitialization:
 
     def test_predictor_network_is_trainable(self):
         """Predictor network should have requires_grad=True."""
-        rnd = RNDExploration(obs_dim=10, embed_dim=8, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, embed_dim=8, device=torch.device("cpu"))
 
         # Check predictor network parameters are trainable
         trainable_params = [p for p in rnd.predictor_network.parameters() if p.requires_grad]
@@ -289,7 +289,7 @@ class TestRNDNetworkInitialization:
 
     def test_networks_have_different_weights(self):
         """Fixed and predictor should start with different random weights."""
-        rnd = RNDExploration(obs_dim=10, embed_dim=8, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, embed_dim=8, device=torch.device("cpu"))
 
         # Get first layer weights
         fixed_weight = list(rnd.fixed_network.parameters())[0]
@@ -305,7 +305,9 @@ class TestRNDIntrinsicRewardComputation:
     @pytest.fixture
     def rnd(self):
         """Create RND exploration with small networks."""
-        return RNDExploration(obs_dim=10, embed_dim=8, learning_rate=0.01, device=torch.device("cpu"))
+        return RNDExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=10, embed_dim=8, learning_rate=0.01, device=torch.device("cpu")
+        )
 
     def test_intrinsic_rewards_are_nonnegative(self, rnd):
         """Prediction errors (MSE) should always be non-negative."""
@@ -351,12 +353,12 @@ class TestRNDBufferAccumulation:
 
     def test_buffer_starts_empty(self):
         """Buffer should be empty on initialization."""
-        rnd = RNDExploration(obs_dim=10, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, device=torch.device("cpu"))
         assert len(rnd.obs_buffer) == 0
 
     def test_update_adds_to_buffer(self):
         """update() should add observations to buffer."""
-        rnd = RNDExploration(obs_dim=10, training_batch_size=10, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, training_batch_size=10, device=torch.device("cpu"))
 
         batch = {"observations": torch.randn(3, 10)}
         rnd.update(batch)
@@ -366,7 +368,7 @@ class TestRNDBufferAccumulation:
 
     def test_update_without_observations_key(self):
         """update() should handle missing 'observations' gracefully."""
-        rnd = RNDExploration(obs_dim=10, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, device=torch.device("cpu"))
 
         batch = {"actions": torch.randint(0, 6, (3,))}
         rnd.update(batch)  # Should not crash
@@ -376,7 +378,7 @@ class TestRNDBufferAccumulation:
 
     def test_buffer_accumulates_across_updates(self):
         """Multiple update() calls should accumulate observations."""
-        rnd = RNDExploration(obs_dim=10, training_batch_size=20, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, training_batch_size=20, device=torch.device("cpu"))
 
         # Add observations in batches
         rnd.update({"observations": torch.randn(5, 10)})
@@ -394,7 +396,7 @@ class TestRNDPredictorTraining:
 
     def test_update_predictor_requires_minimum_buffer_size(self):
         """Should return 0.0 when buffer is too small."""
-        rnd = RNDExploration(obs_dim=10, training_batch_size=10, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, training_batch_size=10, device=torch.device("cpu"))
 
         # Add only 5 observations (less than batch size of 10)
         rnd.update({"observations": torch.randn(5, 10)})
@@ -405,7 +407,7 @@ class TestRNDPredictorTraining:
 
     def test_update_predictor_clears_buffer(self):
         """After training, buffer should be cleared."""
-        rnd = RNDExploration(obs_dim=10, training_batch_size=10, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, training_batch_size=10, device=torch.device("cpu"))
 
         # Manually add to buffer (bypass update() auto-training)
         for _ in range(10):
@@ -421,7 +423,7 @@ class TestRNDPredictorTraining:
 
     def test_update_predictor_keeps_excess_observations(self):
         """Observations beyond batch size should remain in buffer."""
-        rnd = RNDExploration(obs_dim=10, training_batch_size=5, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, training_batch_size=5, device=torch.device("cpu"))
 
         # Manually add 8 observations (bypass update() auto-training)
         for _ in range(8):
@@ -440,6 +442,8 @@ class TestRNDPredictorTraining:
         torch.manual_seed(123)
 
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             embed_dim=8,
             learning_rate=0.01,
@@ -469,7 +473,7 @@ class TestRNDPredictorTraining:
 
     def test_update_triggers_training_automatically(self):
         """update() should automatically call update_predictor when buffer full."""
-        rnd = RNDExploration(obs_dim=10, training_batch_size=5, device=torch.device("cpu"))
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=10, training_batch_size=5, device=torch.device("cpu"))
 
         # Add exactly batch_size observations
         observations = torch.randn(5, 10)
@@ -492,6 +496,8 @@ class TestRNDLearningBehavior:
         torch.manual_seed(123)
 
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             embed_dim=8,
             learning_rate=0.1,
@@ -521,6 +527,8 @@ class TestRNDLearningBehavior:
         torch.manual_seed(456)
 
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             embed_dim=8,
             learning_rate=0.1,
@@ -551,6 +559,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_should_not_anneal_with_insufficient_data(self):
         """Should not anneal before survival_window filled."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             survival_window=100,
             variance_threshold=100.0,
@@ -568,6 +578,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_should_not_anneal_with_high_variance(self):
         """Should not anneal when survival variance is high."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             survival_window=100,
             variance_threshold=100.0,
@@ -585,6 +597,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_should_not_anneal_consistent_failure(self):
         """Should NOT anneal when consistently failing (low variance, low survival)."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             survival_window=100,
             variance_threshold=100.0,
@@ -603,6 +617,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_should_anneal_consistent_success(self):
         """Should anneal when consistently succeeding (low variance, high survival)."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             survival_window=100,
             variance_threshold=100.0,
@@ -624,6 +640,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_anneal_weight_exponential_decay(self):
         """anneal_weight should apply exponential decay."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             initial_intrinsic_weight=1.0,
             decay_rate=0.9,
@@ -646,6 +664,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_anneal_weight_respects_minimum(self):
         """anneal_weight should not go below minimum."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             initial_intrinsic_weight=0.15,
             decay_rate=0.5,
@@ -664,6 +684,8 @@ class TestAdaptiveIntrinsicAnnealingLogic:
     def test_update_on_episode_end_maintains_window(self):
         """update_on_episode_end should maintain sliding window."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             survival_window=10,
             device=torch.device("cpu"),
@@ -685,8 +707,11 @@ class TestAdaptiveIntrinsicActionSelection:
     def test_select_actions_delegates_to_rnd(self):
         """select_actions should delegate to RND."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             epsilon_start=0.0,  # Greedy for deterministic test
+            epsilon_min=0.0,
             device=torch.device("cpu"),
         )
 
@@ -722,6 +747,8 @@ class TestAdaptiveIntrinsicRNDUpdate:
     def test_update_delegates_to_rnd(self):
         """update should delegate to RND predictor."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             rnd_training_batch_size=4,
             device=torch.device("cpu"),
@@ -745,6 +772,8 @@ class TestAdaptiveIntrinsicEpsilonDecay:
     def test_decay_epsilon_delegates_to_rnd(self):
         """decay_epsilon should delegate to RND."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             epsilon_start=1.0,
             epsilon_decay=0.9,
@@ -770,6 +799,8 @@ class TestAdaptiveIntrinsicStatePersistence:
     def test_checkpoint_state_includes_all_config(self):
         """checkpoint_state should include RND state and annealing config."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             initial_intrinsic_weight=0.7,
             min_intrinsic_weight=0.05,
@@ -797,27 +828,67 @@ class TestAdaptiveIntrinsicStatePersistence:
         assert abs(state["survival_history"][1] - 110.0) < 0.1
 
     def test_load_state_restores_all_config(self):
-        """load_state should restore RND and annealing config."""
+        """Current native state restores into matching selected configuration."""
+
+        def assert_native_equal(actual, expected):
+            if isinstance(expected, torch.Tensor):
+                torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+            elif isinstance(expected, dict):
+                assert actual.keys() == expected.keys()
+                for key in expected:
+                    assert_native_equal(actual[key], expected[key])
+            elif isinstance(expected, (list, tuple)):
+                assert len(actual) == len(expected)
+                for first, second in zip(actual, expected, strict=True):
+                    assert_native_equal(first, second)
+            else:
+                assert actual == expected
+
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             device=torch.device("cpu"),
         )
 
-        # Create state to load
-        rnd_state = exploration.rnd.checkpoint_state()
-        new_state = {
-            "rnd_state": rnd_state,
-            "current_intrinsic_weight": 0.3,
+        selected = {
             "min_intrinsic_weight": 0.01,
             "variance_threshold": 25.0,
             "survival_window": 150,
             "decay_rate": 0.97,
             "min_survival_fraction": 0.5,
             "max_episode_length": 1000,
-            "survival_history": [50.0, 60.0, 70.0],
         }
-
+        source = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=10, device=torch.device("cpu"), **selected
+        )
+        for survival in (50.0, 60.0, 70.0):
+            source.update_on_episode_end(survival)
+        source.current_intrinsic_weight = 0.3
+        source.update({"observations": torch.randn(128, 10)})
+        new_state = source.checkpoint_state()
+        assert new_state["schema"] == "adaptive-intrinsic-state-v2"
+        assert new_state["rnd_state"]["schema"] == "rnd-state-v2"
+        before = exploration.checkpoint_state()
+        for operation in (exploration.validate_state, exploration.prepare_state, exploration.load_state):
+            with pytest.raises(ValueError, match="configuration differs from destination"):
+                operation(new_state)
+            assert_native_equal(exploration.checkpoint_state(), before)
+        exploration = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=10, device=torch.device("cpu"), **selected
+        )
+        incomplete = {
+            key: value
+            for key, value in new_state.items()
+            if key not in {"schema", "initial_intrinsic_weight", "min_survival_for_annealing"}
+        }
+        before = exploration.checkpoint_state()
+        for operation in (exploration.validate_state, exploration.prepare_state, exploration.load_state):
+            with pytest.raises(ValueError, match="complete current native state"):
+                operation(incomplete)
+            assert_native_equal(exploration.checkpoint_state(), before)
         exploration.load_state(new_state)
+        assert_native_equal(exploration.checkpoint_state(), new_state)
 
         # Should have updated all fields
         assert abs(exploration.current_intrinsic_weight - 0.3) < 1e-6
@@ -828,10 +899,16 @@ class TestAdaptiveIntrinsicStatePersistence:
         assert abs(exploration.min_survival_fraction - 0.5) < 1e-6
         assert exploration.max_episode_length == 1000
         assert exploration.survival_history == [50.0, 60.0, 70.0]
+        continuation = {"observations": torch.randn(128, 10)}
+        source.update(continuation)
+        exploration.update(continuation)
+        assert_native_equal(exploration.checkpoint_state(), source.checkpoint_state())
 
     def test_checkpoint_restore_roundtrip(self):
         """Checkpoint and restore should preserve exact state."""
         original = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             initial_intrinsic_weight=0.42,
             min_intrinsic_weight=0.08,
@@ -851,7 +928,18 @@ class TestAdaptiveIntrinsicStatePersistence:
         state = original.checkpoint_state()
 
         # Create new exploration and restore
-        restored = AdaptiveIntrinsicExploration(obs_dim=10, device=torch.device("cpu"))
+        restored = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
+            obs_dim=10,
+            initial_intrinsic_weight=0.42,
+            min_intrinsic_weight=0.08,
+            variance_threshold=75.0,
+            survival_window=80,
+            decay_rate=0.88,
+            epsilon_start=0.8,
+            device=torch.device("cpu"),
+        )
         restored.load_state(state)
 
         # Should match original
@@ -872,6 +960,8 @@ class TestAdaptiveIntrinsicWeightGetter:
     def test_get_intrinsic_weight_returns_current_value(self):
         """get_intrinsic_weight should return current weight."""
         exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=10,
             initial_intrinsic_weight=0.65,
             device=torch.device("cpu"),
@@ -896,6 +986,8 @@ class TestRNDCheckpointCompleteness:
     def test_rnd_saves_predictor_optimizer(self, cpu_device, basic_env):
         """RND should save predictor optimizer state."""
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=basic_env.observation_dim,
             embed_dim=128,
             learning_rate=1e-4,
@@ -909,6 +1001,8 @@ class TestRNDCheckpointCompleteness:
     def test_rnd_saves_epsilon(self, cpu_device, basic_env):
         """RND should save epsilon decay parameters."""
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=basic_env.observation_dim,
             epsilon_start=0.8,
             epsilon_min=0.05,
@@ -927,6 +1021,8 @@ class TestRNDCheckpointCompleteness:
     def test_rnd_saves_network_architecture_params(self, cpu_device, basic_env):
         """RND should save architecture parameters for reconstruction."""
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=basic_env.observation_dim,
             embed_dim=256,
             device=cpu_device,
@@ -940,7 +1036,7 @@ class TestRNDCheckpointCompleteness:
 
     def test_rnd_saves_network_weights(self, cpu_device, basic_env):
         """RND should save both fixed and predictor network weights."""
-        rnd = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
 
         state = rnd.checkpoint_state()
         assert "fixed_network" in state, "RND checkpoint must include fixed_network"
@@ -952,7 +1048,9 @@ class TestRNDCheckpointCompleteness:
 
     def test_rnd_restores_epsilon(self, cpu_device, basic_env):
         """RND should restore epsilon from checkpoint."""
-        rnd = RNDExploration(obs_dim=basic_env.observation_dim, epsilon_start=1.0, device=cpu_device)
+        rnd = RNDExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, epsilon_start=1.0, device=cpu_device
+        )
 
         # Decay epsilon
         for _ in range(10):
@@ -962,14 +1060,16 @@ class TestRNDCheckpointCompleteness:
         state = rnd.checkpoint_state()
 
         # Create new RND and restore
-        rnd2 = RNDExploration(obs_dim=basic_env.observation_dim, epsilon_start=1.0, device=cpu_device)
+        rnd2 = RNDExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, epsilon_start=1.0, device=cpu_device
+        )
         rnd2.load_state(state)
 
         assert abs(rnd2.epsilon - decayed_epsilon) < 1e-6, "Epsilon should be restored"
 
     def test_rnd_restores_network_weights(self, cpu_device, basic_env):
         """RND should restore network weights from checkpoint."""
-        rnd = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
 
         # Train predictor on some data
         obs = torch.randn(128, basic_env.observation_dim, device=cpu_device)
@@ -984,7 +1084,7 @@ class TestRNDCheckpointCompleteness:
         state = rnd.checkpoint_state()
 
         # Create new RND and restore
-        rnd2 = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        rnd2 = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
         rnd2.load_state(state)
 
         # Networks should produce same output
@@ -996,7 +1096,9 @@ class TestRNDCheckpointCompleteness:
 
     def test_rnd_restores_optimizer_state(self, cpu_device, basic_env):
         """RND should restore optimizer state from checkpoint."""
-        rnd = RNDExploration(obs_dim=basic_env.observation_dim, learning_rate=1e-3, device=cpu_device)
+        rnd = RNDExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, learning_rate=1e-3, device=cpu_device
+        )
 
         # Train for a few steps to build optimizer state
         for _ in range(5):
@@ -1013,7 +1115,9 @@ class TestRNDCheckpointCompleteness:
         optimizer_state_keys = set(state["optimizer"]["state"].keys())
 
         # Create new RND and restore
-        rnd2 = RNDExploration(obs_dim=basic_env.observation_dim, learning_rate=1e-3, device=cpu_device)
+        rnd2 = RNDExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, learning_rate=1e-3, device=cpu_device
+        )
         rnd2.load_state(state)
 
         # Optimizer should have same state
@@ -1027,6 +1131,8 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
     def test_adaptive_saves_intrinsic_weight(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should save current intrinsic weight."""
         adaptive = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=basic_env.observation_dim,
             initial_intrinsic_weight=0.5,
             device=cpu_device,
@@ -1039,6 +1145,8 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
     def test_adaptive_saves_annealing_params(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should save all annealing parameters."""
         adaptive = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=basic_env.observation_dim,
             variance_threshold=50.0,
             survival_window=200,
@@ -1059,7 +1167,9 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
 
     def test_adaptive_saves_survival_history(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should save survival history for annealing."""
-        adaptive = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
 
         # Simulate some survival times
         adaptive.survival_history = [10.0, 20.0, 30.0, 40.0, 50.0]
@@ -1070,7 +1180,9 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
 
     def test_adaptive_saves_rnd_state(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should save underlying RND state."""
-        adaptive = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
 
         state = adaptive.checkpoint_state()
         assert "rnd_state" in state
@@ -1084,6 +1196,8 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
     def test_adaptive_restores_intrinsic_weight(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should restore intrinsic weight from checkpoint."""
         adaptive = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=basic_env.observation_dim,
             initial_intrinsic_weight=1.0,
             device=cpu_device,
@@ -1095,14 +1209,18 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
         state = adaptive.checkpoint_state()
 
         # Create new instance and restore
-        adaptive2 = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive2 = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
         adaptive2.load_state(state)
 
         assert abs(adaptive2.current_intrinsic_weight - 0.3) < 1e-6
 
     def test_adaptive_restores_survival_history(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should restore survival history from checkpoint."""
-        adaptive = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
 
         # Set survival history
         adaptive.survival_history = [15.0, 25.0, 35.0]
@@ -1110,14 +1228,18 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
         state = adaptive.checkpoint_state()
 
         # Create new instance and restore
-        adaptive2 = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive2 = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
         adaptive2.load_state(state)
 
         assert adaptive2.survival_history == [15.0, 25.0, 35.0]
 
     def test_adaptive_restores_rnd_state(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should restore RND state from checkpoint."""
-        adaptive = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
 
         # Train RND predictor
         obs = torch.randn(128, basic_env.observation_dim, device=cpu_device)
@@ -1130,7 +1252,9 @@ class TestAdaptiveIntrinsicCheckpointCompleteness:
 
         # Save and restore
         state = adaptive.checkpoint_state()
-        adaptive2 = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive2 = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
         adaptive2.load_state(state)
 
         # Predictor should produce same output
@@ -1143,7 +1267,7 @@ class TestCheckpointRoundTrip:
 
     def test_rnd_roundtrip_preserves_behavior(self, cpu_device, basic_env):
         """RND should have identical behavior after save/restore."""
-        rnd = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
 
         # Train predictor
         for _ in range(5):
@@ -1157,7 +1281,7 @@ class TestCheckpointRoundTrip:
 
         # Save and restore
         state = rnd.checkpoint_state()
-        rnd2 = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        rnd2 = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
         rnd2.load_state(state)
 
         # Compute intrinsic rewards after restore
@@ -1168,7 +1292,9 @@ class TestCheckpointRoundTrip:
 
     def test_adaptive_roundtrip_preserves_behavior(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should have identical behavior after save/restore."""
-        adaptive = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
 
         # Train and anneal
         for _ in range(3):
@@ -1185,7 +1311,9 @@ class TestCheckpointRoundTrip:
 
         # Save and restore
         state = adaptive.checkpoint_state()
-        adaptive2 = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive2 = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
         adaptive2.load_state(state)
 
         # Compute intrinsic rewards after restore
@@ -1201,26 +1329,30 @@ class TestCheckpointStrictValidation:
 
     def test_rnd_rejects_missing_optimizer(self, cpu_device, basic_env):
         """RND should reject checkpoints without optimizer state."""
-        rnd = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
 
         state = rnd.checkpoint_state()
         # Simulate legacy checkpoint without optimizer
         del state["optimizer"]
 
-        # Should raise KeyError (strict validation)
-        rnd2 = RNDExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
-        with pytest.raises(KeyError):
+        # Current exact-key validation refuses missing optimizer state.
+        rnd2 = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
+        with pytest.raises(ValueError, match="complete current rnd-state-v2 checkpoint"):
             rnd2.load_state(state)
 
     def test_adaptive_rejects_missing_survival_history(self, cpu_device, basic_env):
         """AdaptiveIntrinsic should reject checkpoints without survival history."""
-        adaptive = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
+        adaptive = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
 
         state = adaptive.checkpoint_state()
         # Simulate legacy checkpoint without survival history
         del state["survival_history"]
 
-        # Should raise KeyError (strict validation)
-        adaptive2 = AdaptiveIntrinsicExploration(obs_dim=basic_env.observation_dim, device=cpu_device)
-        with pytest.raises(KeyError):
+        # Current exact-key validation refuses missing history.
+        adaptive2 = AdaptiveIntrinsicExploration(
+            rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device
+        )
+        with pytest.raises(ValueError, match="complete current native state"):
             adaptive2.load_state(state)

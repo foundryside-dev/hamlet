@@ -14,6 +14,7 @@ import yaml
 
 from tests.test_townlet._fixtures.config import _apply_config_overrides
 from tests.test_townlet.helpers.config_builder import _get_primary_level_dir, mutate_training_yaml
+from townlet.config.world_roster import WorldRosterDeclaration
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
 
@@ -41,11 +42,16 @@ def basic_env(
         VectorizedHamletEnv instance
     """
     universe = compile_universe(test_config_pack_path)
+    # Authored test identity; construction leaves episode activation to the caller.
+    world_roster = WorldRosterDeclaration(world_ids=("basic-env-world",))
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L0_test",
         num_agents=1,
         device=device,
+        world_roster=world_roster,
+        training_seed=universe.get_level("L0_test").training.seed,
+        lane_world_ids=world_roster.world_ids,
     )
 
 

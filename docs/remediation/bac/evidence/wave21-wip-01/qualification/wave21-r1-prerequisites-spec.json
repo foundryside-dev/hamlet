@@ -1,0 +1,41 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-prerequisites",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "prerequisites",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_restores_network_weights",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointRoundTrip::test_adaptive_roundtrip_preserves_behavior",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_epsilon",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicActionSelection::test_select_actions_delegates_to_rnd",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_annealing_params",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_restores_rnd_state",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_restores_intrinsic_weight",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_rnd_state",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_restores_optimizer_state",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointRoundTrip::test_rnd_roundtrip_preserves_behavior",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_restores_survival_history",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointStrictValidation::test_adaptive_rejects_missing_survival_history",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_survival_history",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_intrinsic_weight",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_restores_epsilon",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointStrictValidation::test_rnd_rejects_missing_optimizer",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_network_architecture_params",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_predictor_optimizer",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_network_weights",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave21-r1-prerequisites"
+      ]
+    }
+  ]
+}

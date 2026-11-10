@@ -10,7 +10,7 @@ from townlet.exploration.rnd import RNDExploration
 
 
 def provider(batch, capacity, mode, overflow):
-    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=batch)
+    rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=batch)
     assert hasattr(rnd, "configure_service"), "bounded RND service interface missing"
     rnd.configure_service(RNDOptions(service_mode=mode, max_updates_per_tick=1, max_pending_rows=capacity, overflow_policy=overflow))
     return rnd
@@ -144,7 +144,7 @@ def test_malformed_state_is_atomic(damage):
     elif damage == "count":
         service["admitted_rows"] += 1
     elif damage == "clock":
-        service["paced_updates_this_tick"] = 2
+        service["ordinary_updates_at_position"] = 2
     elif damage == "normalizer":
         bad["reward_rms_var"] = -1
     elif damage == "network":
@@ -157,7 +157,7 @@ def test_malformed_state_is_atomic(damage):
 
 
 def test_service_options_are_explicit_and_buffer_admission_validated():
-    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+    rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
     assert hasattr(rnd, "configure_service"), "bounded RND service interface missing"
     with pytest.raises(ValueError):
         rnd.configure_service(RNDOptions(service_mode="paced_fifo"))
@@ -171,31 +171,42 @@ def test_service_options_are_explicit_and_buffer_admission_validated():
         equal(before, rnd.checkpoint_state())
 
 
-def test_direct_minibatch_and_explicit_legacy_available_state():
-    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+def test_direct_minibatch_and_current_native_state_refuse_diagnostic_import():
+    rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
     rnd.update({"observations": rows(7)})
-    assert len(rnd.obs_buffer) == 4  # Preserve working legacy one-minibatch update API.
+    assert len(rnd.obs_buffer) == 4  # Preserve current one-minibatch direct update API.
     assert rnd.update_predictor() > 0
     assert len(rnd.obs_buffer) == 1
     assert hasattr(rnd, "available_state"), "explicit available-state export missing"
-    legacy = rnd.available_state()
-    assert "predictor_service" not in legacy
-    restored = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
-    restored.load_available_state(legacy)
-    equal(legacy, restored.available_state())
-    assert restored.obs_buffer == []
-    restored.load_state(legacy)  # Exact historical schema remains a supported public API.
-    equal(legacy, restored.available_state())
-    rnd.load_state(legacy)
-    equal(torch.stack(rnd.obs_buffer), rows(7)[6:])  # Historical import never invents or discards destination tails.
+    diagnostic = rnd.available_state()
+    assert "predictor_service" not in diagnostic
+    restored = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
+    assert not hasattr(restored, "load_available_state")
+    for current in (rnd, restored):
+        before = current.checkpoint_state()
+        for operation in (current.validate_state, current.prepare_state, current.load_state):
+            with pytest.raises(ValueError):
+                operation(diagnostic)
+            equal(before, current.checkpoint_state())
+    native = rnd.checkpoint_state()
+    assert native["schema"] == "rnd-state-v2"
+    assert native["predictor_service"]["version"] == 2
+    assert native["predictor_service"]["service_clock_unit"] == "vector_tick"
+    restored.load_state(native)
+    equal(native, restored.checkpoint_state())
+    equal(diagnostic, restored.available_state())
+    equal(torch.stack(restored.obs_buffer), rows(7)[6:])
+    for current in (rnd, restored):
+        current.update({"observations": rows(2)})
+    equal(rnd.checkpoint_state(), restored.checkpoint_state())
     with pytest.raises(ValueError):
-        restored.load_state({**legacy, "misspelled_service": {}})
+        restored.load_state({**native, "misspelled_service": {}})
 
 
 def test_invalid_minibatch_refuses_before_allocation():
     for batch in (0, -1, True, 1.5):
         with pytest.raises(ValueError):
-            RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=batch)
+            RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=batch)
 
 
 @pytest.mark.parametrize("damage", ["negative_moment", "orphan_moment", "fractional_batch", "false_clock_count"])
@@ -211,11 +222,11 @@ def test_corrupt_optimizer_and_service_metadata_are_atomic(damage):
     elif damage == "fractional_batch":
         bad["predictor_service"]["training_batch_size"] = 3.0
     else:
-        bad["predictor_service"]["paced_updates_this_tick"] = 1
+        bad["predictor_service"]["ordinary_updates_at_position"] = 1
         bad["predictor_service"]["optimizer_updates"] = 0
         bad["predictor_service"]["consumed_rows"] = 0
         bad["predictor_service"]["admitted_rows"] = 2
-        bad["predictor_service"]["vector_tick"] = 2
+        bad["predictor_service"]["service_position"] = 2
     with pytest.raises(ValueError):
         rnd.load_state(bad)
     equal(before, rnd.checkpoint_state())
@@ -374,15 +385,28 @@ def test_optimizer_continuation_refuses_corruption_before_install(damage):
 
 
 @pytest.mark.parametrize("historical_updates", [0, 3])
-def test_historical_optimizer_history_aligns_with_existing_service_counts(historical_updates):
+def test_current_native_manual_optimizer_history_replaces_existing_service_counts(historical_updates):
     source = provider(3, 9, "occupancy_fifo", "service_before_admit")
-    for tick in range(historical_updates):
-        source.admit_and_service(rows(3), vector_tick=tick)
+    for _ in range(historical_updates):
+        loss = (source.predictor_network(rows(3)) - source.fixed_network(rows(3))).square().mean()
+        source.optimizer.zero_grad()
+        loss.backward()
+        source.optimizer.step()
+    source.obs_buffer.extend(rows(2).unbind())
+    assert source.update_predictor() == 0.0
     destination = provider(3, 9, "occupancy_fifo", "service_before_admit")
     destination.admit_and_service(rows(8), vector_tick=3)
-    destination.load_state(source.available_state())
+    before = destination.checkpoint_state()
+    for operation in (destination.validate_state, destination.prepare_state, destination.load_state):
+        with pytest.raises(ValueError):
+            operation(source.available_state())
+        equal(before, destination.checkpoint_state())
+    destination.load_state(source.checkpoint_state())
     state = destination.checkpoint_state()
-    assert state["predictor_service"]["optimizer_updates"] == 2
+    equal(source.checkpoint_state(), state)
+    assert before["predictor_service"]["optimizer_updates"] == 2
+    assert state["predictor_service"]["optimizer_updates"] == 0
+    assert state["predictor_service"]["optimizer_step_offset"] == historical_updates
     restored = provider(3, 9, "occupancy_fifo", "service_before_admit")
     restored.load_state(state)
     equal(state, restored.checkpoint_state())
@@ -433,7 +457,7 @@ def service_counter_values(snapshot):
 
 
 def test_public_predictor_counters_follow_genuine_legacy_optimizer_work():
-    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+    rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
     before = copy.deepcopy(rnd.predictor_network.state_dict())
     steps = []
     handle = rnd.optimizer.register_step_post_hook(lambda *_: steps.append(1))
@@ -450,7 +474,7 @@ def test_public_predictor_counters_follow_genuine_legacy_optimizer_work():
 
 
 def test_public_predictor_counters_bracket_legacy_partial_and_full_direct_updates():
-    rnd = RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+    rnd = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
     rnd.obs_buffer.extend(rows(2).unbind())
     assert rnd.update_predictor() == 0.0
     assert rnd.optimizer.state == {}
@@ -480,7 +504,7 @@ def test_public_predictor_counters_count_real_zero_loss_steps(configured):
     rnd = (
         provider(3, 9, "paced_fifo", "service_before_admit")
         if configured
-        else RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+        else RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
     )
     rnd.predictor_network.load_state_dict(rnd.fixed_network.state_dict())
     steps = []
@@ -544,7 +568,7 @@ def test_public_predictor_counters_are_frozen_owned_primitives_and_observational
     rnd = (
         provider(3, 9, "paced_fifo", "service_before_admit")
         if configured
-        else RNDExploration(obs_dim=2, embed_dim=3, training_batch_size=3)
+        else RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=2, embed_dim=3, training_batch_size=3)
     )
     rnd.update({"observations": rows(5)})
     before = rnd.checkpoint_state()  # One test oracle, never the per-step accounting path.

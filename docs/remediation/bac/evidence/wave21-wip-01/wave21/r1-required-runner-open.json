@@ -1,0 +1,8 @@
+{
+  "required_runner": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+  "source_test": "preserved unchanged, no skip/xfail added",
+  "status": "REQUIRED OPEN, notoptional orqualified",
+  "failure": "ActualDemoRunner.run envconstructorlacksworldidentity; actualbank/POP/native-parent integrationpreconditionsalsooweproof",
+  "component_selection": "Root412selected/1deselected; independent150selected/1deselected asfocusedcomponentproofonly",
+  "next_full": "Mustincludeactualrealrunner afterfactory/bank/runner/nativeintegration; nofinalclosurefromcomponentpass"
+}

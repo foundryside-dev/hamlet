@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py",
+        "tests/test_townlet/unit/exploration/test_rnd_normalization.py",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave21-r1-independent"
+      ]
+    }
+  ]
+}

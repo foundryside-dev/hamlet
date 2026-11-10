@@ -48,7 +48,9 @@ def _provider(parameters, service_mode, overflow_policy):
     assert util.find_spec("townlet.exploration.icm") is not None, "transition-based ICM provider is missing"
     provider_type = import_module("townlet.exploration.icm").ICMExploration
     policy = _policy(parameters, service_mode, overflow_policy)
-    provider = provider_type(policy, obs_dim=3, action_dim=2, **parameters, device=torch.device("cpu"))
+    provider = provider_type(
+        policy, rng=None, service_clock_unit="vector_tick", obs_dim=3, action_dim=2, **parameters, device=torch.device("cpu")
+    )
     with torch.no_grad():
         for module in (provider.encoder, provider.inverse_model, provider.forward_model):
             for index, parameter in enumerate(module.parameters()):
@@ -116,6 +118,8 @@ def test_icm_uses_action_and_successor():
     provider = _provider(PARAMETERS, "paced_fifo", "service_before_admit")
     context = _rows(2, 0)
     before = deepcopy(provider.checkpoint_state())
+    assert before["schema"] == "icm-state-v2"
+    assert before["service_clock_unit"] == "vector_tick"
     reward = provider.compute_transition_novelty(context, update_stats=False)
     _, expected = _objective(provider, context, PARAMETERS)
     torch.testing.assert_close(reward, expected.detach())
@@ -294,7 +298,15 @@ def test_icm_constructor_cannot_override_selected_policy(name, value):
     provider_type = type(_provider(PARAMETERS, "paced_fifo", "service_before_admit"))
     policy = _policy(PARAMETERS, "paced_fifo", "service_before_admit")
     with pytest.raises((TypeError, ValueError)):
-        provider_type(policy, obs_dim=3, action_dim=2, **{**PARAMETERS, name: value}, device=torch.device("cpu"))
+        provider_type(
+            policy,
+            rng=None,
+            service_clock_unit="vector_tick",
+            obs_dim=3,
+            action_dim=2,
+            **{**PARAMETERS, name: value},
+            device=torch.device("cpu"),
+        )
 
 
 @pytest.mark.parametrize(

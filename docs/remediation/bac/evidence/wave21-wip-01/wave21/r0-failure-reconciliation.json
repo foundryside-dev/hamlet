@@ -1,0 +1,30 @@
+{
+  "candidate_tree": "04d822c62185771e689b38f5d84804ec0ef9b5a8",
+  "jobs": {
+    "owned": {
+      "counts": {
+        "failed": 2,
+        "passed": 393,
+        "errors": 18
+      },
+      "wall_seconds": 29.016141414642334,
+      "negative_process_candidate_evidence": "PASS; wrapperpre/postsource/index+savedidentities/loghashes+immutable196candidateblobhashes; positive verifier intentionallystopsatexit1"
+    },
+    "independent": {
+      "counts": {
+        "failed": 2,
+        "passed": 131,
+        "errors": 18
+      },
+      "wall_seconds": 35.88730311393738,
+      "negative_process_candidate_evidence": "PASS; wrapperpre/postsource/index+savedidentities/loghashes+immutable196candidateblobhashes; positive verifier intentionallystopsatexit1"
+    }
+  },
+  "causes": [
+    "ownedgreedyfixtureinitial0/min.01",
+    "actualbasic_envconstructorworldidentity18setuperrors",
+    "actualrealrunnerconstructor/lifecycle/nativeintegrationrequiredOPEN"
+  ],
+  "repaired_in_R1": "greedymin0andmetadata-onlyactualbasic_env;19actualprerequisitesPASS",
+  "not_repaired": "Requiredrealrunnercaseunchanged; nopassingintegrationclaim"
+}

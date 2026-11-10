@@ -1,0 +1,1113 @@
+{
+  "status": "BOUNDED OWNER FIXTURE COMPONENT HANDOFF ACCEPTED; REQUIRED REAL RUNNER OPEN; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+  "packet": "Existing current owner-fixture migration and actual basic_env metadata identity transport",
+  "evidence_base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+  "evidence_candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+  "execution_subtrees": {
+    "src": "819eaebb6dfcf9cea35e11f3b8cbf55d4f80ba20",
+    "tests": "dc18b23bc274b4e6f8afa1fef622dd1353e4ecb5",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e"
+  },
+  "inventories": {
+    "T21": [
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 323,
+        "sha256": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/effective_run.py",
+        "lines": 371,
+        "sha256": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "PW04-OWNER-SUITES": [
+      {
+        "path": "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py",
+        "lines": 66,
+        "sha256": "615787133f15e6553a337c30addd2e551222cbb41771d0de4f74c595ebfb13a1",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/unit/exploration/test_rnd_normalization.py",
+        "lines": 186,
+        "sha256": "626299c949a45d567664b6142ec66d77dcfc4e35bd1d2938ba9f46dde5c1ea7e",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/unit/exploration/test_exploration_strategies.py",
+        "lines": 1358,
+        "sha256": "9dca12dcd0c58aef663b3287052fed40e3c233517e6010ad4513fe0cc7f43dc7",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+        "lines": 634,
+        "sha256": "920627d8ad09531838bfbe2b4ec8113cd40659249761fc1393f28928c4ec37d1",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_icm_provider.py",
+        "lines": 352,
+        "sha256": "bf36d8c2d2f45c1d3484d61e223790c97990176309d985aa5474ab81d7793317",
+        "present": true
+      }
+    ],
+    "ENV-FIXTURE-IDENTITY": [
+      {
+        "path": "src/townlet/environment/vectorized_env.py",
+        "lines": 2399,
+        "sha256": "5508110716c38d89497c6d3c0443d6eba15f7bd546b9f2231dd86a41f5b6c166",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/world_roster.py",
+        "lines": 312,
+        "sha256": "1c3f4ad0f29e663a3f7976b10593e08223bba2b46420b2d4472451a78c667f33",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/_fixtures/environment.py",
+        "lines": 466,
+        "sha256": "85467cd5cfe169306c2893944041c1e58d5fe21941498cca6cb2bd7ab9022180",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/unit/exploration/test_exploration_strategies.py",
+        "lines": 1358,
+        "sha256": "9dca12dcd0c58aef663b3287052fed40e3c233517e6010ad4513fe0cc7f43dc7",
+        "present": true
+      }
+    ]
+  },
+  "source_files": {
+    ".defaults-ratchet": "68ef67b35dd79367f8c89133b1d0b1401c0eb795b3c1d8fadd7c0005075df2bc",
+    "AGENTS.md": "2db4cc23dbf6e2890c3279ea34a068c38f4ee1c8dfd5ecf838541dd93586672e",
+    "docs/remediation/bac/STATUS.md": "a9abf66215e4155446f96c03a8b63a4e008b07d8c77bf9c16d9e6402bee059bd",
+    "docs/remediation/bac/acceptance-ledger.json": "557ac591127ae18afc6e9d978cd17fec3e98876ed476f1d0724995f64ddba614",
+    "docs/remediation/bac/evidence/T15-interface-preparation.json": "72b073837abe3c88d5caee0d40643f7e81e4931fc0d9c701c7b3dd68c0ff761e",
+    "docs/remediation/bac/evidence/X04-acceptance-overlay.json": "bd1e028dd6df9ed2bbaad38cb93a9aa0adeffd28ba227e8441110c2d27b68d8c",
+    "docs/remediation/bac/evidence/email-only-identity-mapping.json": "c9a60f082540f5d5e222aa515607680d551778ed83a4aca3b8fcc5430c481543",
+    "docs/remediation/bac/evidence/wave05-qualification.json": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5",
+    "docs/remediation/bac/evidence/wave06-qualification.json": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f",
+    "docs/remediation/bac/evidence/wave06-source-binding.md": "aa1803ad05ce03aa41f9f4f79517311dc7638e5505494540a242dac2e7f8bd05",
+    "docs/remediation/bac/evidence/wave07-qualification.json": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10",
+    "docs/remediation/bac/evidence/wave07-source-binding.md": "8006ad17951fe056b71f23c487371e0e3c4baa25c7545b88f24203a4c931d21f",
+    "docs/remediation/bac/evidence/wave08-qualification.json": "e2b9c1cc0ceefa79382fb20011cdd264c94341d9829bb1c780c0376e0a612283",
+    "docs/remediation/bac/evidence/wave08-source-binding.md": "089e048452aee6f6bf9c5c681a82ffc1b027c635a335abf9681ee670ca99109e",
+    "docs/remediation/bac/package-reviews/PW02-implementation.md": "d043a9769b81a2d95a3c85155b253c3090a2dc4f75d29c3bdf69e12f537e9216",
+    "docs/remediation/bac/package-reviews/PW02-independent-review.md": "03299c0fdaeace1a51ef23fdadc7947bf5685d02957db4975b2d159ed08b3c7a",
+    "docs/remediation/bac/package-reviews/PW02-key-ownership-finding.md": "64e3a27ba5bee32521702628524bc1670f01d0714ad22adeaca1d121c56222a3",
+    "docs/remediation/bac/package-reviews/T06-implementation.md": "be1e6a853e9fcfdb75aa77f6ab58a658e782ba49d99aef2de7afd28e659de121",
+    "docs/remediation/bac/package-reviews/T06-independent-review.md": "25ca43e41e64945f75381aaaa74600986d92e7e3f75f3f8f8346c9d638d344e3",
+    "docs/remediation/bac/package-reviews/T06-preservation-finding.md": "b83c42525b09f70994b3ec13332343413719011599bad42eeb7096b9b64b7022",
+    "docs/remediation/bac/package-reviews/T06-transport-initial-review.md": "554c8008e97d4d9bdf0bd5bac0d97227537655ad445bd1bdf017e2233b62bcbb",
+    "docs/remediation/bac/package-reviews/T07-clock-finding.md": "3d52b56dc1ebc10dde222dc0dae9e25772d5820153fd7ead7572205f47a4e084",
+    "docs/remediation/bac/package-reviews/T07-common-binding.md": "f38edfc29dd0e02f289a27f48c5cf6206d1846f121270b3e7fd8635087248612",
+    "docs/remediation/bac/package-reviews/T07-implementation.md": "d9d63bd8fc406f872be7a4f34650189870d840146fc906b72b30f9c3a22885ac",
+    "docs/remediation/bac/package-reviews/T07-independent-review.md": "79387e41a3b6501c1a87e8f80262cb6d8a30c92be296cf1f8590282ce8594d4b",
+    "docs/remediation/bac/package-reviews/T07-scope-finding.md": "9ed00d59b257bb7e1535bf98479a7e518a0bef5574ab4a6b83aa322aa73c620f",
+    "docs/remediation/bac/package-reviews/T11-implementation.md": "9c79533e65adc501fe3714d7cc29d1a56b8ccf7676afd17744f8f2c98ff2483c",
+    "docs/remediation/bac/package-reviews/T11-independent-review.md": "cf88d21b87a53dcced008cdc8a4482b410fb28f3b22ad6fd2ce62c8202602b8e",
+    "docs/remediation/bac/package-reviews/T12-checkpoint-owner-review.md": "6fe2d4b38477f30fad2b8b99021211d8b0c2cd3c90574a39d8aa39b4f9e2e9f1",
+    "docs/remediation/bac/package-reviews/T12-common-binding.md": "6b097398da6daa9339bd9c83712c378967e48f43f508a58cdf8697d985d86145",
+    "docs/remediation/bac/package-reviews/T12-implementation.md": "43f27778ac9256782d665f1e5d218c430c3b5ac699ec1e49ceb2ad990d9b7f12",
+    "docs/remediation/bac/package-reviews/T12-independent-review.md": "808dcfc041826b88aa1b13a679aed8b49ee23e3cac55bfa7f18365e31e6cda01",
+    "docs/remediation/bac/package-reviews/T12-inspection-design-review.md": "f29b568531ad2493cca472c22936b285619fc0242cbeca641be5ba4b7a6a2721",
+    "docs/remediation/bac/package-reviews/T12-inspection-finding.md": "1b54e50fc4ba507e4bdc5f886c27ee787fbaae579f8fc1c3b2f82d69536f2f57",
+    "docs/remediation/bac/package-reviews/T12-inspection-native-handoff.md": "63c7d057e98ae7d980c85366bd513997eeda5c1a6a51e554d015c45343757c3d",
+    "docs/remediation/bac/package-reviews/T12-inspection-transport.md": "7c6f11ebc0634832a3aa7c1464c45b1942aff26a135118dc167cf728e9b570f5",
+    "docs/remediation/bac/package-reviews/T12-native-proof-review.md": "8a6f093b5698626eb15acc5f79c357f9aebf19d0c20ab21bdca4728caebe0178",
+    "docs/remediation/bac/package-reviews/T13-authored-reachability.md": "d87871f80fc20c8ee6936dd9a83deb9b95a8793aa698b5feb750e60ef43f83ec",
+    "docs/remediation/bac/package-reviews/T13-consumer-review.md": "33fea7a7c3ba4f078905c0c22b9f62908d6c693764979bf61a328250d37b3803",
+    "docs/remediation/bac/package-reviews/T13-implementation.md": "07c0b4901b600acf375758a19a9cacb72d019c0648246387e4d38bf7ee61aef7",
+    "docs/remediation/bac/package-reviews/T13-independent-review.md": "ae44aa60413f65c03e1308f72abdbc5fd6d37c105acca0e06e3e051c4a9f082b",
+    "docs/remediation/bac/package-reviews/T13-initial-findings.md": "d739097c349da2eb7041835ba032c960a2d44e61a5004a6d651330b95a225770",
+    "docs/remediation/bac/package-reviews/T13-max-findings.md": "e50b94cf54a832258abc4698ff78340319c351ed888500b772fefcf0a2bdb96a",
+    "docs/remediation/bac/package-reviews/T13-native-proof-review.md": "b403982953ea1383dcb9c7b5e0711ff7d45cabc2de30f5d83999960264d001ef",
+    "docs/remediation/bac/package-reviews/T13-owner-review.md": "50e1529208a31d3fd4238b46b4a763c0e87a03b0ee870f0b4442a90886081560",
+    "docs/remediation/bac/package-reviews/T14-admission-clarification.md": "0ae2044a42eed3e9377e3da39a0a3df4dbda4ff8c1c36f4b7f57c3f671303fe6",
+    "docs/remediation/bac/package-reviews/T14-core-execution.md": "7b24523c89cec70d056cd041bde35a1f8e8eb723cf6a33be0fc9ed84e4ffb272",
+    "docs/remediation/bac/package-reviews/T14-estimator-causal-finding.md": "0c9774700fd3a8ef0dcb50ccfe287b279211fe52d804e762f5b7b0d3cf782cca",
+    "docs/remediation/bac/package-reviews/T14-estimator-execution.md": "bb6c1f4d44144804c5eae74969ac15f265b6eec7255f03ee4fe2aba962708484",
+    "docs/remediation/bac/package-reviews/T14-estimator-review.md": "0eb44fe985e3868c74356ebbf44ab111f12126abb942eebe6ff0d6d4dd4c5975",
+    "docs/remediation/bac/package-reviews/T14-implementation.md": "5c0b4920939846046ef812c94200c6d7843fa6ee901d8b0bc09c2095a20f23c5",
+    "docs/remediation/bac/package-reviews/T14-independent-review.md": "c7817f6547c13af3989f7dd9b12a5cfc2e564e67614bede2779dc130c130aab3",
+    "docs/remediation/bac/package-reviews/T14-interface-review.md": "c5ef82eb558fae52dc4dd3e5b3502ab8eb247c31514429babe13f59ab5e7fed6",
+    "docs/remediation/bac/package-reviews/T14-interface.md": "2d7e60bc40956270dbbc39f26b81f74461caf5360e2ac1a00306004940903f05",
+    "docs/remediation/bac/package-reviews/T14-native-execution.md": "8b871adf5d4de844818239f18f5e4c173d6eedcfb72a48e091a19cd14961314c",
+    "docs/remediation/bac/package-reviews/T14-native-handoff.md": "52121819607642724bf843b763b7b25594a3571ce81de7397e6ef6eea4f67eda",
+    "docs/remediation/bac/package-reviews/T14-native-review.md": "29114502f1ddbf900c76bd198636f6dca6f28fe157e262852223182e89ca5650",
+    "docs/remediation/bac/package-reviews/T14-owner-execution.md": "349f9cff4ea6f11a8db6ef7798b7541a95f09ddaa15d9b675d23550dcc631bf1",
+    "docs/remediation/bac/package-reviews/T14-owner-review.md": "d1177a1af38f47e8b449bd67cdc17b361a39548ea7ca6549ada551b4c330add2",
+    "docs/remediation/bac/package-reviews/T15-config-contracts.md": "e591daa76c71d669a86e46cc997c2a8ee2ab14ae536f19e19492eeddb9aea4b4",
+    "docs/remediation/bac/package-reviews/T15-constructor-factory.md": "9044eba1c1ccc7f586bb8011f8f6b1b4325026817f1b1608e92f3c3ce4232755",
+    "docs/remediation/bac/package-reviews/T15-constructor-runtime.md": "5c919b1a992610afb29d5cd2fd6b3a56593f3a4585975c69029949b5f4d7d36f",
+    "docs/remediation/bac/package-reviews/T15-constructor-suppliers.md": "3dd5ed3c07be30245673c722bae42ec7dba90db214b97492e5db51c9dcdbfdf6",
+    "docs/remediation/bac/package-reviews/T15-constructor-units.md": "0119730e7e6aeb2150c9e9bd1907918809146f4dfea85a17a6440c2bb7cd747a",
+    "docs/remediation/bac/package-reviews/T15-flat-contracts.md": "16871a3d981de3f7c3a0ad6140fa19675c3f975d54fa214ba2342866f0f17fc4",
+    "docs/remediation/bac/package-reviews/T15-implementation-readiness.md": "22e8102a0c291a561d757a2152049744c1d335a2547fb2cc515701a307e1dcea",
+    "docs/remediation/bac/package-reviews/T15-interface-review.md": "7cfddfcf4d46253b3c70ee7788a385379702134a037b0933fafced02d0c07f42",
+    "docs/remediation/bac/package-reviews/T15-interface.md": "359e21ccccc79d0c5b082257c68176dab565248caf2c1cef8435afd1994a845b",
+    "docs/remediation/bac/package-reviews/T15-preparation.md": "4d8bc45d8744fcc2623244f5e01641df9170539a7b1ee2b33770c65ccaffd70f",
+    "docs/remediation/bac/package-reviews/T15-provider-contracts.md": "69e08cdada3dbf2070fabdf2ccb882ecec22e50f7887ef5aca011e82e6675cf2",
+    "docs/remediation/bac/package-reviews/X04-mean-TD-triage.md": "03604920a82682235ed6a85f73d33a0c9a5e05d55139a2b2bbe27410e9abcc6f",
+    "scripts/check_episode_lanes.py": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7",
+    "scripts/run_demo.py": "0029a2d758ed45907be30c6e8a21003798ddaef99dad392acc2c8a0ce3abd43a",
+    "src/townlet/agent/network_factory.py": "31b1340b6a125754ae15dbcc981223a4a6f4056ebf9db38ffbe63ba0ff9dd75c",
+    "src/townlet/agent/networks.py": "24d4a8627255dab42b3b9b64995c62235f71f25ea04cdbaace6616f1b6e899ed",
+    "src/townlet/agent/optimizer_factory.py": "56af1a9c8edb70a25b43a6e10aa3080d9a7b8becff112924e21a9429d994717d",
+    "src/townlet/config/bac_options.py": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+    "src/townlet/config/brain_config.py": "6c041ed40de507dfed81dc4b3a58cbb728d446228f6fd831ee115348aa559079",
+    "src/townlet/config/curriculum.py": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227",
+    "src/townlet/config/effective_run.py": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+    "src/townlet/config/exploration.py": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d",
+    "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+    "src/townlet/config/resolved_launch.py": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4",
+    "src/townlet/config/training_v2_config.py": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+    "src/townlet/config/world_roster.py": "1c3f4ad0f29e663a3f7976b10593e08223bba2b46420b2d4472451a78c667f33",
+    "src/townlet/curriculum/adversarial.py": "2194cc4075096670181a50cf1be2158cd68334a07111818ad75382cd73890f4f",
+    "src/townlet/curriculum/base.py": "d961844d5738ac85d26d5dd57520d1954718ee93e482e5133d4323d14c149268",
+    "src/townlet/curriculum/factory.py": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+    "src/townlet/curriculum/static.py": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+    "src/townlet/demo/database.py": "7335e9798d15e14721e5278cb4e7402eea7f7da2344187c56f8bc8e42b93902e",
+    "src/townlet/demo/runner.py": "e1c4b6c00923416f6fdf9e70976ea57a4a706e38a2ea228b4b10273906d6aacf",
+    "src/townlet/demo/unified_server.py": "626634171c744ecac9ac825f5db5727e3407031efd6c8fe0dcac5a1058e2a02c",
+    "src/townlet/environment/env_factory.py": "aa1b2cdf00ed25fcc63b57b944876504d77219d147b3265e820ff2ad88b2d2f0",
+    "src/townlet/environment/vectorized_env.py": "5508110716c38d89497c6d3c0443d6eba15f7bd546b9f2231dd86a41f5b6c166",
+    "src/townlet/exploration/adaptive_intrinsic.py": "cb64d78d01c0bb8422dc664206e65588eba373a0a7ed8408634a7fa0a4b80df4",
+    "src/townlet/exploration/count_based.py": "163cb33f06799a75c887ff7beb58e4897875c94a4780ab722d019f714b33e9c1",
+    "src/townlet/exploration/epsilon_greedy.py": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+    "src/townlet/exploration/icm.py": "eb7003c15404fea5e3ce8d5779f88235b96b622b853a1c11731a300d3059c90f",
+    "src/townlet/exploration/rnd.py": "0848cfe8f08635fac6843d90bdf38ca7c08f92ef8220d7859e2ce65dae4ecf0d",
+    "src/townlet/exploration/world_curiosity_state.py": "ec3cf8ded83f952ca4c1993b084b2ee0c7f1e611bf172ab31830ecfdc27f352d",
+    "src/townlet/population/vectorized.py": "629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92",
+    "src/townlet/recording/data_structures.py": "b8b2a5b2c202e8fc28ee907b645391cfb32f7d1a5530f528fa8ae6e076171158",
+    "src/townlet/recording/receipts.py": "f4f90c3ae1584965cbfc7ad84170fb3b0413ba5599a9eeb3d0d447f48b6fd647",
+    "src/townlet/recording/recorder.py": "8fca0b033bdc74f9e8146006c029b8bce6228b067f89b72109e1a886f4a32825",
+    "src/townlet/training/clock_ledger.py": "117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571",
+    "src/townlet/training/episode.py": "53b52a8a56d5fc2714604198fc4516c5c4d48258537a9dcbe4ccd00dae743cbf",
+    "src/townlet/training/historical_checkpoint.py": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+    "src/townlet/training/per_sampling.py": "0efe801f01a31082aa52c4b9bd40c356d1c97f89690b07c7835b541b7f2c6de6",
+    "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+    "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+    "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "src/townlet/training/sequential_replay_buffer.py": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c",
+    "src/townlet/training/state.py": "a6f22b0b26ca6422e6a0710f9268386e8d2b7162e1a5e9a43a2decdea4c9d3e3",
+    "src/townlet/universe/compiled.py": "d8e2734b0845c7d23ac79180a724b216d7c881e079352356f108cb294d2b7384",
+    "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+    "src/townlet/universe/compilers/metadata.py": "811dc301202433253832f84743cba65823f0d7c273a73d65e376d35a5e2f6beb",
+    "src/townlet/universe/declarations.py": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd",
+    "src/townlet/universe/errors.py": "af30223624658d5d9cad3f56232353433f72a340d1fdb4caec69b581f91c2a53",
+    "src/townlet/vfs/random_draws.py": "751e5766b5efd99a79ccc86c410d76534c397ed9ece59ca67cf2ae4fd83ef676",
+    "tests/test_townlet/_fixtures/brain_configs.py": "aac8397902f8f038bee0c3da913c1a6b3930478d70c8a82156898231605cc9f4",
+    "tests/test_townlet/_fixtures/config.py": "f25801c31ddb8354cc8b63a25fa145b518a65c05b275d19f558cf6f4e3f04fb8",
+    "tests/test_townlet/_fixtures/environment.py": "85467cd5cfe169306c2893944041c1e58d5fe21941498cca6cb2bd7ab9022180",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured-with-per4-archive.pt": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured.pt": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+    "tests/test_townlet/fixtures/bac_per_current5/portable-manifest.json": "b3008db4299682714674b6f5b809c41b58efb9a9452299ad005383e8fe2b8780",
+    "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json": "426f8b8ec2db1d0e0800300b4a85b825d2d1cb594a8339add27e159d2bd6c875",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac",
+    "tests/test_townlet/integration/test_checkpointing.py": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d",
+    "tests/test_townlet/integration/test_compact_token_acceptance.py": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc",
+    "tests/test_townlet/integration/test_recording_recorder.py": "517341fb44d5edb7cdc85dc4bb6b4f8840de7ce741695d594b766038f8d6e962",
+    "tests/test_townlet/integration/test_recording_substrate.py": "806f4f11e1a00b8dc058b643531ff78cdcea5b84c9e027fbac5993d655fcea9c",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "105656e944001f44213e8c721bc98d7c99e8d8512aa1172eeabc93ea0f3df0a7",
+    "tests/test_townlet/integration/test_reward_component_flow.py": "e56dc0e57e5cc9013b88bda67f661937d9d51df872d21b0163edd05f2c2618ce",
+    "tests/test_townlet/integration/test_runner_hyperparams_v21.py": "237ca50b9deb1e585c7d37d1134896b4fe1a29dde12b4de7a401210e317c4db0",
+    "tests/test_townlet/integration/test_training_loop.py": "207500289444d904f33d1961164fec493433a3f1514562ff541ce5fced11c722",
+    "tests/test_townlet/properties/test_replay_buffer_properties.py": "5678e826ce7fcb0574deb23441cc54b9e355b3c7adc446595269e2d7ae628a17",
+    "tests/test_townlet/regressions/bac/test_count_provider.py": "0de2db0e0d2de868d803b97e8e8f0e277b365178dfddacaaa5825de65c5fed94",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py": "bd5a364931be94f2930c278ab5f21bf1a497814e727d93057f538da3bf7e2f38",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py": "57750efea277a256969851ba8413eb17aa5d8810f02b673d6f02639838807ffd",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+    "tests/test_townlet/regressions/bac/test_discovery.py": "eb73ca825614ba593549135253caab0b723cc07b53bf91ac3e2801fd9e73e500",
+    "tests/test_townlet/regressions/bac/test_effective_run.py": "1685b2c09aa59c6687a49accebf62be591e64716f91469ef85e332d8b765cdd9",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py": "bf36d8c2d2f45c1d3484d61e223790c97990176309d985aa5474ab81d7793317",
+    "tests/test_townlet/regressions/bac/test_launch_transport.py": "1bceb21245ebeff9ba6bc93d10603f669d964d2dbbfebdcfed56fbf8f3910d91",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py": "66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9",
+    "tests/test_townlet/regressions/bac/test_per_estimator.py": "2e08f44397d626a95b4b0f5142021e408250b50067fbfc16c01f2c6ae4459866",
+    "tests/test_townlet/regressions/bac/test_per_history.py": "4ea99d20fa18333d249b0ce1408b91c99c12194e6d7ddcd0788c5b4f8c492da1",
+    "tests/test_townlet/regressions/bac/test_per_native_learner.py": "6348f247dc9b5060a650f87fe8bee1d9c18ece46a868c40b6021f0360c19da16",
+    "tests/test_townlet/regressions/bac/test_public_loaders.py": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d",
+    "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py": "bffc26fff70116ac18d3cc43fa6c73c747c0e5ae7779abf077646aa0116a1a1e",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py": "3dcc780c36c15b553272246ac605f9ca6a89cbd732f0142552fd1ee0df4f9dc7",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+    "tests/test_townlet/regressions/bac/test_pw_scope_contract.py": "06f8a23deea73de495ee0adc427317386dc1e75487fb2bd6eb7496ed9214b295",
+    "tests/test_townlet/regressions/bac/test_recording_drain.py": "90b876583bcc6bf047cfd7f424dac889a86103b5109bef29c38bcce838e18912",
+    "tests/test_townlet/regressions/bac/test_recurrent_per.py": "941747bb722eaa2c7a33dc7fa879dc591481f29cc73cfb4d837334854c8533bb",
+    "tests/test_townlet/regressions/bac/test_recurrent_per_native.py": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py": "920627d8ad09531838bfbe2b4ec8113cd40659249761fc1393f28928c4ec37d1",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py": "2352066710ef7d97de02efb498021f26f7ffc50e2ce2afe96ea6ba4bbee04ce4",
+    "tests/test_townlet/regressions/bac/test_sequence_history.py": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc",
+    "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3",
+    "tests/test_townlet/regressions/bac/test_token_binding.py": "bdb25f6e33bae64ede392dfb8ed4fbe4b7521a6dc201184e547decaeabefe544",
+    "tests/test_townlet/regressions/bac/test_uniform_history.py": "a0ee835fc7a862216bddcddcac647ffff954f59f1842be5f8f4c77656fe899fd",
+    "tests/test_townlet/regressions/bac/test_world_constructor_transport.py": "daad8f762000886969762d52e2a415cc4a853d875621daf24449b9815bc61592",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py": "31a7d0d607a643f0e1f5b36f951fd10188f62d37b3981eadf5f928e39151b006",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py": "3a7ae1dd63d56b2f81b7a3a2d8a8b7302355747d7c61431bbcc6fb8dec4ab675",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+    "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py": "e6631eb7e2375165a1e1131eaf88999e8debb024d37ef736bf9eadcdacd3fbde",
+    "tests/test_townlet/regressions/test_episode_recording_shutdown.py": "9874eed75d1b7491a5a8ef5fca1af7430b61aaff52037b8948b84e2636b67fa2",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be",
+    "tests/test_townlet/unit/demo/test_unified_server_unit.py": "0e4e90f087d69772ba25438871f4b4c19618a1076d73546246f6ae4a63eaaa28",
+    "tests/test_townlet/unit/exploration/test_exploration_strategies.py": "9dca12dcd0c58aef663b3287052fed40e3c233517e6010ad4513fe0cc7f43dc7",
+    "tests/test_townlet/unit/exploration/test_rnd_normalization.py": "626299c949a45d567664b6142ec66d77dcfc4e35bd1d2938ba9f46dde5c1ea7e",
+    "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py": "615787133f15e6553a337c30addd2e551222cbb41771d0de4f74c595ebfb13a1",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30",
+    "tests/test_townlet/unit/population/test_action_selection.py": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1",
+    "tests/test_townlet/unit/population/test_double_dqn_algorithm.py": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a",
+    "tests/test_townlet/unit/population/test_recurrent_training.py": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9",
+    "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+    "tests/test_townlet/unit/recording/test_recorder.py": "11d2391ec0bd7c7e105f8e8d45ce81d5771c4d87961dfee696e432ac3b15576b",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer.py": "52db935fa6ede75d87abacbf22de3f13415463e880b65c2d78114464ff15affa",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py": "b6dd85342a68223394786c0c6c4a80c4af45662b77df7972689067e7e50ebaaf",
+    "tests/test_townlet/unit/training/test_replay_buffer_components.py": "639e83cdf9a050a97edb0417aba1a89b507e329b2bfe2e4a438ce71ea8e3b6ce",
+    "tests/test_townlet/unit/training/test_replay_buffers.py": "61b688ea5fa7ef31d023b76b9ea3e48cc57e27787a19bee21eacd10071d647d9",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py": "18cff4fa681e5c08ec759301b3ebbed69568bc8ab80b7ccea3e6c260294f373a",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py": "6957a3ab973f9c993d16e110c276c03ff15d2e93d73a49481c48dd0ef4db8629",
+    "tests/test_townlet/unit/vfs/test_random_expressions.py": "a6e034c8fe5212c73453a3e7203a689d4f6f384f5544f2751c2f0ccfd1943613",
+    "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py": "fa60d49bd430f983bd53e38b21a2014338fb5e6dcae3d30a759b51be9270bd9d",
+    "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py": "dd4f875ae554bfcf2fc84ea47b162a4dd27b304ab4be45f595c5754e7fbb23cc"
+  },
+  "config_changes": {},
+  "receipt": {
+    "status": "BOUNDED OWNER FIXTURE COMPONENT HANDOFF ACCEPTED; REQUIRED REAL RUNNER OPEN; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+    "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+    "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+    "results": {
+      "collection": {
+        "job": "collection",
+        "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+        "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 3.595440626144409,
+        "source_guards": 196,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "prerequisites": {
+        "job": "prerequisites",
+        "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+        "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+        "exit_code": 0,
+        "counts": {
+          "passed": 19,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 10.858281135559082,
+        "source_guards": 196,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "components": {
+        "job": "components",
+        "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+        "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+        "exit_code": 0,
+        "counts": {
+          "passed": 412,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 26.225376844406128,
+        "source_guards": 196,
+        "process_identities": 3,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "independent-components": {
+        "job": "independent-components",
+        "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+        "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+        "exit_code": 0,
+        "counts": {
+          "passed": 150,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 69.97721004486084,
+        "source_guards": 196,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "global-independent": {
+        "job": "global-independent",
+        "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+        "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+        "exit_code": 0,
+        "counts": {
+          "passed": 19,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 8.171828269958496,
+        "source_guards": 196,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "required_runner": {
+      "required_runner": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+      "source_test": "preserved unchanged, no skip/xfail added",
+      "status": "REQUIRED OPEN, notoptional orqualified",
+      "failure": "ActualDemoRunner.run envconstructorlacksworldidentity; actualbank/POP/native-parent integrationpreconditionsalsooweproof",
+      "component_selection": "Root412selected/1deselected; independent150selected/1deselected asfocusedcomponentproofonly",
+      "next_full": "Mustincludeactualrealrunner afterfactory/bank/runner/nativeintegration; nofinalclosurefromcomponentpass"
+    },
+    "guards": {
+      "mypy": {
+        "exit_code": 1,
+        "seconds": 0.49158692359924316,
+        "sha256": "bf4dde2148e149d629daee6afcad0ecc80419f732f025d6870e01f98700868f9"
+      },
+      "ruff": {
+        "exit_code": 0,
+        "seconds": 0.07422852516174316,
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      "expression-doc": {
+        "exit_code": 0,
+        "seconds": 2.1393415927886963,
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      },
+      "black": {
+        "exit_code": 0,
+        "seconds": 53.70732498168945,
+        "sha256": "d1f04ab638e70be310f1253fe35b9fc5ea6450de3beb56a89bb5059735ed8901"
+      },
+      "no-defaults": {
+        "exit_code": 0,
+        "seconds": 0.8699116706848145,
+        "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+      }
+    },
+    "CLI": "ActualbackendR3PASS174.9711132s. AllW21production/config/scriptsexactbyteunchanged; explicitreuse notW21rerun.",
+    "reviews": "OwnedAstra5files2596 spec/qualityPASS+150componentindependent; globalfixtureSol4files4535source/spec/qualityAPPROVE+19independent. Full151/413 NOTPASS; exactrequiredrealrunner1retained/testunchanged.",
+    "counts": "Root412selected/1requiredrunnerdeselected; independent150selected/1requiredrunnerdeselected; supplemental19overlap, notsummed",
+    "open": "Actualrealrunnerworldidentity/privatefactory/bank/POP/currentnative-parent/manifest/effects/learning/E2E/defaultrepo/coverage/slow/hardware/freshfinal54requirements22lenses+synthesis remain requiredOPEN. Globalmypy9oracle/POPerrors anduntypedRR/liveconstructorinputs. Original28/66 releasecountunchanged."
+  },
+  "artifacts": {
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-collection/collection/identity-controller.json": {
+      "sha256": "2080de52489518e28794b8feab47dabbfc78fb60eb0d232a871f5943a9656139",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-collection/collection-custody.json": {
+      "sha256": "0ebf842bb658057e71d87e410df6e46c6e3c9d2132e7391e8449329d8c413c04",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-collection/collection-result.json": {
+      "sha256": "c48d7a353c3487b547540db802270164ff044f75eafb08b1584f15e4a71a4b1b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-collection/collection.log": {
+      "sha256": "6ee149e2d88c69c1fbf84cb30c0886fa2fed4b2e7bce801a6299113df759eff5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-covering/covering/identity-controller.json": {
+      "sha256": "2080de52489518e28794b8feab47dabbfc78fb60eb0d232a871f5943a9656139",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-covering/covering/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-covering/covering-custody.json": {
+      "sha256": "915429c886f2b42bdeb5e35545a17096c8574c12cc78a4cfdea18bd35b968f9e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-covering/covering-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-covering/covering-result.json": {
+      "sha256": "9c998eebd91153e7a534918dde05bb6d3fb6fcd1b197fb2349f0af34093e63f7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-covering/covering-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-covering/covering.log": {
+      "sha256": "a12282ca09309d9e3e0d8e08c8209d1f4ef99c12f992147338dcd28175085d8b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-covering/covering.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/black-result.json": {
+      "sha256": "d9e2fc0f86ca41746f5a5a445f5b96fb64f5d5484eb436ef5a6abf4004403454",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/black.log": {
+      "sha256": "d1f04ab638e70be310f1253fe35b9fc5ea6450de3beb56a89bb5059735ed8901",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/expression-doc-result.json": {
+      "sha256": "b26f759203aa4b2dc11d0e780890cf31ca55b560750630bdeadb256b9d964430",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/mypy-result.json": {
+      "sha256": "0b857b42651035187eb900c15094498c17daf286d4caaa3b9a078a5a92b57379",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/mypy.log": {
+      "sha256": "bf4dde2148e149d629daee6afcad0ecc80419f732f025d6870e01f98700868f9",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/no-defaults-result.json": {
+      "sha256": "6fe4a15f70bf8d0691e934861ec897e973c3fd1a76e0c703d9a819b19bfe040a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/ruff-result.json": {
+      "sha256": "29f4547521b02d6a30e258b451a42af493b7ed62fc78f78c1908d23f6be08421",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-06c0acb3657c74f3.json": {
+      "sha256": "cda9cb376a6ba59a25d530c4ca829d2cc8b958eed8dcfc3af7e57d6d77690eea",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-06c0acb3657c74f3.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-0a9d894576c403b2.json": {
+      "sha256": "3a411e583cb5aa69682e30030bd6309450a84055c9057ff36b684375baff5186",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-0a9d894576c403b2.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-0d3192379edc1abf.json": {
+      "sha256": "3483cb49dd06d8659c64db5bd153a1fd61ce8ebf8ab716822e25179ad10e17ef",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-0d3192379edc1abf.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-1aedd23029b6beac.json": {
+      "sha256": "c204cdbe3ffa714125dca8a77e002a7a88a4d2067f29549591cdf6abd6835975",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-1aedd23029b6beac.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-1af9dec7d5d41708.json": {
+      "sha256": "8cceace83bb308a9f0f41a31846138f65624df6aa7095812e0d4e3177eb505ba",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-1af9dec7d5d41708.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-1b0c7c602b4d781a.json": {
+      "sha256": "5409f946e8b33f04ce6d2133563594568ec7a309f3014fbab19858b4fb0d7d17",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-1b0c7c602b4d781a.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-3b7abb9e4e412200.json": {
+      "sha256": "3e790ab3329ed52aca9f4ccbda86cd865dd6db1415f23782fb352e2369b27aea",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-3b7abb9e4e412200.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-3ed7f8a4eee2b5fc.json": {
+      "sha256": "4207ca29e44d98fa99a749ac542a8a444b46691520b7ceda629f4b22eb567ad3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-3ed7f8a4eee2b5fc.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-5083db41cd52eb67.json": {
+      "sha256": "8d7ee1011b478b3d04c5b2dd92a200df21f884b0d3a7ae72bb1a8ad0dd91002c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-5083db41cd52eb67.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-541df2a45418ce02.json": {
+      "sha256": "c375fff0d573316483bb6c61911c085c5c4d30cb5bb591a29893fbcf6920a675",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-541df2a45418ce02.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-55d55f55d8c1a7cc.json": {
+      "sha256": "b521046edfdf19e6be4a11018f23806676bd7b34c93222147fd75ecabac5adf3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-55d55f55d8c1a7cc.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-55fa0ba2c51b23d6.json": {
+      "sha256": "83c3dec6669293bc0a257a494cdfc9dcf89cade8fc1cdd9976f1775d8d17e904",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-55fa0ba2c51b23d6.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-65c7ec94199b8262.json": {
+      "sha256": "d7acd827edbdd92cd87f7ccab4a1be5f1a3eec52056d5e23bf73b2c2e17e16c2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-65c7ec94199b8262.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-91dbeda210e34294.json": {
+      "sha256": "47153eb3f09bd5eb5d4c5711cc847291a2b5b3880524649f1834b42884a3f17a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-91dbeda210e34294.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-9730916ea79d42fd.json": {
+      "sha256": "5655e4e8ebbb1198bce3b3061da748e4744f899ec97a618ea0dc066a95413de8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-9730916ea79d42fd.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-a5a0cd0cb841023a.json": {
+      "sha256": "8dc680b19ac025be91d238539575ef2c290cc164fa31baf4ba6fffc115028c68",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-a5a0cd0cb841023a.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-bd1332e070baa368.json": {
+      "sha256": "43becaebe7fb3ff3ccc21e68a21532d65839a4e416e759fb18b831f6ae167a2b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-bd1332e070baa368.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-cfdce006fbd544d2.json": {
+      "sha256": "d3e60a92c1ac70223215a409ea2799f167a6331fc158bd73dec1934d62a58023",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-cfdce006fbd544d2.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-e44561e4b0c14881.json": {
+      "sha256": "5281e105a553bcca90ba87dcad4592c2806c753f4a984bc318130b76e79a1286",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-e44561e4b0c14881.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/failure-controller-eee1278d6a22dca8.json": {
+      "sha256": "803ecaf796642ddf0a1f81f9bf07dcd9ce93ce6725e3a607dd2c662743d6f5b2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/failure-controller-eee1278d6a22dca8.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent/identity-controller.json": {
+      "sha256": "2080de52489518e28794b8feab47dabbfc78fb60eb0d232a871f5943a9656139",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent-result.json": {
+      "sha256": "39b0f847424a00881f80cd621e02c141c852fc1dac74447b44ffcc628e97d128",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent/independent.log": {
+      "sha256": "093c3d6677b43d3dcd370c2e5f1033c71ce30444e0b1d42e0f67da7655183715",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent/independent.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-06c0acb3657c74f3.json": {
+      "sha256": "ee48377c3b1cb4e012cacf623505a997fabe884db3e3dbc71ea7f59a90fb687c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-06c0acb3657c74f3.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-0a9d894576c403b2.json": {
+      "sha256": "02037a8ffda6691aa3289b37f5e5960ad53de266c0086c80f9287e138403113a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-0a9d894576c403b2.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-0d3192379edc1abf.json": {
+      "sha256": "df45eddffb79b5ff92adad4342b3f9593ec3b861134f3906552d03e0f36eafca",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-0d3192379edc1abf.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-1aedd23029b6beac.json": {
+      "sha256": "71e430518433f36c60663c4213d03f737d9acd6f936775fec97e1af71374223c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-1aedd23029b6beac.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-1af9dec7d5d41708.json": {
+      "sha256": "8272ae9b5b2ebc49663b2e58001cbb32a03b050d501486fdc8a67086f7183f6c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-1af9dec7d5d41708.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-1b0c7c602b4d781a.json": {
+      "sha256": "9813b423eaeffd9890ad51a177418ffd2f5aa103921cefeaa0aea044dbf255ab",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-1b0c7c602b4d781a.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-3b7abb9e4e412200.json": {
+      "sha256": "88ddfa6548810187ced27d14e82af703431da8dadb006f24107a5b612d0ddc40",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-3b7abb9e4e412200.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-3ed7f8a4eee2b5fc.json": {
+      "sha256": "183b52fee2d0548bbc88d8f50557db7ca6ec14264ecd48b5afe99d70ae50ff02",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-3ed7f8a4eee2b5fc.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-5083db41cd52eb67.json": {
+      "sha256": "6b1ad9018035eebb7b7c3f4b9336984c2043389cc791ebc82b6cfd79cd5a8b3d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-5083db41cd52eb67.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-541df2a45418ce02.json": {
+      "sha256": "017905fd5ccd7a99bb5eaa2207a70b3bbfb35a0ec6b0014d3f47201543ff595c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-541df2a45418ce02.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-55d55f55d8c1a7cc.json": {
+      "sha256": "fbbdbb5fd898c5a8fd89038f9824c392608f76b42bc065b81ce255f0053749ea",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-55d55f55d8c1a7cc.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-55fa0ba2c51b23d6.json": {
+      "sha256": "e4d32e70c4df83fd4e7062d941e719e949e6e1dff19e278382f07f4d747d8afc",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-55fa0ba2c51b23d6.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-65c7ec94199b8262.json": {
+      "sha256": "b096be6085c4ce88d6f9b594239309c84b191abc011c403425d81cb74f4d2ab7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-65c7ec94199b8262.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-91dbeda210e34294.json": {
+      "sha256": "f4f4d5575c5570c71343edaafae28aaa9ed3e2870d89936d0ce4b07db6482e9b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-91dbeda210e34294.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-9730916ea79d42fd.json": {
+      "sha256": "417f61602e4bcb1f08a5afe6ea09593e309f803a99f00c97c353d609c3faba28",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-9730916ea79d42fd.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-a5a0cd0cb841023a.json": {
+      "sha256": "d86eeb3a9d50a22deb8b608604d266b5c599ddc34a93321782bbde2da1096cd7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-a5a0cd0cb841023a.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-bd1332e070baa368.json": {
+      "sha256": "9fdf7950acd852818423c7af83fcb129f5e552091f18aa65ccc847de904ca61f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-bd1332e070baa368.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-cfdce006fbd544d2.json": {
+      "sha256": "b5d07df73446037061363b7164c5e726af19192b033b10361a783e1374852656",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-cfdce006fbd544d2.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-e44561e4b0c14881.json": {
+      "sha256": "947dda40058cad69c459b9efd94d4925eb446c6516ad60ade7d5883802d9e2e7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-e44561e4b0c14881.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-controller-eee1278d6a22dca8.json": {
+      "sha256": "a619a16760187a81d56c531f2e26bf49f6fa62183a45fca17baa421924ee26e5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-controller-eee1278d6a22dca8.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-06c0acb3657c74f3.json": {
+      "sha256": "f9de07fdf1053a1721f063d7005860bd2969a5cc8f764b79e12369e46065ea8d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-06c0acb3657c74f3.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-0a9d894576c403b2.json": {
+      "sha256": "1196ecf76538497ef6cbb1a6ce4b672722374ceeb3b1fd608493701c53023525",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-0a9d894576c403b2.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-0d3192379edc1abf.json": {
+      "sha256": "c6ca18326be7e7fbe836d04c9c3b8d10ac46c46412dc75c72b0c230cc314bc37",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-0d3192379edc1abf.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-1aedd23029b6beac.json": {
+      "sha256": "685d87e0cc14c93ed82591546cbc16d588c7b236c2a538549e277dddd53f58d6",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-1aedd23029b6beac.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-1af9dec7d5d41708.json": {
+      "sha256": "73ee8086cbf80c72e33a4f7e445e68ea3fe2795335030bc1ec1713207386670b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-1af9dec7d5d41708.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-1b0c7c602b4d781a.json": {
+      "sha256": "b9685ad3807371b47e34ea27ec01251bda0d7dc96c117a651b1264f197bf611d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-1b0c7c602b4d781a.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-3b7abb9e4e412200.json": {
+      "sha256": "a297526128bc01105b156600936c0fc13669a8513d2bfa7156c3e51d73d63d40",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-3b7abb9e4e412200.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-3ed7f8a4eee2b5fc.json": {
+      "sha256": "878041d7682716888f5b88d8f60fb7336f9f4f915d13670d99932f17c70c0fa2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-3ed7f8a4eee2b5fc.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-5083db41cd52eb67.json": {
+      "sha256": "a78824150beb98852c8cbfa900dfea1319d8eaac778abba9d190bd67492d9e87",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-5083db41cd52eb67.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-541df2a45418ce02.json": {
+      "sha256": "9b6fdd7fef8861da5622290773162c91c06c1b7a8a32d244375c917f21c2002a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-541df2a45418ce02.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-55d55f55d8c1a7cc.json": {
+      "sha256": "3a3ae9b752b04b83514277a329e2f2b788164b95f87e73f903344e2a4e0badad",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-55d55f55d8c1a7cc.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-55fa0ba2c51b23d6.json": {
+      "sha256": "df70eb2c45042be8656aa0163c102c9818a1387cae721eb5a08d6a3098b9bd2a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-55fa0ba2c51b23d6.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-65c7ec94199b8262.json": {
+      "sha256": "e389815c00494b9f87b5b9ff390ddc7ea39f801d98891c5be6f1b3be1e18181d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-65c7ec94199b8262.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-91dbeda210e34294.json": {
+      "sha256": "75660221c3dda6688824b0ea3e3ded9e68615e8be0c0a679d598d19a6100ed94",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-91dbeda210e34294.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-9730916ea79d42fd.json": {
+      "sha256": "0f0a2326b04eeb6d3157a86c40add3b94e20ad5010ab3adc758f734548b69597",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-9730916ea79d42fd.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-a5a0cd0cb841023a.json": {
+      "sha256": "ad7686a9c857e8b9df2a452f4d754436ac81d9be165672ec2dd133ade1a217ab",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-a5a0cd0cb841023a.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-bd1332e070baa368.json": {
+      "sha256": "18c5b333a9309b7cf1687d43494a3ea7a496b171e85e0957bb486a8d17fd3264",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-bd1332e070baa368.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-cfdce006fbd544d2.json": {
+      "sha256": "754094f3a10e5e9229282daabc4d0465f314b5fdd645747cb87d2aedff42b066",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-cfdce006fbd544d2.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-e44561e4b0c14881.json": {
+      "sha256": "82d5326e9d7bb71443bf48b67bc04f164e9a412e2e462d615ab5f707c15eeba1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-e44561e4b0c14881.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/failure-gw1-eee1278d6a22dca8.json": {
+      "sha256": "7314829325d7e6264be156e802d82c7f83b6d9aabcbc8386e39859d3e62e6dbb",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/failure-gw1-eee1278d6a22dca8.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/identity-controller.json": {
+      "sha256": "2080de52489518e28794b8feab47dabbfc78fb60eb0d232a871f5943a9656139",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/identity-gw0.json": {
+      "sha256": "244e681ff9da668b07a4e2f959711f2e26f75ab7177c6868520a5f124d1ff8be",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned/identity-gw1.json": {
+      "sha256": "ae93956a4e8372019a625fe61a86f83e8a136cf747a66ebddb8d214d8a192759",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned-result.json": {
+      "sha256": "2724c3fac8b3e418798ff9f0c42d08f952216d922421a9c2131451dd5b151823",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned/owned.log": {
+      "sha256": "363f74d4f521cbc7f3b02de74eba4a4c26fe246d0c82af3c2e0d25a73a04b69a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-collection/collection/identity-controller.json": {
+      "sha256": "f5bd6463be4bcc58ffece52b45b88f97fca8055bf3305144c0922bab92970e98",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-collection/collection-custody.json": {
+      "sha256": "60dae9defbceaaa1494772f94ee9e68455844d7f5f832a2a227088f46ef07ef1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-collection/collection-result.json": {
+      "sha256": "fbf582836a75702fff21044a854a0dcaacaed40c70dcaf5f7c17ed22a3a0b524",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-collection/collection.log": {
+      "sha256": "6d83798003904e6f3d1374a6ba54f97da2d4263eaad4f9efabef19445519868b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components/components/identity-controller.json": {
+      "sha256": "f5bd6463be4bcc58ffece52b45b88f97fca8055bf3305144c0922bab92970e98",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components/components/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components/components/identity-gw0.json": {
+      "sha256": "3f94a306d2055aa1851188cc20bb654636afb530cfc57f9d56dd4fee4bdc331b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components/components/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components/components/identity-gw1.json": {
+      "sha256": "71f581739600478624e5ae3058507140c76ccc601886530a266a1aa199198540",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components/components/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components/components-custody.json": {
+      "sha256": "c855f3da49e007d84bb592b70d5a213ae868f1ce27ab1cad35e16852c76a734a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components/components-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components/components-result.json": {
+      "sha256": "a834ecd213665be38f099e88651009602e3a11174e23a73b7b1fb9be06a0d9b7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components/components-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components/components.log": {
+      "sha256": "4652501a0094cf5352890ed14b84df6c6b234dadd17fdf19fd75eff9c07dfda3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components/components.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-global-independent/global-independent/identity-controller.json": {
+      "sha256": "f5bd6463be4bcc58ffece52b45b88f97fca8055bf3305144c0922bab92970e98",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-global-independent/global-independent/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-global-independent/global-independent-custody.json": {
+      "sha256": "1d60e05e1f9d4ad86300235df5b61a3afeb5ed1d6f4dbf77a452923868692f75",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-global-independent/global-independent-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-global-independent/global-independent-result.json": {
+      "sha256": "1b9d35c6ed5fc83861ceba2fc460850793612339dd385346d6b5f114c3f3dc82",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-global-independent/global-independent-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-global-independent/global-independent.log": {
+      "sha256": "80d4bb25e94773670735e233ec38a8aa1f6122dc59c0915fd9c2c5427b21549d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-global-independent/global-independent.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/black-result.json": {
+      "sha256": "cdc8251c50c77b51ff471ff313af8110d56a906d0cda7979b70675a999c252f7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/black.log": {
+      "sha256": "d1f04ab638e70be310f1253fe35b9fc5ea6450de3beb56a89bb5059735ed8901",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/expression-doc-result.json": {
+      "sha256": "161ee4fcfd8e099a68a9c8dd5a33139ab1698f8068e56c41de1a0a9c0d6b8d9c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/mypy-result.json": {
+      "sha256": "563ba78c6f00dc90902367e3db959082023e6b18dd56a88eeaa73c5bba5c2e29",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/mypy.log": {
+      "sha256": "bf4dde2148e149d629daee6afcad0ecc80419f732f025d6870e01f98700868f9",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/no-defaults-result.json": {
+      "sha256": "a2acf9bcb4309798144816650c1a320422079a5fc4470827e622b67626cdaa9a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/ruff-result.json": {
+      "sha256": "1b5a8e09d7f720d91bdbfb0b94a2f852b53de5708c18ca8e46c896654971e8bd",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-independent-components/independent-components/identity-controller.json": {
+      "sha256": "f5bd6463be4bcc58ffece52b45b88f97fca8055bf3305144c0922bab92970e98",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent-components/independent-components/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-independent-components/independent-components-custody.json": {
+      "sha256": "271ce02143643e59cb39cade04d3af55289da3fb094568f701a44461ff4ee2f6",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent-components/independent-components-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-independent-components/independent-components-result.json": {
+      "sha256": "e4bbb48077df2a44aca684ecea3f1b93ea25a0078c8909385b474935dcca10aa",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent-components/independent-components-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-independent-components/independent-components.log": {
+      "sha256": "84d716496ee049c3f6f3915e7b8c889ec37d80422ee5090befe2ccb04ea1ff48",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent-components/independent-components.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-prerequisites/prerequisites/identity-controller.json": {
+      "sha256": "f5bd6463be4bcc58ffece52b45b88f97fca8055bf3305144c0922bab92970e98",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-prerequisites/prerequisites/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-prerequisites/prerequisites-custody.json": {
+      "sha256": "c4ac7f158b654a1bca2e31df28c099c48faa1deced481ba7cb0c235cb6cd2d4b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-prerequisites/prerequisites-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-prerequisites/prerequisites-result.json": {
+      "sha256": "0d663eaf066d4b4bfdb5d7a3ae0e6f033d2759c49f9aa574c21185b54d2ac8d0",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-prerequisites/prerequisites-result.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-prerequisites/prerequisites.log": {
+      "sha256": "02fb407f9f3013fda4082f198c0cd546272d7995c024d015e5cd9de70085d222",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-prerequisites/prerequisites.log"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-collection-spec.json": {
+      "sha256": "38c89cc42b36cf2fad23d0e30ccb2ead262017f7676d2e583b9cee5102e7f651",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-covering-spec.json": {
+      "sha256": "e5f7b7c198afad78d795dd258fd52a862023d306557567465ec30a4ec1db8713",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-covering-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-guards-spec.json": {
+      "sha256": "107fdca2ca00813103c767e7ff91f6ff1b72331f46009f4d338957f7225739f7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-independent-spec.json": {
+      "sha256": "b233019f6883f37ad1c3a2e6972f0288b8366d9927fe8863eb04dc5d37448d76",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r0-owned-spec.json": {
+      "sha256": "1f905ada98ff788f35a74f5e4a649e3ec0baaa35f322f8000b67e5162232ba83",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-collection-spec.json": {
+      "sha256": "196b007e43f01f39cbdc122bd104e0fe142288d14f52f77c2e494d09570bb826",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-components-spec.json": {
+      "sha256": "4b6df6df8237908a87d7b5264e930b2d6d8ce2acae891fc986c0839af30736cb",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-components-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-global-independent-spec.json": {
+      "sha256": "e47a8decfdeabb756ab983d3e1ddf4368fcff30285881be6ca5dc18a3451087a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-global-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-guards-spec.json": {
+      "sha256": "3c5379a89fc8a8943af61de65add99b7e4913d60949ad06a6b0e007a063914e3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-independent-components-spec.json": {
+      "sha256": "e6d3e3a0e0a32e0692c34ccf6425a6f474e4e8b98b92df7fbb5376c15b5d16b1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent-components-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-independent-spec.json": {
+      "sha256": "cdb982bba597872860988bd77bb1b1ce8541f01a77294eab54a0f44e6ec4fc9b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-owned-spec.json": {
+      "sha256": "ab17266d21be68ef76909961b55c4673591ca8e146b8ff3a3577e2242e2497a7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/qualification/wave21-r1-prerequisites-spec.json": {
+      "sha256": "7deaead82bccb13fdd1caacc48e1647480342df06060aafb9c927c470f1b7d37",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave21-r1-prerequisites-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r0-candidate.json": {
+      "sha256": "d45ac35155ea8ac76d7236adcad4bd1f6a1ca772601d4818f11452240cb69508",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r0-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r0-failure-reconciliation.json": {
+      "sha256": "0cfac5fc4049a0066de2a352b67f4291c5e752694bddd7c6025b23a5cfc84900",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r0-failure-reconciliation.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r0-fixture-resource-preflight.json": {
+      "sha256": "5f0a8d9f2379ae55fabe24fbcd3d08e4774c7cb719c5ef2e2c5ca8c094014a20",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r0-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r0-source-equivalence.json": {
+      "sha256": "456b1484482fba7f8b5b8fdf135eb71c51d35bf3a6951eea7115680628f41232",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r0-source-equivalence.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r1-candidate.json": {
+      "sha256": "360779a793d93e63a97e664c62ea1879b20aa98e345566135356164152325eec",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r1-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r1-checkpoint-receipt.json": {
+      "sha256": "e4c36721f261c066f26e0f3d159833549434252538ad3923260068dbd0947104",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r1-checkpoint-receipt.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r1-fixture-resource-preflight.json": {
+      "sha256": "0f3713f6838cfe51a2cc22f4337fa24b9c6ef13cd641b2b56da29dd22c78fa77",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r1-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21/r1-required-runner-open.json": {
+      "sha256": "6e7b047f463ff897caf40d011579911da84b4e49706fb6afa4f05ff3d57080ad",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21/r1-required-runner-open.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/CURRENT-BACKEND-LOCAL-SERVICE-UPDATED.md": {
+      "sha256": "18f0e19f2c5c5450f7f7278176359577cabbe74d5d5336011463b1428efa6165",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/CURRENT-BACKEND-LOCAL-SERVICE-UPDATED.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/ENV-FIXTURE-IDENTITY-brief.md": {
+      "sha256": "8904faca655e2d0d862fa071078b8b28a490b9cc7e7eec219f90ca37366a7d6f",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/ENV-FIXTURE-IDENTITY-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/ENV-FIXTURE-IDENTITY-r1-independent-review.md": {
+      "sha256": "134ea5a98c55d4bc00da3a3fa4cd4abb0afadee31010d58b5f65d1e7d3f7c4cf",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/ENV-FIXTURE-IDENTITY-r1-independent-review.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/ENV-FIXTURE-IDENTITY-r1-review-package.md": {
+      "sha256": "dbc9509c91ba4413acce89fe2099452d72d6e9be96fe9a0d2dd8c955f674b565",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/ENV-FIXTURE-IDENTITY-r1-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/ENV-FIXTURE-IDENTITY-report.md": {
+      "sha256": "d73e8d4dcc9d3b2edbd42f47b90ca631c1d1eec5a9c11eb6c805d2424de7838c",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/ENV-FIXTURE-IDENTITY-report.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/PW04-OWNER-SUITES-brief.md": {
+      "sha256": "0af411579a403706441ba2551853a41d133d23f710842ff64a225477d6e54d40",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/PW04-OWNER-SUITES-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/PW04-OWNER-SUITES-r0-independent-review.md": {
+      "sha256": "e9bdda91b3a226a69f1addb7a5572d3adee7516498df29aa5fb30e76598f9501",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/PW04-OWNER-SUITES-r0-independent-review.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/PW04-OWNER-SUITES-r0-review-package.md": {
+      "sha256": "39c5f53aa18c663a8a314c645189bf190c3d0d40c468ad59ece07758d7cad4f5",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/PW04-OWNER-SUITES-r0-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/PW04-OWNER-SUITES-r1-greedy-fix-review-package.md": {
+      "sha256": "5197a7a4ea7394a644013d6a2bdeadc8c61294363e5f91a4a8562968e1bfbd6e",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/PW04-OWNER-SUITES-r1-greedy-fix-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/PW04-OWNER-SUITES-r1-independent-rereview.md": {
+      "sha256": "e326ab208756ca81e3f51d46b62b562286bfc5142324e2af804d81152ccfc50f",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/PW04-OWNER-SUITES-r1-independent-rereview.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/wave21-preparation/PW04-OWNER-SUITES-report.md": {
+      "sha256": "ff478a3632b2f7fd1f4471f951f14a59b2401f5f2a039b5adc0b7d6f72077776",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/PW04-OWNER-SUITES-report.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/continuation-intent-only/PW04-CALLER-INPUT-READINESS-report.md": {
+      "sha256": "c8196f1fa862bf5318b3d872843285ecc48e71e0e15a5ef8f913e5653947f961",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-CALLER-INPUT-READINESS-report.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/continuation-intent-only/PW04-CALLER-INPUT-ABI-PROPOSAL.md": {
+      "sha256": "2f1969623b4945b569be5a9a1017ada1bf9cc103835ac9ff08171be05b695e8e",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-CALLER-INPUT-ABI-PROPOSAL.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/capture_wave14_round.py.txt": {
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "original": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/verify_bac_run.py.txt": {
+      "sha256": "54ab0a2cf47b90a42a010770813fbfffe8abf9a767f74151fc462829e15c6d32",
+      "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/run_bac_packet_checks_locked.py.txt": {
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "original": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/bac_source_identity.py.txt": {
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/publish_wave21_wip01.py.txt": {
+      "sha256": "2cefb2169eb8adc76bd127f0b55a631b1c371e3b7fccaf309b88afb33fd20f8a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/publish_wave21_wip01.py"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/execution-CURRENT-STATE.json": {
+      "sha256": "acdb29cacb71ae0118f463d34f240ccc0df2f837decfec94f14ae4dee4a08a33",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/CURRENT-STATE.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/execution-progress.md": {
+      "sha256": "a360047b4cdc207b57200cad5836aa6c6475f8619e303e06ba0bd782db0e590e",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/progress.md"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/execution-tasks.json": {
+      "sha256": "19a4de09cb73775d596ea060e2a133cf386bca6330cc434c9e7aa94d549fe6c4",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/tasks.json"
+    },
+    "docs/remediation/bac/evidence/wave21-wip-01/execution-final-review-lenses.json": {
+      "sha256": "370765b575f6102965ab24f81a418a2619072f5a6c68cf563451fb9ea598b43d",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/final-review-lenses.json"
+    },
+    "docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md": {
+      "sha256": "18f0e19f2c5c5450f7f7278176359577cabbe74d5d5336011463b1428efa6165",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave21-preparation/CURRENT-BACKEND-LOCAL-SERVICE-UPDATED.md"
+    }
+  },
+  "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+  "publication": "Authorized existingremote branch; continue planned work. No branch/worktree/copy,PR,merge or deletion.",
+  "next_abi": "Actualbackendfactory then scopedbank/runtime/currentparentnative integration; exactrealrunnercase andfullPW04acceptance requiredOPEN.",
+  "custody": "14 registry records/MAIN1available;13historical paths unavailable,preserved. Privatebackup excluded."
+}

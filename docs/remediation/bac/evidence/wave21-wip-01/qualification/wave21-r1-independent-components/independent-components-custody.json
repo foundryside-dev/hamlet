@@ -1,0 +1,22 @@
+{
+  "job": "independent-components",
+  "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+  "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+  "exit_code": 0,
+  "counts": {
+    "passed": 150,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 69.97721004486084,
+  "source_guards": 196,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

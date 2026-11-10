@@ -1,0 +1,37 @@
+"""Publish reviewed existing owner native fixtures and explicit environment metadata identity with exact source-equivalence evidence."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave21/r1-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')};out=D/'evidence/wave21-wip-01';out.mkdir(exist_ok=True);artifacts={}
+def copy(source,dest):
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if dest.exists():assert sha(source)==sha(dest),str(dest)
+ else:dest.write_bytes(source.read_bytes())
+ assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+def update(source,dest):
+ assert dest.read_bytes()==subprocess.check_output(['git','show',m['base_commit']+':'+dest.relative_to(R).as_posix()],cwd=R);dest.write_bytes(source.read_bytes());artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave21-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave21-r*.json')):copy(p,out/'qualification'/p.name)
+for folder in ('wave21','wave21-preparation'):
+ for p in sorted((W/folder).glob('*')):
+  if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/folder/p.name)
+for name in ('PW04-CALLER-INPUT-READINESS-report.md','PW04-CALLER-INPUT-ABI-PROPOSAL.md'):
+ copy(W/'wave20-preparation'/name,out/'continuation-intent-only'/name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave21_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md','tasks.json','final-review-lenses.json'):copy(W/name,out/('execution-'+name))
+update(W/'wave21-preparation/CURRENT-BACKEND-LOCAL-SERVICE-UPDATED.md',D/'CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md')
+receipt=json.loads((W/'wave21/r1-checkpoint-receipt.json').read_text());manifest={'status':receipt['status'],'packet':'Existing current owner-fixture migration and actual basic_env metadata identity transport','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original scoped releases unchanged; bounded handoff not integrated release','publication':'Authorized existingremote branch; continue planned work. No branch/worktree/copy,PR,merge or deletion.','next_abi':'Actualbackendfactory then scopedbank/runtime/currentparentnative integration; exactrealrunnercase andfullPW04acceptance requiredOPEN.','custody':'14 registry records/MAIN1available;13historical paths unavailable,preserved. Privatebackup excluded.'}
+mp=D/'evidence/wave21-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n');p=D/'STATUS.md';p.write_text(p.read_text()+'\n\nCurrent owner fixtures now retain all151 original cases while transporting explicit shared constructor inputs and current complete native fields. The metadata-only basic_env fixture declares its test-owned world and selected training seed without inventing active-episode authority; all18 checkpoint setup consumers and the greedy epsilon fixture pass. Root focused components passed412 cases; fresh Astra passed150 owner components; exactly one unchanged required real runner test was explicitly deselected from both because actual world-identity/bank/native-parent integration is still unfinished. These are overlapping component results, **not full151/413 qualification or integrated PW04 release**. Fresh Sol independently passed19 fixture prerequisites. Source/spec/quality reviews pass the bounded fixes; custody and four cheap globalguards pass, globalmypy9requirederrors remain. CLI evidence is reused only at identical production/config/script inputs. [Evidence](evidence/wave21-wip-01.json) records the exact required runner node, original failures and all remaining obligations. [Backend contract](CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md) is aligned to the actual fixture APIs. **WIP — NOT INTEGRATED-QUALIFIED — NOT RELEASED.** Real factory/bank/POP/runner/currentnative/manifest/effects/learning/E2E/fullrepo/coverage/slow/hardware/final acceptance remain required; CUDAunqualified, original28/66 count unchanged. Continue planned factory/bank/runtime work without routine halt.\n')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave21-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave21-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

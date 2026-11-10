@@ -1,0 +1,33 @@
+{
+  "name": "owned",
+  "exit_code": 1,
+  "seconds": 29.016141414642334,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py",
+    "tests/test_townlet/unit/exploration/test_rnd_normalization.py",
+    "tests/test_townlet/unit/exploration/test_exploration_strategies.py",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave21-r0-owned"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave21-r0-owned/owned.log",
+  "sha256": "363f74d4f521cbc7f3b02de74eba4a4c26fe246d0c82af3c2e0d25a73a04b69a",
+  "candidate_tree": "04d822c62185771e689b38f5d84804ec0ef9b5a8",
+  "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+  "manifest_sha256": "d45ac35155ea8ac76d7236adcad4bd1f6a1ca772601d4818f11452240cb69508",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,156 @@
+{
+  "status": "BOUNDED OWNER FIXTURE COMPONENT HANDOFF ACCEPTED; REQUIRED REAL RUNNER OPEN; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+  "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+  "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+  "results": {
+    "collection": {
+      "job": "collection",
+      "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+      "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+      "exit_code": 0,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 3.595440626144409,
+      "source_guards": 196,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "prerequisites": {
+      "job": "prerequisites",
+      "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+      "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+      "exit_code": 0,
+      "counts": {
+        "passed": 19,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 10.858281135559082,
+      "source_guards": 196,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "components": {
+      "job": "components",
+      "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+      "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+      "exit_code": 0,
+      "counts": {
+        "passed": 412,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 26.225376844406128,
+      "source_guards": 196,
+      "process_identities": 3,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "independent-components": {
+      "job": "independent-components",
+      "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+      "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+      "exit_code": 0,
+      "counts": {
+        "passed": 150,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 69.97721004486084,
+      "source_guards": 196,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "global-independent": {
+      "job": "global-independent",
+      "base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+      "candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+      "exit_code": 0,
+      "counts": {
+        "passed": 19,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 8.171828269958496,
+      "source_guards": 196,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "required_runner": {
+    "required_runner": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+    "source_test": "preserved unchanged, no skip/xfail added",
+    "status": "REQUIRED OPEN, notoptional orqualified",
+    "failure": "ActualDemoRunner.run envconstructorlacksworldidentity; actualbank/POP/native-parent integrationpreconditionsalsooweproof",
+    "component_selection": "Root412selected/1deselected; independent150selected/1deselected asfocusedcomponentproofonly",
+    "next_full": "Mustincludeactualrealrunner afterfactory/bank/runner/nativeintegration; nofinalclosurefromcomponentpass"
+  },
+  "guards": {
+    "mypy": {
+      "exit_code": 1,
+      "seconds": 0.49158692359924316,
+      "sha256": "bf4dde2148e149d629daee6afcad0ecc80419f732f025d6870e01f98700868f9"
+    },
+    "ruff": {
+      "exit_code": 0,
+      "seconds": 0.07422852516174316,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "expression-doc": {
+      "exit_code": 0,
+      "seconds": 2.1393415927886963,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    "black": {
+      "exit_code": 0,
+      "seconds": 53.70732498168945,
+      "sha256": "d1f04ab638e70be310f1253fe35b9fc5ea6450de3beb56a89bb5059735ed8901"
+    },
+    "no-defaults": {
+      "exit_code": 0,
+      "seconds": 0.8699116706848145,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    }
+  },
+  "CLI": "ActualbackendR3PASS174.9711132s. AllW21production/config/scriptsexactbyteunchanged; explicitreuse notW21rerun.",
+  "reviews": "OwnedAstra5files2596 spec/qualityPASS+150componentindependent; globalfixtureSol4files4535source/spec/qualityAPPROVE+19independent. Full151/413 NOTPASS; exactrequiredrealrunner1retained/testunchanged.",
+  "counts": "Root412selected/1requiredrunnerdeselected; independent150selected/1requiredrunnerdeselected; supplemental19overlap, notsummed",
+  "open": "Actualrealrunnerworldidentity/privatefactory/bank/POP/currentnative-parent/manifest/effects/learning/E2E/defaultrepo/coverage/slow/hardware/freshfinal54requirements22lenses+synthesis remain requiredOPEN. Globalmypy9oracle/POPerrors anduntypedRR/liveconstructorinputs. Original28/66 releasecountunchanged."
+}

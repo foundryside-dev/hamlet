@@ -1,0 +1,1208 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 151 items
+
+tests/test_townlet/unit/exploration/test_rnd_stats_update_timing.py ..   [  1%]
+tests/test_townlet/unit/exploration/test_rnd_normalization.py ....       [  3%]
+tests/test_townlet/unit/exploration/test_exploration_strategies.py ..... [  7%]
+................................F......EEEEEEEEEEEEEEEEEE                [ 45%]
+tests/test_townlet/regressions/bac/test_rnd_service.py ................. [ 56%]
+............F.........................                                   [ 81%]
+tests/test_townlet/regressions/bac/test_icm_provider.py ................ [ 92%]
+............                                                             [100%]
+
+==================================== ERRORS ====================================
+_ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_saves_predictor_optimizer _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_saves_predictor_optimizer>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+____ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_saves_epsilon ____
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_saves_epsilon>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_saves_network_architecture_params _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_saves_network_architecture_params>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_saves_network_weights _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_saves_network_weights>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+__ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_restores_epsilon ___
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_restores_epsilon>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_restores_network_weights _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_restores_network_weights>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestRNDCheckpointCompleteness.test_rnd_restores_optimizer_state _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_restores_optimizer_state>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_saves_intrinsic_weight _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_saves_intrinsic_weight>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_saves_annealing_params _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_saves_annealing_params>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_saves_survival_history _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_saves_survival_history>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_saves_rnd_state _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_saves_rnd_state>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_restores_intrinsic_weight _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_restores_intrinsic_weight>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_restores_survival_history _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_restores_survival_history>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestAdaptiveIntrinsicCheckpointCompleteness.test_adaptive_restores_rnd_state _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_restores_rnd_state>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestCheckpointRoundTrip.test_rnd_roundtrip_preserves_behavior _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_roundtrip_preserves_behavior>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestCheckpointRoundTrip.test_adaptive_roundtrip_preserves_behavior _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_roundtrip_preserves_behavior>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestCheckpointStrictValidation.test_rnd_rejects_missing_optimizer _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_rnd_rejects_missing_optimizer>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+_ ERROR at setup of TestCheckpointStrictValidation.test_adaptive_rejects_missing_survival_history _
+
+fixturedef = <FixtureDef argname='basic_env' scope='function' baseid=''>
+request = <SubRequest 'basic_env' for <Function test_adaptive_rejects_missing_survival_history>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        if (
+            fixturedef.argname == "event_loop_policy"
+            and fixturedef.func.__module__ != __name__
+        ):
+            warnings.warn(
+                PytestDeprecationWarning(_EVENT_LOOP_POLICY_FIXTURE_DEPRECATION_WARNING),
+            )
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+.venv/lib/python3.13/site-packages/pytest_asyncio/plugin.py:924: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compile_universe = <function compile_universe.<locals>._compile at 0x7fa0fca8ef20>
+test_config_pack_path = PosixPath('/workspace/hamlet/configs/test/model_config')
+device = device(type='cpu')
+
+    @pytest.fixture
+    def basic_env(
+        compile_universe: Callable[[Path | str], CompiledUniverse],
+        test_config_pack_path: Path,
+        device: torch.device,
+    ) -> VectorizedHamletEnv:
+        """Create a basic environment with default test config.
+    
+        Configuration:
+            - 1 agent
+            - 8×8 grid
+            - Full observability
+            - No temporal mechanics
+            - Device: CUDA if available, else CPU
+    
+        Returns:
+            VectorizedHamletEnv instance
+        """
+        universe = compile_universe(test_config_pack_path)
+>       return VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/_fixtures/environment.py:44: TypeError
+=================================== FAILURES ===================================
+__ TestAdaptiveIntrinsicActionSelection.test_select_actions_delegates_to_rnd ___
+
+self = <test_exploration_strategies.TestAdaptiveIntrinsicActionSelection object at 0x7fa10851f4d0>
+
+    def test_select_actions_delegates_to_rnd(self):
+        """select_actions should delegate to RND."""
+>       exploration = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
+            obs_dim=10,
+            epsilon_start=0.0,  # Greedy for deterministic test
+            device=torch.device("cpu"),
+        )
+
+tests/test_townlet/unit/exploration/test_exploration_strategies.py:709: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/adaptive_intrinsic.py:87: in __init__
+    self.rnd = RNDExploration(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rnd.RNDExploration object at 0x7fa0fd1a1c50>
+obs_dim = 10, embed_dim = 128, learning_rate = 0.0001, training_batch_size = 128
+epsilon_start = 0.0, epsilon_min = 0.01, epsilon_decay = 0.995
+device = device(type='cpu')
+
+    def __init__(
+        self,
+        obs_dim: int = 70,
+        embed_dim: int = 128,
+        learning_rate: float = 1e-4,
+        training_batch_size: int = 128,
+        epsilon_start: float = 1.0,
+        epsilon_min: float = 0.01,
+        epsilon_decay: float = 0.995,
+        device: torch.device = torch.device("cpu"),
+        *,
+        rng: WorldRNGState | None,
+        service_clock_unit: Literal["vector_tick", "world_eligible_admission"],
+    ):
+        """Initialize RND with fixed and predictor networks.
+    
+        Args:
+            obs_dim: Observation dimension
+            embed_dim: Embedding dimension
+            learning_rate: Learning rate for predictor network
+            training_batch_size: Batch size for predictor training
+            epsilon_start: Initial epsilon for epsilon-greedy
+            epsilon_min: Minimum epsilon
+            epsilon_decay: Epsilon decay rate
+            device: Device for tensors
+        """
+        ServiceClock(service_clock_unit, 0)
+        if rng is not None and not isinstance(rng, WorldRNGState):
+            raise ValueError("RND rng must be an actual world RNG owner or explicit None")
+        for name, value in (("obs_dim", obs_dim), ("embed_dim", embed_dim), ("training_batch_size", training_batch_size)):
+            if type(value) is not int or value <= 0:
+                raise ValueError(f"RND {name} must be a positive integer")
+        for scalar_name, scalar_value in (
+            ("learning_rate", learning_rate),
+            ("epsilon_start", epsilon_start),
+            ("epsilon_min", epsilon_min),
+            ("epsilon_decay", epsilon_decay),
+        ):
+            if isinstance(scalar_value, bool) or not isinstance(scalar_value, (int, float)) or not math.isfinite(scalar_value):
+                raise ValueError(f"RND {scalar_name} must be finite numeric configuration")
+        if learning_rate < 0 or not 0 <= epsilon_min <= epsilon_start <= 1 or not 0 <= epsilon_decay <= 1:
+>           raise ValueError("RND learning rate/epsilon configuration is invalid")
+E           ValueError: RND learning rate/epsilon configuration is invalid
+
+src/townlet/exploration/rnd.py:192: ValueError
+______ test_native_runner_checkpoint_retains_tail_and_rejects_corruption _______
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave21-r0-independent/test_native_runner_checkpoint_0')
+
+    def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
+        import hashlib
+        import shutil
+        from pathlib import Path
+    
+        import yaml
+    
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        doc = yaml.safe_load(training_path.read_text())
+        training = doc["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=2, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        training["bac_options"]["rnd"]["max_pending_rows"] = 6
+        training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
+        with DemoRunner(
+            config_dir=pack, db_path=tmp_path / "run.db", checkpoint_dir=tmp_path / "checkpoints", max_episodes=2, level_name="L0_0_minimal"
+        ) as runner:
+>           runner.run()
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.demo.runner.DemoRunner object at 0x7fa0fd196f90>
+
+    def run(self):
+        """Run demo training loop."""
+        logger.info(f"Starting demo runner: {self.max_episodes} episodes")
+        logger.info(f"Database: {self.db_path}")
+        logger.info(f"Checkpoints: {self.checkpoint_dir}")
+    
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
+    
+        # Initialize training components
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        # Extract config parameters from DTOs (all required, validated at load time)
+        effective_training = self.effective_run.training
+        loop_cfg = effective_training.training_loop
+        num_agents = effective_training.population.size
+        grid_cells = self.compiled.metadata.grid_cells
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
+    
+        # Create environment from compiled universe
+>       self.env = VectorizedHamletEnv.from_universe(
+            self.compiled,
+            level_name=self.level_name,
+            num_agents=num_agents,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+src/townlet/demo/runner.py:410: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicActionSelection::test_select_actions_delegates_to_rnd
+FAILED tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_predictor_optimizer
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_epsilon
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_network_architecture_params
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_saves_network_weights
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_restores_epsilon
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_restores_network_weights
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestRNDCheckpointCompleteness::test_rnd_restores_optimizer_state
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_intrinsic_weight
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_annealing_params
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_survival_history
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_saves_rnd_state
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_restores_intrinsic_weight
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_restores_survival_history
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestAdaptiveIntrinsicCheckpointCompleteness::test_adaptive_restores_rnd_state
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointRoundTrip::test_rnd_roundtrip_preserves_behavior
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointRoundTrip::test_adaptive_roundtrip_preserves_behavior
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointStrictValidation::test_rnd_rejects_missing_optimizer
+ERROR tests/test_townlet/unit/exploration/test_exploration_strategies.py::TestCheckpointStrictValidation::test_adaptive_rejects_missing_survival_history
+================== 2 failed, 131 passed, 18 errors in 32.14s ===================

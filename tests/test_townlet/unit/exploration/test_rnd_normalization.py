@@ -23,6 +23,8 @@ class TestRNDNormalization:
         device = torch.device("cpu")
 
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=obs_dim,
             embed_dim=embed_dim,
             device=device,
@@ -69,6 +71,8 @@ class TestRNDNormalization:
         device = torch.device("cpu")
 
         rnd = RNDExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=obs_dim,
             embed_dim=embed_dim,
             device=device,
@@ -105,7 +109,7 @@ class TestRNDNormalization:
         device = torch.device("cpu")
 
         # Create RND and warmup
-        rnd1 = RNDExploration(obs_dim=obs_dim, embed_dim=embed_dim, device=device)
+        rnd1 = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=obs_dim, embed_dim=embed_dim, device=device)
 
         for _ in range(5):
             observations = torch.randn(100, obs_dim, device=device)
@@ -116,7 +120,7 @@ class TestRNDNormalization:
         checkpoint = rnd1.checkpoint_state()
 
         # Create new RND and load checkpoint
-        rnd2 = RNDExploration(obs_dim=obs_dim, embed_dim=embed_dim, device=device)
+        rnd2 = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=obs_dim, embed_dim=embed_dim, device=device)
         rnd2.load_state(checkpoint)
 
         # Compute rewards on same observations
@@ -145,6 +149,8 @@ class TestAdaptiveIntrinsicDoubleWeighting:
         device = torch.device("cpu")
 
         adaptive = AdaptiveIntrinsicExploration(
+            rng=None,
+            service_clock_unit="vector_tick",
             obs_dim=obs_dim,
             embed_dim=embed_dim,
             initial_intrinsic_weight=0.7,

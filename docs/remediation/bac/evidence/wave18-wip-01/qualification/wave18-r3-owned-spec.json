@@ -1,0 +1,34 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave18-r3-owned",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owned",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+        "tests/test_townlet/unit/vfs/test_random_expressions.py",
+        "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py",
+        "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+        "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+        "tests/test_townlet/regressions/bac/test_effective_run.py",
+        "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "3",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r3-owned"
+      ]
+    }
+  ]
+}

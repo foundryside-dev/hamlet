@@ -1,0 +1,61 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_world_vfs_identity.py>
+            <Function test_current_env_same_ids_survive_lane_reversal_and_leading_spectator[other_lanes0]>
+            <Function test_current_env_same_ids_survive_lane_reversal_and_leading_spectator[other_lanes1]>
+            <Function test_other_world_action_does_not_shift_target_domain>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape0-argument_shape0-cpu]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape0-argument_shape0-cuda]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape1-argument_shape1-cpu]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape1-argument_shape1-cuda]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape2-argument_shape2-cpu]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape2-argument_shape2-cuda]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape3-argument_shape3-cpu]>
+            <Function test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape3-argument_shape3-cuda]>
+            <Function test_unequal_context_sequences_preserve_target_and_shared_prefix>
+            <Function test_seed_id_sequence_tick_site_and_ordinal_are_each_domain_inputs>
+            <Function test_reset_projects_reservation_before_evaluation_and_retry_never_resamples>
+            <Function test_late_reset_failure_quarantines_candidate_without_accepting>
+            <Function test_vfs_deep_validation_refuses_before_mutation[training_seed-True]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[training_seed-4.0]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[training_seed--1]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_ids-value3]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_ids-value4]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_ids-value5]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_episode_seqs-value6]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_episode_seqs-value7]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_episode_seqs-value8]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_episode_seqs-value9]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[world_episode_seqs-value10]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[schema-old]>
+            <Function test_vfs_deep_validation_refuses_before_mutation[domain-curiosity]>
+            <Function test_native_context_owns_storage_and_refuses_old_scalar_payload>
+            <Function test_native_roundtrip_projects_destination_and_preserves_history[INITIAL]>
+            <Function test_native_roundtrip_projects_destination_and_preserves_history[COMPLETED]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[training_seed-732-INITIAL]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[training_seed-732-COMPLETED]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_ids-value1-INITIAL]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_ids-value1-COMPLETED]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_ids-value2-INITIAL]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_ids-value2-COMPLETED]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_episode_seqs-value3-INITIAL]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_episode_seqs-value3-COMPLETED]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_episode_seqs-value4-INITIAL]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[world_episode_seqs-value4-COMPLETED]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[domain-curiosity-INITIAL]>
+            <Function test_native_deep_child_refusal_is_pure_including_initial[domain-curiosity-COMPLETED]>
+            <Function test_standalone_restore_cannot_install_contradictory_cursors>
+
+========================= 44 tests collected in 0.08s ==========================

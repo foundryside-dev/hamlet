@@ -1,7 +1,8 @@
 """Repairs for the adversarial verification of 636192e0 (R3 verifier, V1-V7).
 
 VFS draws are counter-based (`townlet.vfs.random_draws`): every value is a pure function of
-(seed, episode, tick, site, world, element). Each case compiles a scratch pack and steps it.
+(training seed, exact world ID, world episode sequence, tick, site, ordinal, element).
+Each case compiles a scratch pack and steps it through current world authority gates.
 """
 
 from __future__ import annotations
@@ -14,7 +15,9 @@ import pytest
 import torch
 import yaml
 
+from townlet.config.world_roster import WorldRosterDeclaration
 from townlet.determinism import seed_all
+from townlet.environment.vectorized_env import WorldReceiptIssuer
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
 
@@ -22,6 +25,123 @@ REPO = Path(__file__).resolve().parents[4]
 WITNESS = REPO / "configs" / "static_epistemic_access"
 LEVEL = "L0_simple"
 MINMAX = {"kind": "minmax", "min": 0.0, "max": 3.0, "clip": True}
+
+
+def _environment(universe, num_agents: int, seed: int):
+    ids = tuple(f"repair-world-{index}" for index in range(num_agents))
+    roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)})
+    return universe.create_environment(
+        num_agents=num_agents,
+        level_name=LEVEL,
+        device="cpu",
+        world_roster=roster,
+        training_seed=seed,
+        lane_world_ids=ids,
+    )
+
+
+class _EpisodeDriver:
+    """Explicit local receipt owners exercise ENV, not actual runner/bank/learning."""
+
+    def __init__(self, env, *, bootstrap=True):
+        self.env = env
+        self.issuer = WorldReceiptIssuer(owner=self)
+        roles = dict.fromkeys("population curiosity curriculum exploration network optimizer scheduler replay selection".split(), self)
+        self.authority = env.bind_boundary_authority(owner=self, role_owners=roles)
+        self.release = env.install_boundary_release(self.authority.bootstrap(first_batch_episode=1)) if bootstrap else None
+        self.batch = 0
+        self.accepted = None
+        self.participants = set()
+
+    def receipt(self, receipt_kind, **payload):
+        return self.issuer.issue(kind=receipt_kind, payload=payload)
+
+    def reset(self):
+        reservation = self.env.prepare_episode(batch_episode=self.batch + 1, release=self.release)
+        self.env.validate_episode_reservation(reservation)
+        result = self.env.reset(reservation=reservation)
+        self.accepted = result.accepted
+        self.env.activate_episode(
+            accepted=self.accepted,
+            population_receipt=self.receipt("activation", accepted=self.accepted),
+            curiosity_receipt=self.receipt("activation", accepted=self.accepted),
+        )
+        self.batch += 1
+        self.participants.clear()
+        return result.observation
+
+    def step(self, actions):
+        self.participants.update(world_id for index, world_id in enumerate(self.env.world_ids) if not self.env.dones[index])
+        return self.env.step(actions)
+
+    def complete(self):
+        participants = tuple(world_id for world_id in self.accepted.world_ids if world_id in self.participants)
+        assert participants, "completion requires a real participating step"
+        content = tuple(
+            (self.batch, index, world_id, self.accepted.world_episode_seqs[index], "local-interface-outcome")
+            for index, world_id in enumerate(self.accepted.world_ids)
+            if world_id in participants
+        )
+        payload = dict(
+            accepted=self.accepted,
+            boundary_key=self.batch,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=tuple(
+                (world_id, "completed" if world_id in participants else "retired_nonparticipating") for world_id in self.accepted.world_ids
+            ),
+        )
+        prepared = self.env.prepare_episode_close(
+            accepted=self.accepted,
+            boundary_key=self.batch,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=self.receipt("prepared_dispositions", **payload),
+        )
+        self.env.freeze_episode_close(prepared)
+        dispositions = self.receipt("dispositions", **payload)
+        closure = self.env.close_episode(prepared, dispositions=dispositions)
+        children = {
+            name: self.receipt(name, accepted=self.accepted, boundary_key=self.batch, completion_content=content)
+            for name in (
+                "curriculum_receipt",
+                "exploration_receipt",
+                "population_commit_receipt",
+                "epsilon_install_receipt",
+                "selection_sync_receipt",
+            )
+        }
+        effects = self.receipt(
+            "boundary_effects",
+            batch_episode=self.batch,
+            accepted_identity=self.accepted,
+            completion_content=content,
+            retirement_receipt=dispositions,
+            **children,
+        )
+        self.release = self.env.install_boundary_release(self.authority.completed(closure=closure, effects=effects))
+
+    def checkpoint(self):
+        return self.env.checkpoint_world_state(
+            kind="COMPLETED",
+            release=self.release,
+            retained_binding_batches=tuple(range(1, self.batch + 1)),
+            initial=None,
+        )
+
+    def restore(self, state):
+        roster = WorldRosterDeclaration.from_dict(state["world_roster"])
+        prepared = self.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=state,
+            world_roster=roster,
+            destination_world_ids=self.env.world_ids,
+            semantic_execution_identity=self.env.semantic_execution_identity,
+        )
+        boundary = self.receipt("restored_boundary", kind="COMPLETED", state=state, prepared=prepared)
+        release = self.authority.restored(restore=prepared, boundary=boundary)
+        self.release = self.env.install_world_restore(prepared=prepared, release=release)
+        self.batch = state["next_batch_episode"] - 1
 
 
 def _decl(var_id: str, *, scope: str = "agent", type_: str = "scalar", lifetime: str = "episode", **extra: object) -> dict:
@@ -79,9 +199,9 @@ def _refusal(pack: Path) -> str:
 
 def _env(universe, num_agents: int, seed: int = 7):
     seed_all(seed)
-    env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device="cpu")
-    env.reset()
-    return env
+    driver = _EpisodeDriver(_environment(universe, num_agents, seed))
+    driver.reset()
+    return driver.env
 
 
 def _wait(env) -> int:
@@ -270,27 +390,36 @@ def test_v3_world0_differential(tmp_path: Path, num_agents: int) -> None:
 
 
 def test_v3_resume_from_a_checkpoint_reproduces_the_draws(tmp_path: Path) -> None:
-    """The draw state is (seed, episode). Checkpointed between episodes (as the runner does) and
-    restored into a fresh env in a differently seeded process, every later draw is the original's,
-    tick for tick: a value is a pure function of seed, episode, tick, site, world and element."""
+    """Direct ENV boundary restore reproduces the next reset plus five ticks.
+
+    Local sealed owners exercise the real world checkpoint gates. This does not run
+    actual runner save/load or qualify the still-open outer checkpoint integration.
+    """
     universe = _compile(_pack(tmp_path, V3_DECLS, rules=V3_RULES))
-    original = _env(universe, 3, seed=11)
+    seed_all(11)
+    driver = _EpisodeDriver(_environment(universe, 3, 11))
+    original = driver.env
+    driver.reset()
     wait = _wait(original)
-    for _ in range(2):
+    for episode in range(3):
         for _ in range(3):
-            original.step(torch.full((3,), wait, dtype=torch.long))
-        original.reset()
-    checkpoint = original.vfs_random_state()
-    original.reset()
+            driver.step(torch.full((3,), wait, dtype=torch.long))
+        driver.complete()
+        if episode < 2:
+            driver.reset()
+    checkpoint = driver.checkpoint()
+    assert checkpoint["vfs_random_context"]["world_episode_seqs"] == [3, 3, 3]
+    driver.reset()
     original_ticks = [{name: _reg(original, name) for name in V3_VARS}]
     for _ in range(5):
         original.step(torch.full((3,), wait, dtype=torch.long))
         original_ticks.append({name: _reg(original, name) for name in V3_VARS})
 
     seed_all(999)
-    resumed = universe.create_environment(num_agents=3, level_name=LEVEL, device="cpu")
-    resumed.restore_vfs_random_state(checkpoint)
-    resumed.reset()
+    restored = _EpisodeDriver(_environment(universe, 3, 11), bootstrap=False)
+    restored.restore(checkpoint)
+    restored.reset()
+    resumed = restored.env
     for tick, expected in enumerate(original_ticks):
         if tick:
             resumed.step(torch.full((3,), wait, dtype=torch.long))
@@ -308,35 +437,62 @@ def test_v7_the_seed_is_captured_at_construction(tmp_path: Path) -> None:
     """Another environment's seed_all after construction never shifts this environment's draws."""
     universe = _compile(_pack(tmp_path, V3_DECLS, rules=V3_RULES))
     seed_all(1)
-    solo = universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu")
-    solo.reset()
-    solo.reset()
+    solo_driver = _EpisodeDriver(_environment(universe, 2, 1))
+    solo = solo_driver.env
+    solo_driver.reset()
+    solo_driver.step(solo.get_action_masks().to(torch.int64).argmax(dim=1))
+    solo_driver.complete()
+    solo_driver.reset()
     expected = _reg(solo, "g_rand")
 
     seed_all(1)
-    shared = universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu")
-    shared.reset()
+    shared_driver = _EpisodeDriver(_environment(universe, 2, 1))
+    shared = shared_driver.env
+    shared_driver.reset()
+    shared_driver.step(shared.get_action_masks().to(torch.int64).argmax(dim=1))
+    shared_driver.complete()
     seed_all(2)
-    universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu").reset()
-    shared.reset()
+    other = _EpisodeDriver(_environment(universe, 2, 2))
+    other.reset()
+    shared_driver.reset()
     assert torch.equal(_reg(shared, "g_rand"), expected)
 
 
 def test_draw_kernel_matches_the_reference_specification() -> None:
-    from townlet.vfs.random_draws import VFSRandomness, reference_uniform
+    from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext, reference_uniform
 
-    randomness = VFSRandomness(2**63 + 12345)
-    randomness.reset()
-    randomness.reset()
-    stream = randomness.instant(tick=9, worlds=3, device=torch.device("cpu")).stream("var:x", (3, 5))
+    ids = ("kernel-west", "kernel-center", "kernel-east")
+    randomness = VFSRandomness(context=VFSWorldContext(training_seed=2**63 + 12345, world_ids=ids, world_episode_seqs=(2, 2, 2)))
+    stream = randomness.instant(tick=9, device=torch.device("cpu")).stream("var:x", (3, 5))
     stream.uniform("uniform", torch.zeros(()))
     second = stream.uniform("uniform", torch.zeros(()))
     expected = [
-        [reference_uniform(seed=2**63 + 12345, episode=2, tick=9, site="var:x", ordinal=1, world=w, element=e) for e in range(5)]
-        for w in range(3)
+        [
+            reference_uniform(
+                training_seed=2**63 + 12345,
+                world_id=world_id,
+                world_episode_seq=2,
+                tick=9,
+                site="var:x",
+                ordinal=1,
+                element=element,
+            )
+            for element in range(5)
+        ]
+        for world_id in ids
     ]
     assert torch.equal(second, torch.tensor(expected, dtype=torch.float32))
-    normal = randomness.instant(tick=0, worlds=8192, device=torch.device("cpu")).stream("var:n", (8192,)).normal("n", torch.zeros(()))
+    normal_context = VFSWorldContext(
+        training_seed=2**63 + 12345,
+        world_ids=tuple(f"normal-world-{index}" for index in range(8192)),
+        world_episode_seqs=(2,) * 8192,
+    )
+    normal = (
+        VFSRandomness(context=normal_context)
+        .instant(tick=0, device=torch.device("cpu"))
+        .stream("var:n", (8192,))
+        .normal("n", torch.zeros(()))
+    )
     assert abs(float(normal.mean())) < 0.05 and abs(float(normal.std()) - 1.0) < 0.05
 
 

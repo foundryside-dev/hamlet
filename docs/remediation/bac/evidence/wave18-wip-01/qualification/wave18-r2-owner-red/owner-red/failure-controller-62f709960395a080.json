@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/unit/vfs/test_random_expressions.py::test_the_profile_evaluator_refuses_to_sample_without_the_world_streams",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_the_profile_evaluator_refuses_to_sample_without_the_world_streams() -> None:\n        evaluator = VFSEvaluator(history_spec=None)\n        with pytest.raises(RuntimeError, match=r\"Engine defect: expression variable\\(s\\) \\['x'\\] sample\"):\n            evaluator.evaluate_global_profile(_profile(\"uniform(0.0, 1.0)\"), bars={}, vfs_state={}, marks={\"x\"}, device=torch.device(\"cpu\"))\n>       randomness = VFSRandomness(7)\n                     ^^^^^^^^^^^^^^^^\nE       TypeError: VFSRandomness.__init__() takes 1 positional argument but 2 were given\n\ntests/test_townlet/unit/vfs/test_random_expressions.py:395: TypeError",
+  "candidate_tree": "e800bc81ff0487823596a754a499685009c7a945"
+}

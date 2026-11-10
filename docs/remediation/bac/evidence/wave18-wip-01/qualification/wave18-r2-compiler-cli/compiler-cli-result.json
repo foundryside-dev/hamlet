@@ -1,0 +1,15 @@
+{
+  "name": "compiler-cli",
+  "exit_code": 0,
+  "seconds": 232.18226885795593,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/validate_compiler_cli.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave18-r2-compiler-cli/compiler-cli.log",
+  "sha256": "93cf385838452ef8cebefaeb1ad12ae7b51ef5e00b51531dff8d99f39ee17dcd",
+  "candidate_tree": "e800bc81ff0487823596a754a499685009c7a945",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "manifest_sha256": "478a3e6992958a63eea8745f4607411dc8816a863b453a9aeb76f0e305902ec3",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

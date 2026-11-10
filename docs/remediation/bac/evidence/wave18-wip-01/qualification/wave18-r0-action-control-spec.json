@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18/r0-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave18-r0-action-control",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "action-control",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r0-action-control",
+        "-k",
+        "other_world_action_does_not_shift_target_domain"
+      ]
+    }
+  ]
+}

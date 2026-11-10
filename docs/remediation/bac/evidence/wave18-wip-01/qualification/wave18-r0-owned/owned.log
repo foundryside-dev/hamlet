@@ -1,0 +1,72 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [2 items]
+
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_current_env_same_ids_survive_lane_reversal_and_leading_spectator[other_lanes0] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+other_lanes = ('target-b', 'target-a')
+
+    @pytest.mark.parametrize("other_lanes", [("target-b", "target-a"), ("spectator", "target-a", "target-b")])
+    def test_current_env_same_ids_survive_lane_reversal_and_leading_spectator(compiled, other_lanes):
+        """Causal RED: row-keyed draws change target-a when it moves away from row zero."""
+        left = bound(compiled, ("target-a", "target-b"), ("target-a", "target-b"))
+        right = bound(compiled, other_lanes, other_lanes)
+        for owners in (left, right):
+            _, reset = accept(owners, bootstrap(owners))
+            assert reset.accepted.world_episode_seqs == (1,) * owners.env.num_agents
+            assert owners.env.world_phase == "active"
+        before = domain_draw(left.env)
+        reordered = domain_draw(right.env)
+        for world_id in left.env.world_ids:
+>           assert torch.equal(before[left.env.world_ids.index(world_id)], reordered[right.env.world_ids.index(world_id)]), world_id
+E           AssertionError: target-a
+E           assert False
+E            +  where False = <built-in method equal of type object at 0x7f83590e4000>(tensor([0.8858, 0.6816, 0.5939, 0.1083, 0.4558, 0.1300, 0.8623, 0.0010, 0.5121,\n        0.8370, 0.1956, 0.1737, 0.3662, 0.2882, 0.7396, 0.5199]), tensor([0.4247, 0.6337, 0.9222, 0.0268, 0.2378, 0.0754, 0.9093, 0.9894, 0.3850,\n        0.7538, 0.0381, 0.9724, 0.9202, 0.0732, 0.5525, 0.3557]))
+E            +    where <built-in method equal of type object at 0x7f83590e4000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:95: AssertionError
+_ test_current_env_same_ids_survive_lane_reversal_and_leading_spectator[other_lanes1] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+other_lanes = ('spectator', 'target-a', 'target-b')
+
+    @pytest.mark.parametrize("other_lanes", [("target-b", "target-a"), ("spectator", "target-a", "target-b")])
+    def test_current_env_same_ids_survive_lane_reversal_and_leading_spectator(compiled, other_lanes):
+        """Causal RED: row-keyed draws change target-a when it moves away from row zero."""
+        left = bound(compiled, ("target-a", "target-b"), ("target-a", "target-b"))
+        right = bound(compiled, other_lanes, other_lanes)
+        for owners in (left, right):
+            _, reset = accept(owners, bootstrap(owners))
+            assert reset.accepted.world_episode_seqs == (1,) * owners.env.num_agents
+            assert owners.env.world_phase == "active"
+        before = domain_draw(left.env)
+        reordered = domain_draw(right.env)
+        for world_id in left.env.world_ids:
+>           assert torch.equal(before[left.env.world_ids.index(world_id)], reordered[right.env.world_ids.index(world_id)]), world_id
+E           AssertionError: target-a
+E           assert False
+E            +  where False = <built-in method equal of type object at 0x7f781f9f1000>(tensor([0.8858, 0.6816, 0.5939, 0.1083, 0.4558, 0.1300, 0.8623, 0.0010, 0.5121,\n        0.8370, 0.1956, 0.1737, 0.3662, 0.2882, 0.7396, 0.5199]), tensor([0.4247, 0.6337, 0.9222, 0.0268, 0.2378, 0.0754, 0.9093, 0.9894, 0.3850,\n        0.7538, 0.0381, 0.9724, 0.9202, 0.0732, 0.5525, 0.3557]))
+E            +    where <built-in method equal of type object at 0x7f781f9f1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:95: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_current_env_same_ids_survive_lane_reversal_and_leading_spectator[other_lanes0]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_current_env_same_ids_survive_lane_reversal_and_leading_spectator[other_lanes1]
+============================== 2 failed in 8.28s ===============================

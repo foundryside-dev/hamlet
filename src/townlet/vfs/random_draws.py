@@ -1,43 +1,32 @@
-"""Counter-based random draws for VFS expressions, action writes and transition rules.
+"""Identity-keyed VFS draws for expressions, action writes and transition rules.
 
-Every value a sampling call (``uniform``, ``normal_dist``) produces is a pure function
+ENV supplies the exact training seed, world IDs and per-world episode sequences.
+This module owns no episode lifecycle or generator cursor. A world's draws depend
+only on that identity, tick, stable site, call ordinal and within-world element.
+Changing lane order, batch size or another world's context cannot change its keys.
 
-    value = hash(seed, episode, tick, site, world, element)
-
-computed vectorised in torch with integer mixing (the splitmix64 finalizer), turned into a
-uniform float, and into a normal by Box-Muller. There is no generator state:
-
-- **S1 independence.** World ``w``'s values depend on ``w`` and nothing about any other
-  world, so a world's draws are the same whatever the batch size and whatever any other
-  world does.
-- **Stable sites.** ``site`` is the owner's identity (the expression variable's id, the
-  transition rule's id and write index, the custom action's name and write index) plus the
-  draw's ordinal among the owner's draws, in evaluation order of its AST. So moving a
-  declaration to another file, reordering declarations, or adding an unrelated random
-  mechanic re-rolls nothing else. A transition rule's own condition is one site shared by
-  all its writes, so the rule fires for all of them or none.
-- **Resume.** The only state is the run seed (captured once, when the environment is
-  built) and the episode counter; both travel in the checkpoint (``state`` / ``restore``),
-  so a resumed run draws exactly what the original run drew at the same episode and tick.
-- **Shape.** A draw fills the full joined shape of its context: one value per world for a
-  global expression, per agent row for an agent expression or an action write, per
-  ``[world, affordance]`` row for a rule on an affordance target. An argument that already
-  carries those axes shapes the draw; every element is its own world's.
-
-The effects engine keeps separate generators for its pipelines
-(``townlet.effects.manager.EffectManager.world_rng``), so an effect's ``sample`` never
-shifts an expression draw.
+The versioned simulator/VFS domain is separate from learner/provider RNG. This is
+a direct draw-domain guarantee, not a claim about ambient simulator spawn/layout
+randomness. Uniform and Box-Muller normal draws retain the full joined context
+shape, float32 outputs and device-local vectorized integer mixing. Shared rule
+condition prefixes retain identical draws across that rule's writes.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import math
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from typing import Any
 
 import torch
 
-__all__ = ["DrawInstant", "DrawStream", "VFSRandomness", "reference_uniform"]
+__all__ = ["DrawInstant", "DrawStream", "VFSRandomness", "VFSWorldContext", "reference_uniform"]
+
+_DOMAIN = "townlet.simulator.vfs.world-draw.v1"
+_STATE_SCHEMA = "vfs-world-random-v1"
 
 _MASK64 = (1 << 64) - 1
 _GOLDEN = 0x9E3779B97F4A7C15
@@ -82,64 +71,108 @@ def _site_key(instant_key: int, label: str, ordinal: int) -> int:
     return _mix64(_mix64(instant_key ^ _label_hash(label)) ^ ordinal)
 
 
-def _instant_key(seed: int, episode: int, tick: int) -> int:
-    return _mix64(_mix64(_mix64(seed & _MASK64) ^ episode) ^ (tick & _MASK64))
+def _nonnegative_integer(value: Any, name: str) -> None:
+    if type(value) is not int or value < 0:
+        raise ValueError(f"VFS {name} requires an exact non-negative integer")
 
 
-def reference_uniform(*, seed: int, episode: int, tick: int, site: str, ordinal: int, world: int, element: int) -> float:
-    """The uniform value one element draws, in pure Python: the specification the torch kernel must match."""
-    z = _mix64(_mix64(_site_key(_instant_key(seed, episode, tick), site, ordinal) ^ world) ^ element)
+@dataclass(frozen=True, kw_only=True)
+class VFSWorldContext:
+    """Owned data projection; only ENV can authorize its use for a live episode."""
+
+    training_seed: int
+    world_ids: tuple[str, ...]
+    world_episode_seqs: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        _nonnegative_integer(self.training_seed, "training seed")
+        if type(self.world_ids) is not tuple or not self.world_ids:
+            raise ValueError("VFS world IDs require a nonempty immutable tuple")
+        if any(type(value) is not str or not value for value in self.world_ids) or len(set(self.world_ids)) != len(self.world_ids):
+            raise ValueError("VFS world IDs require unique exact nonempty strings")
+        if type(self.world_episode_seqs) is not tuple or len(self.world_episode_seqs) != len(self.world_ids):
+            raise ValueError("VFS sequences require one immutable entry per world ID")
+        for sequence in self.world_episode_seqs:
+            _nonnegative_integer(sequence, "world episode sequence")
+
+
+def _world_key(seed: int, world_id: str, sequence: int) -> int:
+    encoded = json.dumps([_DOMAIN, seed, world_id, sequence], ensure_ascii=True, separators=(",", ":")).encode("utf-8")
+    return int.from_bytes(hashlib.blake2b(encoded, digest_size=8).digest(), "little")
+
+
+def reference_uniform(
+    *, training_seed: int, world_id: str, world_episode_seq: int, tick: int, site: str, ordinal: int, element: int
+) -> float:
+    """One uniform element under the versioned world-identity domain, in pure Python."""
+    VFSWorldContext(training_seed=training_seed, world_ids=(world_id,), world_episode_seqs=(world_episode_seq,))
+    for name, value in (("tick", tick), ("ordinal", ordinal), ("element", element)):
+        _nonnegative_integer(value, name)
+    instant_key = _mix64(_world_key(training_seed, world_id, world_episode_seq) ^ tick)
+    z = _mix64(_site_key(instant_key, site, ordinal) ^ element)
     return (z >> (64 - _UNIFORM_BITS)) / float(1 << _UNIFORM_BITS)
 
 
+@dataclass(frozen=True, kw_only=True)
 class VFSRandomness:
-    """One environment's draw state: the run seed and the episode counter, nothing else."""
+    """Immutable draw producer for an ENV-projected context, with no reset authority."""
 
-    def __init__(self, seed: int) -> None:
-        if isinstance(seed, bool) or not isinstance(seed, int):
-            raise TypeError(f"VFS random seed must be an int, got {type(seed).__name__}")
-        self._seed = seed & _MASK64
-        self._episode = 0
+    context: VFSWorldContext
+    _world_keys: tuple[int, ...] = field(init=False, repr=False)
 
-    @property
-    def seed(self) -> int:
-        return self._seed
+    def __post_init__(self) -> None:
+        if not isinstance(self.context, VFSWorldContext):
+            raise ValueError("VFS randomness requires an explicit world context")
+        object.__setattr__(
+            self,
+            "_world_keys",
+            tuple(
+                _world_key(self.context.training_seed, world_id, sequence)
+                for world_id, sequence in zip(self.context.world_ids, self.context.world_episode_seqs, strict=True)
+            ),
+        )
 
-    @property
-    def episode(self) -> int:
-        return self._episode
+    def state(self) -> dict[str, Any]:
+        """Portable owned identity data; no live receipt, generator or cursor is serialized."""
+        return {
+            "schema": _STATE_SCHEMA,
+            "domain": _DOMAIN,
+            "training_seed": self.context.training_seed,
+            "world_ids": list(self.context.world_ids),
+            "world_episode_seqs": list(self.context.world_episode_seqs),
+        }
 
-    def reset(self) -> None:
-        """Start a new episode."""
-        self._episode += 1
+    @staticmethod
+    def validate_state(state: Mapping[str, Any], *, expected: VFSWorldContext) -> VFSWorldContext:
+        """Validate every field and exact producer lane binding before any installation."""
+        keys = {"schema", "domain", "training_seed", "world_ids", "world_episode_seqs"}
+        if not isinstance(state, Mapping) or set(state) != keys or state["schema"] != _STATE_SCHEMA or state["domain"] != _DOMAIN:
+            raise ValueError("VFS native state requires the exact current schema and domain")
+        if type(state["world_ids"]) is not list or type(state["world_episode_seqs"]) is not list:
+            raise ValueError("VFS native identities require serialized lists")
+        context = VFSWorldContext(
+            training_seed=state["training_seed"], world_ids=tuple(state["world_ids"]), world_episode_seqs=tuple(state["world_episode_seqs"])
+        )
+        if not isinstance(expected, VFSWorldContext) or context != expected:
+            raise ValueError("VFS native context contradicts the authoritative world context")
+        return context
 
-    def state(self) -> dict[str, int]:
-        """What a checkpoint carries to reproduce every later draw."""
-        return {"seed": self._seed, "episode": self._episode}
-
-    def restore(self, state: dict[str, int]) -> None:
-        """Adopt a checkpoint's seed and episode counter (the next ``reset`` starts the episode after it)."""
-        if set(state) != {"seed", "episode"}:
-            raise ValueError(f"VFS random state must carry exactly 'seed' and 'episode', got {sorted(state)}")
-        seed, episode = state["seed"], state["episode"]
-        for name, value in (("seed", seed), ("episode", episode)):
-            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-                raise ValueError(f"VFS random state '{name}' must be a non-negative int, got {value!r}")
-        self._seed = seed & _MASK64
-        self._episode = episode
-
-    def instant(self, *, tick: int, worlds: int, device: torch.device) -> DrawInstant:
-        """The draws of one instant of this episode, for ``worlds`` worlds."""
-        return DrawInstant(key=_instant_key(self._seed, self._episode, tick), worlds=worlds, device=torch.device(device))
+    def instant(self, *, tick: int, device: torch.device) -> DrawInstant:
+        """One tick projected independently through every world's exact episode identity."""
+        _nonnegative_integer(tick, "tick")
+        return DrawInstant(world_keys=tuple(_mix64(key ^ tick) for key in self._world_keys), device=torch.device(device))
 
 
 @dataclass(frozen=True)
 class DrawInstant:
     """One instant's draw key; ``stream`` hands each owner its own sites."""
 
-    key: int
-    worlds: int
+    world_keys: tuple[int, ...]
     device: torch.device
+
+    @property
+    def worlds(self) -> int:
+        return len(self.world_keys)
 
     def stream(self, site: str, shape: tuple[int, ...]) -> DrawStream:
         """The draws of one owner whose context has the full joined ``shape`` (worlds leading)."""
@@ -167,17 +200,21 @@ class DrawStream:
         self._shared_site = shared_site
         self._shared_draws = shared_draws
         self._ordinal = 0
+        self._world_keys = torch.tensor([_signed(key) for key in instant.world_keys], device=instant.device, dtype=torch.int64)
 
     @property
     def worlds(self) -> int:
         return self._instant.worlds
 
-    def _next_site_key(self) -> int:
+    def _next_site_key(self) -> torch.Tensor:
         ordinal = self._ordinal
         self._ordinal += 1
         if self._shared_site is not None and ordinal < self._shared_draws:
-            return _site_key(self._instant.key, self._shared_site, ordinal)
-        return _site_key(self._instant.key, self._site, ordinal - (self._shared_draws if self._shared_site is not None else 0))
+            site = self._shared_site
+        else:
+            site = self._site
+            ordinal -= self._shared_draws if self._shared_site is not None else 0
+        return _mix64_tensor(_mix64_tensor(self._world_keys ^ _signed(_label_hash(site))) ^ _signed(ordinal))
 
     def _shape_like(self, name: str, like: torch.Tensor) -> tuple[int, ...]:
         if like.dim() == 0:
@@ -193,12 +230,11 @@ class DrawStream:
             )
         return shape
 
-    def _bits(self, site_key: int, shape: tuple[int, ...], lanes: int, lane: int) -> torch.Tensor:
+    def _bits(self, site_key: torch.Tensor, shape: tuple[int, ...], lanes: int, lane: int) -> torch.Tensor:
         device = self._instant.device
         elements = math.prod(shape[1:])
-        world = torch.arange(shape[0], device=device, dtype=torch.int64).unsqueeze(1)
         element = torch.arange(elements, device=device, dtype=torch.int64).unsqueeze(0) * lanes + lane
-        z = _mix64_tensor(_mix64_tensor(torch.full((), _signed(site_key), device=device, dtype=torch.int64) ^ world) ^ element)
+        z = _mix64_tensor(site_key.unsqueeze(1) ^ element)
         return _shr(z, 64 - _UNIFORM_BITS)
 
     def uniform(self, name: str, like: torch.Tensor) -> torch.Tensor:

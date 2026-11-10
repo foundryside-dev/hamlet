@@ -54,7 +54,7 @@ from townlet.universe.dto.token_spec import item_capacity
 from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.namespace import CommandSymbols, Namespace, expression_sources
 from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.vfs.random_draws import DrawInstant, VFSRandomness
+from townlet.vfs.random_draws import DrawInstant, VFSRandomness, VFSWorldContext
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
@@ -774,10 +774,9 @@ class VectorizedHamletEnv:
             item_profiles=item_profiles,
         )
 
-        # Counter-based VFS draws (expressions, action writes, transition rules), separate
-        # from the effects engine's streams (S1). The run seed is captured here, once: a
-        # later seed_all elsewhere in the process never shifts this environment's draws.
-        self.vfs_randomness = VFSRandomness(self._world_seed)
+        # VFS has no lifecycle counter: this is the fresh sequence-zero ENV projection.
+        # Its domain is independent of ambient RNG, unlike simulator spawn/layout work.
+        self.vfs_randomness = VFSRandomness(context=self._current_vfs_context())
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
             self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
@@ -1016,8 +1015,7 @@ class VectorizedHamletEnv:
         # Reset temporal history so temporal VFS ops don't leak across episodes
         if self.vfs_evaluator is not None:
             self.vfs_evaluator.reset()
-        # A new episode: every VFS draw is keyed on the episode counter.
-        self.vfs_randomness.reset()
+        # Public reset has already installed the validated reservation's VFS projection.
 
         if self.item_manager is not None:
             self.item_manager.reset_state()  # and its inventory
@@ -1485,16 +1483,39 @@ class VectorizedHamletEnv:
             self.vfs_evaluator.commit_instant(bars_dict_vfs, self._current_vfs_state(), live=~self.dones)
 
     def _vfs_draws(self) -> DrawInstant:
-        """This instant's VFS draws: keyed on the run seed, the episode and the engine tick."""
-        return self.vfs_randomness.instant(tick=self.global_tick, worlds=self.num_agents, device=self.device)
+        """Draw from the in-reset candidate or accepted per-world identity, never rows."""
+        if self._world_phase == "resetting":
+            expected = self._world_vfs_pending
+            if expected is None:
+                raise ValueError("reset-time VFS draws require a validated reservation projection")
+        else:
+            self._require_phase("active-awaiting-activation", "active", "boundary-pending", "closed-awaiting-release", "released-completed")
+            expected = self._current_vfs_context()
+        if self.vfs_randomness.context != expected:
+            raise ValueError("VFS draw context contradicts ENV world identity")
+        return self.vfs_randomness.instant(tick=self.global_tick, device=self.device)
 
-    def vfs_random_state(self) -> dict[str, int]:
-        """The VFS draw state a checkpoint carries (run seed and episode counter)."""
+    def _current_vfs_context(self) -> VFSWorldContext:
+        """Pure projection of ENV's actual lane binding and accepted cursors."""
+        return VFSWorldContext(
+            training_seed=self._world_seed,
+            world_ids=self.world_ids,
+            world_episode_seqs=tuple(self._world_cursors[world_id] for world_id in self.world_ids),
+        )
+
+    def vfs_random_state(self) -> dict[str, Any]:
+        """Export owned current identity data, excluding provisional or failed attempts."""
+        if self._world_phase in ("resetting", "restoring", "quarantined"):
+            raise ValueError("VFS native export requires a stable authoritative context")
+        if self.vfs_randomness.context != self._current_vfs_context():
+            raise ValueError("VFS native context contradicts ENV world identity")
         return self.vfs_randomness.state()
 
-    def restore_vfs_random_state(self, state: dict[str, int]) -> None:
-        """Adopt a checkpoint's VFS draw state; the next ``reset`` resumes the original run's draws."""
-        self.vfs_randomness.restore(state)
+    def restore_vfs_random_state(self, state: Mapping[str, Any]) -> None:
+        """Validate/reinstall only the current projection; joint restore owns cursor changes."""
+        self._require_phase("fresh-unbound", "fresh-bound", "bootstrap-ready", "released-completed")
+        context = VFSRandomness.validate_state(state, expected=self._current_vfs_context())
+        self.vfs_randomness = VFSRandomness(context=context)
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""
@@ -1947,6 +1968,7 @@ class VectorizedHamletEnv:
         self._world_consumers: tuple[object, object] | None = None
         self._world_saved_binding: dict[str, Any] | None = None
         self._world_restored: tuple[WorldRecord, WorldRecord] | None = None
+        self._world_vfs_pending: VFSWorldContext | None = None
 
     @property
     def world_ids(self) -> tuple[str, ...]:
@@ -2084,8 +2106,18 @@ class VectorizedHamletEnv:
             self._require_phase("active-awaiting-activation", "active", "closed-awaiting-release", "released-completed")
             return self._world_reset
         self.validate_episode_reservation(reservation)
+        candidate = VFSWorldContext(
+            training_seed=self._world_seed,
+            world_ids=reservation.world_ids,
+            world_episode_seqs=reservation.world_episode_seqs,
+        )
+        draws = VFSRandomness(context=candidate)
         self._world_phase = "resetting"
         try:
+            # Project the exact candidate before any reset-time expression is evaluated.
+            # Acceptance remains below; this provisional context grants no checkpoint right.
+            self._world_vfs_pending = candidate
+            self.vfs_randomness = draws
             observation = self._reset_world_state()
             generation = self._world_generation + 1
             accepted = WorldAcceptedEpisode(
@@ -2110,6 +2142,8 @@ class VectorizedHamletEnv:
         except BaseException:
             self._world_phase = "quarantined"
             raise
+        finally:
+            self._world_vfs_pending = None
 
     def _accepted(self, accepted: WorldAcceptedEpisode) -> None:
         if accepted is not self._world_accepted or accepted is None:
@@ -2263,7 +2297,7 @@ class VectorizedHamletEnv:
         if any(batch not in self._world_bindings for batch in retained_binding_batches):
             raise ValueError("missing retained accepted-binding provenance")
         return {
-            "schema": "world-lifecycle-v3",
+            "schema": "world-lifecycle-v4",
             "kind": kind,
             "next_batch_episode": release.next_batch_episode,
             "world_roster": self._world_roster.to_dict(),
@@ -2277,6 +2311,7 @@ class VectorizedHamletEnv:
             "last_closed_episode": owned_value(self._world_last_closed),
             "completed_boundary_key": None if self._world_last_closed is None else self._world_last_closed["batch_episode"],
             "accepted_bindings": [owned_value(self._world_bindings[batch]) for batch in retained_binding_batches],
+            "vfs_random_context": self.vfs_random_state(),
         }
 
     def prepare_world_restore(
@@ -2297,7 +2332,20 @@ class VectorizedHamletEnv:
         if semantic_execution_identity != self.semantic_execution_identity:
             raise ValueError("restore destination semantic identity disagrees")
         prepared = validate_world_snapshot(state, kind, world_roster, self._world_seed, semantic_execution_identity)
-        return self._record("prepared_restore", {"state": prepared, "destination_world_ids": destination})
+        # Validate saved producer order first, then explicitly project to this destination.
+        context = VFSWorldContext(
+            training_seed=self._world_seed,
+            world_ids=destination,
+            world_episode_seqs=tuple(prepared["accepted_episode_seqs"][world_id] for world_id in destination),
+        )
+        return self._record(
+            "prepared_restore",
+            {
+                "state": prepared,
+                "destination_world_ids": destination,
+                "destination_vfs_context": VFSRandomness(context=context).state(),
+            },
+        )
 
     def install_world_restore(self, *, prepared: WorldRecord, release: WorldRecord) -> WorldRecord:
         if self._world_restored is not None and self._world_restored == (prepared, release):
@@ -2310,6 +2358,13 @@ class VectorizedHamletEnv:
         if release.release_kind != "restored" or release.restore is not prepared:
             raise ValueError("restore release does not name this preparation")
         state = prepared.state
+        expected = VFSWorldContext(
+            training_seed=self._world_seed,
+            world_ids=self.world_ids,
+            world_episode_seqs=tuple(state["accepted_episode_seqs"][world_id] for world_id in self.world_ids),
+        )
+        context = VFSRandomness.validate_state(prepared.destination_vfs_context, expected=expected)
+        draws = VFSRandomness(context=context)
         self._world_phase = "restoring"
         try:
             self._world_generation += 1
@@ -2317,6 +2372,7 @@ class VectorizedHamletEnv:
             self._world_bindings = {item["batch_episode"]: owned_value(item) for item in state["accepted_bindings"]}
             self._world_last_closed = owned_value(state["last_closed_episode"])
             self._world_saved_binding = owned_value(state["saved_lane_binding"])
+            self.vfs_randomness = draws
             if state["kind"] == "INITIAL":
                 installed = self._record("release", {"release_kind": "bootstrap", "next_batch_episode": state["next_batch_episode"]})
                 self._world_bootstrap = installed

@@ -1,0 +1,85 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 106 items / 103 deselected / 3 selected
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py F      [ 33%]
+tests/test_townlet/unit/vfs/test_random_expressions.py F                 [ 66%]
+tests/test_townlet/unit/vfs/test_verify_r3_repairs.py F                  [100%]
+
+=================================== FAILURES ===================================
+_______________ test_initial_schema_exact_and_snapshot_isolation _______________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_initial_schema_exact_and_snapshot_isolation(compiled):
+        run = _Run(_env(compiled))
+        state = run.initial()
+>       assert set(state) == {
+            "schema",
+            "kind",
+            "next_batch_episode",
+            "world_roster",
+            "manifest_digest",
+            "roster_semantic_identity",
+            "training_seed",
+            "execution_identity",
+            "saved_lane_binding",
+            "destination_lane_binding",
+            "accepted_episode_seqs",
+            "last_closed_episode",
+            "completed_boundary_key",
+            "accepted_bindings",
+        }
+E       AssertionError: assert {'accepted_bi..., 'kind', ...} == {'accepted_bi..., 'kind', ...}
+E         
+E         Extra items in the left set:
+E         'vfs_random_context'
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:650: AssertionError
+____ test_the_profile_evaluator_refuses_to_sample_without_the_world_streams ____
+
+    def test_the_profile_evaluator_refuses_to_sample_without_the_world_streams() -> None:
+        evaluator = VFSEvaluator(history_spec=None)
+        with pytest.raises(RuntimeError, match=r"Engine defect: expression variable\(s\) \['x'\] sample"):
+            evaluator.evaluate_global_profile(_profile("uniform(0.0, 1.0)"), bars={}, vfs_state={}, marks={"x"}, device=torch.device("cpu"))
+>       randomness = VFSRandomness(7)
+                     ^^^^^^^^^^^^^^^^
+E       TypeError: VFSRandomness.__init__() takes 1 positional argument but 2 were given
+
+tests/test_townlet/unit/vfs/test_random_expressions.py:395: TypeError
+____________ test_v3_resume_from_a_checkpoint_reproduces_the_draws _____________
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r2-owner-red/test_v3_resume_from_a_checkpoi0')
+
+    def test_v3_resume_from_a_checkpoint_reproduces_the_draws(tmp_path: Path) -> None:
+        """The draw state is (seed, episode). Checkpointed between episodes (as the runner does) and
+        restored into a fresh env in a differently seeded process, every later draw is the original's,
+        tick for tick: a value is a pure function of seed, episode, tick, site, world and element."""
+        universe = _compile(_pack(tmp_path, V3_DECLS, rules=V3_RULES))
+>       original = _env(universe, 3, seed=11)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/unit/vfs/test_verify_r3_repairs.py:277: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+universe = CompiledUniverse(metadata=UniverseMetadata(universe_name='Static Epistemic Access', schema_version='1.0', primary_leve...l:L0_simple:training', 'drive': 'level:L0_simple:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+num_agents = 3, seed = 11
+
+    def _env(universe, num_agents: int, seed: int = 7):
+        seed_all(seed)
+>       env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device="cpu")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: CompiledUniverse.create_environment() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+tests/test_townlet/unit/vfs/test_verify_r3_repairs.py:82: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_initial_schema_exact_and_snapshot_isolation
+FAILED tests/test_townlet/unit/vfs/test_random_expressions.py::test_the_profile_evaluator_refuses_to_sample_without_the_world_streams
+FAILED tests/test_townlet/unit/vfs/test_verify_r3_repairs.py::test_v3_resume_from_a_checkpoint_reproduces_the_draws
+====================== 3 failed, 103 deselected in 6.11s =======================

@@ -19,7 +19,7 @@ import pytest
 import torch
 
 from townlet.vfs import vtc
-from townlet.vfs.random_draws import VFSRandomness
+from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.transition_schedule import (
     VTCTransitionContext,
@@ -106,7 +106,9 @@ def test_transition_runner_executes_bounds_clamps_in_clamp_and_validate_phase() 
         bars_state={"energy": torch.tensor([1.7, -0.3], dtype=torch.float32)},
         active_mask=torch.tensor([True, False]),
         device=torch.device("cpu"),
-        draws=VFSRandomness(0).instant(tick=0, worlds=2, device=torch.device("cpu")),
+        draws=VFSRandomness(
+            context=VFSWorldContext(training_seed=0, world_ids=("bounds-west", "bounds-east"), world_episode_seqs=(0, 0))
+        ).instant(tick=0, device=torch.device("cpu")),
     )
 
     # A phase the rules are not scheduled for leaves the out-of-bounds value alone.

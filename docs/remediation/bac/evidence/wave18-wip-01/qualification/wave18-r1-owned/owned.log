@@ -1,0 +1,74 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items / 43 deselected / 1 selected
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py F          [100%]
+
+=================================== FAILURES ===================================
+_ test_locked_normative_vectors_and_seed_id_sequence_tick_site_ordinal_inputs __
+
+    def test_locked_normative_vectors_and_seed_id_sequence_tick_site_ordinal_inputs():
+        from townlet.vfs.random_draws import reference_uniform
+    
+        # Locked by root from the approved scalar specification before production edits.
+        # Keep these literal data here; no runtime dependency on ignored handoff JSON.
+        vectors = (
+            (0, "target-a", 0, 0, "vfs.reference", 0, (14222929, 2176863, 2314024, 2910008)),
+            (
+                731,
+                "target-a",
+                1,
+                1,
+                "bac.identity.probe",
+                0,
+                (
+                    16680306,
+                    3999839,
+                    8338086,
+                    10240450,
+                    5803577,
+                    14828653,
+                    5886397,
+                    3077549,
+                    8241551,
+                    11996649,
+                    15302141,
+                    5075517,
+                    6067964,
+                    14402929,
+                    3246540,
+                    3149326,
+                ),
+            ),
+            (1208925819614629174706267, " a:雪 ", 11, 7, "u", 2, (12260248, 12197302, 14462603, 6327938)),
+            (1208925819614629174706267, "a:雪", 2, 7, "u", 0, (259688, 675176, 14603466, 9899782)),
+        )
+        # Validate every oracle vector before reaching the old reference API's causal RED.
+        for seed, wid, seq, tick, site, ordinal, expected_bits24 in vectors:
+            for element, bits24 in enumerate(expected_bits24):
+                assert expected_uniform(seed, wid, seq, tick, site, ordinal, element) == bits24 / 2**24
+        for seed, wid, seq, tick, site, ordinal, expected_bits24 in vectors:
+            for element, bits24 in enumerate(expected_bits24):
+                assert (
+>                   reference_uniform(
+                        training_seed=seed,
+                        world_id=wid,
+                        world_episode_seq=seq,
+                        tick=tick,
+                        site=site,
+                        ordinal=ordinal,
+                        element=element,
+                    )
+                    == bits24 / 2**24
+                )
+E               TypeError: reference_uniform() got an unexpected keyword argument 'training_seed'
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:259: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_locked_normative_vectors_and_seed_id_sequence_tick_site_ordinal_inputs
+======================= 1 failed, 43 deselected in 0.07s =======================

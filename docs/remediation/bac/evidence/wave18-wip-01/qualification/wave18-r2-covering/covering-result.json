@@ -1,0 +1,30 @@
+{
+  "name": "covering",
+  "exit_code": 0,
+  "seconds": 10.510749816894531,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r2-covering",
+    "-k",
+    "current_env_same_ids_survive_lane_reversal_and_leading_spectator or locked_normative or other_world_action_does_not_shift_target_domain"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave18-r2-covering/covering.log",
+  "sha256": "887deb75be02a2e76bd72a8f3c70aa4c1228985642ea96824b47c7a32e6e270c",
+  "candidate_tree": "e800bc81ff0487823596a754a499685009c7a945",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "manifest_sha256": "478a3e6992958a63eea8745f4607411dc8816a863b453a9aeb76f0e305902ec3",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

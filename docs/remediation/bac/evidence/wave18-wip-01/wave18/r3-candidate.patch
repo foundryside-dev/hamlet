@@ -1,0 +1,1731 @@
+diff --git a/src/townlet/config/world_roster.py b/src/townlet/config/world_roster.py
+index 2bf889af..a29176c2 100644
+--- a/src/townlet/config/world_roster.py
++++ b/src/townlet/config/world_roster.py
+@@ -187,6 +187,8 @@ def validate_world_snapshot(
+     state: Mapping[str, Any], kind: str, roster: WorldRosterDeclaration, seed: int, semantic_identity: str
+ ) -> dict[str, Any]:
+     """Pure current-native structure and available accepted-history validation."""
++    from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
++
+     keys = {
+         "schema",
+         "kind",
+@@ -202,8 +204,9 @@ def validate_world_snapshot(
+         "last_closed_episode",
+         "completed_boundary_key",
+         "accepted_bindings",
++        "vfs_random_context",
+     }
+-    if not isinstance(state, Mapping) or set(state) != keys or state["schema"] != "world-lifecycle-v3":
++    if not isinstance(state, Mapping) or set(state) != keys or state["schema"] != "world-lifecycle-v4":
+         raise ValueError("world snapshot requires exact current schema")
+     if kind not in ("INITIAL", "COMPLETED") or state["kind"] != kind:
+         raise ValueError("world snapshot requires matching explicit kind")
+@@ -227,7 +230,7 @@ def validate_world_snapshot(
+             raise ValueError("world binding integrity disagrees")
+         return ids
+ 
+-    binding(state["destination_lane_binding"])
++    producer_ids = binding(state["destination_lane_binding"])
+     cursors = state["accepted_episode_seqs"]
+     if not isinstance(cursors, Mapping) or set(cursors) != membership:
+         raise ValueError("accepted cursors must cover declared membership")
+@@ -235,6 +238,16 @@ def validate_world_snapshot(
+         exact_integer(sequence, 0, "accepted sequence")
+     if len(set(cursors.values())) != 1:
+         raise ValueError("current full-roster histories cannot create unequal accepted cursors")
++    # This is the snapshot producer's order, not necessarily the last accepted order.
++    # Check the whole VFS child before either INITIAL or COMPLETED can return.
++    VFSRandomness.validate_state(
++        state["vfs_random_context"],
++        expected=VFSWorldContext(
++            training_seed=seed,
++            world_ids=producer_ids,
++            world_episode_seqs=tuple(cursors[world_id] for world_id in producer_ids),
++        ),
++    )
+     history = state["accepted_bindings"]
+     if not isinstance(history, list):
+         raise ValueError("accepted binding history requires a list")
+diff --git a/src/townlet/environment/vectorized_env.py b/src/townlet/environment/vectorized_env.py
+index 34837b29..cc217c6e 100644
+--- a/src/townlet/environment/vectorized_env.py
++++ b/src/townlet/environment/vectorized_env.py
+@@ -54,7 +54,7 @@ from townlet.universe.dto.token_spec import item_capacity
+ from townlet.vfs.evaluator import VFSEvaluator
+ from townlet.vfs.namespace import CommandSymbols, Namespace, expression_sources
+ from townlet.vfs.profiles import CompiledGlobalProfile
+-from townlet.vfs.random_draws import DrawInstant, VFSRandomness
++from townlet.vfs.random_draws import DrawInstant, VFSRandomness, VFSWorldContext
+ from townlet.vfs.registry import VariableRegistry
+ from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
+ from townlet.vfs.vtc import (
+@@ -774,10 +774,9 @@ class VectorizedHamletEnv:
+             item_profiles=item_profiles,
+         )
+ 
+-        # Counter-based VFS draws (expressions, action writes, transition rules), separate
+-        # from the effects engine's streams (S1). The run seed is captured here, once: a
+-        # later seed_all elsewhere in the process never shifts this environment's draws.
+-        self.vfs_randomness = VFSRandomness(self._world_seed)
++        # VFS has no lifecycle counter: this is the fresh sequence-zero ENV projection.
++        # Its domain is independent of ambient RNG, unlike simulator spawn/layout work.
++        self.vfs_randomness = VFSRandomness(context=self._current_vfs_context())
+         self.vfs_evaluator: VFSEvaluator | None = None
+         if universe.compiled_vfs_profiles is not None:
+             self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
+@@ -1016,8 +1015,7 @@ class VectorizedHamletEnv:
+         # Reset temporal history so temporal VFS ops don't leak across episodes
+         if self.vfs_evaluator is not None:
+             self.vfs_evaluator.reset()
+-        # A new episode: every VFS draw is keyed on the episode counter.
+-        self.vfs_randomness.reset()
++        # Public reset has already installed the validated reservation's VFS projection.
+ 
+         if self.item_manager is not None:
+             self.item_manager.reset_state()  # and its inventory
+@@ -1485,16 +1483,39 @@ class VectorizedHamletEnv:
+             self.vfs_evaluator.commit_instant(bars_dict_vfs, self._current_vfs_state(), live=~self.dones)
+ 
+     def _vfs_draws(self) -> DrawInstant:
+-        """This instant's VFS draws: keyed on the run seed, the episode and the engine tick."""
+-        return self.vfs_randomness.instant(tick=self.global_tick, worlds=self.num_agents, device=self.device)
++        """Draw from the in-reset candidate or accepted per-world identity, never rows."""
++        if self._world_phase == "resetting":
++            expected = self._world_vfs_pending
++            if expected is None:
++                raise ValueError("reset-time VFS draws require a validated reservation projection")
++        else:
++            self._require_phase("active-awaiting-activation", "active", "boundary-pending", "closed-awaiting-release", "released-completed")
++            expected = self._current_vfs_context()
++        if self.vfs_randomness.context != expected:
++            raise ValueError("VFS draw context contradicts ENV world identity")
++        return self.vfs_randomness.instant(tick=self.global_tick, device=self.device)
++
++    def _current_vfs_context(self) -> VFSWorldContext:
++        """Pure projection of ENV's actual lane binding and accepted cursors."""
++        return VFSWorldContext(
++            training_seed=self._world_seed,
++            world_ids=self.world_ids,
++            world_episode_seqs=tuple(self._world_cursors[world_id] for world_id in self.world_ids),
++        )
+ 
+-    def vfs_random_state(self) -> dict[str, int]:
+-        """The VFS draw state a checkpoint carries (run seed and episode counter)."""
++    def vfs_random_state(self) -> dict[str, Any]:
++        """Export owned current identity data, excluding provisional or failed attempts."""
++        if self._world_phase in ("resetting", "restoring", "quarantined"):
++            raise ValueError("VFS native export requires a stable authoritative context")
++        if self.vfs_randomness.context != self._current_vfs_context():
++            raise ValueError("VFS native context contradicts ENV world identity")
+         return self.vfs_randomness.state()
+ 
+-    def restore_vfs_random_state(self, state: dict[str, int]) -> None:
+-        """Adopt a checkpoint's VFS draw state; the next ``reset`` resumes the original run's draws."""
+-        self.vfs_randomness.restore(state)
++    def restore_vfs_random_state(self, state: Mapping[str, Any]) -> None:
++        """Validate/reinstall only the current projection; joint restore owns cursor changes."""
++        self._require_phase("fresh-unbound", "fresh-bound", "bootstrap-ready", "released-completed")
++        context = VFSRandomness.validate_state(state, expected=self._current_vfs_context())
++        self.vfs_randomness = VFSRandomness(context=context)
+ 
+     def _execute_actions(self, actions: torch.Tensor) -> dict:
+         """Execute movement, interaction, and wait actions."""
+@@ -1947,6 +1968,7 @@ class VectorizedHamletEnv:
+         self._world_consumers: tuple[object, object] | None = None
+         self._world_saved_binding: dict[str, Any] | None = None
+         self._world_restored: tuple[WorldRecord, WorldRecord] | None = None
++        self._world_vfs_pending: VFSWorldContext | None = None
+ 
+     @property
+     def world_ids(self) -> tuple[str, ...]:
+@@ -2084,8 +2106,18 @@ class VectorizedHamletEnv:
+             self._require_phase("active-awaiting-activation", "active", "closed-awaiting-release", "released-completed")
+             return self._world_reset
+         self.validate_episode_reservation(reservation)
++        candidate = VFSWorldContext(
++            training_seed=self._world_seed,
++            world_ids=reservation.world_ids,
++            world_episode_seqs=reservation.world_episode_seqs,
++        )
++        draws = VFSRandomness(context=candidate)
+         self._world_phase = "resetting"
+         try:
++            # Project the exact candidate before any reset-time expression is evaluated.
++            # Acceptance remains below; this provisional context grants no checkpoint right.
++            self._world_vfs_pending = candidate
++            self.vfs_randomness = draws
+             observation = self._reset_world_state()
+             generation = self._world_generation + 1
+             accepted = WorldAcceptedEpisode(
+@@ -2110,6 +2142,8 @@ class VectorizedHamletEnv:
+         except BaseException:
+             self._world_phase = "quarantined"
+             raise
++        finally:
++            self._world_vfs_pending = None
+ 
+     def _accepted(self, accepted: WorldAcceptedEpisode) -> None:
+         if accepted is not self._world_accepted or accepted is None:
+@@ -2263,7 +2297,7 @@ class VectorizedHamletEnv:
+         if any(batch not in self._world_bindings for batch in retained_binding_batches):
+             raise ValueError("missing retained accepted-binding provenance")
+         return {
+-            "schema": "world-lifecycle-v3",
++            "schema": "world-lifecycle-v4",
+             "kind": kind,
+             "next_batch_episode": release.next_batch_episode,
+             "world_roster": self._world_roster.to_dict(),
+@@ -2277,6 +2311,7 @@ class VectorizedHamletEnv:
+             "last_closed_episode": owned_value(self._world_last_closed),
+             "completed_boundary_key": None if self._world_last_closed is None else self._world_last_closed["batch_episode"],
+             "accepted_bindings": [owned_value(self._world_bindings[batch]) for batch in retained_binding_batches],
++            "vfs_random_context": self.vfs_random_state(),
+         }
+ 
+     def prepare_world_restore(
+@@ -2297,7 +2332,20 @@ class VectorizedHamletEnv:
+         if semantic_execution_identity != self.semantic_execution_identity:
+             raise ValueError("restore destination semantic identity disagrees")
+         prepared = validate_world_snapshot(state, kind, world_roster, self._world_seed, semantic_execution_identity)
+-        return self._record("prepared_restore", {"state": prepared, "destination_world_ids": destination})
++        # Validate saved producer order first, then explicitly project to this destination.
++        context = VFSWorldContext(
++            training_seed=self._world_seed,
++            world_ids=destination,
++            world_episode_seqs=tuple(prepared["accepted_episode_seqs"][world_id] for world_id in destination),
++        )
++        return self._record(
++            "prepared_restore",
++            {
++                "state": prepared,
++                "destination_world_ids": destination,
++                "destination_vfs_context": VFSRandomness(context=context).state(),
++            },
++        )
+ 
+     def install_world_restore(self, *, prepared: WorldRecord, release: WorldRecord) -> WorldRecord:
+         if self._world_restored is not None and self._world_restored == (prepared, release):
+@@ -2310,6 +2358,13 @@ class VectorizedHamletEnv:
+         if release.release_kind != "restored" or release.restore is not prepared:
+             raise ValueError("restore release does not name this preparation")
+         state = prepared.state
++        expected = VFSWorldContext(
++            training_seed=self._world_seed,
++            world_ids=self.world_ids,
++            world_episode_seqs=tuple(state["accepted_episode_seqs"][world_id] for world_id in self.world_ids),
++        )
++        context = VFSRandomness.validate_state(prepared.destination_vfs_context, expected=expected)
++        draws = VFSRandomness(context=context)
+         self._world_phase = "restoring"
+         try:
+             self._world_generation += 1
+@@ -2317,6 +2372,7 @@ class VectorizedHamletEnv:
+             self._world_bindings = {item["batch_episode"]: owned_value(item) for item in state["accepted_bindings"]}
+             self._world_last_closed = owned_value(state["last_closed_episode"])
+             self._world_saved_binding = owned_value(state["saved_lane_binding"])
++            self.vfs_randomness = draws
+             if state["kind"] == "INITIAL":
+                 installed = self._record("release", {"release_kind": "bootstrap", "next_batch_episode": state["next_batch_episode"]})
+                 self._world_bootstrap = installed
+diff --git a/src/townlet/vfs/random_draws.py b/src/townlet/vfs/random_draws.py
+index 10cf24d1..57749080 100644
+--- a/src/townlet/vfs/random_draws.py
++++ b/src/townlet/vfs/random_draws.py
+@@ -1,43 +1,32 @@
+-"""Counter-based random draws for VFS expressions, action writes and transition rules.
+-
+-Every value a sampling call (``uniform``, ``normal_dist``) produces is a pure function
+-
+-    value = hash(seed, episode, tick, site, world, element)
+-
+-computed vectorised in torch with integer mixing (the splitmix64 finalizer), turned into a
+-uniform float, and into a normal by Box-Muller. There is no generator state:
+-
+-- **S1 independence.** World ``w``'s values depend on ``w`` and nothing about any other
+-  world, so a world's draws are the same whatever the batch size and whatever any other
+-  world does.
+-- **Stable sites.** ``site`` is the owner's identity (the expression variable's id, the
+-  transition rule's id and write index, the custom action's name and write index) plus the
+-  draw's ordinal among the owner's draws, in evaluation order of its AST. So moving a
+-  declaration to another file, reordering declarations, or adding an unrelated random
+-  mechanic re-rolls nothing else. A transition rule's own condition is one site shared by
+-  all its writes, so the rule fires for all of them or none.
+-- **Resume.** The only state is the run seed (captured once, when the environment is
+-  built) and the episode counter; both travel in the checkpoint (``state`` / ``restore``),
+-  so a resumed run draws exactly what the original run drew at the same episode and tick.
+-- **Shape.** A draw fills the full joined shape of its context: one value per world for a
+-  global expression, per agent row for an agent expression or an action write, per
+-  ``[world, affordance]`` row for a rule on an affordance target. An argument that already
+-  carries those axes shapes the draw; every element is its own world's.
+-
+-The effects engine keeps separate generators for its pipelines
+-(``townlet.effects.manager.EffectManager.world_rng``), so an effect's ``sample`` never
+-shifts an expression draw.
++"""Identity-keyed VFS draws for expressions, action writes and transition rules.
++
++ENV supplies the exact training seed, world IDs and per-world episode sequences.
++This module owns no episode lifecycle or generator cursor. A world's draws depend
++only on that identity, tick, stable site, call ordinal and within-world element.
++Changing lane order, batch size or another world's context cannot change its keys.
++
++The versioned simulator/VFS domain is separate from learner/provider RNG. This is
++a direct draw-domain guarantee, not a claim about ambient simulator spawn/layout
++randomness. Uniform and Box-Muller normal draws retain the full joined context
++shape, float32 outputs and device-local vectorized integer mixing. Shared rule
++condition prefixes retain identical draws across that rule's writes.
+ """
+ 
+ from __future__ import annotations
+ 
+ import hashlib
++import json
+ import math
+-from dataclasses import dataclass
++from collections.abc import Mapping
++from dataclasses import dataclass, field
++from typing import Any
+ 
+ import torch
+ 
+-__all__ = ["DrawInstant", "DrawStream", "VFSRandomness", "reference_uniform"]
++__all__ = ["DrawInstant", "DrawStream", "VFSRandomness", "VFSWorldContext", "reference_uniform"]
++
++_DOMAIN = "townlet.simulator.vfs.world-draw.v1"
++_STATE_SCHEMA = "vfs-world-random-v1"
+ 
+ _MASK64 = (1 << 64) - 1
+ _GOLDEN = 0x9E3779B97F4A7C15
+@@ -82,65 +71,109 @@ def _site_key(instant_key: int, label: str, ordinal: int) -> int:
+     return _mix64(_mix64(instant_key ^ _label_hash(label)) ^ ordinal)
+ 
+ 
+-def _instant_key(seed: int, episode: int, tick: int) -> int:
+-    return _mix64(_mix64(_mix64(seed & _MASK64) ^ episode) ^ (tick & _MASK64))
+-
++def _nonnegative_integer(value: Any, name: str) -> None:
++    if type(value) is not int or value < 0:
++        raise ValueError(f"VFS {name} requires an exact non-negative integer")
+ 
+-def reference_uniform(*, seed: int, episode: int, tick: int, site: str, ordinal: int, world: int, element: int) -> float:
+-    """The uniform value one element draws, in pure Python: the specification the torch kernel must match."""
+-    z = _mix64(_mix64(_site_key(_instant_key(seed, episode, tick), site, ordinal) ^ world) ^ element)
+-    return (z >> (64 - _UNIFORM_BITS)) / float(1 << _UNIFORM_BITS)
+ 
++@dataclass(frozen=True, kw_only=True)
++class VFSWorldContext:
++    """Owned data projection; only ENV can authorize its use for a live episode."""
+ 
+-class VFSRandomness:
+-    """One environment's draw state: the run seed and the episode counter, nothing else."""
++    training_seed: int
++    world_ids: tuple[str, ...]
++    world_episode_seqs: tuple[int, ...]
+ 
+-    def __init__(self, seed: int) -> None:
+-        if isinstance(seed, bool) or not isinstance(seed, int):
+-            raise TypeError(f"VFS random seed must be an int, got {type(seed).__name__}")
+-        self._seed = seed & _MASK64
+-        self._episode = 0
++    def __post_init__(self) -> None:
++        _nonnegative_integer(self.training_seed, "training seed")
++        if type(self.world_ids) is not tuple or not self.world_ids:
++            raise ValueError("VFS world IDs require a nonempty immutable tuple")
++        if any(type(value) is not str or not value for value in self.world_ids) or len(set(self.world_ids)) != len(self.world_ids):
++            raise ValueError("VFS world IDs require unique exact nonempty strings")
++        if type(self.world_episode_seqs) is not tuple or len(self.world_episode_seqs) != len(self.world_ids):
++            raise ValueError("VFS sequences require one immutable entry per world ID")
++        for sequence in self.world_episode_seqs:
++            _nonnegative_integer(sequence, "world episode sequence")
+ 
+-    @property
+-    def seed(self) -> int:
+-        return self._seed
+ 
+-    @property
+-    def episode(self) -> int:
+-        return self._episode
++def _world_key(seed: int, world_id: str, sequence: int) -> int:
++    encoded = json.dumps([_DOMAIN, seed, world_id, sequence], ensure_ascii=True, separators=(",", ":")).encode("utf-8")
++    return int.from_bytes(hashlib.blake2b(encoded, digest_size=8).digest(), "little")
+ 
+-    def reset(self) -> None:
+-        """Start a new episode."""
+-        self._episode += 1
+ 
+-    def state(self) -> dict[str, int]:
+-        """What a checkpoint carries to reproduce every later draw."""
+-        return {"seed": self._seed, "episode": self._episode}
++def reference_uniform(
++    *, training_seed: int, world_id: str, world_episode_seq: int, tick: int, site: str, ordinal: int, element: int
++) -> float:
++    """One uniform element under the versioned world-identity domain, in pure Python."""
++    VFSWorldContext(training_seed=training_seed, world_ids=(world_id,), world_episode_seqs=(world_episode_seq,))
++    for name, value in (("tick", tick), ("ordinal", ordinal), ("element", element)):
++        _nonnegative_integer(value, name)
++    instant_key = _mix64(_world_key(training_seed, world_id, world_episode_seq) ^ tick)
++    z = _mix64(_site_key(instant_key, site, ordinal) ^ element)
++    return (z >> (64 - _UNIFORM_BITS)) / float(1 << _UNIFORM_BITS)
+ 
+-    def restore(self, state: dict[str, int]) -> None:
+-        """Adopt a checkpoint's seed and episode counter (the next ``reset`` starts the episode after it)."""
+-        if set(state) != {"seed", "episode"}:
+-            raise ValueError(f"VFS random state must carry exactly 'seed' and 'episode', got {sorted(state)}")
+-        seed, episode = state["seed"], state["episode"]
+-        for name, value in (("seed", seed), ("episode", episode)):
+-            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+-                raise ValueError(f"VFS random state '{name}' must be a non-negative int, got {value!r}")
+-        self._seed = seed & _MASK64
+-        self._episode = episode
+ 
+-    def instant(self, *, tick: int, worlds: int, device: torch.device) -> DrawInstant:
+-        """The draws of one instant of this episode, for ``worlds`` worlds."""
+-        return DrawInstant(key=_instant_key(self._seed, self._episode, tick), worlds=worlds, device=torch.device(device))
++@dataclass(frozen=True, kw_only=True)
++class VFSRandomness:
++    """Immutable draw producer for an ENV-projected context, with no reset authority."""
++
++    context: VFSWorldContext
++    _world_keys: tuple[int, ...] = field(init=False, repr=False)
++
++    def __post_init__(self) -> None:
++        if not isinstance(self.context, VFSWorldContext):
++            raise ValueError("VFS randomness requires an explicit world context")
++        object.__setattr__(
++            self,
++            "_world_keys",
++            tuple(
++                _world_key(self.context.training_seed, world_id, sequence)
++                for world_id, sequence in zip(self.context.world_ids, self.context.world_episode_seqs, strict=True)
++            ),
++        )
++
++    def state(self) -> dict[str, Any]:
++        """Portable owned identity data; no live receipt, generator or cursor is serialized."""
++        return {
++            "schema": _STATE_SCHEMA,
++            "domain": _DOMAIN,
++            "training_seed": self.context.training_seed,
++            "world_ids": list(self.context.world_ids),
++            "world_episode_seqs": list(self.context.world_episode_seqs),
++        }
++
++    @staticmethod
++    def validate_state(state: Mapping[str, Any], *, expected: VFSWorldContext) -> VFSWorldContext:
++        """Validate every field and exact producer lane binding before any installation."""
++        keys = {"schema", "domain", "training_seed", "world_ids", "world_episode_seqs"}
++        if not isinstance(state, Mapping) or set(state) != keys or state["schema"] != _STATE_SCHEMA or state["domain"] != _DOMAIN:
++            raise ValueError("VFS native state requires the exact current schema and domain")
++        if type(state["world_ids"]) is not list or type(state["world_episode_seqs"]) is not list:
++            raise ValueError("VFS native identities require serialized lists")
++        context = VFSWorldContext(
++            training_seed=state["training_seed"], world_ids=tuple(state["world_ids"]), world_episode_seqs=tuple(state["world_episode_seqs"])
++        )
++        if not isinstance(expected, VFSWorldContext) or context != expected:
++            raise ValueError("VFS native context contradicts the authoritative world context")
++        return context
++
++    def instant(self, *, tick: int, device: torch.device) -> DrawInstant:
++        """One tick projected independently through every world's exact episode identity."""
++        _nonnegative_integer(tick, "tick")
++        return DrawInstant(world_keys=tuple(_mix64(key ^ tick) for key in self._world_keys), device=torch.device(device))
+ 
+ 
+ @dataclass(frozen=True)
+ class DrawInstant:
+     """One instant's draw key; ``stream`` hands each owner its own sites."""
+ 
+-    key: int
+-    worlds: int
++    world_keys: tuple[int, ...]
+     device: torch.device
+ 
++    @property
++    def worlds(self) -> int:
++        return len(self.world_keys)
++
+     def stream(self, site: str, shape: tuple[int, ...]) -> DrawStream:
+         """The draws of one owner whose context has the full joined ``shape`` (worlds leading)."""
+         return DrawStream(self, site=site, shape=shape, shared_site=None, shared_draws=0)
+@@ -167,17 +200,21 @@ class DrawStream:
+         self._shared_site = shared_site
+         self._shared_draws = shared_draws
+         self._ordinal = 0
++        self._world_keys = torch.tensor([_signed(key) for key in instant.world_keys], device=instant.device, dtype=torch.int64)
+ 
+     @property
+     def worlds(self) -> int:
+         return self._instant.worlds
+ 
+-    def _next_site_key(self) -> int:
++    def _next_site_key(self) -> torch.Tensor:
+         ordinal = self._ordinal
+         self._ordinal += 1
+         if self._shared_site is not None and ordinal < self._shared_draws:
+-            return _site_key(self._instant.key, self._shared_site, ordinal)
+-        return _site_key(self._instant.key, self._site, ordinal - (self._shared_draws if self._shared_site is not None else 0))
++            site = self._shared_site
++        else:
++            site = self._site
++            ordinal -= self._shared_draws if self._shared_site is not None else 0
++        return _mix64_tensor(_mix64_tensor(self._world_keys ^ _signed(_label_hash(site))) ^ _signed(ordinal))
+ 
+     def _shape_like(self, name: str, like: torch.Tensor) -> tuple[int, ...]:
+         if like.dim() == 0:
+@@ -193,12 +230,11 @@ class DrawStream:
+             )
+         return shape
+ 
+-    def _bits(self, site_key: int, shape: tuple[int, ...], lanes: int, lane: int) -> torch.Tensor:
++    def _bits(self, site_key: torch.Tensor, shape: tuple[int, ...], lanes: int, lane: int) -> torch.Tensor:
+         device = self._instant.device
+         elements = math.prod(shape[1:])
+-        world = torch.arange(shape[0], device=device, dtype=torch.int64).unsqueeze(1)
+         element = torch.arange(elements, device=device, dtype=torch.int64).unsqueeze(0) * lanes + lane
+-        z = _mix64_tensor(_mix64_tensor(torch.full((), _signed(site_key), device=device, dtype=torch.int64) ^ world) ^ element)
++        z = _mix64_tensor(site_key.unsqueeze(1) ^ element)
+         return _shr(z, 64 - _UNIFORM_BITS)
+ 
+     def uniform(self, name: str, like: torch.Tensor) -> torch.Tensor:
+diff --git a/tests/test_townlet/regressions/bac/test_world_episode_identity.py b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+index 29b99211..d8da6c2b 100644
+--- a/tests/test_townlet/regressions/bac/test_world_episode_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+@@ -494,7 +494,14 @@ def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
+     state = run.initial()
+     _same(state, run.initial())
+     _same(before, _state(run.env))
+-    assert state["schema"] == "world-lifecycle-v3" and state["kind"] == "INITIAL"
++    assert state["schema"] == "world-lifecycle-v4" and state["kind"] == "INITIAL"
++    assert state["vfs_random_context"] == {
++        "schema": "vfs-world-random-v1",
++        "domain": "townlet.simulator.vfs.world-draw.v1",
++        "training_seed": SEED,
++        "world_ids": list(IDS),
++        "world_episode_seqs": [0, 0],
++    }
+     assert state["accepted_bindings"] == []
+     assert state["last_closed_episode"] is None and state["completed_boundary_key"] is None
+     assert state["saved_lane_binding"] is None
+@@ -535,6 +542,17 @@ def test_malformed_initial_restore_is_pure(compiled, field, value):
+             semantic_execution_identity=target.env.semantic_execution_identity,
+         )
+     _same(before, _state(target.env))
++    if field == "schema":
++        state["schema"] = "world-lifecycle-v3"
++        with pytest.raises((TypeError, ValueError)):
++            target.env.prepare_world_restore(
++                kind="INITIAL",
++                state=state,
++                world_roster=_roster(),
++                destination_world_ids=IDS,
++                semantic_execution_identity=target.env.semantic_execution_identity,
++            )
++        _same(before, _state(target.env))
+ 
+ 
+ def test_initial_restore_over_live_boundary_refuses(compiled):
+@@ -568,6 +586,9 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
+     _, closure, dispositions = second.close(2, (IDS[0],))
+     second.release_closed(2, closure, dispositions)
+     saved2 = second.completed((1, 2))
++    assert saved2["vfs_random_context"]["training_seed"] == SEED
++    assert saved2["vfs_random_context"]["world_ids"] == list(reversed(IDS))
++    assert saved2["vfs_random_context"]["world_episode_seqs"] == [2, 2]
+     assert saved2["accepted_bindings"] == [
+         {"batch_episode": 1, "world_ids": list(IDS), "world_episode_seqs": [1, 1]},
+         {"batch_episode": 2, "world_ids": list(reversed(IDS)), "world_episode_seqs": [2, 2]},
+@@ -662,11 +683,16 @@ def test_initial_schema_exact_and_snapshot_isolation(compiled):
+         "last_closed_episode",
+         "completed_boundary_key",
+         "accepted_bindings",
++        "vfs_random_context",
+     }
+     state["world_roster"]["world_ids"].clear()
+     state["accepted_episode_seqs"][IDS[0]] = 99
++    state["vfs_random_context"]["world_ids"].clear()
++    state["vfs_random_context"]["world_episode_seqs"][0] = 99
+     assert run.initial()["world_roster"]["world_ids"] == list(IDS)
+     assert run.initial()["accepted_episode_seqs"] == dict.fromkeys(IDS, 0)
++    assert run.initial()["vfs_random_context"]["world_ids"] == list(IDS)
++    assert run.initial()["vfs_random_context"]["world_episode_seqs"] == [0, 0]
+ 
+ 
+ @pytest.mark.parametrize("mode", ["wrong_kind", "extra_key", "changed_manifest", "wrong_seed", "unknown_member"])
+diff --git a/tests/test_townlet/regressions/bac/test_world_vfs_identity.py b/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
+new file mode 100644
+index 00000000..f93ae03d
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
+@@ -0,0 +1,586 @@
++"""Direct VFS identity proofs using real ENV and explicitly local producer receipts.
++
++These tests do not qualify ambient spawn/layout RNG, real learner/bank owners,
++parent checkpoint installation, or whole-simulator stochastic independence.
++"""
++
++from __future__ import annotations
++
++import copy
++import hashlib
++import json
++import math
++from dataclasses import dataclass
++from pathlib import Path
++from typing import Any
++
++import pytest
++import torch
++
++from townlet.config.world_roster import WorldRosterDeclaration
++from townlet.environment.vectorized_env import WorldReceiptIssuer
++from townlet.universe.compiler import UniverseCompiler
++
++DOMAIN = "townlet.simulator.vfs.world-draw.v1"
++ROLES = ("population", "curiosity", "curriculum", "exploration", "network", "optimizer", "scheduler", "replay", "selection")
++
++
++@pytest.fixture(scope="module")
++def compiled():
++    return UniverseCompiler().compile(Path("configs/test/token_set_smoke"), primary_level="L0_test", use_cache=False)
++
++
++@dataclass
++class LocalProducerOwners:
++    """Local sealed evidence only; no real training or bank state is certified."""
++
++    env: Any
++    authority: Any
++    parent: WorldReceiptIssuer
++    roles: dict[str, WorldReceiptIssuer]
++    roster: WorldRosterDeclaration
++
++
++def bound(compiled, ids, lanes, seed=731):
++    roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)})
++    env = compiled.create_environment(
++        num_agents=len(lanes), level_name="L0_test", device="cpu", world_roster=roster, training_seed=seed, lane_world_ids=lanes
++    )
++    parent = WorldReceiptIssuer(owner=object())
++    roles = {name: WorldReceiptIssuer(owner=object()) for name in ROLES}
++    authority = env.bind_boundary_authority(owner=parent.owner, role_owners={name: issuer.owner for name, issuer in roles.items()})
++    return LocalProducerOwners(env, authority, parent, roles, roster)
++
++
++def bootstrap(owners):
++    release = owners.authority.bootstrap(first_batch_episode=0)
++    owners.env.install_boundary_release(release)
++    return release
++
++
++def accept(owners, release):
++    env = owners.env
++    reservation = env.prepare_episode(batch_episode=release.next_batch_episode, release=release)
++    result = env.reset(reservation=reservation)
++    env.activate_episode(
++        accepted=result.accepted,
++        population_receipt=owners.roles["population"].issue(kind="activation", payload={"accepted": result.accepted}),
++        curiosity_receipt=owners.roles["curiosity"].issue(kind="activation", payload={"accepted": result.accepted}),
++    )
++    return reservation, result
++
++
++def legal_actions(env):
++    masks = env.get_action_masks()
++    assert masks.any(dim=1).all()
++    return masks.to(torch.int64).argmax(dim=1)
++
++
++def domain_draw(env):
++    return env._vfs_draws().stream("bac.identity.probe", (env.num_agents, 16)).uniform("uniform", torch.tensor(0.0))
++
++
++@pytest.mark.parametrize("other_lanes", [("target-b", "target-a"), ("spectator", "target-a", "target-b")])
++def test_current_env_same_ids_survive_lane_reversal_and_leading_spectator(compiled, other_lanes):
++    """Causal RED: row-keyed draws change target-a when it moves away from row zero."""
++    left = bound(compiled, ("target-a", "target-b"), ("target-a", "target-b"))
++    right = bound(compiled, other_lanes, other_lanes)
++    for owners in (left, right):
++        _, reset = accept(owners, bootstrap(owners))
++        assert reset.accepted.world_episode_seqs == (1,) * owners.env.num_agents
++        assert owners.env.world_phase == "active"
++    before = domain_draw(left.env)
++    reordered = domain_draw(right.env)
++    for world_id in left.env.world_ids:
++        assert torch.equal(before[left.env.world_ids.index(world_id)], reordered[right.env.world_ids.index(world_id)]), world_id
++    # The same property survives actual accepted/activated ENV rollout.
++    left.env.step(legal_actions(left.env))
++    right.env.step(legal_actions(right.env))
++    assert left.env.global_tick == right.env.global_tick == 1
++    after, reordered_after = domain_draw(left.env), domain_draw(right.env)
++    for world_id in left.env.world_ids:
++        assert torch.equal(after[left.env.world_ids.index(world_id)], reordered_after[right.env.world_ids.index(world_id)]), world_id
++
++
++def test_other_world_action_does_not_shift_target_domain(compiled):
++    left = bound(compiled, ("other", "target"), ("other", "target"))
++    right = bound(compiled, ("other", "target"), ("other", "target"))
++    for owners in (left, right):
++        accept(owners, bootstrap(owners))
++    # Align only the target action input. No whole-simulator observation equality is claimed.
++    common = left.env.get_action_masks()[1] & right.env.get_action_masks()[1]
++    assert common.any()
++    target_action = int(common.to(torch.int64).argmax())
++    a, b = legal_actions(left.env), legal_actions(right.env)
++    alternatives = right.env.get_action_masks()[0].nonzero().flatten()
++    alternatives = alternatives[alternatives != a[0]]
++    assert alternatives.numel() > 0
++    b[0] = alternatives[0]
++    a[1] = b[1] = target_action
++    left.env.step(a)
++    right.env.step(b)
++    assert torch.equal(domain_draw(left.env)[1], domain_draw(right.env)[1])
++
++
++def context(seed, ids, sequences):
++    # Deferred deliberately: first RED must reach current row-key behavior, not import failure.
++    from townlet.vfs.random_draws import VFSWorldContext
++
++    return VFSWorldContext(training_seed=seed, world_ids=ids, world_episode_seqs=sequences)
++
++
++def producer(seed, ids, sequences):
++    from townlet.vfs.random_draws import VFSRandomness
++
++    return VFSRandomness(context=context(seed, ids, sequences))
++
++
++def expected_uniform(seed, world_id, sequence, tick, site, ordinal, element):
++    """Independent scalar executable specification; uses no production hash helpers."""
++    mask = 2**64 - 1
++
++    def mix(value):
++        value = (value + 0x9E3779B97F4A7C15) & mask
++        value = ((value ^ (value >> 30)) * 0xBF58476D1CE4E5B9) & mask
++        value = ((value ^ (value >> 27)) * 0x94D049BB133111EB) & mask
++        return value ^ (value >> 31)
++
++    encoded = json.dumps([DOMAIN, seed, world_id, sequence], ensure_ascii=True, separators=(",", ":")).encode("utf-8")
++    base = int.from_bytes(hashlib.blake2b(encoded, digest_size=8).digest(), "little")
++    label = int.from_bytes(hashlib.blake2b(site.encode("utf-8"), digest_size=8).digest(), "little")
++    key = mix(mix(mix(base ^ tick) ^ label) ^ ordinal)
++    return (mix(key ^ element) >> 40) / 2**24
++
++
++@pytest.mark.parametrize(
++    "device_name", ["cpu", pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable"))]
++)
++@pytest.mark.parametrize("shape,argument_shape", [((2,), ()), ((2, 3), ()), ((2, 3), (2, 3)), ((2, 1), (2, 4))])
++def test_vectorized_uniform_normal_shapes_match_independent_domain_spec(device_name, shape, argument_shape):
++    from townlet.vfs.random_draws import reference_uniform
++
++    device = torch.device(device_name)
++    ids, sequences, seed, tick = ("a:雪", " a:雪 "), (2, 11), 2**80 + 91, 7
++    draws = producer(seed, ids, sequences).instant(tick=tick, device=device)
++    like = torch.zeros(argument_shape, device=device)
++    stream = draws.stream("test.site", shape)
++    actual = stream.uniform("uniform", like)
++    normal = stream.normal("normal_dist", like)
++    result_shape = tuple(torch.broadcast_shapes(shape, argument_shape))
++    elements = math.prod(result_shape[1:])
++    expected = torch.tensor(
++        [
++            [expected_uniform(seed, wid, seq, tick, "test.site", 0, element) for element in range(elements)]
++            for wid, seq in zip(ids, sequences)
++        ],
++        dtype=torch.float32,
++        device=device,
++    ).reshape(result_shape)
++    assert actual.shape == normal.shape == result_shape
++    assert actual.dtype == normal.dtype == torch.float32
++    assert actual.device == normal.device == device
++    assert torch.equal(actual, expected)
++    expected_normal = []
++    for wid, seq in zip(ids, sequences):
++        row = []
++        for element in range(elements):
++            u1 = 1 - expected_uniform(seed, wid, seq, tick, "test.site", 1, 2 * element)
++            u2 = expected_uniform(seed, wid, seq, tick, "test.site", 1, 2 * element + 1)
++            row.append(math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.pi * u2))
++        expected_normal.append(row)
++    torch.testing.assert_close(normal, torch.tensor(expected_normal, device=device).reshape(result_shape), rtol=1e-6, atol=1e-6)
++    assert torch.isfinite(normal).all()
++    assert ((actual >= 0) & (actual < 1)).all()
++    assert reference_uniform(
++        training_seed=seed, world_id=ids[1], world_episode_seq=11, tick=tick, site="test.site", ordinal=0, element=0
++    ) == expected_uniform(seed, ids[1], 11, tick, "test.site", 0, 0)
++
++
++def test_unequal_context_sequences_preserve_target_and_shared_prefix():
++    first = producer(71, ("other", "target"), (1, 9)).instant(tick=3, device=torch.device("cpu"))
++    changed = producer(71, ("other", "target"), (100, 9)).instant(tick=3, device=torch.device("cpu"))
++    draw_a = first.stream("site", (2, 32)).uniform("uniform", torch.tensor(0.0))
++    draw_b = changed.stream("site", (2, 32)).uniform("uniform", torch.tensor(0.0))
++    assert torch.equal(draw_a[1], draw_b[1])
++    assert not torch.equal(draw_a[0], draw_b[0])
++    for instant in (first, changed):
++        a = instant.stream_with_shared_prefix("write.a", (2, 32), shared_site="rule", shared_draws=1)
++        b = instant.stream_with_shared_prefix("write.b", (2, 32), shared_site="rule", shared_draws=1)
++        assert torch.equal(a.uniform("uniform", torch.tensor(0.0)), b.uniform("uniform", torch.tensor(0.0)))
++        tail = a.uniform("uniform", torch.tensor(0.0))
++        ordinary = instant.stream("write.a", (2, 32)).uniform("uniform", torch.tensor(0.0))
++        assert torch.equal(tail, ordinary)
++        assert not torch.equal(tail, b.uniform("uniform", torch.tensor(0.0)))
++
++
++def test_locked_normative_vectors_and_seed_id_sequence_tick_site_ordinal_inputs():
++    from townlet.vfs.random_draws import reference_uniform
++
++    # Locked by root from the approved scalar specification before production edits.
++    # Keep these literal data here; no runtime dependency on ignored handoff JSON.
++    vectors = (
++        (0, "target-a", 0, 0, "vfs.reference", 0, (14222929, 2176863, 2314024, 2910008)),
++        (
++            731,
++            "target-a",
++            1,
++            1,
++            "bac.identity.probe",
++            0,
++            (
++                16680306,
++                3999839,
++                8338086,
++                10240450,
++                5803577,
++                14828653,
++                5886397,
++                3077549,
++                8241551,
++                11996649,
++                15302141,
++                5075517,
++                6067964,
++                14402929,
++                3246540,
++                3149326,
++            ),
++        ),
++        (1208925819614629174706267, " a:雪 ", 11, 7, "u", 2, (12260248, 12197302, 14462603, 6327938)),
++        (1208925819614629174706267, "a:雪", 2, 7, "u", 0, (259688, 675176, 14603466, 9899782)),
++    )
++    # Validate every oracle vector before reaching the old reference API's causal RED.
++    for seed, wid, seq, tick, site, ordinal, expected_bits24 in vectors:
++        for element, bits24 in enumerate(expected_bits24):
++            assert expected_uniform(seed, wid, seq, tick, site, ordinal, element) == bits24 / 2**24
++    for seed, wid, seq, tick, site, ordinal, expected_bits24 in vectors:
++        for element, bits24 in enumerate(expected_bits24):
++            assert (
++                reference_uniform(
++                    training_seed=seed,
++                    world_id=wid,
++                    world_episode_seq=seq,
++                    tick=tick,
++                    site=site,
++                    ordinal=ordinal,
++                    element=element,
++                )
++                == bits24 / 2**24
++            )
++    for seed, wid, seq, tick, site, ordinal, expected_bits24 in vectors:
++        stream = producer(seed, (wid,), (seq,)).instant(tick=tick, device=torch.device("cpu")).stream(site, (1, len(expected_bits24)))
++        for _ in range(ordinal):
++            stream.uniform("uniform", torch.tensor(0.0))
++        actual = stream.uniform("uniform", torch.tensor(0.0))
++        expected = torch.tensor([[bits24 / 2**24 for bits24 in expected_bits24]], dtype=torch.float32)
++        assert torch.equal(actual, expected)
++
++    values = []
++    for seed, wid, seq, tick, site, ordinal in (
++        (3, "target", 4, 5, "s", 0),
++        (3 + 2**64, "target", 4, 5, "s", 0),
++        (3, "target ", 4, 5, "s", 0),
++        (3, "target", 6, 5, "s", 0),
++        (3, "target", 4, 6, "s", 0),
++        (3, "target", 4, 5, "s.other", 0),
++        (3, "target", 4, 5, "s", 1),
++    ):
++        stream = producer(seed, (wid,), (seq,)).instant(tick=tick, device=torch.device("cpu")).stream(site, (1, 16))
++        for _ in range(ordinal):
++            stream.uniform("uniform", torch.tensor(0.0))
++        actual = stream.uniform("uniform", torch.tensor(0.0))
++        expected = torch.tensor([[expected_uniform(seed, wid, seq, tick, site, ordinal, e) for e in range(16)]])
++        assert torch.equal(actual, expected)
++        values.append(actual)
++    assert all(not torch.equal(values[0], other) for other in values[1:])
++
++
++def test_reset_projects_reservation_before_evaluation_and_retry_never_resamples(compiled, monkeypatch):
++    owners = bound(compiled, ("a", "b"), ("b", "a"))
++    env = owners.env
++    release = bootstrap(owners)
++    before, rng = env.vfs_random_state(), torch.get_rng_state().clone()
++    reservation = env.prepare_episode(batch_episode=0, release=release)
++    assert env.prepare_episode(batch_episode=0, release=release).world_episode_seqs == (1, 1)
++    assert env.vfs_random_state() == before
++    assert torch.equal(torch.get_rng_state(), rng)
++    observed = []
++    real_evaluate = env._evaluate_vfs_profiles
++
++    def observe():
++        if env.world_phase != "resetting":
++            return real_evaluate()
++        assert env.world_phase == "resetting"
++        assert dict(env.accepted_episode_seqs) == {"b": 0, "a": 0}
++        observed.append(env.vfs_randomness.state())
++        with pytest.raises(ValueError):
++            env.vfs_random_state()
++        return real_evaluate()
++
++    monkeypatch.setattr(env, "_evaluate_vfs_profiles", observe)
++    result = env.reset(reservation=reservation)
++    assert len(observed) == 1
++    assert observed[0]["world_ids"] == ["b", "a"]
++    assert observed[0]["world_episode_seqs"] == [1, 1]
++    assert tuple(observed[0]["world_episode_seqs"]) == result.accepted.world_episode_seqs
++    env.activate_episode(
++        accepted=result.accepted,
++        population_receipt=owners.roles["population"].issue(kind="activation", payload={"accepted": result.accepted}),
++        curiosity_receipt=owners.roles["curiosity"].issue(kind="activation", payload={"accepted": result.accepted}),
++    )
++    for after_step in (False, True):
++        if after_step:
++            env.step(legal_actions(env))
++        state, tick, rng = env.vfs_random_state(), env.global_tick, torch.get_rng_state().clone()
++        assert env.reset(reservation=reservation) is result
++        assert env.vfs_random_state() == state
++        assert env.global_tick == tick
++        assert torch.equal(torch.get_rng_state(), rng)
++    assert dict(env.accepted_episode_seqs) == {"a": 1, "b": 1}
++
++
++def test_late_reset_failure_quarantines_candidate_without_accepting(compiled, monkeypatch):
++    owners = bound(compiled, ("a", "b"), ("a", "b"))
++    env = owners.env
++    release = bootstrap(owners)
++    reservation = env.prepare_episode(batch_episode=0, release=release)
++    real_evaluate = env._evaluate_vfs_profiles
++    observed = []
++
++    def fail_late():
++        real_evaluate()
++        observed.append(domain_draw(env))
++        raise RuntimeError("owned late-reset fault")
++
++    monkeypatch.setattr(env, "_evaluate_vfs_profiles", fail_late)
++    with pytest.raises(RuntimeError, match="owned late-reset fault"):
++        env.reset(reservation=reservation)
++    assert len(observed) == 1
++    assert env.world_phase == "quarantined"
++    assert dict(env.accepted_episode_seqs) == {"a": 0, "b": 0}
++    with pytest.raises(ValueError):
++        env.vfs_random_state()
++    with pytest.raises(ValueError):
++        env.reset(reservation=reservation)
++
++
++@pytest.mark.parametrize(
++    "field,value",
++    [
++        ("training_seed", True),
++        ("training_seed", 4.0),
++        ("training_seed", -1),
++        ("world_ids", ["a", "a"]),
++        ("world_ids", ["a", ""]),
++        ("world_ids", ["a", 9]),
++        ("world_episode_seqs", [0, True]),
++        ("world_episode_seqs", [0, 1.0]),
++        ("world_episode_seqs", [0, -1]),
++        ("world_episode_seqs", [0]),
++        ("world_episode_seqs", [0, 9]),
++        ("schema", "old"),
++        ("domain", "curiosity"),
++    ],
++)
++def test_vfs_deep_validation_refuses_before_mutation(field, value):
++    from townlet.vfs.random_draws import VFSRandomness
++
++    draws = producer(4, ("a", "b"), (0, 1))
++    expected = context(4, ("a", "b"), (0, 1))
++    before = draws.state()
++    broken = copy.deepcopy(before)
++    broken[field] = value
++    rng = torch.get_rng_state().clone()
++    with pytest.raises((ValueError, TypeError)):
++        VFSRandomness.validate_state(broken, expected=expected)
++    assert draws.state() == before
++    assert torch.equal(torch.get_rng_state(), rng)
++
++
++def test_native_context_owns_storage_and_refuses_old_scalar_payload():
++    from townlet.vfs.random_draws import VFSRandomness
++
++    draws = producer(4, ("a", "b"), (0, 1))
++    expected = context(4, ("a", "b"), (0, 1))
++    state = draws.state()
++    validated = VFSRandomness.validate_state(state, expected=expected)
++    state["world_ids"][1] = "changed"
++    state["world_episode_seqs"][1] = 99
++    assert validated.world_ids == ("a", "b")
++    assert validated.world_episode_seqs == (0, 1)
++    assert draws.state()["world_episode_seqs"] == [0, 1]
++    for broken in ({"seed": 4, "episode": 1}, {**draws.state(), "extra": 1}):
++        with pytest.raises((ValueError, TypeError)):
++            VFSRandomness.validate_state(broken, expected=expected)
++
++
++def initial_snapshot(owners, release):
++    identity = {
++        "semantic_execution_identity": owners.env.semantic_execution_identity,
++        "bootstrap_first_batch": release.next_batch_episode,
++        "world_binding": owners.env.world_ids,
++    }
++    children = {
++        role: owners.roles[role].issue(kind="initial_owner", payload={**identity, "role": role, "state": {"local_producer_test": True}})
++        for role in ROLES
++        if role != "curiosity"
++    }
++    initial = owners.authority.prepare_initial_snapshot(
++        release=release, owners=owners.parent.issue(kind="initial_owners", payload={**identity, **children})
++    )
++    return owners.env.checkpoint_world_state(kind="INITIAL", release=release, retained_binding_batches=(), initial=initial)
++
++
++def completed_snapshot(owners, accepted):
++    env = owners.env
++    env.step(legal_actions(env))
++    participants = tuple(wid for row, wid in enumerate(env.world_ids) if int(env.step_counts[row]) > 0)
++    content = {"local_producer_test": True}
++    payload = {
++        "accepted": accepted,
++        "boundary_key": accepted.batch_episode,
++        "completion_content": content,
++        "participated_world_ids": participants,
++        "dispositions": tuple((wid, "completed" if wid in participants else "retired_nonparticipating") for wid in env.world_ids),
++    }
++    prepared = env.prepare_episode_close(
++        accepted=accepted,
++        boundary_key=accepted.batch_episode,
++        completion_content=content,
++        participated_world_ids=participants,
++        dispositions=owners.roles["curiosity"].issue(kind="prepared_dispositions", payload=payload),
++    )
++    env.freeze_episode_close(prepared)
++    committed = owners.roles["curiosity"].issue(kind="dispositions", payload=payload)
++    closure = env.close_episode(prepared, dispositions=committed)
++    child_payload = {"accepted": accepted, "boundary_key": accepted.batch_episode, "completion_content": content}
++    child_roles = {
++        "curriculum_receipt": "curriculum",
++        "exploration_receipt": "exploration",
++        "population_commit_receipt": "population",
++        "epsilon_install_receipt": "exploration",
++        "selection_sync_receipt": "selection",
++    }
++    effects = owners.parent.issue(
++        kind="boundary_effects",
++        payload={
++            "batch_episode": accepted.batch_episode,
++            "accepted_identity": accepted,
++            "completion_content": content,
++            "retirement_receipt": committed,
++            **{name: owners.roles[role].issue(kind=name, payload=child_payload) for name, role in child_roles.items()},
++        },
++    )
++    release = owners.authority.completed(closure=closure, effects=effects)
++    env.install_boundary_release(release)
++    return env.checkpoint_world_state(kind="COMPLETED", release=release, retained_binding_batches=(accepted.batch_episode,), initial=None)
++
++
++def prepare_restore(owners, state):
++    return owners.env.prepare_world_restore(
++        kind=state["kind"],
++        state=state,
++        world_roster=owners.roster,
++        destination_world_ids=owners.env.world_ids,
++        semantic_execution_identity=owners.env.semantic_execution_identity,
++    )
++
++
++def install_restore(owners, prepared):
++    receipt = owners.parent.issue(
++        kind="restored_boundary", payload={"kind": prepared.state["kind"], "state": prepared.state, "prepared": prepared}
++    )
++    release = owners.authority.restored(restore=prepared, boundary=receipt)
++    return owners.env.install_world_restore(prepared=prepared, release=release)
++
++
++@pytest.mark.parametrize("kind", ["INITIAL", "COMPLETED"])
++def test_native_roundtrip_projects_destination_and_preserves_history(compiled, kind):
++    source = bound(compiled, ("a", "b"), ("a", "b"))
++    release = bootstrap(source)
++    if kind == "INITIAL":
++        state = initial_snapshot(source, release)
++        sequence = 0
++    else:
++        _, result = accept(source, release)
++        state = completed_snapshot(source, result.accepted)
++        sequence = 1
++    assert state["schema"] == "world-lifecycle-v4"
++    assert state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
++    destination = bound(compiled, ("a", "b"), ("b", "a"))
++    before = destination.env.vfs_random_state()
++    prepared = prepare_restore(destination, state)
++    assert destination.env.vfs_random_state() == before
++    # Prepared restore data must remain portable, not embed a producer/dataclass/capability.
++    json.dumps(prepared.payload)
++    # Accessor copies and input mutations must not change the portable prepared payload.
++    state["vfs_random_context"]["world_episode_seqs"][1] = 999
++    exposed = prepared.state
++    exposed["vfs_random_context"]["world_ids"][1] = "tampered"
++    assert prepared.state["vfs_random_context"]["world_ids"] == ["a", "b"]
++    assert prepared.state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
++    rng = torch.get_rng_state().clone()
++    installed = install_restore(destination, prepared)
++    assert torch.equal(torch.get_rng_state(), rng)
++    assert destination.env.vfs_random_state()["world_ids"] == ["b", "a"]
++    assert destination.env.vfs_random_state()["world_episode_seqs"] == [sequence, sequence]
++    assert dict(destination.env.accepted_episode_seqs) == {"a": sequence, "b": sequence}
++    if kind == "COMPLETED":
++        again = destination.env.checkpoint_world_state(kind=kind, release=installed, retained_binding_batches=(0,), initial=None)
++        assert again["accepted_bindings"] == prepared.state["accepted_bindings"]
++        assert again["saved_lane_binding"] == prepared.state["saved_lane_binding"]
++        assert again["vfs_random_context"]["world_ids"] == ["b", "a"]
++        # Validate a second-generation snapshot where historical and producer lanes differ.
++        second = bound(compiled, ("a", "b"), ("a", "b"))
++        install_restore(second, prepare_restore(second, again))
++        assert second.env.vfs_random_state()["world_ids"] == ["a", "b"]
++    _, result = accept(destination, installed)
++    assert result.accepted.world_episode_seqs == (sequence + 1, sequence + 1)
++
++
++@pytest.mark.parametrize("kind", ["INITIAL", "COMPLETED"])
++@pytest.mark.parametrize(
++    "field,value",
++    [
++        ("training_seed", 732),
++        ("world_ids", ["a", "intruder"]),
++        ("world_ids", ["b", "a"]),
++        ("world_episode_seqs", [1, True]),
++        ("world_episode_seqs", [0, 19]),
++        ("domain", "curiosity"),
++    ],
++)
++def test_native_deep_child_refusal_is_pure_including_initial(compiled, kind, field, value):
++    source = bound(compiled, ("a", "b"), ("a", "b"))
++    release = bootstrap(source)
++    if kind == "INITIAL":
++        state = initial_snapshot(source, release)
++    else:
++        _, result = accept(source, release)
++        state = completed_snapshot(source, result.accepted)
++    state["vfs_random_context"][field] = value
++    destination = bound(compiled, ("a", "b"), ("b", "a"))
++    env = destination.env
++    before = (env.world_phase, dict(env.accepted_episode_seqs), env.vfs_random_state(), env.global_tick)
++    rng = torch.get_rng_state().clone()
++    with pytest.raises((ValueError, TypeError)):
++        prepare_restore(destination, state)
++    assert (env.world_phase, dict(env.accepted_episode_seqs), env.vfs_random_state(), env.global_tick) == before
++    assert torch.equal(torch.get_rng_state(), rng)
++
++
++def test_standalone_restore_cannot_install_contradictory_cursors(compiled):
++    owners = bound(compiled, ("a", "b"), ("a", "b"))
++    bootstrap(owners)
++    env = owners.env
++    before = env.vfs_random_state()
++    broken = copy.deepcopy(before)
++    broken["world_episode_seqs"][1] = 1
++    rng = torch.get_rng_state().clone()
++    with pytest.raises((ValueError, TypeError)):
++        env.restore_vfs_random_state(broken)
++    assert env.vfs_random_state() == before
++    assert dict(env.accepted_episode_seqs) == {"a": 0, "b": 0}
++    assert torch.equal(torch.get_rng_state(), rng)
++    env.restore_vfs_random_state(before)
++    assert env.vfs_random_state() == before
+diff --git a/tests/test_townlet/unit/vfs/test_random_expressions.py b/tests/test_townlet/unit/vfs/test_random_expressions.py
+index 64063141..d1dcad0c 100644
+--- a/tests/test_townlet/unit/vfs/test_random_expressions.py
++++ b/tests/test_townlet/unit/vfs/test_random_expressions.py
+@@ -17,14 +17,16 @@ import pytest
+ import torch
+ import yaml
+ 
++from townlet.config.world_roster import WorldRosterDeclaration
+ from townlet.determinism import seed_all
++from townlet.environment.vectorized_env import WorldReceiptIssuer
+ from townlet.items.manager import SpawnPredicateReads
+ from townlet.universe.compiler import UniverseCompiler
+ from townlet.universe.errors import CompilationError
+ from townlet.vfs.evaluator import VFSEvaluator
+ from townlet.vfs.namespace import SPAWN_PREDICATE
+ from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+-from townlet.vfs.random_draws import VFSRandomness, reference_uniform
++from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext, reference_uniform
+ from townlet.vfs.schema import VariableDef, VariableScope
+ from townlet.vfs.vtc import VTCTransitionRuleProgram, VTCWriteTarget, compile_vtc_transition_rules
+ from townlet.world.expression import ExpressionParser
+@@ -37,6 +39,107 @@ STEPS = 64
+ MINMAX = {"kind": "minmax", "min": 0.0, "max": 3.0, "clip": True}
+ 
+ 
++def _environment(universe, num_agents: int = N, seed: int = 7):
++    ids = tuple(f"expression-world-{index}" for index in range(num_agents))
++    roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)})
++    return universe.create_environment(
++        num_agents=num_agents,
++        level_name=LEVEL,
++        device="cpu",
++        world_roster=roster,
++        training_seed=seed,
++        lane_world_ids=ids,
++    )
++
++
++class _EpisodeDriver:
++    """Local sealed producer-test owners, not real population/bank/learning owners."""
++
++    def __init__(self, env):
++        self.env = env
++        self.issuer = WorldReceiptIssuer(owner=self)
++        roles = dict.fromkeys("population curiosity curriculum exploration network optimizer scheduler replay selection".split(), self)
++        self.authority = env.bind_boundary_authority(owner=self, role_owners=roles)
++        self.release = env.install_boundary_release(self.authority.bootstrap(first_batch_episode=1))
++        self.batch = 0
++        self.accepted = None
++        self.participants = set()
++
++    def receipt(self, receipt_kind, **payload):
++        return self.issuer.issue(kind=receipt_kind, payload=payload)
++
++    def reset(self):
++        reservation = self.env.prepare_episode(batch_episode=self.batch + 1, release=self.release)
++        self.env.validate_episode_reservation(reservation)
++        result = self.env.reset(reservation=reservation)
++        self.accepted = result.accepted
++        self.env.activate_episode(
++            accepted=self.accepted,
++            population_receipt=self.receipt("activation", accepted=self.accepted),
++            curiosity_receipt=self.receipt("activation", accepted=self.accepted),
++        )
++        self.batch += 1
++        self.participants.clear()
++        return result.observation
++
++    def step(self, actions):
++        self.participants.update(world_id for index, world_id in enumerate(self.env.world_ids) if not self.env.dones[index])
++        return self.env.step(actions)
++
++    def complete(self):
++        participants = tuple(world_id for world_id in self.accepted.world_ids if world_id in self.participants)
++        assert participants, "completion requires a real participating step"
++        content = tuple(
++            (self.batch, index, world_id, self.accepted.world_episode_seqs[index], "local-interface-outcome")
++            for index, world_id in enumerate(self.accepted.world_ids)
++            if world_id in participants
++        )
++        payload = dict(
++            accepted=self.accepted,
++            boundary_key=self.batch,
++            completion_content=content,
++            participated_world_ids=participants,
++            dispositions=tuple(
++                (world_id, "completed" if world_id in participants else "retired_nonparticipating") for world_id in self.accepted.world_ids
++            ),
++        )
++        prepared = self.env.prepare_episode_close(
++            accepted=self.accepted,
++            boundary_key=self.batch,
++            completion_content=content,
++            participated_world_ids=participants,
++            dispositions=self.receipt("prepared_dispositions", **payload),
++        )
++        self.env.freeze_episode_close(prepared)
++        dispositions = self.receipt("dispositions", **payload)
++        closure = self.env.close_episode(prepared, dispositions=dispositions)
++        children = {
++            name: self.receipt(name, accepted=self.accepted, boundary_key=self.batch, completion_content=content)
++            for name in (
++                "curriculum_receipt",
++                "exploration_receipt",
++                "population_commit_receipt",
++                "epsilon_install_receipt",
++                "selection_sync_receipt",
++            )
++        }
++        effects = self.receipt(
++            "boundary_effects",
++            batch_episode=self.batch,
++            accepted_identity=self.accepted,
++            completion_content=content,
++            retirement_receipt=dispositions,
++            **children,
++        )
++        self.release = self.env.install_boundary_release(self.authority.completed(closure=closure, effects=effects))
++
++
++def _started(universe, num_agents: int = N, seed: int = 7):
++    driver = _EpisodeDriver(_environment(universe, num_agents, seed))
++    driver.reset()
++    return driver.env
++
++
+ # --- pack helpers ---------------------------------------------------------------------------
+ 
+ 
+@@ -167,9 +270,10 @@ def _snapshot(env, world: int, obs: torch.Tensor) -> dict[str, Any]:
+ def _run(universe, actions: list[torch.Tensor], *, num_agents: int = N, seed: int = 7) -> list[list[dict[str, Any]]]:
+     """Per step (reset first), every world's snapshot."""
+     seed_all(seed)
+-    env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device="cpu")
++    driver = _EpisodeDriver(_environment(universe, num_agents, seed))
++    env = driver.env
+     seed_all(seed)
+-    obs = env.reset()
++    obs = driver.reset()
+     trace = [[_snapshot(env, world, obs) for world in range(num_agents)]]
+     for step_actions in actions:
+         obs, _, _, _ = env.step(step_actions)
+@@ -207,8 +311,7 @@ def test_random_draws_compile_in_expressions_rules_and_action_writes(random_univ
+ 
+ def test_a_literal_argument_draw_in_an_agent_expression_is_one_draw_per_row(random_universe) -> None:
+     seed_all(3)
+-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+-    env.reset()
++    env = _started(random_universe, seed=3)
+     noise = _reg(env, "noise")
+     assert noise.shape == (N,)
+     assert len(set(noise.tolist())) == N
+@@ -217,8 +320,7 @@ def test_a_literal_argument_draw_in_an_agent_expression_is_one_draw_per_row(rand
+ 
+ def test_a_global_draw_differs_across_worlds_and_a_rule_rolls_per_world(random_universe) -> None:
+     seed_all(3)
+-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+-    env.reset()
++    env = _started(random_universe, seed=3)
+     wait = _action(env, "WAIT")
+     env.step(torch.full((N,), wait, dtype=torch.long))
+     assert len(set(_reg(env, "weather").tolist())) == N
+@@ -228,8 +330,7 @@ def test_a_global_draw_differs_across_worlds_and_a_rule_rolls_per_world(random_u
+ 
+ def test_weather_holds_for_k_ticks_and_lag_of_a_random_variable_reads_its_history(random_universe) -> None:
+     seed_all(5)
+-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+-    env.reset()
++    env = _started(random_universe, seed=5)
+     wait = torch.full((N,), _action(env, "WAIT"), dtype=torch.long)
+     weather = [_reg(env, "weather").clone()]
+     yesterday = [_reg(env, "yesterday").clone()]
+@@ -252,8 +353,7 @@ def test_weather_holds_for_k_ticks_and_lag_of_a_random_variable_reads_its_histor
+ 
+ def test_an_action_write_draw_lands_on_the_acting_agents_row_only(random_universe) -> None:
+     seed_all(5)
+-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+-    env.reset()
++    env = _started(random_universe, seed=5)
+     actions = torch.full((N,), _action(env, "WAIT"), dtype=torch.long)
+     actions[1] = _action(env, "ADVANCE")
+     env.step(actions)
+@@ -267,7 +367,7 @@ def test_an_action_write_draw_lands_on_the_acting_agents_row_only(random_univers
+ 
+ def test_same_seed_runs_are_bitwise_identical(random_universe) -> None:
+     seed_all(7)
+-    probe = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
++    probe = _environment(random_universe)
+     wait, advance = _action(probe, "WAIT"), _action(probe, "ADVANCE")
+     actions = _quiet(N, wait, STEPS)
+     for step in range(0, STEPS, 3):
+@@ -278,7 +378,7 @@ def test_same_seed_runs_are_bitwise_identical(random_universe) -> None:
+ 
+ def test_world0s_actions_leave_every_other_worlds_draws_identical(random_universe) -> None:
+     seed_all(7)
+-    probe = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
++    probe = _environment(random_universe)
+     wait, advance = _action(probe, "WAIT"), _action(probe, "ADVANCE")
+     movement = [index for index, action in enumerate(probe.action_space.actions) if action.name not in {"WAIT", "ADVANCE", "INTERACT"}]
+     quiet = _quiet(N, wait, STEPS)
+@@ -299,7 +399,7 @@ def test_world0s_actions_leave_every_other_worlds_draws_identical(random_univers
+ 
+ def test_a_worlds_draws_do_not_depend_on_the_batch_size(random_universe) -> None:
+     seed_all(7)
+-    probe = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
++    probe = _environment(random_universe)
+     wait = _action(probe, "WAIT")
+     small = _run(random_universe, _quiet(N, wait, 16), num_agents=N)
+     large = _run(random_universe, _quiet(2 * N, wait, 16), num_agents=2 * N)
+@@ -311,10 +411,13 @@ def test_a_worlds_draws_do_not_depend_on_the_batch_size(random_universe) -> None
+ 
+ def test_a_new_episode_re_derives_every_worlds_stream(random_universe) -> None:
+     seed_all(11)
+-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+-    env.reset()
++    driver = _EpisodeDriver(_environment(random_universe, seed=11))
++    env = driver.env
++    driver.reset()
+     first = _reg(env, "noise").clone()
+-    env.reset()
++    driver.step(env.get_action_masks().to(torch.int64).argmax(dim=1))
++    driver.complete()
++    driver.reset()
+     assert not torch.equal(_reg(env, "noise"), first)
+ 
+ 
+@@ -330,8 +433,7 @@ def test_a_random_expression_is_stored_not_inlined_so_a_rule_reads_the_observed_
+     )
+     universe = _compile(pack)
+     seed_all(2)
+-    env = universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+-    env.reset()
++    env = _started(universe, seed=2)
+     wait = torch.full((N,), _action(env, "WAIT"), dtype=torch.long)
+     for _ in range(3):
+         shown = _reg(env, "coin").clone()
+@@ -392,18 +494,21 @@ def test_the_profile_evaluator_refuses_to_sample_without_the_world_streams() ->
+     evaluator = VFSEvaluator(history_spec=None)
+     with pytest.raises(RuntimeError, match=r"Engine defect: expression variable\(s\) \['x'\] sample"):
+         evaluator.evaluate_global_profile(_profile("uniform(0.0, 1.0)"), bars={}, vfs_state={}, marks={"x"}, device=torch.device("cpu"))
+-    randomness = VFSRandomness(7)
+-    randomness.reset()
++    ids = ("profile-west", "profile-center", "profile-east")
++    randomness = VFSRandomness(context=VFSWorldContext(training_seed=7, world_ids=ids, world_episode_seqs=(1, 1, 1)))
+     drawn = evaluator.evaluate_global_profile(
+         _profile("uniform(0.0, 1.0)"),
+         bars={},
+         vfs_state={},
+         marks={"x"},
+         device=torch.device("cpu"),
+-        draws=randomness.instant(tick=5, worlds=3, device=torch.device("cpu")),
++        draws=randomness.instant(tick=5, device=torch.device("cpu")),
+     )["x"]
+     assert drawn.shape == (3,)
+-    expected = [reference_uniform(seed=7, episode=1, tick=5, site="var:x", ordinal=0, world=world, element=0) for world in range(3)]
++    expected = [
++        reference_uniform(training_seed=7, world_id=world_id, world_episode_seq=1, tick=5, site="var:x", ordinal=0, element=0)
++        for world_id in ids
++    ]
+     assert drawn.tolist() == pytest.approx(expected, abs=0.0)
+ 
+ 
+@@ -419,5 +524,7 @@ def test_a_rule_program_refuses_to_sample_without_the_world_streams() -> None:
+             vfs_state={"g": torch.zeros(2)},
+             active_mask=torch.tensor([True, True]),
+             device=torch.device("cpu"),
+-            draws=VFSRandomness(0).instant(tick=0, worlds=3, device=torch.device("cpu")),
++            draws=VFSRandomness(
++                context=VFSWorldContext(training_seed=0, world_ids=("rule-west", "rule-center", "rule-east"), world_episode_seqs=(0, 0, 0))
++            ).instant(tick=0, device=torch.device("cpu")),
+         )
+diff --git a/tests/test_townlet/unit/vfs/test_verify_r3_repairs.py b/tests/test_townlet/unit/vfs/test_verify_r3_repairs.py
+index 42c1ff88..4e0c9219 100644
+--- a/tests/test_townlet/unit/vfs/test_verify_r3_repairs.py
++++ b/tests/test_townlet/unit/vfs/test_verify_r3_repairs.py
+@@ -1,7 +1,8 @@
+ """Repairs for the adversarial verification of 636192e0 (R3 verifier, V1-V7).
+ 
+ VFS draws are counter-based (`townlet.vfs.random_draws`): every value is a pure function of
+-(seed, episode, tick, site, world, element). Each case compiles a scratch pack and steps it.
++(training seed, exact world ID, world episode sequence, tick, site, ordinal, element).
++Each case compiles a scratch pack and steps it through current world authority gates.
+ """
+ 
+ from __future__ import annotations
+@@ -14,7 +15,9 @@ import pytest
+ import torch
+ import yaml
+ 
++from townlet.config.world_roster import WorldRosterDeclaration
+ from townlet.determinism import seed_all
++from townlet.environment.vectorized_env import WorldReceiptIssuer
+ from townlet.universe.compiler import UniverseCompiler
+ from townlet.universe.errors import CompilationError
+ 
+@@ -24,6 +27,123 @@ LEVEL = "L0_simple"
+ MINMAX = {"kind": "minmax", "min": 0.0, "max": 3.0, "clip": True}
+ 
+ 
++def _environment(universe, num_agents: int, seed: int):
++    ids = tuple(f"repair-world-{index}" for index in range(num_agents))
++    roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)})
++    return universe.create_environment(
++        num_agents=num_agents,
++        level_name=LEVEL,
++        device="cpu",
++        world_roster=roster,
++        training_seed=seed,
++        lane_world_ids=ids,
++    )
++
++
++class _EpisodeDriver:
++    """Explicit local receipt owners exercise ENV, not actual runner/bank/learning."""
++
++    def __init__(self, env, *, bootstrap=True):
++        self.env = env
++        self.issuer = WorldReceiptIssuer(owner=self)
++        roles = dict.fromkeys("population curiosity curriculum exploration network optimizer scheduler replay selection".split(), self)
++        self.authority = env.bind_boundary_authority(owner=self, role_owners=roles)
++        self.release = env.install_boundary_release(self.authority.bootstrap(first_batch_episode=1)) if bootstrap else None
++        self.batch = 0
++        self.accepted = None
++        self.participants = set()
++
++    def receipt(self, receipt_kind, **payload):
++        return self.issuer.issue(kind=receipt_kind, payload=payload)
++
++    def reset(self):
++        reservation = self.env.prepare_episode(batch_episode=self.batch + 1, release=self.release)
++        self.env.validate_episode_reservation(reservation)
++        result = self.env.reset(reservation=reservation)
++        self.accepted = result.accepted
++        self.env.activate_episode(
++            accepted=self.accepted,
++            population_receipt=self.receipt("activation", accepted=self.accepted),
++            curiosity_receipt=self.receipt("activation", accepted=self.accepted),
++        )
++        self.batch += 1
++        self.participants.clear()
++        return result.observation
++
++    def step(self, actions):
++        self.participants.update(world_id for index, world_id in enumerate(self.env.world_ids) if not self.env.dones[index])
++        return self.env.step(actions)
++
++    def complete(self):
++        participants = tuple(world_id for world_id in self.accepted.world_ids if world_id in self.participants)
++        assert participants, "completion requires a real participating step"
++        content = tuple(
++            (self.batch, index, world_id, self.accepted.world_episode_seqs[index], "local-interface-outcome")
++            for index, world_id in enumerate(self.accepted.world_ids)
++            if world_id in participants
++        )
++        payload = dict(
++            accepted=self.accepted,
++            boundary_key=self.batch,
++            completion_content=content,
++            participated_world_ids=participants,
++            dispositions=tuple(
++                (world_id, "completed" if world_id in participants else "retired_nonparticipating") for world_id in self.accepted.world_ids
++            ),
++        )
++        prepared = self.env.prepare_episode_close(
++            accepted=self.accepted,
++            boundary_key=self.batch,
++            completion_content=content,
++            participated_world_ids=participants,
++            dispositions=self.receipt("prepared_dispositions", **payload),
++        )
++        self.env.freeze_episode_close(prepared)
++        dispositions = self.receipt("dispositions", **payload)
++        closure = self.env.close_episode(prepared, dispositions=dispositions)
++        children = {
++            name: self.receipt(name, accepted=self.accepted, boundary_key=self.batch, completion_content=content)
++            for name in (
++                "curriculum_receipt",
++                "exploration_receipt",
++                "population_commit_receipt",
++                "epsilon_install_receipt",
++                "selection_sync_receipt",
++            )
++        }
++        effects = self.receipt(
++            "boundary_effects",
++            batch_episode=self.batch,
++            accepted_identity=self.accepted,
++            completion_content=content,
++            retirement_receipt=dispositions,
++            **children,
++        )
++        self.release = self.env.install_boundary_release(self.authority.completed(closure=closure, effects=effects))
++
++    def checkpoint(self):
++        return self.env.checkpoint_world_state(
++            kind="COMPLETED",
++            release=self.release,
++            retained_binding_batches=tuple(range(1, self.batch + 1)),
++            initial=None,
++        )
++
++    def restore(self, state):
++        roster = WorldRosterDeclaration.from_dict(state["world_roster"])
++        prepared = self.env.prepare_world_restore(
++            kind="COMPLETED",
++            state=state,
++            world_roster=roster,
++            destination_world_ids=self.env.world_ids,
++            semantic_execution_identity=self.env.semantic_execution_identity,
++        )
++        boundary = self.receipt("restored_boundary", kind="COMPLETED", state=state, prepared=prepared)
++        release = self.authority.restored(restore=prepared, boundary=boundary)
++        self.release = self.env.install_world_restore(prepared=prepared, release=release)
++        self.batch = state["next_batch_episode"] - 1
++
++
+ def _decl(var_id: str, *, scope: str = "agent", type_: str = "scalar", lifetime: str = "episode", **extra: object) -> dict:
+     declaration: dict[str, object] = {
+         "id": var_id,
+@@ -79,9 +199,9 @@ def _refusal(pack: Path) -> str:
+ 
+ def _env(universe, num_agents: int, seed: int = 7):
+     seed_all(seed)
+-    env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device="cpu")
+-    env.reset()
+-    return env
++    driver = _EpisodeDriver(_environment(universe, num_agents, seed))
++    driver.reset()
++    return driver.env
+ 
+ 
+ def _wait(env) -> int:
+@@ -270,27 +390,36 @@ def test_v3_world0_differential(tmp_path: Path, num_agents: int) -> None:
+ 
+ 
+ def test_v3_resume_from_a_checkpoint_reproduces_the_draws(tmp_path: Path) -> None:
+-    """The draw state is (seed, episode). Checkpointed between episodes (as the runner does) and
+-    restored into a fresh env in a differently seeded process, every later draw is the original's,
+-    tick for tick: a value is a pure function of seed, episode, tick, site, world and element."""
++    """Direct ENV boundary restore reproduces the next reset plus five ticks.
++
++    Local sealed owners exercise the real world checkpoint gates. This does not run
++    actual runner save/load or qualify the still-open outer checkpoint integration.
++    """
+     universe = _compile(_pack(tmp_path, V3_DECLS, rules=V3_RULES))
+-    original = _env(universe, 3, seed=11)
++    seed_all(11)
++    driver = _EpisodeDriver(_environment(universe, 3, 11))
++    original = driver.env
++    driver.reset()
+     wait = _wait(original)
+-    for _ in range(2):
++    for episode in range(3):
+         for _ in range(3):
+-            original.step(torch.full((3,), wait, dtype=torch.long))
+-        original.reset()
+-    checkpoint = original.vfs_random_state()
+-    original.reset()
++            driver.step(torch.full((3,), wait, dtype=torch.long))
++        driver.complete()
++        if episode < 2:
++            driver.reset()
++    checkpoint = driver.checkpoint()
++    assert checkpoint["vfs_random_context"]["world_episode_seqs"] == [3, 3, 3]
++    driver.reset()
+     original_ticks = [{name: _reg(original, name) for name in V3_VARS}]
+     for _ in range(5):
+         original.step(torch.full((3,), wait, dtype=torch.long))
+         original_ticks.append({name: _reg(original, name) for name in V3_VARS})
+ 
+     seed_all(999)
+-    resumed = universe.create_environment(num_agents=3, level_name=LEVEL, device="cpu")
+-    resumed.restore_vfs_random_state(checkpoint)
+-    resumed.reset()
++    restored = _EpisodeDriver(_environment(universe, 3, 11), bootstrap=False)
++    restored.restore(checkpoint)
++    restored.reset()
++    resumed = restored.env
+     for tick, expected in enumerate(original_ticks):
+         if tick:
+             resumed.step(torch.full((3,), wait, dtype=torch.long))
+@@ -308,35 +437,62 @@ def test_v7_the_seed_is_captured_at_construction(tmp_path: Path) -> None:
+     """Another environment's seed_all after construction never shifts this environment's draws."""
+     universe = _compile(_pack(tmp_path, V3_DECLS, rules=V3_RULES))
+     seed_all(1)
+-    solo = universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu")
+-    solo.reset()
+-    solo.reset()
++    solo_driver = _EpisodeDriver(_environment(universe, 2, 1))
++    solo = solo_driver.env
++    solo_driver.reset()
++    solo_driver.step(solo.get_action_masks().to(torch.int64).argmax(dim=1))
++    solo_driver.complete()
++    solo_driver.reset()
+     expected = _reg(solo, "g_rand")
+ 
+     seed_all(1)
+-    shared = universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu")
+-    shared.reset()
++    shared_driver = _EpisodeDriver(_environment(universe, 2, 1))
++    shared = shared_driver.env
++    shared_driver.reset()
++    shared_driver.step(shared.get_action_masks().to(torch.int64).argmax(dim=1))
++    shared_driver.complete()
+     seed_all(2)
+-    universe.create_environment(num_agents=2, level_name=LEVEL, device="cpu").reset()
+-    shared.reset()
++    other = _EpisodeDriver(_environment(universe, 2, 2))
++    other.reset()
++    shared_driver.reset()
+     assert torch.equal(_reg(shared, "g_rand"), expected)
+ 
+ 
+ def test_draw_kernel_matches_the_reference_specification() -> None:
+-    from townlet.vfs.random_draws import VFSRandomness, reference_uniform
++    from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext, reference_uniform
+ 
+-    randomness = VFSRandomness(2**63 + 12345)
+-    randomness.reset()
+-    randomness.reset()
+-    stream = randomness.instant(tick=9, worlds=3, device=torch.device("cpu")).stream("var:x", (3, 5))
++    ids = ("kernel-west", "kernel-center", "kernel-east")
++    randomness = VFSRandomness(context=VFSWorldContext(training_seed=2**63 + 12345, world_ids=ids, world_episode_seqs=(2, 2, 2)))
++    stream = randomness.instant(tick=9, device=torch.device("cpu")).stream("var:x", (3, 5))
+     stream.uniform("uniform", torch.zeros(()))
+     second = stream.uniform("uniform", torch.zeros(()))
+     expected = [
+-        [reference_uniform(seed=2**63 + 12345, episode=2, tick=9, site="var:x", ordinal=1, world=w, element=e) for e in range(5)]
+-        for w in range(3)
++        [
++            reference_uniform(
++                training_seed=2**63 + 12345,
++                world_id=world_id,
++                world_episode_seq=2,
++                tick=9,
++                site="var:x",
++                ordinal=1,
++                element=element,
++            )
++            for element in range(5)
++        ]
++        for world_id in ids
+     ]
+     assert torch.equal(second, torch.tensor(expected, dtype=torch.float32))
+-    normal = randomness.instant(tick=0, worlds=8192, device=torch.device("cpu")).stream("var:n", (8192,)).normal("n", torch.zeros(()))
++    normal_context = VFSWorldContext(
++        training_seed=2**63 + 12345,
++        world_ids=tuple(f"normal-world-{index}" for index in range(8192)),
++        world_episode_seqs=(2,) * 8192,
++    )
++    normal = (
++        VFSRandomness(context=normal_context)
++        .instant(tick=0, device=torch.device("cpu"))
++        .stream("var:n", (8192,))
++        .normal("n", torch.zeros(()))
++    )
+     assert abs(float(normal.mean())) < 0.05 and abs(float(normal.std()) - 1.0) < 0.05
+ 
+ 
+diff --git a/tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py b/tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py
+index 91bcf18b..de931744 100644
+--- a/tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py
++++ b/tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py
+@@ -19,7 +19,7 @@ import pytest
+ import torch
+ 
+ from townlet.vfs import vtc
+-from townlet.vfs.random_draws import VFSRandomness
++from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
+ from townlet.vfs.transition_graph import TransitionPhaseGraph
+ from townlet.vfs.transition_schedule import (
+     VTCTransitionContext,
+@@ -106,7 +106,9 @@ def test_transition_runner_executes_bounds_clamps_in_clamp_and_validate_phase()
+         bars_state={"energy": torch.tensor([1.7, -0.3], dtype=torch.float32)},
+         active_mask=torch.tensor([True, False]),
+         device=torch.device("cpu"),
+-        draws=VFSRandomness(0).instant(tick=0, worlds=2, device=torch.device("cpu")),
++        draws=VFSRandomness(
++            context=VFSWorldContext(training_seed=0, world_ids=("bounds-west", "bounds-east"), world_episode_seqs=(0, 0))
++        ).instant(tick=0, device=torch.device("cpu")),
+     )
+ 
+     # A phase the rules are not scheduled for leaves the out-of-bounds value alone.

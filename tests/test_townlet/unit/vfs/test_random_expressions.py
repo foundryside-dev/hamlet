@@ -17,14 +17,16 @@ import pytest
 import torch
 import yaml
 
+from townlet.config.world_roster import WorldRosterDeclaration
 from townlet.determinism import seed_all
+from townlet.environment.vectorized_env import WorldReceiptIssuer
 from townlet.items.manager import SpawnPredicateReads
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
 from townlet.vfs.evaluator import VFSEvaluator
 from townlet.vfs.namespace import SPAWN_PREDICATE
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
-from townlet.vfs.random_draws import VFSRandomness, reference_uniform
+from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext, reference_uniform
 from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.vfs.vtc import VTCTransitionRuleProgram, VTCWriteTarget, compile_vtc_transition_rules
 from townlet.world.expression import ExpressionParser
@@ -35,6 +37,107 @@ LEVEL = "L0_simple"
 N = 4
 STEPS = 64
 MINMAX = {"kind": "minmax", "min": 0.0, "max": 3.0, "clip": True}
+
+
+def _environment(universe, num_agents: int = N, seed: int = 7):
+    ids = tuple(f"expression-world-{index}" for index in range(num_agents))
+    roster = WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(ids)})
+    return universe.create_environment(
+        num_agents=num_agents,
+        level_name=LEVEL,
+        device="cpu",
+        world_roster=roster,
+        training_seed=seed,
+        lane_world_ids=ids,
+    )
+
+
+class _EpisodeDriver:
+    """Local sealed producer-test owners, not real population/bank/learning owners."""
+
+    def __init__(self, env):
+        self.env = env
+        self.issuer = WorldReceiptIssuer(owner=self)
+        roles = dict.fromkeys("population curiosity curriculum exploration network optimizer scheduler replay selection".split(), self)
+        self.authority = env.bind_boundary_authority(owner=self, role_owners=roles)
+        self.release = env.install_boundary_release(self.authority.bootstrap(first_batch_episode=1))
+        self.batch = 0
+        self.accepted = None
+        self.participants = set()
+
+    def receipt(self, receipt_kind, **payload):
+        return self.issuer.issue(kind=receipt_kind, payload=payload)
+
+    def reset(self):
+        reservation = self.env.prepare_episode(batch_episode=self.batch + 1, release=self.release)
+        self.env.validate_episode_reservation(reservation)
+        result = self.env.reset(reservation=reservation)
+        self.accepted = result.accepted
+        self.env.activate_episode(
+            accepted=self.accepted,
+            population_receipt=self.receipt("activation", accepted=self.accepted),
+            curiosity_receipt=self.receipt("activation", accepted=self.accepted),
+        )
+        self.batch += 1
+        self.participants.clear()
+        return result.observation
+
+    def step(self, actions):
+        self.participants.update(world_id for index, world_id in enumerate(self.env.world_ids) if not self.env.dones[index])
+        return self.env.step(actions)
+
+    def complete(self):
+        participants = tuple(world_id for world_id in self.accepted.world_ids if world_id in self.participants)
+        assert participants, "completion requires a real participating step"
+        content = tuple(
+            (self.batch, index, world_id, self.accepted.world_episode_seqs[index], "local-interface-outcome")
+            for index, world_id in enumerate(self.accepted.world_ids)
+            if world_id in participants
+        )
+        payload = dict(
+            accepted=self.accepted,
+            boundary_key=self.batch,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=tuple(
+                (world_id, "completed" if world_id in participants else "retired_nonparticipating") for world_id in self.accepted.world_ids
+            ),
+        )
+        prepared = self.env.prepare_episode_close(
+            accepted=self.accepted,
+            boundary_key=self.batch,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=self.receipt("prepared_dispositions", **payload),
+        )
+        self.env.freeze_episode_close(prepared)
+        dispositions = self.receipt("dispositions", **payload)
+        closure = self.env.close_episode(prepared, dispositions=dispositions)
+        children = {
+            name: self.receipt(name, accepted=self.accepted, boundary_key=self.batch, completion_content=content)
+            for name in (
+                "curriculum_receipt",
+                "exploration_receipt",
+                "population_commit_receipt",
+                "epsilon_install_receipt",
+                "selection_sync_receipt",
+            )
+        }
+        effects = self.receipt(
+            "boundary_effects",
+            batch_episode=self.batch,
+            accepted_identity=self.accepted,
+            completion_content=content,
+            retirement_receipt=dispositions,
+            **children,
+        )
+        self.release = self.env.install_boundary_release(self.authority.completed(closure=closure, effects=effects))
+
+
+def _started(universe, num_agents: int = N, seed: int = 7):
+    driver = _EpisodeDriver(_environment(universe, num_agents, seed))
+    driver.reset()
+    return driver.env
 
 
 # --- pack helpers ---------------------------------------------------------------------------
@@ -167,9 +270,10 @@ def _snapshot(env, world: int, obs: torch.Tensor) -> dict[str, Any]:
 def _run(universe, actions: list[torch.Tensor], *, num_agents: int = N, seed: int = 7) -> list[list[dict[str, Any]]]:
     """Per step (reset first), every world's snapshot."""
     seed_all(seed)
-    env = universe.create_environment(num_agents=num_agents, level_name=LEVEL, device="cpu")
+    driver = _EpisodeDriver(_environment(universe, num_agents, seed))
+    env = driver.env
     seed_all(seed)
-    obs = env.reset()
+    obs = driver.reset()
     trace = [[_snapshot(env, world, obs) for world in range(num_agents)]]
     for step_actions in actions:
         obs, _, _, _ = env.step(step_actions)
@@ -207,8 +311,7 @@ def test_random_draws_compile_in_expressions_rules_and_action_writes(random_univ
 
 def test_a_literal_argument_draw_in_an_agent_expression_is_one_draw_per_row(random_universe) -> None:
     seed_all(3)
-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
-    env.reset()
+    env = _started(random_universe, seed=3)
     noise = _reg(env, "noise")
     assert noise.shape == (N,)
     assert len(set(noise.tolist())) == N
@@ -217,8 +320,7 @@ def test_a_literal_argument_draw_in_an_agent_expression_is_one_draw_per_row(rand
 
 def test_a_global_draw_differs_across_worlds_and_a_rule_rolls_per_world(random_universe) -> None:
     seed_all(3)
-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
-    env.reset()
+    env = _started(random_universe, seed=3)
     wait = _action(env, "WAIT")
     env.step(torch.full((N,), wait, dtype=torch.long))
     assert len(set(_reg(env, "weather").tolist())) == N
@@ -228,8 +330,7 @@ def test_a_global_draw_differs_across_worlds_and_a_rule_rolls_per_world(random_u
 
 def test_weather_holds_for_k_ticks_and_lag_of_a_random_variable_reads_its_history(random_universe) -> None:
     seed_all(5)
-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
-    env.reset()
+    env = _started(random_universe, seed=5)
     wait = torch.full((N,), _action(env, "WAIT"), dtype=torch.long)
     weather = [_reg(env, "weather").clone()]
     yesterday = [_reg(env, "yesterday").clone()]
@@ -252,8 +353,7 @@ def test_weather_holds_for_k_ticks_and_lag_of_a_random_variable_reads_its_histor
 
 def test_an_action_write_draw_lands_on_the_acting_agents_row_only(random_universe) -> None:
     seed_all(5)
-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
-    env.reset()
+    env = _started(random_universe, seed=5)
     actions = torch.full((N,), _action(env, "WAIT"), dtype=torch.long)
     actions[1] = _action(env, "ADVANCE")
     env.step(actions)
@@ -267,7 +367,7 @@ def test_an_action_write_draw_lands_on_the_acting_agents_row_only(random_univers
 
 def test_same_seed_runs_are_bitwise_identical(random_universe) -> None:
     seed_all(7)
-    probe = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+    probe = _environment(random_universe)
     wait, advance = _action(probe, "WAIT"), _action(probe, "ADVANCE")
     actions = _quiet(N, wait, STEPS)
     for step in range(0, STEPS, 3):
@@ -278,7 +378,7 @@ def test_same_seed_runs_are_bitwise_identical(random_universe) -> None:
 
 def test_world0s_actions_leave_every_other_worlds_draws_identical(random_universe) -> None:
     seed_all(7)
-    probe = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+    probe = _environment(random_universe)
     wait, advance = _action(probe, "WAIT"), _action(probe, "ADVANCE")
     movement = [index for index, action in enumerate(probe.action_space.actions) if action.name not in {"WAIT", "ADVANCE", "INTERACT"}]
     quiet = _quiet(N, wait, STEPS)
@@ -299,7 +399,7 @@ def test_world0s_actions_leave_every_other_worlds_draws_identical(random_univers
 
 def test_a_worlds_draws_do_not_depend_on_the_batch_size(random_universe) -> None:
     seed_all(7)
-    probe = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
+    probe = _environment(random_universe)
     wait = _action(probe, "WAIT")
     small = _run(random_universe, _quiet(N, wait, 16), num_agents=N)
     large = _run(random_universe, _quiet(2 * N, wait, 16), num_agents=2 * N)
@@ -311,10 +411,13 @@ def test_a_worlds_draws_do_not_depend_on_the_batch_size(random_universe) -> None
 
 def test_a_new_episode_re_derives_every_worlds_stream(random_universe) -> None:
     seed_all(11)
-    env = random_universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
-    env.reset()
+    driver = _EpisodeDriver(_environment(random_universe, seed=11))
+    env = driver.env
+    driver.reset()
     first = _reg(env, "noise").clone()
-    env.reset()
+    driver.step(env.get_action_masks().to(torch.int64).argmax(dim=1))
+    driver.complete()
+    driver.reset()
     assert not torch.equal(_reg(env, "noise"), first)
 
 
@@ -330,8 +433,7 @@ def test_a_random_expression_is_stored_not_inlined_so_a_rule_reads_the_observed_
     )
     universe = _compile(pack)
     seed_all(2)
-    env = universe.create_environment(num_agents=N, level_name=LEVEL, device="cpu")
-    env.reset()
+    env = _started(universe, seed=2)
     wait = torch.full((N,), _action(env, "WAIT"), dtype=torch.long)
     for _ in range(3):
         shown = _reg(env, "coin").clone()
@@ -392,18 +494,21 @@ def test_the_profile_evaluator_refuses_to_sample_without_the_world_streams() -> 
     evaluator = VFSEvaluator(history_spec=None)
     with pytest.raises(RuntimeError, match=r"Engine defect: expression variable\(s\) \['x'\] sample"):
         evaluator.evaluate_global_profile(_profile("uniform(0.0, 1.0)"), bars={}, vfs_state={}, marks={"x"}, device=torch.device("cpu"))
-    randomness = VFSRandomness(7)
-    randomness.reset()
+    ids = ("profile-west", "profile-center", "profile-east")
+    randomness = VFSRandomness(context=VFSWorldContext(training_seed=7, world_ids=ids, world_episode_seqs=(1, 1, 1)))
     drawn = evaluator.evaluate_global_profile(
         _profile("uniform(0.0, 1.0)"),
         bars={},
         vfs_state={},
         marks={"x"},
         device=torch.device("cpu"),
-        draws=randomness.instant(tick=5, worlds=3, device=torch.device("cpu")),
+        draws=randomness.instant(tick=5, device=torch.device("cpu")),
     )["x"]
     assert drawn.shape == (3,)
-    expected = [reference_uniform(seed=7, episode=1, tick=5, site="var:x", ordinal=0, world=world, element=0) for world in range(3)]
+    expected = [
+        reference_uniform(training_seed=7, world_id=world_id, world_episode_seq=1, tick=5, site="var:x", ordinal=0, element=0)
+        for world_id in ids
+    ]
     assert drawn.tolist() == pytest.approx(expected, abs=0.0)
 
 
@@ -419,5 +524,7 @@ def test_a_rule_program_refuses_to_sample_without_the_world_streams() -> None:
             vfs_state={"g": torch.zeros(2)},
             active_mask=torch.tensor([True, True]),
             device=torch.device("cpu"),
-            draws=VFSRandomness(0).instant(tick=0, worlds=3, device=torch.device("cpu")),
+            draws=VFSRandomness(
+                context=VFSWorldContext(training_seed=0, world_ids=("rule-west", "rule-center", "rule-east"), world_episode_seqs=(0, 0, 0))
+            ).instant(tick=0, device=torch.device("cpu")),
         )

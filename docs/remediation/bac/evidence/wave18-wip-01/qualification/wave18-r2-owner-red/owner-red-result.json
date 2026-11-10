@@ -1,0 +1,29 @@
+{
+  "name": "owner-red",
+  "exit_code": 1,
+  "seconds": 12.580442905426025,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "tests/test_townlet/unit/vfs/test_random_expressions.py",
+    "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py",
+    "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-k",
+    "initial_schema_exact_and_snapshot_isolation or the_profile_evaluator_refuses_to_sample_without_the_world_streams or v3_resume_from_a_checkpoint_reproduces_the_draws",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r2-owner-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave18-r2-owner-red/owner-red.log",
+  "sha256": "56ff7eaec8df660673a1e853f20c51f208d45eeacb2f9383f797e3a5ccc72a82",
+  "candidate_tree": "e800bc81ff0487823596a754a499685009c7a945",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "manifest_sha256": "f098e29fb5c199105223a72b5d1fd5715a76d9f3084d26a336c6952d8b741cbe",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "covering",
+  "exit_code": 0,
+  "seconds": 31.443076372146606,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "tests/test_townlet/unit/vfs/test_random_expressions.py",
+    "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py",
+    "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r3-covering",
+    "-k",
+    "initial_schema_exact_and_snapshot_isolation or the_profile_evaluator_refuses_to_sample_without_the_world_streams or v3_resume_from_a_checkpoint_reproduces_the_draws"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave18-r3-covering/covering.log",
+  "sha256": "ba072e82c424e29ee9a54276d5d6a616ee06945c4b5ee32e54cfb78c8e8177e6",
+  "candidate_tree": "59afaaa2ca3164e29573569dbdf5907ca8e77a94",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "manifest_sha256": "05927bc7d4ae210515d3698dccc34b78134a8f9c6ad4ed972d352281bcce2163",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

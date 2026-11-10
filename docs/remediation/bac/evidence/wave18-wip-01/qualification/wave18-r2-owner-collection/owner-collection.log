@@ -1,0 +1,128 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 106 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_world_episode_identity.py>
+            <Function test_declared_roster_owned_exact_serialization>
+            <Function test_roster_invalid_ids_refuse[ids0]>
+            <Function test_roster_invalid_ids_refuse[ids1]>
+            <Function test_roster_invalid_ids_refuse[ids2]>
+            <Function test_roster_invalid_ids_refuse[ids3]>
+            <Function test_roster_invalid_ids_refuse[not-an-array]>
+            <Function test_roster_exact_schema[missing]>
+            <Function test_roster_exact_schema[old_schema]>
+            <Function test_roster_exact_schema[extra]>
+            <Function test_invalid_binding_precedes_constructor_randomness[order0]>
+            <Function test_invalid_binding_precedes_constructor_randomness[order1]>
+            <Function test_invalid_binding_precedes_constructor_randomness[order2]>
+            <Function test_real_env_requires_explicit_roster_seed_binding>
+            <Function test_reservation_and_failed_preflight_are_pure>
+            <Function test_authority_bootstrap_binding_and_consumption>
+            <Function test_reset_retry_after_rollout_owns_original_observation>
+            <Function test_activation_requires_owned_matching_receipts>
+            <Function test_late_reset_failure_quarantines_without_false_rollback>
+            <Function test_close_alone_blocks_save_next_release_is_save_independent>
+            <Function test_wrong_release_and_changed_disposition_are_pure>
+            <Function test_empty_abandon_is_not_completion_or_initial>
+            <Function test_participating_episode_cannot_claim_empty_abandon>
+            <Function test_initial_snapshot_repeat_restore_and_first_real_reset>
+            <Function test_malformed_initial_restore_is_pure[kind-UNKNOWN]>
+            <Function test_malformed_initial_restore_is_pure[schema-world-lifecycle-v2]>
+            <Function test_malformed_initial_restore_is_pure[completed_boundary_key-0]>
+            <Function test_malformed_initial_restore_is_pure[last_closed_episode-value3]>
+            <Function test_malformed_initial_restore_is_pure[accepted_episode_seqs-value4]>
+            <Function test_malformed_initial_restore_is_pure[next_batch_episode-True]>
+            <Function test_initial_restore_over_live_boundary_refuses>
+            <Function test_two_boundaries_two_reorders_keep_historical_binding_verbatim>
+            <Function test_completed_binding_corruption_refuses_before_install[missing_latest]>
+            <Function test_completed_binding_corruption_refuses_before_install[duplicate_batch]>
+            <Function test_completed_binding_corruption_refuses_before_install[wrong_latest]>
+            <Function test_completed_binding_corruption_refuses_before_install[foreign_world]>
+            <Function test_completed_binding_corruption_refuses_before_install[bool_sequence]>
+            <Function test_step_before_activation_and_changed_reservation_refuse>
+            <Function test_empty_close_and_unknown_history_reference_refuse>
+            <Function test_initial_schema_exact_and_snapshot_isolation>
+            <Function test_restore_identity_and_kind_mismatch_refuse[wrong_kind]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[extra_key]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[changed_manifest]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[wrong_seed]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[unknown_member]>
+            <Function test_foreign_boundary_effect_receipt_cannot_release>
+            <Function test_last_closure_numeric_alias_refuses[batch_episode-True]>
+            <Function test_last_closure_numeric_alias_refuses[batch_episode-1.0]>
+            <Function test_last_closure_numeric_alias_refuses[world_episode_seqs-value2]>
+            <Function test_last_closure_numeric_alias_refuses[world_episode_seqs-value3]>
+            <Function test_bound_outer_proof_rejects_wrong_child[foreign_effect]>
+            <Function test_bound_outer_proof_rejects_wrong_child[wrong_content]>
+            <Function test_bound_outer_proof_rejects_wrong_child[foreign_initial]>
+            <Function test_prepared_close_refuses_intervening_rollout>
+            <Function test_closure_installed_before_acknowledgement_retries_once>
+      <Package unit>
+        <Package vfs>
+          <Module test_random_expressions.py>
+            <Function test_random_draws_compile_in_expressions_rules_and_action_writes>
+            <Function test_a_literal_argument_draw_in_an_agent_expression_is_one_draw_per_row>
+            <Function test_a_global_draw_differs_across_worlds_and_a_rule_rolls_per_world>
+            <Function test_weather_holds_for_k_ticks_and_lag_of_a_random_variable_reads_its_history>
+            <Function test_an_action_write_draw_lands_on_the_acting_agents_row_only>
+            <Function test_same_seed_runs_are_bitwise_identical>
+            <Function test_world0s_actions_leave_every_other_worlds_draws_identical>
+            <Function test_a_worlds_draws_do_not_depend_on_the_batch_size>
+            <Function test_a_new_episode_re_derives_every_worlds_stream>
+            <Function test_a_random_expression_is_stored_not_inlined_so_a_rule_reads_the_observed_draw>
+            <Function test_a_tick_lifetime_random_expression_compiles_but_a_rule_reading_it_refuses>
+            <Function test_an_item_spawn_predicate_refuses_a_draw_and_names_the_expression_variable_route>
+            <Function test_the_profile_evaluator_refuses_to_sample_without_the_world_streams>
+            <Function test_a_rule_program_refuses_to_sample_without_the_world_streams>
+          <Module test_vtc_bounds_clamps.py>
+            <Function test_compile_vtc_bounds_clamps_emits_rule_metadata>
+            <Function test_vtc_bounds_clamps_apply_enforces_each_meters_declared_bounds>
+            <Function test_transition_runner_executes_bounds_clamps_in_clamp_and_validate_phase>
+          <Module test_verify_r3_repairs.py>
+            <Function test_v1_an_affordance_rule_draw_is_one_value_per_world_affordance_row[uniform() * aff_w]>
+            <Function test_v1_an_affordance_rule_draw_is_one_value_per_world_affordance_row[uniform(0.0, aff_w)]>
+            <Function test_v1_an_affordance_rule_draw_is_one_value_per_world_affordance_row[where(aff_w > 0.5, uniform(), 0.0)]>
+            <Function test_v1_an_affordance_rule_draw_is_one_value_per_world_affordance_row[normal_dist(0.0, aff_w)]>
+            <Function test_v1_an_affordance_rule_draw_is_one_value_per_world_affordance_row[uniform()]>
+            <Function test_v1_a_rule_condition_draw_on_an_affordance_target_is_per_row>
+            <Function test_v1_a_rule_conditions_draw_is_shared_by_all_its_writes>
+            <Function test_v2_compiling_a_draw_into_a_reference_write_consumes_no_global_randomness>
+            <Function test_v2_the_constant_folder_refuses_a_draw>
+            <Function test_v2_a_draw_into_a_vector_target_is_not_a_constant>
+            <Function test_v3_moving_or_reordering_declarations_rerolls_nothing>
+            <Function test_v3_an_unrelated_random_mechanic_rerolls_nothing_else[extra_declarations0-extra_rules0]>
+            <Function test_v3_an_unrelated_random_mechanic_rerolls_nothing_else[extra_declarations1-extra_rules1]>
+            <Function test_v3_an_unrelated_random_mechanic_rerolls_nothing_else[extra_declarations2-extra_rules2]>
+            <Function test_v3_same_seed_is_bitwise_identical_and_another_seed_differs>
+            <Function test_v3_world0_differential[2]>
+            <Function test_v3_world0_differential[4]>
+            <Function test_v3_world0_differential[7]>
+            <Function test_v3_resume_from_a_checkpoint_reproduces_the_draws>
+            <Function test_v3_the_runner_checkpoint_carries_the_draw_state>
+            <Function test_v7_the_seed_is_captured_at_construction>
+            <Function test_draw_kernel_matches_the_reference_specification>
+            <Function test_v4_an_expression_over_a_mode_initialised_tensor_compiles_resets_and_steps>
+            <Function test_v5_vector_equality_refuses_at_compile[==]>
+            <Function test_v5_vector_equality_refuses_at_compile[!=]>
+            <Function test_v5_element_equality_compiles_and_steps>
+            <Function test_v6_an_unknown_affordance_name_refuses_at_the_expression>
+            <Function test_v6_an_undeployed_affordance_refuses_naming_the_level[distance_to_affordance("COOK")]>
+            <Function test_v6_an_undeployed_affordance_refuses_naming_the_level[in_range("COOK", 1.0)]>
+            <Function test_v6_a_deployed_affordance_compiles_exposed_and_reads_a_finite_distance>
+            <Function test_p3_static_width_and_index_errors_refuse_at_compile[declarations0-distance(v2, v3)-EXPRESSION-VECTOR-WIDTH]>
+            <Function test_p3_static_width_and_index_errors_refuse_at_compile[declarations1-manhattan_distance(vn, v2)-EXPRESSION-VECTOR-WIDTH]>
+            <Function test_p3_static_width_and_index_errors_refuse_at_compile[declarations2-gather(v2, 5) + bar.energy-EXPRESSION-INDEX-RANGE]>
+            <Function test_p3_static_width_and_index_errors_refuse_at_compile[declarations3-gather(v2, -1) + bar.energy-EXPRESSION-INDEX-RANGE]>
+            <Function test_p3_matching_widths_and_in_range_indices_compile_and_step>
+
+========================= 106 tests collected in 0.11s =========================

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_initial_schema_exact_and_snapshot_isolation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_initial_schema_exact_and_snapshot_isolation(compiled):\n        run = _Run(_env(compiled))\n        state = run.initial()\n>       assert set(state) == {\n            \"schema\",\n            \"kind\",\n            \"next_batch_episode\",\n            \"world_roster\",\n            \"manifest_digest\",\n            \"roster_semantic_identity\",\n            \"training_seed\",\n            \"execution_identity\",\n            \"saved_lane_binding\",\n            \"destination_lane_binding\",\n            \"accepted_episode_seqs\",\n            \"last_closed_episode\",\n            \"completed_boundary_key\",\n            \"accepted_bindings\",\n        }\nE       AssertionError: assert {'accepted_bi..., 'kind', ...} == {'accepted_bi..., 'kind', ...}\nE         \nE         Extra items in the left set:\nE         'vfs_random_context'\nE         Use -v to get more diff\n\ntests/test_townlet/regressions/bac/test_world_episode_identity.py:650: AssertionError",
+  "candidate_tree": "e800bc81ff0487823596a754a499685009c7a945"
+}

@@ -1,0 +1,32 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave18-r3-covering",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "covering",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+        "tests/test_townlet/unit/vfs/test_random_expressions.py",
+        "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py",
+        "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave18-r3-covering",
+        "-k",
+        "initial_schema_exact_and_snapshot_isolation or the_profile_evaluator_refuses_to_sample_without_the_world_streams or v3_resume_from_a_checkpoint_reproduces_the_draws"
+      ]
+    }
+  ]
+}

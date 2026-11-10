@@ -187,6 +187,8 @@ def validate_world_snapshot(
     state: Mapping[str, Any], kind: str, roster: WorldRosterDeclaration, seed: int, semantic_identity: str
 ) -> dict[str, Any]:
     """Pure current-native structure and available accepted-history validation."""
+    from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
+
     keys = {
         "schema",
         "kind",
@@ -202,8 +204,9 @@ def validate_world_snapshot(
         "last_closed_episode",
         "completed_boundary_key",
         "accepted_bindings",
+        "vfs_random_context",
     }
-    if not isinstance(state, Mapping) or set(state) != keys or state["schema"] != "world-lifecycle-v3":
+    if not isinstance(state, Mapping) or set(state) != keys or state["schema"] != "world-lifecycle-v4":
         raise ValueError("world snapshot requires exact current schema")
     if kind not in ("INITIAL", "COMPLETED") or state["kind"] != kind:
         raise ValueError("world snapshot requires matching explicit kind")
@@ -227,7 +230,7 @@ def validate_world_snapshot(
             raise ValueError("world binding integrity disagrees")
         return ids
 
-    binding(state["destination_lane_binding"])
+    producer_ids = binding(state["destination_lane_binding"])
     cursors = state["accepted_episode_seqs"]
     if not isinstance(cursors, Mapping) or set(cursors) != membership:
         raise ValueError("accepted cursors must cover declared membership")
@@ -235,6 +238,16 @@ def validate_world_snapshot(
         exact_integer(sequence, 0, "accepted sequence")
     if len(set(cursors.values())) != 1:
         raise ValueError("current full-roster histories cannot create unequal accepted cursors")
+    # This is the snapshot producer's order, not necessarily the last accepted order.
+    # Check the whole VFS child before either INITIAL or COMPLETED can return.
+    VFSRandomness.validate_state(
+        state["vfs_random_context"],
+        expected=VFSWorldContext(
+            training_seed=seed,
+            world_ids=producer_ids,
+            world_episode_seqs=tuple(cursors[world_id] for world_id in producer_ids),
+        ),
+    )
     history = state["accepted_bindings"]
     if not isinstance(history, list):
         raise ValueError("accepted binding history requires a list")

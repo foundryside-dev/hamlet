@@ -1,0 +1,31 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 3.711850166320801,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "tests/test_townlet/unit/vfs/test_random_expressions.py",
+    "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py",
+    "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+    "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+    "tests/test_townlet/regressions/bac/test_effective_run.py",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave18-r3-collection/collection.log",
+  "sha256": "cc540173bc9e2c41553e7d58f7b9868909b6984117e7ff9e05cfe85e46623240",
+  "candidate_tree": "59afaaa2ca3164e29573569dbdf5907ca8e77a94",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "manifest_sha256": "05927bc7d4ae210515d3698dccc34b78134a8f9c6ad4ed972d352281bcce2163",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

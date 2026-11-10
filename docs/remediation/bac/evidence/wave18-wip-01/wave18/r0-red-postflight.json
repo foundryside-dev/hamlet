@@ -1,0 +1,16 @@
+{
+  "kind": "real VFS row-key identity causal RED, not qualification",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "tree": "80feb3b959b3225f82587abe8a3e4ad4713f6f7f",
+  "collected": 44,
+  "focused_failed": 2,
+  "failure": "actual target-a stream mismatch after same-ID reversal and leading spectator, real compiled ENV acceptedseq1/tick0",
+  "wall_seconds": 12.785036563873291,
+  "control": "other-world-action fixed-target direct-domain1PASS9.7404wall, simulator equality unclaimed",
+  "custody": "PASS187source573config13artifact/index/import/threads/registry",
+  "raw_failure_reports": 4,
+  "processes": 3,
+  "production": "unchanged d7aea669",
+  "sessions": "all closed",
+  "next": "mandatory fixed normative vectors then approved producer implementation; no broad newAPI repeats"
+}

@@ -494,7 +494,14 @@ def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
     state = run.initial()
     _same(state, run.initial())
     _same(before, _state(run.env))
-    assert state["schema"] == "world-lifecycle-v3" and state["kind"] == "INITIAL"
+    assert state["schema"] == "world-lifecycle-v4" and state["kind"] == "INITIAL"
+    assert state["vfs_random_context"] == {
+        "schema": "vfs-world-random-v1",
+        "domain": "townlet.simulator.vfs.world-draw.v1",
+        "training_seed": SEED,
+        "world_ids": list(IDS),
+        "world_episode_seqs": [0, 0],
+    }
     assert state["accepted_bindings"] == []
     assert state["last_closed_episode"] is None and state["completed_boundary_key"] is None
     assert state["saved_lane_binding"] is None
@@ -535,6 +542,17 @@ def test_malformed_initial_restore_is_pure(compiled, field, value):
             semantic_execution_identity=target.env.semantic_execution_identity,
         )
     _same(before, _state(target.env))
+    if field == "schema":
+        state["schema"] = "world-lifecycle-v3"
+        with pytest.raises((TypeError, ValueError)):
+            target.env.prepare_world_restore(
+                kind="INITIAL",
+                state=state,
+                world_roster=_roster(),
+                destination_world_ids=IDS,
+                semantic_execution_identity=target.env.semantic_execution_identity,
+            )
+        _same(before, _state(target.env))
 
 
 def test_initial_restore_over_live_boundary_refuses(compiled):
@@ -568,6 +586,9 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
     _, closure, dispositions = second.close(2, (IDS[0],))
     second.release_closed(2, closure, dispositions)
     saved2 = second.completed((1, 2))
+    assert saved2["vfs_random_context"]["training_seed"] == SEED
+    assert saved2["vfs_random_context"]["world_ids"] == list(reversed(IDS))
+    assert saved2["vfs_random_context"]["world_episode_seqs"] == [2, 2]
     assert saved2["accepted_bindings"] == [
         {"batch_episode": 1, "world_ids": list(IDS), "world_episode_seqs": [1, 1]},
         {"batch_episode": 2, "world_ids": list(reversed(IDS)), "world_episode_seqs": [2, 2]},
@@ -662,11 +683,16 @@ def test_initial_schema_exact_and_snapshot_isolation(compiled):
         "last_closed_episode",
         "completed_boundary_key",
         "accepted_bindings",
+        "vfs_random_context",
     }
     state["world_roster"]["world_ids"].clear()
     state["accepted_episode_seqs"][IDS[0]] = 99
+    state["vfs_random_context"]["world_ids"].clear()
+    state["vfs_random_context"]["world_episode_seqs"][0] = 99
     assert run.initial()["world_roster"]["world_ids"] == list(IDS)
     assert run.initial()["accepted_episode_seqs"] == dict.fromkeys(IDS, 0)
+    assert run.initial()["vfs_random_context"]["world_ids"] == list(IDS)
+    assert run.initial()["vfs_random_context"]["world_episode_seqs"] == [0, 0]
 
 
 @pytest.mark.parametrize("mode", ["wrong_kind", "extra_key", "changed_manifest", "wrong_seed", "unknown_member"])

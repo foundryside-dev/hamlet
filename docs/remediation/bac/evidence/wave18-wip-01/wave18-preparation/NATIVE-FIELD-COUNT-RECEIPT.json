@@ -1,0 +1,24 @@
+{
+  "old_v3_top_level_fields": 14,
+  "new_v4_top_level_fields": 15,
+  "only_added_field": "vfs_random_context",
+  "all_old_fields_preserved": true,
+  "exact_v4_fields": [
+    "accepted_bindings",
+    "accepted_episode_seqs",
+    "completed_boundary_key",
+    "destination_lane_binding",
+    "execution_identity",
+    "kind",
+    "last_closed_episode",
+    "manifest_digest",
+    "next_batch_episode",
+    "roster_semantic_identity",
+    "saved_lane_binding",
+    "schema",
+    "training_seed",
+    "vfs_random_context",
+    "world_roster"
+  ],
+  "method": "staticAST literalkey extraction, no production import/runtime"
+}

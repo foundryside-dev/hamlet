@@ -1,0 +1,112 @@
+{
+  "purpose": "Locked normative test data from approved ABI, independently generated before production implementation; no production import/RNG mutation or success claim",
+  "domain": "townlet.simulator.vfs.world-draw.v1",
+  "reference": "stdlibJSON/BLAKE2b8 + scalarSplitMix64 per approved16c334d0 proposal",
+  "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+  "vectors": [
+    {
+      "training_seed": 0,
+      "world_id": "target-a",
+      "world_episode_seq": 0,
+      "tick": 0,
+      "site": "vfs.reference",
+      "ordinal": 0,
+      "expected_bits24": [
+        14222929,
+        2176863,
+        2314024,
+        2910008
+      ],
+      "expected_uniform": [
+        0.8477526307106018,
+        0.12975114583969116,
+        0.13792657852172852,
+        0.17344999313354492
+      ]
+    },
+    {
+      "training_seed": 731,
+      "world_id": "target-a",
+      "world_episode_seq": 1,
+      "tick": 1,
+      "site": "bac.identity.probe",
+      "ordinal": 0,
+      "expected_bits24": [
+        16680306,
+        3999839,
+        8338086,
+        10240450,
+        5803577,
+        14828653,
+        5886397,
+        3077549,
+        8241551,
+        11996649,
+        15302141,
+        5075517,
+        6067964,
+        14402929,
+        3246540,
+        3149326
+      ],
+      "expected_uniform": [
+        0.9942237138748169,
+        0.23840898275375366,
+        0.4969886541366577,
+        0.6103783845901489,
+        0.3459201455116272,
+        0.8838565945625305,
+        0.35085660219192505,
+        0.18343621492385864,
+        0.4912347197532654,
+        0.7150560021400452,
+        0.9120786786079407,
+        0.3025243878364563,
+        0.3616788387298584,
+        0.8584814667701721,
+        0.19350886344909668,
+        0.18771445751190186
+      ]
+    },
+    {
+      "training_seed": 1208925819614629174706267,
+      "world_id": " a:\u96ea ",
+      "world_episode_seq": 11,
+      "tick": 7,
+      "site": "u",
+      "ordinal": 2,
+      "expected_bits24": [
+        12260248,
+        12197302,
+        14462603,
+        6327938
+      ],
+      "expected_uniform": [
+        0.7307677268981934,
+        0.7270158529281616,
+        0.8620383143424988,
+        0.3771744966506958
+      ]
+    },
+    {
+      "training_seed": 1208925819614629174706267,
+      "world_id": "a:\u96ea",
+      "world_episode_seq": 2,
+      "tick": 7,
+      "site": "u",
+      "ordinal": 0,
+      "expected_bits24": [
+        259688,
+        675176,
+        14603466,
+        9899782
+      ],
+      "expected_uniform": [
+        0.01547861099243164,
+        0.04024362564086914,
+        0.8704344034194946,
+        0.5900729894638062
+      ]
+    }
+  ]
+}

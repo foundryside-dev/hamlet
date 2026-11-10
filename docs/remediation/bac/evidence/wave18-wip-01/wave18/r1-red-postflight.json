@@ -1,0 +1,13 @@
+{
+  "kind": "locked-vector/new public reference ABI causalRED",
+  "base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+  "tree": "b07596216b4a2c9f4ee9ad3344dc2464796ec919",
+  "failed": 1,
+  "deselected": 43,
+  "wall_seconds": 3.611384868621826,
+  "oracle": "all4literalexpectedbits vectors (28elements) passed independenttestspec before oldpublicAPI TypeError training_seed",
+  "custody": "PASS187source573config13artifact1process/index/import/threads/registry",
+  "production": "unchanged d7",
+  "sessions": "allclosed",
+  "preceding_real_domain_RED": "R0two actual targetstream mismatches and fixedactioncontrolPASS"
+}

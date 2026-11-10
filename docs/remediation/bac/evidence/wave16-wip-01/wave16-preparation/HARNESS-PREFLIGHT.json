@@ -1,0 +1,14 @@
+{
+  "sha256": {
+    "capture_wave14_round.py": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "bac_source_identity.py": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "verify_bac_run.py": "54ab0a2cf47b90a42a010770813fbfffe8abf9a767f74151fc462829e15c6d32"
+  },
+  "source": "same reviewed existing helpers; no helper edit",
+  "new_scope": "WORLD-IDENTITY 5/5000 in ignored tasks metadata",
+  "default_test_warning": "capture emits T21 test_factory; replace generated args with identity test BEFORE execution",
+  "base": "28830be0f794be3514ddcde751d58f47478cdabb",
+  "baseline": "wave15/r3-candidate.json",
+  "runtime": "not started; awaiting tests-only author handoff"
+}

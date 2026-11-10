@@ -1,0 +1,263 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [9 items]
+
+FFFFF.FFF                                                                [100%]
+=================================== FAILURES ===================================
+__________ test_bound_outer_proof_rejects_wrong_child[foreign_effect] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f52a7512c40>
+damage = 'foreign_effect'
+
+    @pytest.mark.parametrize("damage", ["foreign_effect", "wrong_content", "foreign_initial"])
+    def test_bound_outer_proof_rejects_wrong_child(compiled, monkeypatch, damage):
+        run = _Run(_env(compiled))
+        original = run.boundary.receipt
+        foreign = _Sink()
+    
+        def altered(kind, **payload):
+            if kind == "population_commit_receipt":
+                if damage == "foreign_effect":
+                    return foreign.receipt(kind, **payload)
+                if damage == "wrong_content":
+                    payload["completion_content"] = (("changed-same-boundary",),)
+            if kind == "initial_owner" and damage == "foreign_initial":
+                return foreign.receipt(kind, **payload)
+            return original(kind, **payload)
+    
+        monkeypatch.setattr(run.boundary, "receipt", altered)
+        if damage == "foreign_initial":
+            before = _state(run.env)
+            with pytest.raises(ValueError):
+                run.initial()
+        else:
+            run.reset(1)
+            run.step()
+            _, closure, dispositions = run.close(1)
+            before = _state(run.env)
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:754: Failed
+__________ test_bound_outer_proof_rejects_wrong_child[wrong_content] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f52a736d5b0>
+damage = 'wrong_content'
+
+    @pytest.mark.parametrize("damage", ["foreign_effect", "wrong_content", "foreign_initial"])
+    def test_bound_outer_proof_rejects_wrong_child(compiled, monkeypatch, damage):
+        run = _Run(_env(compiled))
+        original = run.boundary.receipt
+        foreign = _Sink()
+    
+        def altered(kind, **payload):
+            if kind == "population_commit_receipt":
+                if damage == "foreign_effect":
+                    return foreign.receipt(kind, **payload)
+                if damage == "wrong_content":
+                    payload["completion_content"] = (("changed-same-boundary",),)
+            if kind == "initial_owner" and damage == "foreign_initial":
+                return foreign.receipt(kind, **payload)
+            return original(kind, **payload)
+    
+        monkeypatch.setattr(run.boundary, "receipt", altered)
+        if damage == "foreign_initial":
+            before = _state(run.env)
+            with pytest.raises(ValueError):
+                run.initial()
+        else:
+            run.reset(1)
+            run.step()
+            _, closure, dispositions = run.close(1)
+            before = _state(run.env)
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:754: Failed
+_________ test_bound_outer_proof_rejects_wrong_child[foreign_initial] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f52a70fc950>
+damage = 'foreign_initial'
+
+    @pytest.mark.parametrize("damage", ["foreign_effect", "wrong_content", "foreign_initial"])
+    def test_bound_outer_proof_rejects_wrong_child(compiled, monkeypatch, damage):
+        run = _Run(_env(compiled))
+        original = run.boundary.receipt
+        foreign = _Sink()
+    
+        def altered(kind, **payload):
+            if kind == "population_commit_receipt":
+                if damage == "foreign_effect":
+                    return foreign.receipt(kind, **payload)
+                if damage == "wrong_content":
+                    payload["completion_content"] = (("changed-same-boundary",),)
+            if kind == "initial_owner" and damage == "foreign_initial":
+                return foreign.receipt(kind, **payload)
+            return original(kind, **payload)
+    
+        monkeypatch.setattr(run.boundary, "receipt", altered)
+        if damage == "foreign_initial":
+            before = _state(run.env)
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:747: Failed
+_________ test_last_closure_numeric_alias_refuses[batch_episode-True] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+field = 'batch_episode', value = True
+
+    @pytest.mark.parametrize(
+        "field,value", [("batch_episode", True), ("batch_episode", 1.0), ("world_episode_seqs", [True, 1]), ("world_episode_seqs", [1.0, 1])]
+    )
+    def test_last_closure_numeric_alias_refuses(compiled, field, value):
+        run = _Run(_env(compiled))
+        run.reset(1)
+        run.step()
+        _, closure, dispositions = run.close(1)
+        run.release_closed(1, closure, dispositions)
+        state = run.completed((1,))
+        state["last_closed_episode"][field] = value
+        target = _Run(_env(compiled), bootstrap=False)
+        before = _state(target.env)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:717: Failed
+_______________ test_prepared_close_refuses_intervening_rollout ________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_prepared_close_refuses_intervening_rollout(compiled):
+        run = _Run(_env(compiled))
+        run.reset(1)
+        run.step((IDS[0],))
+        content = ((1, 0, IDS[0], 1, "interface-outcome"),)
+        dispositions = run.bank.receipt(
+            "dispositions",
+            accepted=run.accepted,
+            boundary_key=1,
+            completion_content=content,
+            participated_world_ids=(IDS[0],),
+            dispositions=((IDS[0], "completed"), (IDS[1], "retired_nonparticipating")),
+        )
+        prepared = run.env.prepare_episode_close(
+            accepted=run.accepted,
+            boundary_key=1,
+            completion_content=content,
+            participated_world_ids=(IDS[0],),
+            dispositions=dispositions,
+        )
+        run.step(IDS)
+        before = _state(run.env)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:781: Failed
+__________ test_last_closure_numeric_alias_refuses[batch_episode-1.0] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+field = 'batch_episode', value = 1.0
+
+    @pytest.mark.parametrize(
+        "field,value", [("batch_episode", True), ("batch_episode", 1.0), ("world_episode_seqs", [True, 1]), ("world_episode_seqs", [1.0, 1])]
+    )
+    def test_last_closure_numeric_alias_refuses(compiled, field, value):
+        run = _Run(_env(compiled))
+        run.reset(1)
+        run.step()
+        _, closure, dispositions = run.close(1)
+        run.release_closed(1, closure, dispositions)
+        state = run.completed((1,))
+        state["last_closed_episode"][field] = value
+        target = _Run(_env(compiled), bootstrap=False)
+        before = _state(target.env)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:717: Failed
+______ test_last_closure_numeric_alias_refuses[world_episode_seqs-value2] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+field = 'world_episode_seqs', value = [True, 1]
+
+    @pytest.mark.parametrize(
+        "field,value", [("batch_episode", True), ("batch_episode", 1.0), ("world_episode_seqs", [True, 1]), ("world_episode_seqs", [1.0, 1])]
+    )
+    def test_last_closure_numeric_alias_refuses(compiled, field, value):
+        run = _Run(_env(compiled))
+        run.reset(1)
+        run.step()
+        _, closure, dispositions = run.close(1)
+        run.release_closed(1, closure, dispositions)
+        state = run.completed((1,))
+        state["last_closed_episode"][field] = value
+        target = _Run(_env(compiled), bootstrap=False)
+        before = _state(target.env)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:717: Failed
+______ test_last_closure_numeric_alias_refuses[world_episode_seqs-value3] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+field = 'world_episode_seqs', value = [1.0, 1]
+
+    @pytest.mark.parametrize(
+        "field,value", [("batch_episode", True), ("batch_episode", 1.0), ("world_episode_seqs", [True, 1]), ("world_episode_seqs", [1.0, 1])]
+    )
+    def test_last_closure_numeric_alias_refuses(compiled, field, value):
+        run = _Run(_env(compiled))
+        run.reset(1)
+        run.step()
+        _, closure, dispositions = run.close(1)
+        run.release_closed(1, closure, dispositions)
+        state = run.completed((1,))
+        state["last_closed_episode"][field] = value
+        target = _Run(_env(compiled), bootstrap=False)
+        before = _state(target.env)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:717: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_bound_outer_proof_rejects_wrong_child[foreign_effect]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_bound_outer_proof_rejects_wrong_child[wrong_content]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_bound_outer_proof_rejects_wrong_child[foreign_initial]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_last_closure_numeric_alias_refuses[batch_episode-True]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_prepared_close_refuses_intervening_rollout
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_last_closure_numeric_alias_refuses[batch_episode-1.0]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_last_closure_numeric_alias_refuses[world_episode_seqs-value2]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_last_closure_numeric_alias_refuses[world_episode_seqs-value3]
+========================= 8 failed, 1 passed in 9.41s ==========================

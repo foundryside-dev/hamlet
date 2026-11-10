@@ -1,0 +1,62 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 45 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_world_episode_identity.py>
+            <Function test_declared_roster_owned_exact_serialization>
+            <Function test_roster_invalid_ids_refuse[ids0]>
+            <Function test_roster_invalid_ids_refuse[ids1]>
+            <Function test_roster_invalid_ids_refuse[ids2]>
+            <Function test_roster_invalid_ids_refuse[ids3]>
+            <Function test_roster_invalid_ids_refuse[not-an-array]>
+            <Function test_roster_exact_schema[missing]>
+            <Function test_roster_exact_schema[old_schema]>
+            <Function test_roster_exact_schema[extra]>
+            <Function test_invalid_binding_precedes_constructor_randomness[order0]>
+            <Function test_invalid_binding_precedes_constructor_randomness[order1]>
+            <Function test_invalid_binding_precedes_constructor_randomness[order2]>
+            <Function test_real_env_requires_explicit_roster_seed_binding>
+            <Function test_reservation_and_failed_preflight_are_pure>
+            <Function test_authority_bootstrap_binding_and_consumption>
+            <Function test_reset_retry_after_rollout_owns_original_observation>
+            <Function test_activation_requires_owned_matching_receipts>
+            <Function test_late_reset_failure_quarantines_without_false_rollback>
+            <Function test_close_alone_blocks_save_next_release_is_save_independent>
+            <Function test_wrong_release_and_changed_disposition_are_pure>
+            <Function test_empty_abandon_is_not_completion_or_initial>
+            <Function test_participating_episode_cannot_claim_empty_abandon>
+            <Function test_initial_snapshot_repeat_restore_and_first_real_reset>
+            <Function test_malformed_initial_restore_is_pure[kind-UNKNOWN]>
+            <Function test_malformed_initial_restore_is_pure[schema-world-lifecycle-v2]>
+            <Function test_malformed_initial_restore_is_pure[completed_boundary_key-0]>
+            <Function test_malformed_initial_restore_is_pure[last_closed_episode-value3]>
+            <Function test_malformed_initial_restore_is_pure[accepted_episode_seqs-value4]>
+            <Function test_malformed_initial_restore_is_pure[next_batch_episode-True]>
+            <Function test_initial_restore_over_live_boundary_refuses>
+            <Function test_two_boundaries_two_reorders_keep_historical_binding_verbatim>
+            <Function test_completed_binding_corruption_refuses_before_install[missing_latest]>
+            <Function test_completed_binding_corruption_refuses_before_install[duplicate_batch]>
+            <Function test_completed_binding_corruption_refuses_before_install[wrong_latest]>
+            <Function test_completed_binding_corruption_refuses_before_install[foreign_world]>
+            <Function test_completed_binding_corruption_refuses_before_install[bool_sequence]>
+            <Function test_step_before_activation_and_changed_reservation_refuse>
+            <Function test_empty_close_and_unknown_history_reference_refuse>
+            <Function test_initial_schema_exact_and_snapshot_isolation>
+            <Function test_restore_identity_and_kind_mismatch_refuse[wrong_kind]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[extra_key]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[changed_manifest]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[wrong_seed]>
+            <Function test_restore_identity_and_kind_mismatch_refuse[unknown_member]>
+            <Function test_foreign_boundary_effect_receipt_cannot_release>
+
+========================= 45 tests collected in 0.09s ==========================

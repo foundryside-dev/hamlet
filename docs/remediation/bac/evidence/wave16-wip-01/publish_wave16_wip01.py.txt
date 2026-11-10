@@ -1,0 +1,33 @@
+"""Publish reviewed world producer as explicit incomplete WIP, without runtime changes."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave16/r3-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')}
+out=D/'evidence/wave16-wip-01';assert not out.exists();out.mkdir();artifacts={}
+def copy(source,dest):
+ assert not dest.exists();dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(source.read_bytes());assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave16-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave16-r*.json')):copy(p,out/'qualification'/p.name)
+for folder in ('wave16','wave16-preparation'):
+ for p in sorted((W/folder).glob('*')):
+  if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/folder/p.name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave16_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md'):copy(W/name,out/('execution-'+name))
+copy(W/'wave16-preparation/CURRENT-WORLD-IDENTITY-CONTRACT.md',D/'CURRENT-WORLD-IDENTITY-CONTRACT.md')
+receipt=json.loads((W/'wave16/r3-checkpoint-receipt.json').read_text())
+manifest={'status':receipt['status'],'packet':'World identity lifecycle/current-native producer, fixround1 source-reviewed and independently executed','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original scoped releases unchanged; bounded handoff not integrated release','publication':'Authorized existing remote branch. Continue planned work. No new branch/worktree/copy,PR,merge or deletion.','custody':'14 registry records/MAIN1 available;13 historical paths unavailable,preserved. Private Git backup excluded.'}
+mp=D/'evidence/wave16-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n')
+p=D/'STATUS.md';p.write_text(p.read_text()+'''\n\nWorld identity producer checkpoint: exact tested tree05b01ad1d548ad76bda8d0ef9a6ef4b685acb29a has54ownedPASS,9coveringPASS,independent27PASS and239curriculumPASS with source/fixture/process custody. These selections overlap and are not summed. Fresh other-model actual-source review approves the bounded repair after8 intended missing-refusal regressions: exact native numeric types,registered role custody/content,and pure preflight→freeze→committed closure with rollout revision. INITIAL and COMPLETED remain distinct, and historical accepted bindings survive fresh reorder. All five non-mypy guards PASS including compilerCLI; globalmypy remainsFAIL13errors in required EF/compiled/oracle/POP callers. Real constructor/caller,VFS,bank/native-parent/manifest,learning/independence,E2E,full repository/coverage/slow/hardware/final54requirements22lenses+synthesis remain required. This is durable WIP, not integrated qualification or release;28/66 count unchanged. Continue constructor transport and the dependency-coherent plan without a routine halt. See evidence/wave16-wip-01.json and CURRENT-WORLD-IDENTITY-CONTRACT.md.\n''')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave16-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave16-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

@@ -1,0 +1,20 @@
+{
+  "kind": "causal RED, not PASS",
+  "base_commit": "28830be0f794be3514ddcde751d58f47478cdabb",
+  "candidate_tree": "16ecb1bf6597f93ed36a1fa2176b14832d9a4f91",
+  "exit_code": 1,
+  "failed": 1,
+  "deselected": 44,
+  "collected": 45,
+  "wall_seconds": 19.290271282196045,
+  "assertion": "existing real ENV accepts omitted required roster/seed/lane binding: DID NOT RAISE TypeError",
+  "compiled_fixture": "actual current1.42 reached assertion",
+  "source_guards": 182,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 1,
+  "worktree_registry": 14,
+  "available_worktrees": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "broader_lifecycle": "unrun until missing producers exist"
+}

@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave16/r3-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-independent",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "independent",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave16-r3-independent",
+        "-k",
+        "last_closure_numeric_alias or bound_outer_proof or prepared_close_refuses or closure_installed_before or initial or restore or quarantine or reservation"
+      ]
+    }
+  ]
+}

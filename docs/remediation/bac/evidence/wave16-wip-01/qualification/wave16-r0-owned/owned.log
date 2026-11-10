@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 45 items / 44 deselected / 1 selected
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py F      [100%]
+
+=================================== FAILURES ===================================
+_____________ test_real_env_requires_explicit_roster_seed_binding ______________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_real_env_requires_explicit_roster_seed_binding(compiled):
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+    
+>       with pytest.raises(TypeError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'TypeError'>
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:295: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_real_env_requires_explicit_roster_seed_binding
+====================== 1 failed, 44 deselected in 14.87s =======================

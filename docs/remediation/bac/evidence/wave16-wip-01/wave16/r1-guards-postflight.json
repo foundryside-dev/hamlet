@@ -1,0 +1,49 @@
+{
+  "base_commit": "28830be0f794be3514ddcde751d58f47478cdabb",
+  "tree": "2ab1dfdc105a9ae3e559c829096c1e50ca3860a7",
+  "guards": [
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.13648009300231934,
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 1,
+      "seconds": 3.3560125827789307,
+      "log_sha256": "5f0dd44f67434efa15c4d20abc44545e940ece3003d4cd3d887129f5c49857c9"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 0.9075281620025635,
+      "log_sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.429534912109375,
+      "log_sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 70.98408055305481,
+      "log_sha256": "36740af784ce6f9afc0b4c8410417d7f58c5a62bd0a1b5eeec76a9e9a5fc4b25"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 175.68237113952637,
+      "log_sha256": "443de724969d7fcde791c84985df66f40e0f58c80217bb849ffe33b7e9ba5109"
+    }
+  ],
+  "guard_status": "five PASS, mypyFAIL75errors7files",
+  "source_index_config_artifact_registry_custody": "PASS",
+  "source_files": 183,
+  "configs": 573,
+  "artifacts": 13,
+  "runtime_sessions": "all closed",
+  "review": "Sol actual-source CHANGE REQUEST F1-F4; no producer acceptance"
+}

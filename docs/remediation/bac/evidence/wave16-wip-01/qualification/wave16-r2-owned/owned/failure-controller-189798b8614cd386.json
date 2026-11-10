@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_last_closure_numeric_alias_refuses[batch_episode-True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfield = 'batch_episode', value = True\n\n    @pytest.mark.parametrize(\n        \"field,value\", [(\"batch_episode\", True), (\"batch_episode\", 1.0), (\"world_episode_seqs\", [True, 1]), (\"world_episode_seqs\", [1.0, 1])]\n    )\n    def test_last_closure_numeric_alias_refuses(compiled, field, value):\n        run = _Run(_env(compiled))\n        run.reset(1)\n        run.step()\n        _, closure, dispositions = run.close(1)\n        run.release_closed(1, closure, dispositions)\n        state = run.completed((1,))\n        state[\"last_closed_episode\"][field] = value\n        target = _Run(_env(compiled), bootstrap=False)\n        before = _state(target.env)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_world_episode_identity.py:717: Failed",
+  "candidate_tree": "3cf7ce422ff26b96b98e758960038d4c89e4d277"
+}

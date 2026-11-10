@@ -1,0 +1,64 @@
+{
+  "status": "WIP \u2014 owned source repair reviewed; required caller/integration qualification OPEN",
+  "base_commit": "28830be0f794be3514ddcde751d58f47478cdabb",
+  "tested_tree": "05b01ad1d548ad76bda8d0ef9a6ef4b685acb29a",
+  "source_files": 183,
+  "configs": 573,
+  "protected_artifacts": 13,
+  "owned_pass": 54,
+  "covering_pass": 9,
+  "independent_pass": 27,
+  "joint_curriculum_pass": 239,
+  "counts_overlap": "covering and independent selections overlap owned54; never sum as distinct tests",
+  "static_guards": [
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.11957216262817383,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-guards/ruff.log"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 1,
+      "seconds": 8.965657234191895,
+      "sha256": "541f5e83f41a75d59960646826951940d282caa5980ebbcb5677d73d1427e138",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-guards/mypy.log"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 2.794243812561035,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-guards/no-defaults.log"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 3.8048689365386963,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-guards/expression-doc.log"
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 82.64010548591614,
+      "sha256": "36740af784ce6f9afc0b4c8410417d7f58c5a62bd0a1b5eeec76a9e9a5fc4b25",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-guards/black.log"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 190.45285201072693,
+      "sha256": "1d696fc2e71e597c98c46eb06252f4b7f2e590b65899e9972c2044d46ff6c5ec",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave16-r3-compiler-cli/compiler-cli.log"
+    }
+  ],
+  "mypy": "FAIL13errors4callerfiles; zero owned/helper diagnostics",
+  "review": "same Sol independent actual-source spec/owned quality APPROVED; independent27PASS11.5209wall",
+  "source_index_import_threads_fixture_custody": "PASS",
+  "sessions": "all closed",
+  "release_progress": "28/66 original scoped releases, unchanged; world/T20/T21 bounded handoffs not integrated releases",
+  "unrun": "whole current repo full/default, coverage>=70, slow, CUDA, real bank/parent/manifest/VFS/RNG/learning/all-family E2E/final54requirements22lenses+synthesis remain owed",
+  "next": "durable existing-branch WIP, then constructor transport+remaining caller/VFS/dependency-coherent plan; continue no routine halt"
+}

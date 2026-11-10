@@ -1,0 +1,8 @@
+{
+  "base_commit": "28830be0f794be3514ddcde751d58f47478cdabb",
+  "candidate_tree": "16ecb1bf6597f93ed36a1fa2176b14832d9a4f91",
+  "patch": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave16/r0-candidate.patch",
+  "sha256": "ddde15f7a8a914d92f75e50c0759ead1e632c6d7db32b229df9bda6d3a5730df",
+  "bytes": 27666,
+  "meaning": "exact staged R0 candidate patch, captured while sole author may edit unstaged production; no new checkout/source copy"
+}

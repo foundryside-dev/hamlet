@@ -1,0 +1,20 @@
+{
+  "kind": "confirmed causal RED for F1/F2/F3, not PASS",
+  "tree": "3cf7ce422ff26b96b98e758960038d4c89e4d277",
+  "base_commit": "28830be0f794be3514ddcde751d58f47478cdabb",
+  "collected": 54,
+  "selected": 9,
+  "failed": 8,
+  "passed_control": 1,
+  "unique_failed_cases": 8,
+  "raw_failure_reports": 16,
+  "all_failed_at_intended_refusal_assertion": true,
+  "wall_seconds": 13.406216382980347,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "source_guards": 183,
+  "configs": 573,
+  "artifacts": 13,
+  "processes": 3,
+  "production_identical_R1": true,
+  "sessions": "closed"
+}

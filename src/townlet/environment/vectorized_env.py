@@ -8,12 +8,30 @@ environment with tensor operations [num_agents, ...].
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from numbers import Number, Real
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, cast
+from weakref import WeakValueDictionary
 
 import torch
 
+from townlet.config.world_roster import (
+    WorldAcceptedEpisode,
+    WorldEpisodeReservation,
+    WorldOwnerReceipt,
+    WorldRecord,
+    WorldRosterDeclaration,
+    canonical_hash,
+    exact_integer,
+    exact_world_ids,
+    frozen_value,
+    owned_value,
+    same_value,
+    validate_world_snapshot,
+    world_binding,
+)
 from townlet.environment import env_factory
 from townlet.environment.action_builder import ComposedActionSpace
 from townlet.environment.action_config import ActionConfig
@@ -60,6 +78,159 @@ if TYPE_CHECKING:
 # Import consolidated NullItemManager (ENV-009)
 from townlet.environment.null_managers import NullItemManager
 
+_WORLD_ROLES = {"population", "curiosity", "curriculum", "exploration", "network", "optimizer", "scheduler", "replay", "selection"}
+_EFFECT_ROLES = {
+    "curriculum_receipt": "curriculum",
+    "exploration_receipt": "exploration",
+    "population_commit_receipt": "population",
+    "epsilon_install_receipt": "exploration",
+    "selection_sync_receipt": "selection",
+}
+
+
+class WorldReceiptIssuer:
+    """Cooperative owner custody; copied or duck-typed evidence is never issued."""
+
+    def __init__(self, *, owner: object):
+        self._owner = owner
+        self._issued: WeakValueDictionary[int, WorldOwnerReceipt] = WeakValueDictionary()
+
+    @property
+    def owner(self) -> object:
+        return self._owner
+
+    def issue(self, *, kind: str, payload: Mapping[str, Any]) -> WorldOwnerReceipt:
+        if not isinstance(kind, str) or not kind or not isinstance(payload, Mapping):
+            raise ValueError("owner receipts require a kind and owned field mapping")
+        receipt = WorldOwnerReceipt(kind, self.owner, 0, frozen_value(payload), self)
+        self._issued[id(receipt)] = receipt
+        return receipt
+
+    @staticmethod
+    def validate(receipt: Any, kind: str, owner: object) -> WorldOwnerReceipt:
+        if not isinstance(receipt, WorldOwnerReceipt) or not isinstance(receipt._issuer, WorldReceiptIssuer):
+            raise ValueError("committed evidence requires an issued owner receipt")
+        issuer = receipt._issuer
+        if issuer._issued.get(id(receipt)) is not receipt or receipt.kind != kind or receipt.owner is not owner:
+            raise ValueError("wrong receipt kind, issuer or copied evidence")
+        return receipt
+
+
+class WorldBoundaryAuthority:
+    """T26's bound release capability; saving is never a release side effect."""
+
+    def __init__(self, env: VectorizedHamletEnv, owner: object):
+        self._env, self._owner = env, owner
+
+    def _bound_env(self) -> VectorizedHamletEnv:
+        if self._env._world_authority is not self:
+            raise ValueError("boundary capability was not bound by this ENV")
+        return self._env
+
+    def bootstrap(self, *, first_batch_episode: int) -> WorldRecord:
+        env = self._bound_env()
+        exact_integer(first_batch_episode, 0, "first batch")
+        env._require_phase("fresh-bound", "bootstrap-ready")
+        if env._world_bootstrap is not None:
+            if env._world_bootstrap.next_batch_episode != first_batch_episode:
+                raise ValueError("bootstrap batch cannot change")
+            return env._world_bootstrap
+        env._world_bootstrap = env._record("release", {"release_kind": "bootstrap", "next_batch_episode": first_batch_episode})
+        return env._world_bootstrap
+
+    def completed(self, *, closure: WorldRecord, effects: WorldOwnerReceipt) -> WorldRecord:
+        env = self._bound_env()
+        env._require_phase("closed-awaiting-release", "released-completed")
+        env._valid_record(closure, "closure")
+        if closure is not env._world_closure:
+            raise ValueError("release must name the current closure")
+        proof = WorldReceiptIssuer.validate(effects, "boundary_effects", self._owner)
+        fields = proof.payload
+        required = {
+            "batch_episode",
+            "accepted_identity",
+            "completion_content",
+            "retirement_receipt",
+            "curriculum_receipt",
+            "exploration_receipt",
+            "population_commit_receipt",
+            "epsilon_install_receipt",
+            "selection_sync_receipt",
+        }
+        if set(fields) != required or fields["accepted_identity"] is not env._world_accepted:
+            raise ValueError("effects require the exact accepted boundary")
+        exact_integer(fields["batch_episode"], 0, "effects batch")
+        if fields["batch_episode"] != closure.boundary_key or not same_value(fields["completion_content"], closure.completion_content):
+            raise ValueError("effects disagree with closure content")
+        if fields["retirement_receipt"] is not closure.dispositions:
+            raise ValueError("retirement evidence disagrees")
+        for name in required - {"batch_episode", "accepted_identity", "completion_content", "retirement_receipt"}:
+            child = fields[name]
+            WorldReceiptIssuer.validate(child, name, env._world_role_owners[_EFFECT_ROLES[name]])
+            if set(child.payload) != {"accepted", "boundary_key", "completion_content"}:
+                raise ValueError("effect receipt requires exact correlation fields")
+            exact_integer(child.boundary_key, 0, "effect boundary")
+            if (
+                child.accepted is not env._world_accepted
+                or child.boundary_key != closure.boundary_key
+                or not same_value(child.completion_content, closure.completion_content)
+            ):
+                raise ValueError("effect receipt belongs to another boundary")
+        return env._equal_record(
+            "completed_release",
+            "release",
+            {
+                "release_kind": "completed",
+                "next_batch_episode": closure.boundary_key + 1,
+                "closure": closure,
+                "effects": effects,
+            },
+        )
+
+    def prepare_initial_snapshot(self, *, release: WorldRecord, owners: WorldOwnerReceipt) -> WorldRecord:
+        env = self._bound_env()
+        env._require_phase("bootstrap-ready")
+        env._require_release(release)
+        proof = WorldReceiptIssuer.validate(owners, "initial_owners", self._owner)
+        exact_integer(proof.bootstrap_first_batch, 0, "initial bootstrap batch")
+        fields = proof.payload
+        names = {"population", "curriculum", "exploration", "network", "optimizer", "scheduler", "replay", "selection"}
+        if set(fields) != names | {"semantic_execution_identity", "bootstrap_first_batch", "world_binding"}:
+            raise ValueError("initial preparation requires every current owner")
+        if (
+            proof.semantic_execution_identity != env.semantic_execution_identity
+            or proof.bootstrap_first_batch != release.next_batch_episode
+            or tuple(proof.world_binding) != env.world_ids
+        ):
+            raise ValueError("initial owner identity disagrees")
+        for name in names:
+            child = fields[name]
+            WorldReceiptIssuer.validate(child, "initial_owner", env._world_role_owners[name])
+            if set(child.payload) != {"role", "state", "semantic_execution_identity", "bootstrap_first_batch", "world_binding"}:
+                raise ValueError("initial owner must provide its prepared current state")
+            if (
+                child.role != name
+                or child.semantic_execution_identity != env.semantic_execution_identity
+                or type(child.bootstrap_first_batch) is not int
+                or child.bootstrap_first_batch != release.next_batch_episode
+                or tuple(child.world_binding) != env.world_ids
+            ):
+                raise ValueError("initial owner role or correlation disagrees")
+        return env._record("initial_snapshot", {"release": release, "owners": owners})
+
+    def restored(self, *, restore: WorldRecord, boundary: WorldOwnerReceipt) -> WorldRecord:
+        env = self._bound_env()
+        env._require_phase("fresh-bound")
+        env._valid_record(restore, "prepared_restore")
+        proof = WorldReceiptIssuer.validate(boundary, "restored_boundary", self._owner)
+        if set(proof.payload) != {"kind", "state", "prepared"} or proof.prepared is not restore:
+            raise ValueError("restore requires matching joint prepared evidence")
+        if proof.payload["kind"] != restore.state["kind"] or not same_value(proof.state, restore.state):
+            raise ValueError("joint restore evidence disagrees")
+        return env._record(
+            "release", {"release_kind": "restored", "next_batch_episode": restore.state["next_batch_episode"], "restore": restore}
+        )
+
 
 class VectorizedHamletEnv:
     """
@@ -72,6 +243,23 @@ class VectorizedHamletEnv:
     EFFECT_OBS_SLOTS = 8  # Fixed number of observable effect slots per agent
 
     runtime_registry: AgentRuntimeRegistry | None
+    positions: torch.Tensor
+    _velocity: torch.Tensor
+    meters: torch.Tensor
+    dones: torch.Tensor
+    step_counts: torch.Tensor
+    intrinsic_weights: torch.Tensor
+    _movement_deltas: torch.Tensor
+    meter_bounds_min: torch.Tensor
+    meter_bounds_max: torch.Tensor
+    interaction_progress: torch.Tensor
+    last_interaction_position: torch.Tensor
+    time_of_day: int
+    vtc_reward_program: VTCRewardProgram
+    action_space: ComposedActionSpace
+    action_ids: dict[str, int]
+    affordances: dict[str, torch.Tensor]
+    affordance_engine: AffordanceEngine
 
     def __init__(
         self,
@@ -80,6 +268,9 @@ class VectorizedHamletEnv:
         level_name: str,
         num_agents: int,
         device: torch.device | str,
+        world_roster: WorldRosterDeclaration,
+        training_seed: int,
+        lane_world_ids: tuple[str, ...],
     ):
         """
         Initialize vectorized environment.
@@ -95,6 +286,7 @@ class VectorizedHamletEnv:
             - Behavioral parameters (grid size, observability, energy costs, affordance selection)
               now flow exclusively from the compiled universe
         """
+        self._initialize_world_identity(world_roster, training_seed, lane_world_ids, num_agents, universe.execution_hash)
         if device is None:
             raise ValueError("VectorizedHamletEnv requires an explicit device; cannot default to CPU/GPU.")
         torch_device = torch.device(device) if isinstance(device, str) else device
@@ -585,7 +777,7 @@ class VectorizedHamletEnv:
         # Counter-based VFS draws (expressions, action writes, transition rules), separate
         # from the effects engine's streams (S1). The run seed is captured here, once: a
         # later seed_all elsewhere in the process never shifts this environment's draws.
-        self.vfs_randomness = VFSRandomness(torch.initial_seed())
+        self.vfs_randomness = VFSRandomness(self._world_seed)
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
             self.vfs_evaluator = VFSEvaluator(history_spec=universe.vfs_history_spec)
@@ -753,7 +945,7 @@ class VectorizedHamletEnv:
             bars_dict[bar_name] = self.meters[:, idx]
         return bars_dict
 
-    def reset(self) -> torch.Tensor:
+    def _reset_world_state(self) -> torch.Tensor:
         """Reset all environments and return the first observation of the episode.
 
         The observation describes the state the first action is taken in, exactly as
@@ -852,6 +1044,9 @@ class VectorizedHamletEnv:
         level_name: str,
         num_agents: int,
         device: torch.device | str,
+        world_roster: WorldRosterDeclaration,
+        training_seed: int,
+        lane_world_ids: tuple[str, ...],
     ) -> VectorizedHamletEnv:
         """Instantiate environment using metadata from a compiled universe.
 
@@ -865,12 +1060,16 @@ class VectorizedHamletEnv:
         Returns:
             VectorizedHamletEnv instance
         """
-        return env_factory.from_universe(
-            cls,
+        if level_name is None:
+            raise ValueError("level_name must be explicit")
+        return cls(
             universe=universe,
             level_name=level_name,
             num_agents=num_agents,
             device=device,
+            world_roster=world_roster,
+            training_seed=training_seed,
+            lane_world_ids=lane_world_ids,
         )
 
     def _get_observations(self) -> torch.Tensor:
@@ -1086,6 +1285,9 @@ class VectorizedHamletEnv:
             info: dict with metadata and owned bool [num_agents, action_dim]
                 successor_action_masks for this same committed observation/status
         """
+        if self._world_phase != "active":
+            raise ValueError("world episode must be accepted and activated before stepping")
+        self._world_revision += 1
         prev_dones = self.dones.clone()
         active_on_entry = ~prev_dones
         self.vfs_registry.reset_tick_scoped()
@@ -1712,3 +1914,429 @@ class VectorizedHamletEnv:
             picks = torch.randint(0, len(free), (len(clashes),))
             sampled[clashes] = torch.tensor([free[int(pick)] for pick in picks], dtype=self.substrate.position_dtype, device=self.device)
         return sampled
+
+    def _initialize_world_identity(
+        self, roster: WorldRosterDeclaration, seed: int, lane_ids: tuple[str, ...], count: int, execution_identity: str
+    ) -> None:
+        if not isinstance(roster, WorldRosterDeclaration):
+            raise ValueError("ENV requires an authored WorldRosterDeclaration")
+        ids = exact_world_ids(lane_ids)
+        exact_integer(count, 1, "world count")
+        exact_integer(seed, 0, "training seed")
+        if len(ids) != count or set(ids) != set(roster.world_ids):
+            raise ValueError("lane binding must contain the exact declared roster")
+        self._world_roster, self._world_seed, self._world_ids = roster, seed, ids
+        self._world_identity = canonical_hash({"execution": execution_identity, "membership": roster.semantic_identity, "seed": seed})
+        self._world_phase, self._world_generation = "fresh-unbound", 0
+        self._world_revision = 0
+        self._world_role_owners: Mapping[str, object] = {}
+        self._world_frozen: WorldRecord | None = None
+        self._world_cursors = dict.fromkeys(ids, 0)
+        self._world_records: WeakValueDictionary[int, WorldRecord] = WeakValueDictionary()
+        self._world_equal: dict[str, WorldRecord] = {}
+        self._world_bindings: dict[int, dict[str, Any]] = {}
+        self._world_authority: WorldBoundaryAuthority | None = None
+        self._world_bootstrap: WorldRecord | None = None
+        self._world_release: WorldRecord | None = None
+        self._world_accepted: WorldAcceptedEpisode | None = None
+        self._world_reset: WorldRecord | None = None
+        self._world_reservation: WorldEpisodeReservation | None = None
+        self._world_closure: WorldRecord | None = None
+        self._world_last_closed: dict[str, Any] | None = None
+        self._world_consumers: tuple[object, object] | None = None
+        self._world_saved_binding: dict[str, Any] | None = None
+        self._world_restored: tuple[WorldRecord, WorldRecord] | None = None
+
+    @property
+    def world_ids(self) -> tuple[str, ...]:
+        return self._world_ids
+
+    @property
+    def accepted_episode_seqs(self) -> Mapping[str, int]:
+        return MappingProxyType(dict(self._world_cursors))
+
+    @property
+    def world_phase(self) -> str:
+        return self._world_phase
+
+    @property
+    def semantic_execution_identity(self) -> str:
+        return self._world_identity
+
+    def _require_phase(self, *phases: str) -> None:
+        if self._world_phase not in phases:
+            raise ValueError(f"operation is unavailable in world phase {self._world_phase}")
+
+    def _record(self, kind: str, payload: Mapping[str, Any]) -> WorldRecord:
+        result = WorldRecord(kind, self, self._world_generation, frozen_value(payload))
+        self._world_records[id(result)] = result
+        return result
+
+    def _valid_record(self, record: Any, kind: str) -> None:
+        if (
+            not isinstance(record, WorldRecord)
+            or record.kind != kind
+            or record._owner is not self
+            or record._generation != self._world_generation
+            or self._world_records.get(id(record)) is not record
+        ):
+            raise ValueError("foreign, stale, changed or unissued world capability")
+
+    def _equal_record(self, key: str, kind: str, payload: Mapping[str, Any]) -> WorldRecord:
+        previous = self._world_equal.get(key)
+        if previous is not None:
+            if not same_value(previous.payload, payload):
+                raise ValueError("changed content on a world operation retry")
+            return previous
+        result = self._record(kind, payload)
+        self._world_equal[key] = result
+        return result
+
+    def _require_release(self, release: WorldRecord) -> None:
+        self._valid_record(release, "release")
+        if release is not self._world_release:
+            raise ValueError("world operation requires the installed release")
+
+    def bind_boundary_authority(self, *, owner: object, role_owners: Mapping[str, object]) -> WorldBoundaryAuthority:
+        if not isinstance(role_owners, Mapping) or set(role_owners) != _WORLD_ROLES or any(value is None for value in role_owners.values()):
+            raise ValueError("boundary authority requires every actual role owner")
+        if self._world_authority is not None:
+            if self._world_authority._owner is not owner or any(
+                role_owners[key] is not self._world_role_owners[key] for key in _WORLD_ROLES
+            ):
+                raise ValueError("world boundary authority is already bound")
+            return self._world_authority
+        self._require_phase("fresh-unbound")
+        self._world_authority = WorldBoundaryAuthority(self, owner)
+        self._world_role_owners = MappingProxyType(dict(role_owners))
+        self._world_phase = "fresh-bound"
+        return self._world_authority
+
+    def install_boundary_release(self, release: WorldRecord) -> WorldRecord:
+        self._valid_record(release, "release")
+        if release is self._world_release:
+            self._require_phase("bootstrap-ready", "released-completed")
+            return release
+        if release.release_kind == "bootstrap":
+            self._require_phase("fresh-bound")
+            if release is not self._world_bootstrap:
+                raise ValueError("unissued bootstrap")
+            phase = "bootstrap-ready"
+        elif release.release_kind == "completed":
+            self._require_phase("closed-awaiting-release")
+            if release.closure is not self._world_closure:
+                raise ValueError("release does not match current closure")
+            phase = "released-completed"
+        else:
+            raise ValueError("restored releases install only with their prepared restore")
+        self._world_release, self._world_phase = release, phase
+        return release
+
+    def prepare_episode(self, *, batch_episode: int, release: WorldRecord) -> WorldEpisodeReservation:
+        self._require_phase("bootstrap-ready", "released-completed")
+        self._require_release(release)
+        exact_integer(batch_episode, 0, "batch episode")
+        if batch_episode != release.next_batch_episode:
+            raise ValueError("batch identity must be the released next batch")
+        return WorldEpisodeReservation(
+            self.world_ids,
+            tuple(self._world_cursors[key] + 1 for key in self.world_ids),
+            batch_episode,
+            self,
+            self._world_generation,
+            release,
+        )
+
+    def validate_episode_reservation(self, reservation: WorldEpisodeReservation) -> None:
+        self._require_phase("bootstrap-ready", "released-completed")
+        if not isinstance(reservation, WorldEpisodeReservation) or reservation._owner is not self:
+            raise ValueError("reservation belongs to another world authority")
+        if not isinstance(reservation.world_episode_seqs, tuple):
+            raise ValueError("reservation sequences must be immutable")
+        for sequence in reservation.world_episode_seqs:
+            exact_integer(sequence, 1, "reserved sequence")
+        self._require_release(reservation._release)
+        expected = self.prepare_episode(batch_episode=reservation.batch_episode, release=reservation._release)
+        if (
+            reservation._generation != expected._generation
+            or reservation.world_ids != expected.world_ids
+            or reservation.world_episode_seqs != expected.world_episode_seqs
+        ):
+            raise ValueError("reservation identity or cursor disagrees")
+
+    def reset(self, *, reservation: WorldEpisodeReservation) -> WorldRecord:
+        previous = self._world_reservation
+        duplicate = (
+            isinstance(reservation, WorldEpisodeReservation)
+            and previous is not None
+            and type(reservation.batch_episode) is int
+            and isinstance(reservation.world_episode_seqs, tuple)
+            and all(type(sequence) is int for sequence in reservation.world_episode_seqs)
+            and reservation._owner is previous._owner
+            and reservation._generation == previous._generation
+            and reservation._release is previous._release
+            and reservation.batch_episode == previous.batch_episode
+            and reservation.world_ids == previous.world_ids
+            and reservation.world_episode_seqs == previous.world_episode_seqs
+        )
+        if self._world_reset is not None and duplicate:
+            self._require_phase("active-awaiting-activation", "active", "closed-awaiting-release", "released-completed")
+            return self._world_reset
+        self.validate_episode_reservation(reservation)
+        self._world_phase = "resetting"
+        try:
+            observation = self._reset_world_state()
+            generation = self._world_generation + 1
+            accepted = WorldAcceptedEpisode(
+                reservation.world_ids, reservation.world_episode_seqs, reservation.batch_episode, self, generation
+            )
+            binding = {
+                "batch_episode": accepted.batch_episode,
+                "world_ids": list(accepted.world_ids),
+                "world_episode_seqs": list(accepted.world_episode_seqs),
+            }
+            self._world_generation = generation
+            receipt = self._record("reset", {"accepted": accepted, "observation": observation})
+            self._world_cursors = dict(zip(accepted.world_ids, accepted.world_episode_seqs, strict=True))
+            self._world_bindings[accepted.batch_episode] = binding
+            self._world_accepted, self._world_reset, self._world_reservation = accepted, receipt, reservation
+            self._world_restored = None
+            self._world_frozen = None
+            self._world_equal = {}
+            self._world_closure, self._world_release = None, None
+            self._world_phase = "active-awaiting-activation"
+            return receipt
+        except BaseException:
+            self._world_phase = "quarantined"
+            raise
+
+    def _accepted(self, accepted: WorldAcceptedEpisode) -> None:
+        if accepted is not self._world_accepted or accepted is None:
+            raise ValueError("accepted episode must be this ENV's current token")
+
+    def activate_episode(
+        self, *, accepted: WorldAcceptedEpisode, population_receipt: WorldOwnerReceipt, curiosity_receipt: WorldOwnerReceipt
+    ) -> WorldRecord:
+        self._require_phase("active-awaiting-activation", "active")
+        self._accepted(accepted)
+        for role, receipt in (("population", population_receipt), ("curiosity", curiosity_receipt)):
+            WorldReceiptIssuer.validate(receipt, "activation", self._world_role_owners[role])
+            if set(receipt.payload) != {"accepted"} or receipt.accepted is not accepted:
+                raise ValueError("activation receipt identity disagrees")
+        owners = (population_receipt.owner, curiosity_receipt.owner)
+        if self._world_consumers is not None and any(a is not b for a, b in zip(owners, self._world_consumers, strict=True)):
+            raise ValueError("episode consumers cannot change inside an ENV")
+        result = self._equal_record(
+            "activation", "activation", {"accepted": accepted, "population": population_receipt, "curiosity": curiosity_receipt}
+        )
+        self._world_consumers, self._world_phase = owners, "active"
+        return result
+
+    def prepare_episode_close(
+        self,
+        *,
+        accepted: WorldAcceptedEpisode,
+        boundary_key: int,
+        completion_content: Any,
+        participated_world_ids: tuple[str, ...],
+        dispositions: WorldOwnerReceipt,
+    ) -> WorldRecord:
+        self._require_phase("active", "closed-awaiting-release", "released-completed")
+        self._accepted(accepted)
+        exact_integer(boundary_key, 0, "boundary key")
+        participants = exact_world_ids(participated_world_ids)
+        actual = {key for index, key in enumerate(self.world_ids) if int(self.step_counts[index]) > 0}
+        if boundary_key != accepted.batch_episode or set(participants) != actual:
+            raise ValueError("closure requires exactly the genuinely participated worlds")
+        if self._world_consumers is None:
+            raise ValueError("closure requires activated consumers")
+        proof = WorldReceiptIssuer.validate(dispositions, "prepared_dispositions", self._world_consumers[1])
+        if set(proof.payload) != {"accepted", "boundary_key", "completion_content", "participated_world_ids", "dispositions"}:
+            raise ValueError("disposition receipt requires complete fields")
+        exact_integer(proof.boundary_key, 0, "disposition boundary")
+        expected = tuple((key, "completed" if key in actual else "retired_nonparticipating") for key in self.world_ids)
+        if (
+            proof.accepted is not accepted
+            or proof.boundary_key != boundary_key
+            or tuple(proof.participated_world_ids) != participants
+            or not same_value(proof.completion_content, completion_content)
+            or proof.dispositions != expected
+        ):
+            raise ValueError("committed dispositions disagree with the accepted episode")
+        payload = {
+            "accepted": accepted,
+            "boundary_key": boundary_key,
+            "completion_content": completion_content,
+            "participated_world_ids": participants,
+            "dispositions": dispositions,
+            "revision": self._world_revision,
+        }
+        return self._record("prepared_close", payload)
+
+    def freeze_episode_close(self, prepared: WorldRecord) -> WorldRecord:
+        self._require_phase("active", "boundary-pending", "closed-awaiting-release", "released-completed")
+        self._valid_record(prepared, "prepared_close")
+        self._accepted(prepared.accepted)
+        if prepared.revision != self._world_revision or (self._world_frozen is not None and self._world_frozen is not prepared):
+            raise ValueError("closure preparation is stale or another boundary is frozen")
+        if self._world_frozen is prepared:
+            return prepared
+        self._world_frozen, self._world_phase = prepared, "boundary-pending"
+        return prepared
+
+    def close_episode(self, prepared: WorldRecord, *, dispositions: WorldOwnerReceipt) -> WorldRecord:
+        self._require_phase("boundary-pending", "closed-awaiting-release", "released-completed")
+        self._valid_record(prepared, "prepared_close")
+        if prepared is not self._world_frozen or prepared.revision != self._world_revision:
+            raise ValueError("closure requires the frozen current preparation")
+        WorldReceiptIssuer.validate(dispositions, "dispositions", self._world_role_owners["curiosity"])
+        if not same_value(dispositions.payload, prepared.dispositions.payload):
+            raise ValueError("committed bank disposition disagrees with prepared content")
+        closure = self._equal_record("closure", "closure", {**prepared.payload, "dispositions": dispositions})
+        if self._world_closure is not None:
+            return closure
+        accepted = prepared.accepted
+        last = {
+            "batch_episode": accepted.batch_episode,
+            "world_ids": list(accepted.world_ids),
+            "world_episode_seqs": list(accepted.world_episode_seqs),
+            "completion_content": owned_value(prepared.completion_content),
+            "participated_world_ids": list(prepared.participated_world_ids),
+        }
+        self._world_last_closed, self._world_saved_binding = last, world_binding(accepted.world_ids)
+        self._world_closure, self._world_phase = closure, "closed-awaiting-release"
+        return closure
+
+    def abandon_episode(self, *, accepted: WorldAcceptedEpisode, reason: str) -> WorldRecord:
+        self._accepted(accepted)
+        if reason not in ("empty_participation", "runtime_failure"):
+            raise ValueError("unknown episode abandonment reason")
+        if self._world_phase == "quarantined":
+            previous = self._world_equal.get("abandonment")
+            if previous is None or previous.reason != reason:
+                raise ValueError("different failed attempt cannot be retried")
+            return previous
+        self._require_phase("active", "active-awaiting-activation")
+        if reason == "empty_participation":
+            if bool((self.step_counts > 0).any()) or self._world_consumers is None:
+                raise ValueError("empty abandonment requires activated empty owners")
+            for owner in self._world_consumers:
+                method = getattr(owner, "prepare_empty_episode_evidence", None)
+                if not callable(method):
+                    raise ValueError("owner lacks the required empty-episode proof")
+                evidence = WorldReceiptIssuer.validate(method(accepted=accepted), "empty_episode", owner)
+                if set(evidence.payload) != {"accepted", "participated_world_ids", "events"} or evidence.accepted is not accepted:
+                    raise ValueError("empty-episode proof identity disagrees")
+                if evidence.participated_world_ids or evidence.events:
+                    raise ValueError("episode has participating owner state")
+        result = self._equal_record("abandonment", "abandonment", {"accepted": accepted, "reason": reason})
+        self._world_phase = "quarantined"
+        return result
+
+    def checkpoint_world_state(
+        self, *, kind: str, release: WorldRecord, retained_binding_batches: tuple[int, ...], initial: WorldRecord | None
+    ) -> dict[str, Any]:
+        self._require_release(release)
+        if not isinstance(retained_binding_batches, tuple):
+            raise ValueError("retained history references require a tuple")
+        for batch in retained_binding_batches:
+            exact_integer(batch, 0, "retained batch")
+        if tuple(sorted(set(retained_binding_batches))) != retained_binding_batches:
+            raise ValueError("retained batch references must be sorted and unique")
+        if kind == "INITIAL":
+            self._require_phase("bootstrap-ready")
+            self._valid_record(initial, "initial_snapshot")
+            assert isinstance(initial, WorldRecord)
+            if initial.release is not release or retained_binding_batches or any(self._world_cursors.values()) or self._world_bindings:
+                raise ValueError("INITIAL requires pristine bootstrap and no accepted history")
+        elif kind == "COMPLETED":
+            self._require_phase("released-completed")
+            if (
+                initial is not None
+                or self._world_last_closed is None
+                or self._world_last_closed["batch_episode"] not in retained_binding_batches
+            ):
+                raise ValueError("completed snapshots require current closure provenance")
+        else:
+            raise ValueError("snapshot kind must be explicit INITIAL or COMPLETED")
+        if any(batch not in self._world_bindings for batch in retained_binding_batches):
+            raise ValueError("missing retained accepted-binding provenance")
+        return {
+            "schema": "world-lifecycle-v3",
+            "kind": kind,
+            "next_batch_episode": release.next_batch_episode,
+            "world_roster": self._world_roster.to_dict(),
+            "manifest_digest": self._world_roster.manifest_digest,
+            "roster_semantic_identity": self._world_roster.semantic_identity,
+            "training_seed": self._world_seed,
+            "execution_identity": self.semantic_execution_identity,
+            "saved_lane_binding": owned_value(self._world_saved_binding),
+            "destination_lane_binding": world_binding(self.world_ids),
+            "accepted_episode_seqs": dict(self._world_cursors),
+            "last_closed_episode": owned_value(self._world_last_closed),
+            "completed_boundary_key": None if self._world_last_closed is None else self._world_last_closed["batch_episode"],
+            "accepted_bindings": [owned_value(self._world_bindings[batch]) for batch in retained_binding_batches],
+        }
+
+    def prepare_world_restore(
+        self,
+        *,
+        kind: str,
+        state: Mapping[str, Any],
+        world_roster: WorldRosterDeclaration,
+        destination_world_ids: tuple[str, ...],
+        semantic_execution_identity: str,
+    ) -> WorldRecord:
+        self._require_phase("fresh-bound")
+        if not isinstance(world_roster, WorldRosterDeclaration) or world_roster.to_dict() != self._world_roster.to_dict():
+            raise ValueError("restore must preserve the original authored roster manifest")
+        destination = exact_world_ids(destination_world_ids)
+        if set(destination) != set(self.world_ids) or destination != self.world_ids:
+            raise ValueError("restore destination must be the fresh ENV's actual binding")
+        if semantic_execution_identity != self.semantic_execution_identity:
+            raise ValueError("restore destination semantic identity disagrees")
+        prepared = validate_world_snapshot(state, kind, world_roster, self._world_seed, semantic_execution_identity)
+        return self._record("prepared_restore", {"state": prepared, "destination_world_ids": destination})
+
+    def install_world_restore(self, *, prepared: WorldRecord, release: WorldRecord) -> WorldRecord:
+        if self._world_restored is not None and self._world_restored == (prepared, release):
+            self._require_phase("bootstrap-ready", "released-completed")
+            assert self._world_release is not None
+            return self._world_release
+        self._require_phase("fresh-bound")
+        self._valid_record(prepared, "prepared_restore")
+        self._valid_record(release, "release")
+        if release.release_kind != "restored" or release.restore is not prepared:
+            raise ValueError("restore release does not name this preparation")
+        state = prepared.state
+        self._world_phase = "restoring"
+        try:
+            self._world_generation += 1
+            self._world_cursors = dict(state["accepted_episode_seqs"])
+            self._world_bindings = {item["batch_episode"]: owned_value(item) for item in state["accepted_bindings"]}
+            self._world_last_closed = owned_value(state["last_closed_episode"])
+            self._world_saved_binding = owned_value(state["saved_lane_binding"])
+            if state["kind"] == "INITIAL":
+                installed = self._record("release", {"release_kind": "bootstrap", "next_batch_episode": state["next_batch_episode"]})
+                self._world_bootstrap = installed
+                phase = "bootstrap-ready"
+            else:
+                last = self._world_last_closed
+                assert last is not None
+                self._world_accepted = WorldAcceptedEpisode(
+                    tuple(last["world_ids"]),
+                    tuple(last["world_episode_seqs"]),
+                    last["batch_episode"],
+                    self,
+                    self._world_generation,
+                )
+                self._world_closure = self._record("restored_closure", {"semantic_state": last})
+                installed = self._record("release", {"release_kind": "completed", "next_batch_episode": state["next_batch_episode"]})
+                phase = "released-completed"
+            self._world_release = installed
+            self._world_restored = (prepared, release)
+            self._world_phase = phase
+            return installed
+        except BaseException:
+            self._world_phase = "quarantined"
+            raise

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_real_env_requires_explicit_roster_seed_binding",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_real_env_requires_explicit_roster_seed_binding(compiled):\n        from townlet.environment.vectorized_env import VectorizedHamletEnv\n    \n>       with pytest.raises(TypeError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'TypeError'>\n\ntests/test_townlet/regressions/bac/test_world_episode_identity.py:295: Failed",
+  "candidate_tree": "16ecb1bf6597f93ed36a1fa2176b14832d9a4f91"
+}

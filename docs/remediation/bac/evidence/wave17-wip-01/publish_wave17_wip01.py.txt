@@ -1,0 +1,33 @@
+"""Publish reviewed constructor-only transport with exact source-equivalence evidence."""
+from pathlib import Path
+import hashlib,json,subprocess
+R=Path('/workspace/hamlet');Q=Path('/workspace/bac-review-2026-11-01/qualification');W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades';D=R/'docs/remediation/bac'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+git=lambda *a:subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+m=json.loads((W/'wave17/r1-candidate.json').read_text());assert git('rev-parse','HEAD')==m['base_commit'] and git('write-tree')==m['candidate_tree'] and not git('diff','--name-only')
+for group in ('source_files','configs','artifacts'):
+ for p,h in m[group].items():assert sha(R/p)==h,p
+execution={p:git('rev-parse',m['candidate_tree']+':'+p) for p in ('src','tests','configs','scripts')};out=D/'evidence/wave17-wip-01';assert not out.exists();out.mkdir();artifacts={}
+def copy(source,dest):
+ assert not dest.exists();dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(source.read_bytes());assert sha(source)==sha(dest);artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+def update(source,dest):
+ assert dest.read_bytes()==subprocess.check_output(['git','show',m['base_commit']+':'+dest.relative_to(R).as_posix()],cwd=R);dest.write_bytes(source.read_bytes());artifacts[dest.relative_to(R).as_posix()]={'sha256':sha(dest),'original':str(source)}
+for folder in sorted(Q.glob('wave17-r*')):
+ if folder.is_dir():
+  for p in sorted(folder.rglob('*')):
+   if p.is_file() and p.suffix in ('.json','.log'):copy(p,out/'qualification'/folder.name/p.relative_to(folder))
+for p in sorted(Q.glob('wave17-r*.json')):copy(p,out/'qualification'/p.name)
+for folder in ('wave17','wave17-preparation','wave18-preparation'):
+ for p in sorted((W/folder).glob('*')):
+  if p.is_file() and p.suffix in ('.json','.md','.txt','.patch'):copy(p,out/folder/p.name)
+for name in ('capture_wave14_round.py','verify_bac_run.py','run_bac_packet_checks_locked.py','bac_source_identity.py','publish_wave17_wip01.py'):copy(Q/name,out/(name+'.txt'))
+for name in ('CURRENT-STATE.json','progress.md'):copy(W/name,out/('execution-'+name))
+copy(W/'wave17-preparation/CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md',D/'CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md')
+update(W/'wave17-preparation/CURRENT-WORLD-IDENTITY-UPDATED.md',D/'CURRENT-WORLD-IDENTITY-CONTRACT.md');update(W/'wave17-preparation/CURRENT-COMPILED-POLICY-UPDATED.md',D/'CURRENT-COMPILED-POLICY-CONTRACT.md')
+receipt=json.loads((W/'wave17/r1-checkpoint-receipt.json').read_text());manifest={'status':receipt['status'],'packet':'Required authored-world identity/seed/lane constructor transport','evidence_base_commit':m['base_commit'],'evidence_candidate_tree':m['candidate_tree'],'execution_subtrees':execution,'inventories':m['inventories'],'source_files':m['source_files'],'config_changes':m['config_changes'],'receipt':receipt,'artifacts':artifacts,'qualified_progress':'28/66 original scoped releases unchanged; bounded handoff not integrated release','publication':'Authorized existingremote branch; continue planned work. No branch/worktree/copy,PR,merge or deletion.','next_abi':'Reviewed direct-world VFS design included as intent only; no implementation yet.','custody':'14 registry records/MAIN1available;13historical paths unavailable,preserved. Privatebackup excluded.'}
+mp=D/'evidence/wave17-wip-01.json';assert not mp.exists();mp.write_text(json.dumps(manifest,indent=2)+'\n');p=D/'STATUS.md';p.write_text(p.read_text()+'''\n\nConstructor transport checkpoint: exacttestedR1tree6f46f449b2c851dc8838e00f48e7fddc8e436dc1 passes193joint (88newconstructor+54world+51compiled), covering7 and freshAstraindependent88 with zero warnings/custodyPASS. Actualsource/spec/quality APPROVE, no materialfindings. Requiredworld_roster/training_seed/lane_world_ids now pass through compiled.create_environment→ENVclassmethod→EF→actualconstructor; currentnative1.42/cache/policy unchanged. FiveglobalguardsPASS inclCLI; globalmypy stillFAIL7errorsoracle/POPresetcallers, sixconstructorerrorsclosed. Current source contracts updated. Directper-worldVFS ABI is reviewed design intent, notyetimplemented; its v4child/native/tests and actualreset/bank/parent/manifest/RNG/learning/E2E/full/default/coverage/slow/hardware/final54requirements22lenses+synthesis remain owed. DurableWIP only,28/66 releasecountunchanged. Continueplannedworkwithout routinehalt. See evidence/wave17-wip-01.json.\n''')
+paths=[*artifacts,str(mp.relative_to(R)),'docs/remediation/bac/STATUS.md'];subprocess.run(['git','add','-f','--',*paths],cwd=R,check=True);tree=git('write-tree')
+for p,h in execution.items():assert git('rev-parse',tree+':'+p)==h,p
+for p,row in artifacts.items():assert sha(R/p)==row['sha256'],p
+subprocess.run(['git','diff','--cached','--check','--','.',':(glob,exclude)docs/remediation/bac/evidence/wave17-wip-01/**'],cwd=R,check=True)
+report={'status':manifest['status'],'evidence_tree':m['candidate_tree'],'publication_tree':tree,'source_equivalence':'PASS','artifact_count':len(artifacts),'staged_paths':git('diff','--cached','--name-only').splitlines()};(Q/'wave17-wip-01-assembly.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='staged_paths'},indent=2))

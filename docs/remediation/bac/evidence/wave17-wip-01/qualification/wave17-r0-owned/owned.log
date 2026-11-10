@@ -1,0 +1,148 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [6 items]
+
+FF..FF                                                                   [100%]
+=================================== FAILURES ===================================
+____ test_real_entry_point_transports_explicit_world_identity[cpu-compiled] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+roster = WorldRosterDeclaration(world_ids=('world:amber/007', 'world:birch/002'))
+route = 'compiled', device = 'cpu'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    @pytest.mark.parametrize("device", ("cpu", torch.device("cpu")))
+    def test_real_entry_point_transports_explicit_world_identity(compiled, roster, route, device):
+        inputs = constructor_inputs(roster)
+        inputs["device"] = device
+        before = roster.to_dict()
+>       env = construct(route, compiled, inputs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+route = 'compiled'
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+inputs = {'device': 'cpu', 'lane_world_ids': ('world:amber/007', 'world:birch/002'), 'level_name': 'L0_test', 'num_agents': 2, ...}
+
+    def construct(route: str, compiled: CompiledUniverse, inputs: dict[str, Any]) -> VectorizedHamletEnv:
+        if route == "compiled":
+>           return compiled.create_environment(**inputs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: CompiledUniverse.create_environment() got an unexpected keyword argument 'world_roster'
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:48: TypeError
+____ test_real_entry_point_transports_explicit_world_identity[cpu-factory] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+roster = WorldRosterDeclaration(world_ids=('world:amber/007', 'world:birch/002'))
+route = 'factory', device = 'cpu'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    @pytest.mark.parametrize("device", ("cpu", torch.device("cpu")))
+    def test_real_entry_point_transports_explicit_world_identity(compiled, roster, route, device):
+        inputs = constructor_inputs(roster)
+        inputs["device"] = device
+        before = roster.to_dict()
+>       env = construct(route, compiled, inputs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+route = 'factory'
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+inputs = {'device': 'cpu', 'lane_world_ids': ('world:amber/007', 'world:birch/002'), 'level_name': 'L0_test', 'num_agents': 2, ...}
+
+    def construct(route: str, compiled: CompiledUniverse, inputs: dict[str, Any]) -> VectorizedHamletEnv:
+        if route == "compiled":
+            return compiled.create_environment(**inputs)
+        if route == "factory":
+>           return env_factory.from_universe(VectorizedHamletEnv, compiled, **inputs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: from_universe() got an unexpected keyword argument 'world_roster'
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:50: TypeError
+__ test_real_entry_point_transports_explicit_world_identity[device1-compiled] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+roster = WorldRosterDeclaration(world_ids=('world:amber/007', 'world:birch/002'))
+route = 'compiled', device = device(type='cpu')
+
+    @pytest.mark.parametrize("route", ROUTES)
+    @pytest.mark.parametrize("device", ("cpu", torch.device("cpu")))
+    def test_real_entry_point_transports_explicit_world_identity(compiled, roster, route, device):
+        inputs = constructor_inputs(roster)
+        inputs["device"] = device
+        before = roster.to_dict()
+>       env = construct(route, compiled, inputs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+route = 'compiled'
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+inputs = {'device': device(type='cpu'), 'lane_world_ids': ('world:amber/007', 'world:birch/002'), 'level_name': 'L0_test', 'num_agents': 2, ...}
+
+    def construct(route: str, compiled: CompiledUniverse, inputs: dict[str, Any]) -> VectorizedHamletEnv:
+        if route == "compiled":
+>           return compiled.create_environment(**inputs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: CompiledUniverse.create_environment() got an unexpected keyword argument 'world_roster'
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:48: TypeError
+__ test_real_entry_point_transports_explicit_world_identity[device1-factory] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+roster = WorldRosterDeclaration(world_ids=('world:amber/007', 'world:birch/002'))
+route = 'factory', device = device(type='cpu')
+
+    @pytest.mark.parametrize("route", ROUTES)
+    @pytest.mark.parametrize("device", ("cpu", torch.device("cpu")))
+    def test_real_entry_point_transports_explicit_world_identity(compiled, roster, route, device):
+        inputs = constructor_inputs(roster)
+        inputs["device"] = device
+        before = roster.to_dict()
+>       env = construct(route, compiled, inputs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+route = 'factory'
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+inputs = {'device': device(type='cpu'), 'lane_world_ids': ('world:amber/007', 'world:birch/002'), 'level_name': 'L0_test', 'num_agents': 2, ...}
+
+    def construct(route: str, compiled: CompiledUniverse, inputs: dict[str, Any]) -> VectorizedHamletEnv:
+        if route == "compiled":
+            return compiled.create_environment(**inputs)
+        if route == "factory":
+>           return env_factory.from_universe(VectorizedHamletEnv, compiled, **inputs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: from_universe() got an unexpected keyword argument 'world_roster'
+
+tests/test_townlet/regressions/bac/test_world_constructor_transport.py:50: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_constructor_transport.py::test_real_entry_point_transports_explicit_world_identity[cpu-compiled]
+FAILED tests/test_townlet/regressions/bac/test_world_constructor_transport.py::test_real_entry_point_transports_explicit_world_identity[cpu-factory]
+FAILED tests/test_townlet/regressions/bac/test_world_constructor_transport.py::test_real_entry_point_transports_explicit_world_identity[device1-compiled]
+FAILED tests/test_townlet/regressions/bac/test_world_constructor_transport.py::test_real_entry_point_transports_explicit_world_identity[device1-factory]
+========================= 4 failed, 2 passed in 11.63s =========================

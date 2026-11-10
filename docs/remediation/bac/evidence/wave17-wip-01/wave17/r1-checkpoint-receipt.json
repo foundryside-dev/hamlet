@@ -1,0 +1,64 @@
+{
+  "status": "WIP \u2014 constructor transport source/owned integration reviewed; full BAC/reset consumers OPEN",
+  "base_commit": "86ee0d91c463adb7ac14a7949ee7b67f91c6c171",
+  "tested_tree": "6f46f449b2c851dc8838e00f48e7fddc8e436dc1",
+  "source_files": 185,
+  "configs": 573,
+  "protected_artifacts": 13,
+  "joint_pass": 193,
+  "joint_breakdown": "88 new constructor+54 world identity+51 compiled policy",
+  "covering_pass": 7,
+  "independent_pass": 88,
+  "counts_overlap": "covering/independent overlap joint; not summed as unique tests",
+  "static_guards": [
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "seconds": 0.2007596492767334,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/ruff.log"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 1,
+      "seconds": 2.1436195373535156,
+      "sha256": "bc5c5b0853b2e84cbda10b2c69fa36a7c803c0da86c348731348953062dbd36d",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/mypy.log"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 0.868459939956665,
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/no-defaults.log"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 2.111116886138916,
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/expression-doc.log"
+    },
+    {
+      "name": "black",
+      "exit_code": 0,
+      "seconds": 42.247262954711914,
+      "sha256": "5615d47f491d0c183ac94a658f20992f62ae1589852768946b53f223405adcf0",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/black.log"
+    },
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 335.9045169353485,
+      "sha256": "23039e079ae1e9e4d940182c07eaf8a45fe7db20e552b26127b25744c19e3a86",
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-compiler-cli/compiler-cli.log"
+    }
+  ],
+  "mypy": "FAIL7errors2oracle/POPcallerfiles; all6constructorerrorsclosed",
+  "review": "freshAstra actual-source spec+quality APPROVE no materialfindings; independent88PASS12.5377wall",
+  "custody": "PASSsource/index/import/threads/fixtures/registry",
+  "sessions": "all closed",
+  "release_progress": "28/66 original scoped releases unchanged; no integratedrelease",
+  "unrun": "currentfullrepo/coverage/slow/CUDA/realreset+bank+parent+manifest/VFS/RNG/learning/allfamilyE2E/final54requirements22lenses+synthesis remainowed",
+  "next": "durableWIP then directauthoritativeVFSconsumer and originaldependencycoherentplan; no routinehalt"
+}

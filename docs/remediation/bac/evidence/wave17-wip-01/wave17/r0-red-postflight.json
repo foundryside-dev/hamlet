@@ -1,0 +1,35 @@
+{
+  "kind": "causalRED, not qualified",
+  "base_commit": "86ee0d91c463adb7ac14a7949ee7b67f91c6c171",
+  "tree": "64066b81dc11041d58e5d490cef3d82c58289111",
+  "collected": 88,
+  "jobs": [
+    {
+      "job": "owned",
+      "failed": 4,
+      "passed": 2,
+      "processes": 3,
+      "seconds": 16.742539882659912,
+      "scope": "actual current entrypoint assertions; device control unchanged-statePASS"
+    },
+    {
+      "job": "factory-route",
+      "failed": 1,
+      "passed": 0,
+      "processes": 1,
+      "seconds": 6.871138572692871,
+      "scope": "actual current entrypoint assertions; device control unchanged-statePASS"
+    },
+    {
+      "job": "device-control",
+      "failed": 0,
+      "passed": 1,
+      "processes": 1,
+      "seconds": 6.186394691467285,
+      "scope": "actual current entrypoint assertions; device control unchanged-statePASS"
+    }
+  ],
+  "custody": "PASS185source573config13artifact/index/import/threads/14registry1available",
+  "runtime_sessions": "all closed",
+  "production": "unchanged from86ee"
+}

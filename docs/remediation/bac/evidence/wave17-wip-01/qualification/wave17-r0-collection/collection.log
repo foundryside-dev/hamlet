@@ -1,0 +1,105 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 88 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_world_constructor_transport.py>
+            <Function test_real_entry_point_transports_explicit_world_identity[cpu-compiled]>
+            <Function test_real_entry_point_transports_explicit_world_identity[cpu-factory]>
+            <Function test_real_entry_point_transports_explicit_world_identity[cpu-classmethod]>
+            <Function test_real_entry_point_transports_explicit_world_identity[device1-compiled]>
+            <Function test_real_entry_point_transports_explicit_world_identity[device1-factory]>
+            <Function test_real_entry_point_transports_explicit_world_identity[device1-classmethod]>
+            <Function test_reversed_lane_binding_preserves_authored_roster_and_semantic_identity[compiled]>
+            <Function test_reversed_lane_binding_preserves_authored_roster_and_semantic_identity[factory]>
+            <Function test_reversed_lane_binding_preserves_authored_roster_and_semantic_identity[classmethod]>
+            <Function test_explicit_seed_changes_world_identity_without_changing_compiled_policy[compiled]>
+            <Function test_explicit_seed_changes_world_identity_without_changing_compiled_policy[factory]>
+            <Function test_explicit_seed_changes_world_identity_without_changing_compiled_policy[classmethod]>
+            <Function test_fresh_instances_own_live_tensors_and_cursor_views[compiled]>
+            <Function test_fresh_instances_own_live_tensors_and_cursor_views[factory]>
+            <Function test_fresh_instances_own_live_tensors_and_cursor_views[classmethod]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[world_roster-compiled]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[world_roster-factory]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[world_roster-classmethod]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[training_seed-compiled]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[training_seed-factory]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[training_seed-classmethod]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[lane_world_ids-compiled]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[lane_world_ids-factory]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[lane_world_ids-classmethod]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[level_name-compiled]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[level_name-factory]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[level_name-classmethod]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[num_agents-compiled]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[num_agents-factory]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[num_agents-classmethod]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[device-compiled]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[device-factory]>
+            <Function test_absent_explicit_constructor_inputs_refuse_before_rng[device-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[world_roster-None-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[world_roster-None-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[world_roster-None-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[world_roster-value1-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[world_roster-value1-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[world_roster-value1-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-None-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-None-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-None-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-True-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-True-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-True-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed--1-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed--1-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed--1-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-1.0-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-1.0-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[training_seed-1.0-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-None-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-None-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-None-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value7-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value7-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value7-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value8-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value8-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value8-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value9-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value9-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value9-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value10-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value10-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[lane_world_ids-value10-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-0-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-0-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-0-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-True-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-True-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-True-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-1-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-1-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-1-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-2.0-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-2.0-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[num_agents-2.0-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[level_name-None-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[level_name-None-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[level_name-None-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[level_name-missing-current-level-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[level_name-missing-current-level-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[level_name-missing-current-level-classmethod]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[device-None-compiled]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[device-None-factory]>
+            <Function test_malformed_inputs_refuse_before_rng_or_existing_live_mutation[device-None-classmethod]>
+            <Function test_classmethod_uses_factory_for_real_subclass_construction>
+
+========================= 88 tests collected in 0.08s ==========================

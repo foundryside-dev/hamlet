@@ -7,7 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass, fields, is_dataclass, replace
 from dataclasses import field as dataclass_field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import msgpack  # type: ignore[import]
 import torch
@@ -68,6 +68,9 @@ from townlet.vfs.transition_schedule import (
     transition_rules_from_payload,
 )
 from townlet.world.expression.references import ENTITY_NAMES
+
+if TYPE_CHECKING:
+    from townlet.config.world_roster import WorldRosterDeclaration
 
 # 1.15: the bars block became N per-meter observation fields with per-meter normalization
 # specs, and VFS source widths split from observed widths (PDR-0054 W3/W4). Every cache built
@@ -769,6 +772,9 @@ class CompiledUniverse:
         num_agents: int,
         level_name: str,
         device: str | torch.device,
+        world_roster: WorldRosterDeclaration,
+        training_seed: int,
+        lane_world_ids: tuple[str, ...],
     ):
         """Instantiate a VectorizedHamletEnv from this compiled universe.
 
@@ -777,6 +783,9 @@ class CompiledUniverse:
             level_name: Curriculum level name to instantiate. Must be provided
                 explicitly; no default level selection is performed.
             device: PyTorch device or device string (e.g., \"cpu\", \"cuda\"). Required.
+            world_roster: Explicit authored world declaration.
+            training_seed: Explicit nonnegative run seed.
+            lane_world_ids: Exact declared world membership in requested lane order.
 
         Returns:
             VectorizedHamletEnv instance
@@ -790,6 +799,9 @@ class CompiledUniverse:
             level_name=level_name,
             num_agents=num_agents,
             device=device,
+            world_roster=world_roster,
+            training_seed=training_seed,
+            lane_world_ids=lane_world_ids,
         )
 
 

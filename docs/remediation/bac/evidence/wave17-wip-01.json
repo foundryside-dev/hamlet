@@ -1,0 +1,718 @@
+{
+  "status": "WIP \u2014 constructor transport source/owned integration reviewed; full BAC/reset consumers OPEN",
+  "packet": "Required authored-world identity/seed/lane constructor transport",
+  "evidence_base_commit": "86ee0d91c463adb7ac14a7949ee7b67f91c6c171",
+  "evidence_candidate_tree": "6f46f449b2c851dc8838e00f48e7fddc8e436dc1",
+  "execution_subtrees": {
+    "src": "4690de57a970121751e6b4922152412742a55991",
+    "tests": "811c72287e55ab8f0d1095911045c6fa3ec8471b",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e"
+  },
+  "inventories": {
+    "T21": [
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 323,
+        "sha256": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/effective_run.py",
+        "lines": 371,
+        "sha256": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "WORLD-CONSTRUCTOR-TRANSPORT": [
+      {
+        "path": "src/townlet/environment/vectorized_env.py",
+        "lines": 2343,
+        "sha256": "f2b50300ae9d51fa9d6e4b069091ddd1064ce09f3f5e24df1c5917453237c784",
+        "present": true
+      },
+      {
+        "path": "src/townlet/universe/compiled.py",
+        "lines": 1663,
+        "sha256": "d8e2734b0845c7d23ac79180a724b216d7c881e079352356f108cb294d2b7384",
+        "present": true
+      },
+      {
+        "path": "src/townlet/environment/env_factory.py",
+        "lines": 88,
+        "sha256": "aa1b2cdf00ed25fcc63b57b944876504d77219d147b3265e820ff2ad88b2d2f0",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+        "lines": 211,
+        "sha256": "daad8f762000886969762d52e2a415cc4a853d875621daf24449b9815bc61592",
+        "present": true
+      }
+    ]
+  },
+  "source_files": {
+    ".defaults-ratchet": "68ef67b35dd79367f8c89133b1d0b1401c0eb795b3c1d8fadd7c0005075df2bc",
+    "AGENTS.md": "2db4cc23dbf6e2890c3279ea34a068c38f4ee1c8dfd5ecf838541dd93586672e",
+    "docs/remediation/bac/STATUS.md": "f26b70aa2563420fb68531963557834ed9a79dc9af60c1934037b69e33366806",
+    "docs/remediation/bac/acceptance-ledger.json": "557ac591127ae18afc6e9d978cd17fec3e98876ed476f1d0724995f64ddba614",
+    "docs/remediation/bac/evidence/T15-interface-preparation.json": "72b073837abe3c88d5caee0d40643f7e81e4931fc0d9c701c7b3dd68c0ff761e",
+    "docs/remediation/bac/evidence/X04-acceptance-overlay.json": "bd1e028dd6df9ed2bbaad38cb93a9aa0adeffd28ba227e8441110c2d27b68d8c",
+    "docs/remediation/bac/evidence/email-only-identity-mapping.json": "c9a60f082540f5d5e222aa515607680d551778ed83a4aca3b8fcc5430c481543",
+    "docs/remediation/bac/evidence/wave05-qualification.json": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5",
+    "docs/remediation/bac/evidence/wave06-qualification.json": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f",
+    "docs/remediation/bac/evidence/wave06-source-binding.md": "aa1803ad05ce03aa41f9f4f79517311dc7638e5505494540a242dac2e7f8bd05",
+    "docs/remediation/bac/evidence/wave07-qualification.json": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10",
+    "docs/remediation/bac/evidence/wave07-source-binding.md": "8006ad17951fe056b71f23c487371e0e3c4baa25c7545b88f24203a4c931d21f",
+    "docs/remediation/bac/evidence/wave08-qualification.json": "e2b9c1cc0ceefa79382fb20011cdd264c94341d9829bb1c780c0376e0a612283",
+    "docs/remediation/bac/evidence/wave08-source-binding.md": "089e048452aee6f6bf9c5c681a82ffc1b027c635a335abf9681ee670ca99109e",
+    "docs/remediation/bac/package-reviews/PW02-implementation.md": "d043a9769b81a2d95a3c85155b253c3090a2dc4f75d29c3bdf69e12f537e9216",
+    "docs/remediation/bac/package-reviews/PW02-independent-review.md": "03299c0fdaeace1a51ef23fdadc7947bf5685d02957db4975b2d159ed08b3c7a",
+    "docs/remediation/bac/package-reviews/PW02-key-ownership-finding.md": "64e3a27ba5bee32521702628524bc1670f01d0714ad22adeaca1d121c56222a3",
+    "docs/remediation/bac/package-reviews/T06-implementation.md": "be1e6a853e9fcfdb75aa77f6ab58a658e782ba49d99aef2de7afd28e659de121",
+    "docs/remediation/bac/package-reviews/T06-independent-review.md": "25ca43e41e64945f75381aaaa74600986d92e7e3f75f3f8f8346c9d638d344e3",
+    "docs/remediation/bac/package-reviews/T06-preservation-finding.md": "b83c42525b09f70994b3ec13332343413719011599bad42eeb7096b9b64b7022",
+    "docs/remediation/bac/package-reviews/T06-transport-initial-review.md": "554c8008e97d4d9bdf0bd5bac0d97227537655ad445bd1bdf017e2233b62bcbb",
+    "docs/remediation/bac/package-reviews/T07-clock-finding.md": "3d52b56dc1ebc10dde222dc0dae9e25772d5820153fd7ead7572205f47a4e084",
+    "docs/remediation/bac/package-reviews/T07-common-binding.md": "f38edfc29dd0e02f289a27f48c5cf6206d1846f121270b3e7fd8635087248612",
+    "docs/remediation/bac/package-reviews/T07-implementation.md": "d9d63bd8fc406f872be7a4f34650189870d840146fc906b72b30f9c3a22885ac",
+    "docs/remediation/bac/package-reviews/T07-independent-review.md": "79387e41a3b6501c1a87e8f80262cb6d8a30c92be296cf1f8590282ce8594d4b",
+    "docs/remediation/bac/package-reviews/T07-scope-finding.md": "9ed00d59b257bb7e1535bf98479a7e518a0bef5574ab4a6b83aa322aa73c620f",
+    "docs/remediation/bac/package-reviews/T11-implementation.md": "9c79533e65adc501fe3714d7cc29d1a56b8ccf7676afd17744f8f2c98ff2483c",
+    "docs/remediation/bac/package-reviews/T11-independent-review.md": "cf88d21b87a53dcced008cdc8a4482b410fb28f3b22ad6fd2ce62c8202602b8e",
+    "docs/remediation/bac/package-reviews/T12-checkpoint-owner-review.md": "6fe2d4b38477f30fad2b8b99021211d8b0c2cd3c90574a39d8aa39b4f9e2e9f1",
+    "docs/remediation/bac/package-reviews/T12-common-binding.md": "6b097398da6daa9339bd9c83712c378967e48f43f508a58cdf8697d985d86145",
+    "docs/remediation/bac/package-reviews/T12-implementation.md": "43f27778ac9256782d665f1e5d218c430c3b5ac699ec1e49ceb2ad990d9b7f12",
+    "docs/remediation/bac/package-reviews/T12-independent-review.md": "808dcfc041826b88aa1b13a679aed8b49ee23e3cac55bfa7f18365e31e6cda01",
+    "docs/remediation/bac/package-reviews/T12-inspection-design-review.md": "f29b568531ad2493cca472c22936b285619fc0242cbeca641be5ba4b7a6a2721",
+    "docs/remediation/bac/package-reviews/T12-inspection-finding.md": "1b54e50fc4ba507e4bdc5f886c27ee787fbaae579f8fc1c3b2f82d69536f2f57",
+    "docs/remediation/bac/package-reviews/T12-inspection-native-handoff.md": "63c7d057e98ae7d980c85366bd513997eeda5c1a6a51e554d015c45343757c3d",
+    "docs/remediation/bac/package-reviews/T12-inspection-transport.md": "7c6f11ebc0634832a3aa7c1464c45b1942aff26a135118dc167cf728e9b570f5",
+    "docs/remediation/bac/package-reviews/T12-native-proof-review.md": "8a6f093b5698626eb15acc5f79c357f9aebf19d0c20ab21bdca4728caebe0178",
+    "docs/remediation/bac/package-reviews/T13-authored-reachability.md": "d87871f80fc20c8ee6936dd9a83deb9b95a8793aa698b5feb750e60ef43f83ec",
+    "docs/remediation/bac/package-reviews/T13-consumer-review.md": "33fea7a7c3ba4f078905c0c22b9f62908d6c693764979bf61a328250d37b3803",
+    "docs/remediation/bac/package-reviews/T13-implementation.md": "07c0b4901b600acf375758a19a9cacb72d019c0648246387e4d38bf7ee61aef7",
+    "docs/remediation/bac/package-reviews/T13-independent-review.md": "ae44aa60413f65c03e1308f72abdbc5fd6d37c105acca0e06e3e051c4a9f082b",
+    "docs/remediation/bac/package-reviews/T13-initial-findings.md": "d739097c349da2eb7041835ba032c960a2d44e61a5004a6d651330b95a225770",
+    "docs/remediation/bac/package-reviews/T13-max-findings.md": "e50b94cf54a832258abc4698ff78340319c351ed888500b772fefcf0a2bdb96a",
+    "docs/remediation/bac/package-reviews/T13-native-proof-review.md": "b403982953ea1383dcb9c7b5e0711ff7d45cabc2de30f5d83999960264d001ef",
+    "docs/remediation/bac/package-reviews/T13-owner-review.md": "50e1529208a31d3fd4238b46b4a763c0e87a03b0ee870f0b4442a90886081560",
+    "docs/remediation/bac/package-reviews/T14-admission-clarification.md": "0ae2044a42eed3e9377e3da39a0a3df4dbda4ff8c1c36f4b7f57c3f671303fe6",
+    "docs/remediation/bac/package-reviews/T14-core-execution.md": "7b24523c89cec70d056cd041bde35a1f8e8eb723cf6a33be0fc9ed84e4ffb272",
+    "docs/remediation/bac/package-reviews/T14-estimator-causal-finding.md": "0c9774700fd3a8ef0dcb50ccfe287b279211fe52d804e762f5b7b0d3cf782cca",
+    "docs/remediation/bac/package-reviews/T14-estimator-execution.md": "bb6c1f4d44144804c5eae74969ac15f265b6eec7255f03ee4fe2aba962708484",
+    "docs/remediation/bac/package-reviews/T14-estimator-review.md": "0eb44fe985e3868c74356ebbf44ab111f12126abb942eebe6ff0d6d4dd4c5975",
+    "docs/remediation/bac/package-reviews/T14-implementation.md": "5c0b4920939846046ef812c94200c6d7843fa6ee901d8b0bc09c2095a20f23c5",
+    "docs/remediation/bac/package-reviews/T14-independent-review.md": "c7817f6547c13af3989f7dd9b12a5cfc2e564e67614bede2779dc130c130aab3",
+    "docs/remediation/bac/package-reviews/T14-interface-review.md": "c5ef82eb558fae52dc4dd3e5b3502ab8eb247c31514429babe13f59ab5e7fed6",
+    "docs/remediation/bac/package-reviews/T14-interface.md": "2d7e60bc40956270dbbc39f26b81f74461caf5360e2ac1a00306004940903f05",
+    "docs/remediation/bac/package-reviews/T14-native-execution.md": "8b871adf5d4de844818239f18f5e4c173d6eedcfb72a48e091a19cd14961314c",
+    "docs/remediation/bac/package-reviews/T14-native-handoff.md": "52121819607642724bf843b763b7b25594a3571ce81de7397e6ef6eea4f67eda",
+    "docs/remediation/bac/package-reviews/T14-native-review.md": "29114502f1ddbf900c76bd198636f6dca6f28fe157e262852223182e89ca5650",
+    "docs/remediation/bac/package-reviews/T14-owner-execution.md": "349f9cff4ea6f11a8db6ef7798b7541a95f09ddaa15d9b675d23550dcc631bf1",
+    "docs/remediation/bac/package-reviews/T14-owner-review.md": "d1177a1af38f47e8b449bd67cdc17b361a39548ea7ca6549ada551b4c330add2",
+    "docs/remediation/bac/package-reviews/T15-config-contracts.md": "e591daa76c71d669a86e46cc997c2a8ee2ab14ae536f19e19492eeddb9aea4b4",
+    "docs/remediation/bac/package-reviews/T15-constructor-factory.md": "9044eba1c1ccc7f586bb8011f8f6b1b4325026817f1b1608e92f3c3ce4232755",
+    "docs/remediation/bac/package-reviews/T15-constructor-runtime.md": "5c919b1a992610afb29d5cd2fd6b3a56593f3a4585975c69029949b5f4d7d36f",
+    "docs/remediation/bac/package-reviews/T15-constructor-suppliers.md": "3dd5ed3c07be30245673c722bae42ec7dba90db214b97492e5db51c9dcdbfdf6",
+    "docs/remediation/bac/package-reviews/T15-constructor-units.md": "0119730e7e6aeb2150c9e9bd1907918809146f4dfea85a17a6440c2bb7cd747a",
+    "docs/remediation/bac/package-reviews/T15-flat-contracts.md": "16871a3d981de3f7c3a0ad6140fa19675c3f975d54fa214ba2342866f0f17fc4",
+    "docs/remediation/bac/package-reviews/T15-implementation-readiness.md": "22e8102a0c291a561d757a2152049744c1d335a2547fb2cc515701a307e1dcea",
+    "docs/remediation/bac/package-reviews/T15-interface-review.md": "7cfddfcf4d46253b3c70ee7788a385379702134a037b0933fafced02d0c07f42",
+    "docs/remediation/bac/package-reviews/T15-interface.md": "359e21ccccc79d0c5b082257c68176dab565248caf2c1cef8435afd1994a845b",
+    "docs/remediation/bac/package-reviews/T15-preparation.md": "4d8bc45d8744fcc2623244f5e01641df9170539a7b1ee2b33770c65ccaffd70f",
+    "docs/remediation/bac/package-reviews/T15-provider-contracts.md": "69e08cdada3dbf2070fabdf2ccb882ecec22e50f7887ef5aca011e82e6675cf2",
+    "docs/remediation/bac/package-reviews/X04-mean-TD-triage.md": "03604920a82682235ed6a85f73d33a0c9a5e05d55139a2b2bbe27410e9abcc6f",
+    "scripts/check_episode_lanes.py": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7",
+    "scripts/run_demo.py": "0029a2d758ed45907be30c6e8a21003798ddaef99dad392acc2c8a0ce3abd43a",
+    "src/townlet/agent/network_factory.py": "31b1340b6a125754ae15dbcc981223a4a6f4056ebf9db38ffbe63ba0ff9dd75c",
+    "src/townlet/agent/networks.py": "24d4a8627255dab42b3b9b64995c62235f71f25ea04cdbaace6616f1b6e899ed",
+    "src/townlet/agent/optimizer_factory.py": "56af1a9c8edb70a25b43a6e10aa3080d9a7b8becff112924e21a9429d994717d",
+    "src/townlet/config/bac_options.py": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+    "src/townlet/config/brain_config.py": "6c041ed40de507dfed81dc4b3a58cbb728d446228f6fd831ee115348aa559079",
+    "src/townlet/config/curriculum.py": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227",
+    "src/townlet/config/effective_run.py": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+    "src/townlet/config/exploration.py": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d",
+    "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+    "src/townlet/config/resolved_launch.py": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4",
+    "src/townlet/config/training_v2_config.py": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+    "src/townlet/config/world_roster.py": "e2627284a192920211429c77f5a806c0032e17071eedbd0877f95f4d7df4c461",
+    "src/townlet/curriculum/adversarial.py": "2194cc4075096670181a50cf1be2158cd68334a07111818ad75382cd73890f4f",
+    "src/townlet/curriculum/base.py": "d961844d5738ac85d26d5dd57520d1954718ee93e482e5133d4323d14c149268",
+    "src/townlet/curriculum/factory.py": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+    "src/townlet/curriculum/static.py": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+    "src/townlet/demo/database.py": "7335e9798d15e14721e5278cb4e7402eea7f7da2344187c56f8bc8e42b93902e",
+    "src/townlet/demo/runner.py": "e1c4b6c00923416f6fdf9e70976ea57a4a706e38a2ea228b4b10273906d6aacf",
+    "src/townlet/demo/unified_server.py": "626634171c744ecac9ac825f5db5727e3407031efd6c8fe0dcac5a1058e2a02c",
+    "src/townlet/environment/env_factory.py": "aa1b2cdf00ed25fcc63b57b944876504d77219d147b3265e820ff2ad88b2d2f0",
+    "src/townlet/environment/vectorized_env.py": "f2b50300ae9d51fa9d6e4b069091ddd1064ce09f3f5e24df1c5917453237c784",
+    "src/townlet/exploration/adaptive_intrinsic.py": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9",
+    "src/townlet/exploration/count_based.py": "163cb33f06799a75c887ff7beb58e4897875c94a4780ab722d019f714b33e9c1",
+    "src/townlet/exploration/epsilon_greedy.py": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+    "src/townlet/exploration/icm.py": "8004aec68d19c962df0cf6785b00af32c8553a3746fee95be39009555f9d44b8",
+    "src/townlet/exploration/rnd.py": "821fd3095e896a5b98d44a671906f9c5cbccec2f00fa430a6f5bb8acb24e4109",
+    "src/townlet/exploration/world_curiosity_state.py": "8b242ef58af2840c069db3d599606ba4760eea675e6be5bf00d8eb89c23b5b82",
+    "src/townlet/population/vectorized.py": "629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92",
+    "src/townlet/recording/data_structures.py": "b8b2a5b2c202e8fc28ee907b645391cfb32f7d1a5530f528fa8ae6e076171158",
+    "src/townlet/recording/receipts.py": "f4f90c3ae1584965cbfc7ad84170fb3b0413ba5599a9eeb3d0d447f48b6fd647",
+    "src/townlet/recording/recorder.py": "8fca0b033bdc74f9e8146006c029b8bce6228b067f89b72109e1a886f4a32825",
+    "src/townlet/training/clock_ledger.py": "117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571",
+    "src/townlet/training/episode.py": "53b52a8a56d5fc2714604198fc4516c5c4d48258537a9dcbe4ccd00dae743cbf",
+    "src/townlet/training/historical_checkpoint.py": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+    "src/townlet/training/per_sampling.py": "0efe801f01a31082aa52c4b9bd40c356d1c97f89690b07c7835b541b7f2c6de6",
+    "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+    "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+    "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "src/townlet/training/sequential_replay_buffer.py": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c",
+    "src/townlet/training/state.py": "a6f22b0b26ca6422e6a0710f9268386e8d2b7162e1a5e9a43a2decdea4c9d3e3",
+    "src/townlet/universe/compiled.py": "d8e2734b0845c7d23ac79180a724b216d7c881e079352356f108cb294d2b7384",
+    "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+    "src/townlet/universe/compilers/metadata.py": "811dc301202433253832f84743cba65823f0d7c273a73d65e376d35a5e2f6beb",
+    "src/townlet/universe/declarations.py": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd",
+    "src/townlet/universe/errors.py": "af30223624658d5d9cad3f56232353433f72a340d1fdb4caec69b581f91c2a53",
+    "tests/test_townlet/_fixtures/brain_configs.py": "aac8397902f8f038bee0c3da913c1a6b3930478d70c8a82156898231605cc9f4",
+    "tests/test_townlet/_fixtures/config.py": "f25801c31ddb8354cc8b63a25fa145b518a65c05b275d19f558cf6f4e3f04fb8",
+    "tests/test_townlet/_fixtures/environment.py": "21bd79b1736efd53fdacb76ca6a6f4abaf3917340204aef74994ba20b6af745c",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured-with-per4-archive.pt": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured.pt": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+    "tests/test_townlet/fixtures/bac_per_current5/portable-manifest.json": "b3008db4299682714674b6f5b809c41b58efb9a9452299ad005383e8fe2b8780",
+    "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json": "426f8b8ec2db1d0e0800300b4a85b825d2d1cb594a8339add27e159d2bd6c875",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac",
+    "tests/test_townlet/integration/test_checkpointing.py": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d",
+    "tests/test_townlet/integration/test_compact_token_acceptance.py": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc",
+    "tests/test_townlet/integration/test_recording_recorder.py": "517341fb44d5edb7cdc85dc4bb6b4f8840de7ce741695d594b766038f8d6e962",
+    "tests/test_townlet/integration/test_recording_substrate.py": "806f4f11e1a00b8dc058b643531ff78cdcea5b84c9e027fbac5993d655fcea9c",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "105656e944001f44213e8c721bc98d7c99e8d8512aa1172eeabc93ea0f3df0a7",
+    "tests/test_townlet/integration/test_reward_component_flow.py": "e56dc0e57e5cc9013b88bda67f661937d9d51df872d21b0163edd05f2c2618ce",
+    "tests/test_townlet/integration/test_runner_hyperparams_v21.py": "237ca50b9deb1e585c7d37d1134896b4fe1a29dde12b4de7a401210e317c4db0",
+    "tests/test_townlet/integration/test_training_loop.py": "207500289444d904f33d1961164fec493433a3f1514562ff541ce5fced11c722",
+    "tests/test_townlet/properties/test_replay_buffer_properties.py": "5678e826ce7fcb0574deb23441cc54b9e355b3c7adc446595269e2d7ae628a17",
+    "tests/test_townlet/regressions/bac/test_count_provider.py": "0de2db0e0d2de868d803b97e8e8f0e277b365178dfddacaaa5825de65c5fed94",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py": "bd5a364931be94f2930c278ab5f21bf1a497814e727d93057f538da3bf7e2f38",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py": "57750efea277a256969851ba8413eb17aa5d8810f02b673d6f02639838807ffd",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+    "tests/test_townlet/regressions/bac/test_discovery.py": "eb73ca825614ba593549135253caab0b723cc07b53bf91ac3e2801fd9e73e500",
+    "tests/test_townlet/regressions/bac/test_effective_run.py": "1685b2c09aa59c6687a49accebf62be591e64716f91469ef85e332d8b765cdd9",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py": "3759cd590ca7f6c348294ac6d58341cb7f7101cf25bfca7bfdeaea4ecdd645f8",
+    "tests/test_townlet/regressions/bac/test_launch_transport.py": "1bceb21245ebeff9ba6bc93d10603f669d964d2dbbfebdcfed56fbf8f3910d91",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py": "66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9",
+    "tests/test_townlet/regressions/bac/test_per_estimator.py": "2e08f44397d626a95b4b0f5142021e408250b50067fbfc16c01f2c6ae4459866",
+    "tests/test_townlet/regressions/bac/test_per_history.py": "4ea99d20fa18333d249b0ce1408b91c99c12194e6d7ddcd0788c5b4f8c492da1",
+    "tests/test_townlet/regressions/bac/test_per_native_learner.py": "6348f247dc9b5060a650f87fe8bee1d9c18ece46a868c40b6021f0360c19da16",
+    "tests/test_townlet/regressions/bac/test_public_loaders.py": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+    "tests/test_townlet/regressions/bac/test_recording_drain.py": "90b876583bcc6bf047cfd7f424dac889a86103b5109bef29c38bcce838e18912",
+    "tests/test_townlet/regressions/bac/test_recurrent_per.py": "941747bb722eaa2c7a33dc7fa879dc591481f29cc73cfb4d837334854c8533bb",
+    "tests/test_townlet/regressions/bac/test_recurrent_per_native.py": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py": "0477b2531b8a1a109bf71285310c0beda725e295f11c51f61f6713005c2f6a62",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py": "2352066710ef7d97de02efb498021f26f7ffc50e2ce2afe96ea6ba4bbee04ce4",
+    "tests/test_townlet/regressions/bac/test_sequence_history.py": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc",
+    "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3",
+    "tests/test_townlet/regressions/bac/test_token_binding.py": "bdb25f6e33bae64ede392dfb8ed4fbe4b7521a6dc201184e547decaeabefe544",
+    "tests/test_townlet/regressions/bac/test_uniform_history.py": "a0ee835fc7a862216bddcddcac647ffff954f59f1842be5f8f4c77656fe899fd",
+    "tests/test_townlet/regressions/bac/test_world_constructor_transport.py": "daad8f762000886969762d52e2a415cc4a853d875621daf24449b9815bc61592",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py": "ff460397f1a9968750e461511b08c71b1de39d6824a9a76045282a9219e0ef3f",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+    "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py": "e6631eb7e2375165a1e1131eaf88999e8debb024d37ef736bf9eadcdacd3fbde",
+    "tests/test_townlet/regressions/test_episode_recording_shutdown.py": "9874eed75d1b7491a5a8ef5fca1af7430b61aaff52037b8948b84e2636b67fa2",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be",
+    "tests/test_townlet/unit/demo/test_unified_server_unit.py": "0e4e90f087d69772ba25438871f4b4c19618a1076d73546246f6ae4a63eaaa28",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30",
+    "tests/test_townlet/unit/population/test_action_selection.py": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1",
+    "tests/test_townlet/unit/population/test_double_dqn_algorithm.py": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a",
+    "tests/test_townlet/unit/population/test_recurrent_training.py": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9",
+    "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+    "tests/test_townlet/unit/recording/test_recorder.py": "11d2391ec0bd7c7e105f8e8d45ce81d5771c4d87961dfee696e432ac3b15576b",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer.py": "52db935fa6ede75d87abacbf22de3f13415463e880b65c2d78114464ff15affa",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py": "b6dd85342a68223394786c0c6c4a80c4af45662b77df7972689067e7e50ebaaf",
+    "tests/test_townlet/unit/training/test_replay_buffer_components.py": "639e83cdf9a050a97edb0417aba1a89b507e329b2bfe2e4a438ce71ea8e3b6ce",
+    "tests/test_townlet/unit/training/test_replay_buffers.py": "61b688ea5fa7ef31d023b76b9ea3e48cc57e27787a19bee21eacd10071d647d9",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py": "18cff4fa681e5c08ec759301b3ebbed69568bc8ab80b7ccea3e6c260294f373a",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py": "6957a3ab973f9c993d16e110c276c03ff15d2e93d73a49481c48dd0ef4db8629"
+  },
+  "config_changes": {},
+  "receipt": {
+    "status": "WIP \u2014 constructor transport source/owned integration reviewed; full BAC/reset consumers OPEN",
+    "base_commit": "86ee0d91c463adb7ac14a7949ee7b67f91c6c171",
+    "tested_tree": "6f46f449b2c851dc8838e00f48e7fddc8e436dc1",
+    "source_files": 185,
+    "configs": 573,
+    "protected_artifacts": 13,
+    "joint_pass": 193,
+    "joint_breakdown": "88 new constructor+54 world identity+51 compiled policy",
+    "covering_pass": 7,
+    "independent_pass": 88,
+    "counts_overlap": "covering/independent overlap joint; not summed as unique tests",
+    "static_guards": [
+      {
+        "name": "ruff",
+        "exit_code": 0,
+        "seconds": 0.2007596492767334,
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/ruff.log"
+      },
+      {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 2.1436195373535156,
+        "sha256": "bc5c5b0853b2e84cbda10b2c69fa36a7c803c0da86c348731348953062dbd36d",
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/mypy.log"
+      },
+      {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 0.868459939956665,
+        "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/no-defaults.log"
+      },
+      {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.111116886138916,
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/expression-doc.log"
+      },
+      {
+        "name": "black",
+        "exit_code": 0,
+        "seconds": 42.247262954711914,
+        "sha256": "5615d47f491d0c183ac94a658f20992f62ae1589852768946b53f223405adcf0",
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/black.log"
+      },
+      {
+        "name": "compiler-cli",
+        "exit_code": 0,
+        "seconds": 335.9045169353485,
+        "sha256": "23039e079ae1e9e4d940182c07eaf8a45fe7db20e552b26127b25744c19e3a86",
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-compiler-cli/compiler-cli.log"
+      }
+    ],
+    "mypy": "FAIL7errors2oracle/POPcallerfiles; all6constructorerrorsclosed",
+    "review": "freshAstra actual-source spec+quality APPROVE no materialfindings; independent88PASS12.5377wall",
+    "custody": "PASSsource/index/import/threads/fixtures/registry",
+    "sessions": "all closed",
+    "release_progress": "28/66 original scoped releases unchanged; no integratedrelease",
+    "unrun": "currentfullrepo/coverage/slow/CUDA/realreset+bank+parent+manifest/VFS/RNG/learning/allfamilyE2E/final54requirements22lenses+synthesis remainowed",
+    "next": "durableWIP then directauthoritativeVFSconsumer and originaldependencycoherentplan; no routinehalt"
+  },
+  "artifacts": {
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-collection/collection/identity-controller.json": {
+      "sha256": "a0648485f1cd2d9f471fbd9a5c5f2fc537fb359327fb61ff755d305e4a65fe9f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-collection/collection-custody.json": {
+      "sha256": "ecfccb617de0019c83667ada7c0ea27a1a57aca35445ccaaed6cda407fc8c314",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-collection/collection-result.json": {
+      "sha256": "d1e3163273597b00db4cca2c9d4f76eba8f79d9a226002fc1e43dfea4b101a55",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-collection/collection.log": {
+      "sha256": "74e22b948784b3146adf45fc6912910cfc796d8f7e9dcb9fd215ea7fddae689b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-device-control/device-control/identity-controller.json": {
+      "sha256": "a0648485f1cd2d9f471fbd9a5c5f2fc537fb359327fb61ff755d305e4a65fe9f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-device-control/device-control/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-device-control/device-control-custody.json": {
+      "sha256": "a7bb4f2149983e0e15fcab36fb50d3d22b92a73e45f423b5a346b8f2a99ea7b1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-device-control/device-control-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-device-control/device-control-result.json": {
+      "sha256": "a087a69d6ae35fae2b193ccd0d9ed113dfa92b39ef52c652e3422853c86fa267",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-device-control/device-control-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-device-control/device-control.log": {
+      "sha256": "90a5117d3ab9ac4c837cd0bdc7f3f23136acdda3856883d85a2f09dc17543ac6",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-device-control/device-control.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-factory-route/factory-route/failure-controller-f6be3d99a56d8ca4.json": {
+      "sha256": "082b9bd76a4015ea9334ecc7c8cf86cf9784da6affb13367b5a34fb914e1fada",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-factory-route/factory-route/failure-controller-f6be3d99a56d8ca4.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-factory-route/factory-route/identity-controller.json": {
+      "sha256": "a0648485f1cd2d9f471fbd9a5c5f2fc537fb359327fb61ff755d305e4a65fe9f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-factory-route/factory-route/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-factory-route/factory-route-result.json": {
+      "sha256": "6ef72eb059e9cf21e8bcf74f22e362697ccc67c7441e190fb8b2ac049b3df65a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-factory-route/factory-route-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-factory-route/factory-route.log": {
+      "sha256": "66cd048fe2f327b3bd265853ac0326210e1feb95f7aaa7c6c8218db93a49d149",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-factory-route/factory-route.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-controller-1cec97acfd98364a.json": {
+      "sha256": "6a0a7e5f5b56e70f3b1bf477b7d1b65f6e77d672e668a8c8ba2a9f7e094805a9",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-controller-1cec97acfd98364a.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-controller-4c3883e974c77e48.json": {
+      "sha256": "fafb299222fc3e349c96f79b6122a2715d4847e6d02307f11e37acfb8610f3fe",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-controller-4c3883e974c77e48.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-controller-b54c140d300ed613.json": {
+      "sha256": "25f37b7ffa9ea541e8c99961aff53adec1537414a26378ad68258e9618517679",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-controller-b54c140d300ed613.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-controller-f481ebecfd720a4f.json": {
+      "sha256": "160dfd9f5bb6804895fb76f526d272606ad42c96966c47011245999919ef00fa",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-controller-f481ebecfd720a4f.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-gw0-4c3883e974c77e48.json": {
+      "sha256": "18f46f05892130fe8a714faf6a14463ef1400aa1aa9b8848b579657e8ec0fcda",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-gw0-4c3883e974c77e48.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-gw0-f481ebecfd720a4f.json": {
+      "sha256": "7223c8b71f83da7abc9a2c6c214a302cf191927c6dacace357d50343891c3137",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-gw0-f481ebecfd720a4f.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-gw1-1cec97acfd98364a.json": {
+      "sha256": "4e227d897d90730bdbb5e01de8fdbe1bebeb409927553621869d34f6b2037a4e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-gw1-1cec97acfd98364a.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/failure-gw1-b54c140d300ed613.json": {
+      "sha256": "2ec461fba88b5402047a3f47989b33e7f19714cc487cfa38bd6c5c9829bceed3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/failure-gw1-b54c140d300ed613.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/identity-controller.json": {
+      "sha256": "a0648485f1cd2d9f471fbd9a5c5f2fc537fb359327fb61ff755d305e4a65fe9f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/identity-gw0.json": {
+      "sha256": "4f2c6011589dbe918abd7268f65cc0d0762881558ef751f97e03c9c4584b7a1b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned/identity-gw1.json": {
+      "sha256": "bd9bef5d0629683f55f24f074a6255d88489f3825bb1666ee2a2247a4332e0c5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned-result.json": {
+      "sha256": "4dd200306362ca826e353e52c0bb7caa16ab367711d0af17db299fdb2d50c0e0",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned/owned.log": {
+      "sha256": "c5084a6a52a9a7056f655c444840e5caf4cfae9cba77b28d488c9d6fda60ee12",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned/owned.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-collection/collection/identity-controller.json": {
+      "sha256": "4e11d827d4e0f01d211510bc4cc3e4669a3d81c76da5592a26b7430389c6cd87",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-collection/collection-custody.json": {
+      "sha256": "138d9a47d244ce3540b1546cacec8b6f8eb9b66d5b3c83fa866f335ea60af5aa",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-collection/collection-result.json": {
+      "sha256": "7af99362f74594f1cecd31b88d58b9da616b1e3ff27ab7f564628133e475aba7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-collection/collection.log": {
+      "sha256": "a257b87f57c750a0517e389732b6f4e8c94a55085207e10ffa93e2513b9a5a63",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-compiler-cli/compiler-cli-result.json": {
+      "sha256": "93432e554b19ab53354daba4c3af6473e88b55cecca8b9ee2fd6c6aa191bb3d1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-compiler-cli/compiler-cli-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-compiler-cli/compiler-cli.log": {
+      "sha256": "23039e079ae1e9e4d940182c07eaf8a45fe7db20e552b26127b25744c19e3a86",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-compiler-cli/compiler-cli.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering/covering/identity-controller.json": {
+      "sha256": "4e11d827d4e0f01d211510bc4cc3e4669a3d81c76da5592a26b7430389c6cd87",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering/covering/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering/covering/identity-gw0.json": {
+      "sha256": "e68a51980057754d9e0683829fbf41c05504d86e522d2ae5d722b57da22cb948",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering/covering/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering/covering/identity-gw1.json": {
+      "sha256": "afa55d1acfdac221f9fcacb895fac93983a3c74459c066dfe461259585ca1f54",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering/covering/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering/covering-custody.json": {
+      "sha256": "2f8228340b01e08f47697e6d25a06353cb8f7d31b891d113436c523172c0fb2b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering/covering-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering/covering-result.json": {
+      "sha256": "4783f09394cb75ecea0fd6f9c70eeba69ca5eb388ef6fd27d9d136819f8a8d95",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering/covering-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering/covering.log": {
+      "sha256": "03286ab235eacfafc9b05138820186094ef74b65098cc8b74f958ef41dc87340",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering/covering.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/black-result.json": {
+      "sha256": "3c26079524ae52861e58b875ff16af7889e33d9f0641430485abc8d93fd4cac2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/black.log": {
+      "sha256": "5615d47f491d0c183ac94a658f20992f62ae1589852768946b53f223405adcf0",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/expression-doc-result.json": {
+      "sha256": "238f69a39d2c2d913f4b3fce39bec097b1d450a93fe1f91dd300ee20859bab2e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/mypy-result.json": {
+      "sha256": "80349c5db4c867e7e4ba3c707e042681f46b3b0e8816cb25019e318f51e45164",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/mypy.log": {
+      "sha256": "bc5c5b0853b2e84cbda10b2c69fa36a7c803c0da86c348731348953062dbd36d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/no-defaults-result.json": {
+      "sha256": "36dfa86e95751d1ad9ac5cdca1653f3731d547a37642f6923b4685f34dc8f1cd",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/ruff-result.json": {
+      "sha256": "eaa3f507fdadd7c8b1416c9ec4188fd110101ed319d22b97de697cc704a3f6e2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-independent/independent/identity-controller.json": {
+      "sha256": "4e11d827d4e0f01d211510bc4cc3e4669a3d81c76da5592a26b7430389c6cd87",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-independent/independent/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-independent/independent-custody.json": {
+      "sha256": "686bd399b5d89cf75b44f05977b3e90d7fa903cbd2720907a252af156a1c78e7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-independent/independent-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-independent/independent-result.json": {
+      "sha256": "5e99fca66b35d85046214fe9359a1ed3b00187ddb24a198d1800a1f8074c8a4f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-independent/independent-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-independent/independent.log": {
+      "sha256": "656d282d3efc1080612780e939adbb08e57e1987b692e721d5b39401bad74f06",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-independent/independent.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned/owned/identity-controller.json": {
+      "sha256": "4e11d827d4e0f01d211510bc4cc3e4669a3d81c76da5592a26b7430389c6cd87",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned/owned/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned/owned/identity-gw0.json": {
+      "sha256": "e68a51980057754d9e0683829fbf41c05504d86e522d2ae5d722b57da22cb948",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned/owned/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned/owned/identity-gw1.json": {
+      "sha256": "afa55d1acfdac221f9fcacb895fac93983a3c74459c066dfe461259585ca1f54",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned/owned/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned/owned-custody.json": {
+      "sha256": "544c55c47a9c7f9a5a657b73c0843f27e3ed2bf5fa7aea3fdf662d6db8cb409c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned/owned-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned/owned-result.json": {
+      "sha256": "af6cf3e8cebd8172faefb78d4cbf0d919613700702aa19f733b12873867bd6a4",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned/owned-result.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned/owned.log": {
+      "sha256": "61d582bd535991edb53d366d5fd6aa494dbd403c973a5c2f5a9b0e8a17ba690d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned/owned.log"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-collection-spec.json": {
+      "sha256": "d5736574b708284db90ba1dcd386626c2ea26c41bac1d95caeadd86dd4fd0cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-device-control-spec.json": {
+      "sha256": "e1adb54403891285eb561a476ea5e3d8f42faf3e5d57f020d19a278ab23f05ff",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-device-control-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-factory-route-spec.json": {
+      "sha256": "de2c18c2bccf183d6dd92385db9aa670e5ac59cf0c59c00a1e508c0fac861fc2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-factory-route-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r0-owned-spec.json": {
+      "sha256": "04a5fee0b40c2df33c76f157d6a62a47827ba5bcc4ac3e8fee13bb940baa0d7b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-collection-spec.json": {
+      "sha256": "7a0fcf8d8b0a63c2fddd73d938e5d3a71b78b9e2616cc634c220aeb72743c779",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-compiler-cli-spec.json": {
+      "sha256": "06a895d89d552c032e28685aa34a095944898d3000276a7067376c8b88fb6a5c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-compiler-cli-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-covering-spec.json": {
+      "sha256": "3a2e8e9a9f14b2b3e549958556cbe7a6e2e90aaedcb657924a38c17496189e09",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-guards-spec.json": {
+      "sha256": "1d0587f81489edd0b796aa5678febfbc3537ff6111e7cd31ed9265db7c584473",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-independent-spec.json": {
+      "sha256": "9ab5fe3320ba6c9d6f5c8be070ccc502a7ce3e0656a17e4dc205ba7027fa0f38",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/qualification/wave17-r1-owned-spec.json": {
+      "sha256": "2379fed4bf238db08c0b88fc7a86903926387bf949c4368802fb8db095e0936f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r0-candidate.json": {
+      "sha256": "589d6b8bba719219feda28e7cb7fa5cc3ce34eef7f3634fb5f3031dee60411ed",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r0-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r0-candidate.patch": {
+      "sha256": "18c53646a1106beb1c69fd2777992fed3cf11cbad73b16055c32d77add54c9e6",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r0-candidate.patch"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r0-fixture-resource-preflight.json": {
+      "sha256": "26bffef6e19d482bc1dda111af357dd6efba27301285262e42d2ff90bf848e82",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r0-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r0-red-postflight.json": {
+      "sha256": "96da12ed32044e950ba045ef5d6d6bf6c896653d0a32c811f028950188156ca7",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r0-red-postflight.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r1-candidate.json": {
+      "sha256": "a84e6f0563f2f33b122ef82e8812f6a2b0189a2b4e2f459f407b5f88221bb425",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r1-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r1-candidate.patch": {
+      "sha256": "3b32a5d175e01294cb081bac9883011465625b05b6c204e808e51b3091f263a6",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r1-candidate.patch"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r1-checkpoint-receipt.json": {
+      "sha256": "ac16d7505d343e5c969d957bec907f30d14a0c2bb013ff817b91b56bb622187d",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r1-checkpoint-receipt.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17/r1-fixture-resource-preflight.json": {
+      "sha256": "074bdd5dc950370840ff97a7b28497eab86429ace26bbc864db7a2fa24f469d5",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r1-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/CURRENT-COMPILED-POLICY-UPDATED.md": {
+      "sha256": "e871a50cc22eb8a6d8be9c68e9280242bbc22338aa2167e34aeb211c22bbd1aa",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/CURRENT-COMPILED-POLICY-UPDATED.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md": {
+      "sha256": "d32026f35b71a73c470d04afe25f9c213f7c9da5ef9f5eb7b48846ad8ed2af2c",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/CURRENT-WORLD-IDENTITY-UPDATED.md": {
+      "sha256": "55e1735c53c3397039502483102d570d0e3520948ea7736daf05e7c0235fa20a",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/CURRENT-WORLD-IDENTITY-UPDATED.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/WORLD-TRANSPORT-brief.md": {
+      "sha256": "595ae451d5f499e3c3d7dab51ca4ad1cbdcef7c4c6c1a1faf02fbba35acf0861",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/WORLD-TRANSPORT-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/WORLD-TRANSPORT-independent-review.md": {
+      "sha256": "b5060066af26ec5b49c4a61d560348ed863acba353827df088dd853cd7b1b953",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/WORLD-TRANSPORT-independent-review.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/WORLD-TRANSPORT-r1-review-package.md": {
+      "sha256": "9a575ad0def8e0f3b07b80510c2ecce829540f19f562fbb1c26c1779c6e7bfec",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/WORLD-TRANSPORT-r1-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/WORLD-TRANSPORT-report.md": {
+      "sha256": "b0f5c96084ad07405d31914d54d84642cc3d99887c7927752a6a6d6eebf3a54b",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/WORLD-TRANSPORT-report.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave17-preparation/WORLD-TRANSPORT-review-brief.md": {
+      "sha256": "e0c0c2b4795e6c6d89344ba710e39c48a1be560c37837fc1863076c0287ffd73",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/WORLD-TRANSPORT-review-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave18-preparation/WORLD-VFS-ABI-PROPOSAL.md": {
+      "sha256": "16c334d0d1917d663d2f2f87796c6821b11b649628efb3886c5415c7b1fc5419",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18-preparation/WORLD-VFS-ABI-PROPOSAL.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave18-preparation/WORLD-VFS-ABI-REVIEW-R1.md": {
+      "sha256": "87192d4bd05b599630c2403b0af477a434c35fc4ad6debf9c07296e23009b3ad",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18-preparation/WORLD-VFS-ABI-REVIEW-R1.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave18-preparation/WORLD-VFS-ABI-REVIEW-brief.md": {
+      "sha256": "beb02bb81f8486934ae10b83f15f343fb446fe1b6c3c62a88d933906875780ca",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18-preparation/WORLD-VFS-ABI-REVIEW-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/wave18-preparation/WORLD-VFS-brief.md": {
+      "sha256": "b93e91ba2e85d4433705d1bab845d1c696d0e07630aa0e27e78083b60c1b904b",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave18-preparation/WORLD-VFS-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/capture_wave14_round.py.txt": {
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "original": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/verify_bac_run.py.txt": {
+      "sha256": "54ab0a2cf47b90a42a010770813fbfffe8abf9a767f74151fc462829e15c6d32",
+      "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/run_bac_packet_checks_locked.py.txt": {
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "original": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/bac_source_identity.py.txt": {
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/publish_wave17_wip01.py.txt": {
+      "sha256": "8c456aecd6c79840cd4f516b862cb94701aaa69d1d1d44b369cd360bccf42a73",
+      "original": "/workspace/bac-review-2026-11-01/qualification/publish_wave17_wip01.py"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/execution-CURRENT-STATE.json": {
+      "sha256": "ab58895f4a2261b09c7cf75ea7cae2b937df8ba867e6682a44ff2fa08f82f8b7",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/CURRENT-STATE.json"
+    },
+    "docs/remediation/bac/evidence/wave17-wip-01/execution-progress.md": {
+      "sha256": "446a50a3d8f695fa2194bfb05f45e990f76efa1fddd8c6cb1633e1f36bdf9972",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/progress.md"
+    },
+    "docs/remediation/bac/CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md": {
+      "sha256": "d32026f35b71a73c470d04afe25f9c213f7c9da5ef9f5eb7b48846ad8ed2af2c",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md"
+    },
+    "docs/remediation/bac/CURRENT-WORLD-IDENTITY-CONTRACT.md": {
+      "sha256": "55e1735c53c3397039502483102d570d0e3520948ea7736daf05e7c0235fa20a",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/CURRENT-WORLD-IDENTITY-UPDATED.md"
+    },
+    "docs/remediation/bac/CURRENT-COMPILED-POLICY-CONTRACT.md": {
+      "sha256": "e871a50cc22eb8a6d8be9c68e9280242bbc22338aa2167e34aeb211c22bbd1aa",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17-preparation/CURRENT-COMPILED-POLICY-UPDATED.md"
+    }
+  },
+  "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+  "publication": "Authorized existingremote branch; continue planned work. No branch/worktree/copy,PR,merge or deletion.",
+  "next_abi": "Reviewed direct-world VFS design included as intent only; no implementation yet.",
+  "custody": "14 registry records/MAIN1available;13historical paths unavailable,preserved. Privatebackup excluded."
+}

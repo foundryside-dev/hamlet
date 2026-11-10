@@ -1,0 +1,26 @@
+{
+  "name": "device-control",
+  "exit_code": 0,
+  "seconds": 6.186394691467285,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave17-r0-device-control",
+    "-k",
+    "malformed_inputs and classmethod and device"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave17-r0-device-control/device-control.log",
+  "sha256": "90a5117d3ab9ac4c837cd0bdc7f3f23136acdda3856883d85a2f09dc17543ac6",
+  "candidate_tree": "64066b81dc11041d58e5d490cef3d82c58289111",
+  "base_commit": "86ee0d91c463adb7ac14a7949ee7b67f91c6c171",
+  "manifest_sha256": "589d6b8bba719219feda28e7cb7fa5cc3ce34eef7f3634fb5f3031dee60411ed",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

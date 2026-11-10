@@ -1062,8 +1062,9 @@ class VectorizedHamletEnv:
         """
         if level_name is None:
             raise ValueError("level_name must be explicit")
-        return cls(
-            universe=universe,
+        return env_factory.from_universe(
+            cls,
+            universe,
             level_name=level_name,
             num_agents=num_agents,
             device=device,

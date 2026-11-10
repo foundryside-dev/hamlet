@@ -9,6 +9,7 @@ import torch
 from townlet.universe.dto import MeterMetadata
 
 if TYPE_CHECKING:
+    from townlet.config.world_roster import WorldRosterDeclaration
     from townlet.environment.vectorized_env import VectorizedHamletEnv
     from townlet.universe.compiled import CompiledUniverse
 
@@ -60,6 +61,9 @@ def from_universe(
     level_name: str,
     num_agents: int,
     device: torch.device | str,
+    world_roster: WorldRosterDeclaration,
+    training_seed: int,
+    lane_world_ids: tuple[str, ...],
 ) -> VectorizedHamletEnv:
     """Instantiate an environment using metadata from a compiled universe."""
     if level_name is None:
@@ -78,4 +82,7 @@ def from_universe(
         level_name=level_name,
         num_agents=num_agents,
         device=torch_device,
+        world_roster=world_roster,
+        training_seed=training_seed,
+        lane_world_ids=lane_world_ids,
     )

@@ -1,8 +1,8 @@
 # Current world identity producer contract
 
-Source-verified bounded producer, following fixround1. Root reports covering9 PASS, full54 PASS in30.7054s wall, joint239 PASS and custody PASS. Root reports global mypy reduced to13 current-caller errors in4 files, with no owned/helper errors. Same Sol actual-source review approves bounded source/owned quality and closes F1–F4's owned findings. Independent guarded runtime and compiler CLI were still running when this document was written; no independent execution PASS is inferred. This is not integrated BAC release.
+The current constructor route is qualified at transport R1 tree6f46f449:193 joint cases and independent Astra88 pass, with source/fixture/process custody. Six constructor type errors are closed; seven oracle/POP reset-caller errors remain. The earlier R3 lifecycle repair passed54 owned and independent Sol27. These overlapping results describe bounded source handoffs, not integrated BAC release. See CURRENT-WORLD-CONSTRUCTOR-TRANSPORT.md for current call signatures, source hashes and evidence.
 
-Source scope remains exactly ENV2342/WS734/RP768/test830/roster299=5/4973, ceilings2350/734/768/838/310=5000. ENV SHA256 ca739f517b7bb64833b2814c14a99a29d229b1f184c10236faaa52cbe4cfa4f1; roster e2627284a192920211429c77f5a806c0032e17071eedbd0877f95f4d7df4c461; test ff460397f1a9968750e461511b08c71b1de39d6824a9a76045282a9219e0ef3f. WS/RP unchanged. No extra implementation source, runtime, Git/index or source/test edit was used for this document. This ignored prose is the only write.
+Historical R3 producer review scope was exactly ENV2342/WS734/RP768/test830/roster299=5/4973, ceilings2350/734/768/838/310=5000. ENV SHA256 ca739f517b7bb64833b2814c14a99a29d229b1f184c10236faaa52cbe4cfa4f1; roster e2627284a192920211429c77f5a806c0032e17071eedbd0877f95f4d7df4c461; test ff460397f1a9968750e461511b08c71b1de39d6824a9a76045282a9219e0ef3f. WS/RP unchanged. No extra implementation source, runtime, Git/index or source/test edit was used for this document. This ignored prose is the only write.
 
 ## Declaration and construction
 
@@ -21,7 +21,7 @@ VectorizedHamletEnv.from_universe(
 )
 ```
 
-Every argument is required. Exact roster/binding/cardinality/seed validation precedes construction randomness. lane_world_ids must be a permutation of declared membership. Semantic execution identity includes actual compiled.execution_hash, membership and seed. Constructor accepts string/torch device and normalizes strings. The classmethod rejects absent level and directly constructs cls; it does not currently route through standalone EF. Existing EF helper uses for affordance/meter wiring remain.
+Every argument is required. Exact roster/binding/cardinality/seed validation precedes construction randomness. lane_world_ids must be a permutation of declared membership. Semantic execution identity includes actual compiled.execution_hash, membership and seed. Constructor accepts string/torch device and normalizes strings. The classmethod rejects absent level and delegates its actual cls/universe through standalone env_factory.from_universe. That factory normalizes string devices and forwards the same required declaration, seed and requested lanes to env_cls. CompiledUniverse.create_environment requires and forwards the same three world arguments. Existing affordance/meter helpers remain.
 
 The accepted CURRENT-COMPILED-POLICY-CONTRACT supplies actual current1.42 compilation: UniverseCompiler().compile(Path("configs/test/token_set_smoke"), primary_level="L0_test", use_cache=False). Actual tests use that compiled artifact and direct ENV construction. No compiler source was reopened.
 
@@ -83,11 +83,14 @@ accepted_bindings contains sorted exact records `{batch_episode, world_ids, worl
 
 T25 must derive the exact retained-reference union from actual prepared owner snapshots; ENV requires requested records to exist but cannot infer missing external references. Each retained historical event validates against its own batch binding, not the latest order. Fingerprint-only records do not permit reconstructing/authenticating absent payloads. Actual POP/PW05 owner validators retain those evidence limits explicitly.
 
-Immediate actual consumer work remains: standalone EF and compiled/oracle constructors forward required declaration/seed/binding; POP/oracle reset callers consume reservation/reset observation/activation rather than untokened reset. Root's13 remaining mypy errors in EF/compiled/oracle/POP identify these four source seams. No compatibility fallback is authorized and global mypy is not passing.
+Current compiled/classmethod/factory constructor transport is source-reviewed and independently tested. Seven remaining mypy errors are in oracle constructor/reset and POP reset callers; they must consume real reservations/reset observations/activation. No compatibility fallback is authorized, and global mypy remains failing. VFS and the actual runtime/native owner integrations below remain required.
 
 Actual runner/T23 owns explicit run declaration and immutable run-world-roster.json custody; it is not implemented by the declaration hash. PW05 owns genuine accepted/settled/completed/retired cursors, private learned/RNG state and bank preflight/commit. T18d/T26 own actual effect receipts, epsilon/selection and pending-boundary reentry. T24/T25 own outer/native parent schemas, initialized NN/provider restore and atomic expected-refusal preparation. The54 tests exercise real ENV construction/reset/steps and producer gates using explicitly local sink doubles; they do not qualify those actual consumers.
 
 Existing VFS still independently increments its scalar reset counter and uses row-based draw keys. Its direct accepted-world identity consumer remains required. Ambient spawn/layout RNG independence is also unqualified; prior learner/reset interference was an unrun hypothesis. None of private-state, simulator-order/spectator, actual learning, full-family/native/E2E or final BAC acceptance follows from the bounded producer results.
 
-## Root postflight update for publication
+## Historical producer postflight (R3)
 All R3 sessions are closed. Exact R3tree05b01ad1d548ad76bda8d0ef9a6ef4b685acb29a passes54owned/9covering and239joint; same Sol independent27PASS0warnings11.5209wall with custodyPASS. These selections overlap and are not summed. CompilerCLI alsoPASS190.4529wall; Ruff/Black/defaults601/expressionPASS. Globalmypy remainsFAIL13actualcallererrors4files, noowned/helpererrors. Root postflight verifies183source/573config/13artifact/index/registry/custody; boundedsourcehandoffonly, no integratedrelease. This updates the earlier at-writing pending-runtime statement without claiming missingrealconsumer/finalgates.
+
+## Current constructor source update
+Current ENV2343 SHA256 f2b50300ae9d51fa9d6e4b069091ddd1064ce09f3f5e24df1c5917453237c784 differs from the historical R3 source only in classmethod forwarding. Lifecycle/data schemas remain world-lifecycle-v3 here. The separately reviewed planned v4 VFS child is design intent until its consumer is implemented and tested. Current four-file constructor context totals4305;193joint/independent88 and all five non-mypy guards pass, while seven reset-caller errors and final integration remain open.

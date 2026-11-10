@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave17/r1-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave17-r1-covering",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "covering",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave17-r1-covering",
+        "-k",
+        "test_real_entry_point_transports_explicit_world_identity or test_classmethod_uses_factory_for_real_subclass_construction"
+      ]
+    }
+  ]
+}

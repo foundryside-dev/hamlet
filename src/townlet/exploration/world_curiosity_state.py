@@ -60,6 +60,119 @@ def derive_world_seed(*, training_seed: int, world_id: str, provider_kind: str, 
 
 
 @dataclass(frozen=True)
+class ServiceClock:
+    """Typed service position; live scheduling authority belongs to its owner."""
+
+    unit: Literal["vector_tick", "world_eligible_admission"]
+    position: int
+
+    def __post_init__(self) -> None:
+        if type(self.unit) is not str or self.unit not in ("vector_tick", "world_eligible_admission"):
+            raise ValueError("service clock unit must be an exact supported string")
+        _integer(self.position, "position", 0)
+
+
+@dataclass(frozen=True)
+class CuriosityEventId:
+    """Exact accepted-episode identity; eligible_seq zero marks no admission yet.
+
+    This value does not authenticate ENV acceptance or allocate live cursors.
+    An inactive row may retain the ID of its latest eligible admission.
+    """
+
+    curiosity_epoch: int
+    world_id: str
+    world_episode_seq: int
+    eligible_seq: int
+
+    def __post_init__(self) -> None:
+        _integer(self.curiosity_epoch, "curiosity_epoch", 0)
+        if type(self.world_id) is not str or not self.world_id:
+            raise ValueError("world_id must be an exact nonempty string")
+        _integer(self.world_episode_seq, "world_episode_seq", 1)
+        _integer(self.eligible_seq, "eligible_seq", 0)
+
+
+@dataclass(frozen=True, init=False, eq=False)
+class CuriosityStepStamp:
+    """Owned all-row identity snapshot, with identity equality and no hashing.
+
+    Tensor access returns detached independent copies. Acceptance, actual-context
+    correlation, phase ordering and retry receipts remain live-owner duties.
+    Inputs must be quiescent while this cooperative snapshot is constructed.
+    """
+
+    # Intentionally disable object's hash protocol for this identity-equal stamp.
+    __hash__ = None  # type: ignore[assignment]
+
+    event_ids: tuple[CuriosityEventId, ...]
+    world_ids: tuple[str, ...]
+    _world_episode_seqs: torch.Tensor
+    _eligible_seqs: torch.Tensor
+    _eligible: torch.Tensor
+
+    def __init__(
+        self,
+        *,
+        event_ids: tuple[CuriosityEventId, ...],
+        world_ids: tuple[str, ...],
+        world_episode_seqs: torch.Tensor,
+        eligible_seqs: torch.Tensor,
+        eligible: torch.Tensor,
+    ) -> None:
+        if type(world_ids) is not tuple or not world_ids or any(type(item) is not str or not item for item in world_ids):
+            raise ValueError("stamp world_ids must be an exact nonempty tuple of exact nonempty strings")
+        if len(set(world_ids)) != len(world_ids):
+            raise ValueError("stamp world_ids must be unique")
+        rows = len(world_ids)
+        if type(event_ids) is not tuple or len(event_ids) != rows or any(type(item) is not CuriosityEventId for item in event_ids):
+            raise ValueError("stamp event_ids must be an exact tuple of CuriosityEventId values matching all rows")
+        if len({item.curiosity_epoch for item in event_ids}) != 1:
+            raise ValueError("stamp rows must share one curiosity epoch")
+        inputs = (world_episode_seqs, eligible_seqs, eligible)
+        for value, dtype in zip(inputs, (torch.int64, torch.int64, torch.bool), strict=True):
+            if (
+                not isinstance(value, torch.Tensor)
+                or value.layout != torch.strided
+                or value.device.type not in ("cpu", "cuda")
+                or value.shape != (rows,)
+                or value.dtype != dtype
+            ):
+                raise ValueError("stamp tensors require dense CPU/CUDA [N] vectors with int64/int64/bool dtypes")
+        if any(value.device != world_episode_seqs.device for value in inputs):
+            raise ValueError("stamp tensors must share exactly one device")
+        episodes_owned, sequences_owned, eligible_owned = (value.detach().clone() for value in inputs)
+        if bool((episodes_owned < 1).any()) or bool((sequences_owned < 0).any()) or bool((eligible_owned & (sequences_owned < 1)).any()):
+            raise ValueError("stamp episodes must be positive and eligible admissions require a positive local sequence")
+        episodes = episodes_owned.tolist()
+        sequences = sequences_owned.tolist()
+        for index, event_id in enumerate(event_ids):
+            if (
+                event_id.world_id != world_ids[index]
+                or event_id.world_episode_seq != episodes[index]
+                or event_id.eligible_seq != sequences[index]
+            ):
+                raise ValueError("stamp event IDs must match exact ordered world/episode/eligible content")
+        object.__setattr__(self, "event_ids", event_ids)
+        object.__setattr__(self, "world_ids", world_ids)
+        object.__setattr__(self, "_world_episode_seqs", episodes_owned)
+        object.__setattr__(self, "_eligible_seqs", sequences_owned)
+        object.__setattr__(self, "_eligible", eligible_owned)
+
+    @property
+    def world_episode_seqs(self) -> torch.Tensor:
+        return self._world_episode_seqs.detach().clone()
+
+    @property
+    def eligible_seqs(self) -> torch.Tensor:
+        return self._eligible_seqs.detach().clone()
+
+    @property
+    def eligible(self) -> torch.Tensor:
+        return self._eligible.detach().clone()
+
+
+@dataclass(frozen=True)
 class WorldCuriosityDescriptor:
     """Immutable declared geometry, ID binding and canonical ID-keyed streams.
 

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[alias_id]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "case = 'alias_id'\n\n    @pytest.mark.parametrize(\n        \"case\", [\"duplicate\", \"empty_id\", \"alias_id\", \"not_id\", \"id_alias\", \"mixed_epoch\", \"world\", \"episode\", \"local\", \"overflow\"]\n    )\n    def test_step_stamp_all_row_identity_refusals(case):\n>       _, event_id, _ = _api()\n                         ^^^^^^\n\ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    def _api():\n        names = (\"ServiceClock\", \"CuriosityEventId\", \"CuriosityStepStamp\")\n        for name in names:\n>           assert hasattr(ws, name), f\"Missing promised public clock/stamp ABI: {name}\"\nE           AssertionError: Missing promised public clock/stamp ABI: ServiceClock\nE           assert False\nE            +  where False = hasattr(ws, 'ServiceClock')\n\ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError",
+  "candidate_tree": "5cddef656fdb0873b225975f288cb032d8332a3a"
+}

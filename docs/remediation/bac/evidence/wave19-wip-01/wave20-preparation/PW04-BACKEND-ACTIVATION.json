@@ -1,0 +1,8 @@
+{
+  "proposal": "PW04-BACKEND-ABI-PROPOSAL.md",
+  "sha256": "5b3aae78fc62715f5eabd752acf341327c382957a7613a1105dae83f46be3465",
+  "review": "PW04-BACKEND-ABI-REVIEW-R2.md",
+  "review_sha256": "5ff4bc025bcf568b7df39f84b3d9a444f3a2d2a12b32a5e0ab43a0415ba512c5",
+  "root_disposition": "AdoptfinitebackendproducerABI; tests-onlyauthoringafterclockruntime/checkpointclose. No release ofintegratedPW04.",
+  "remaining_required": "ActualcurrentPOP/ordinaryrunner/nativeartifact/nextrealupdate/deeprefusal and earlyfullgate remain OPEN."
+}

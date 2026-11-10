@@ -1,0 +1,24 @@
+{
+  "name": "covering",
+  "exit_code": 1,
+  "seconds": 3.463489294052124,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_contract.py::test_scope_defaults_and_identity_roundtrip",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave19-r3-covering"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-covering/covering.log",
+  "sha256": "575bd7fc6e2a964514d616e241f115334ba61fdc6c140e40274b7b35bf5ad005",
+  "candidate_tree": "3c5b206d27a0b07064f9933da72706f0d8cf01ef",
+  "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+  "manifest_sha256": "93b2ef179b7f9b06fa16fb50b36540e59eeb9f2a744a23b604816ce478d4254a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

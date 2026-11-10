@@ -1,0 +1,9 @@
+{
+  "before": "fc9be745ab293003ab8f69a8ad7dd52c23a48f2a",
+  "after": "808e9975155d089dd4c62996dbb996359d774fc6",
+  "ast_equal": {
+    "src/townlet/exploration/world_curiosity_state.py": true,
+    "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py": true
+  },
+  "not_a_test_substitute": "R2 actualexecution/guards stillrequired andqueued"
+}

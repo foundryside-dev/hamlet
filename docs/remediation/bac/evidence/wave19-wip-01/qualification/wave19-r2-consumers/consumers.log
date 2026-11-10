@@ -1,0 +1,58 @@
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest_benchmark/logger.py:44: PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks cannot be performed reliably in a parallelized environment.
+  warner(PytestBenchmarkWarning(text))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 3/3 workers
+3 workers [56 items]
+
+F.......................................................                 [100%]
+=================================== FAILURES ===================================
+__________________ test_scope_defaults_and_identity_roundtrip __________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave19-r2-consumers/popen-gw1/test_scope_defaults_and_identi0')
+
+    def test_scope_defaults_and_identity_roundtrip(tmp_path: Path) -> None:
+        manifest = json.loads((NATIVE / "manifest.json").read_text())
+        assert manifest["producer_sha"] == PRODUCER
+        assert {item["label"] for item in manifest["artifacts"]} == set(NATIVE_DIGESTS)
+        for item in manifest["artifacts"]:
+            artifact = NATIVE / item["artifact"]
+            assert item["producer_sha"] == PRODUCER and item["schema_version"] == "1.41"
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == item["sha256"] == NATIVE_DIGESTS[item["label"]]
+>           legacy = CompiledUniverse.load_from_cache(artifact)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_contract.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/universe/compiled.py:758: in load_from_cache
+    _validate_compiled_schema_version(payload, source=str(path))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+payload = {'actions': {'actions': {'custom_actions': [{'description': 'Do nothing (pass turn)', 'enabled_by_default': True, 'nam...1'}, 'optimizer': {'adam_beta1': 0.9, 'adam_beta2': 0.999, 'adam_eps': 1e-08, 'learning_rate': 0.0001, ...}, ...}, ...}
+
+    def _validate_compiled_schema_version(payload: Mapping[str, Any], *, source: str) -> None:
+        schema_version = _required_field(payload, "compiled_schema_version")
+        if schema_version != COMPILED_SCHEMA_VERSION:
+>           raise ValueError(
+                f"Compiled universe schema mismatch for {source}: "
+                f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
+                "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
+            )
+E           ValueError: Compiled universe schema mismatch for /workspace/hamlet/tests/test_townlet/fixtures/bac_curiosity_pre_scope/scope-omitted.msgpack: found '1.41', expected '1.42'. Recompile the config pack with `python -m townlet.universe compile <config_dir>`.
+
+src/townlet/universe/compiled.py:885: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_contract.py::test_scope_defaults_and_identity_roundtrip
+========================= 1 failed, 55 passed in 7.64s =========================

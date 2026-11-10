@@ -1,0 +1,81 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 64 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_pw_clock_stamp.py>
+            <Function test_service_clock_strict_typed_units>
+            <Function test_event_id_initial_and_exact_identity>
+            <Function test_step_stamp_first_eligible_and_inactive>
+            <Function test_step_stamp_sequence_refusals[list-event_ids]>
+            <Function test_step_stamp_sequence_refusals[list-world_ids]>
+            <Function test_step_stamp_sequence_refusals[tuple_alias-event_ids]>
+            <Function test_step_stamp_sequence_refusals[tuple_alias-world_ids]>
+            <Function test_step_stamp_sequence_refusals[empty-event_ids]>
+            <Function test_step_stamp_sequence_refusals[empty-world_ids]>
+            <Function test_step_stamp_sequence_refusals[short-event_ids]>
+            <Function test_step_stamp_sequence_refusals[short-world_ids]>
+            <Function test_step_stamp_sequence_refusals[long-event_ids]>
+            <Function test_step_stamp_sequence_refusals[long-world_ids]>
+            <Function test_step_stamp_all_row_identity_refusals[duplicate]>
+            <Function test_step_stamp_all_row_identity_refusals[empty_id]>
+            <Function test_step_stamp_all_row_identity_refusals[alias_id]>
+            <Function test_step_stamp_all_row_identity_refusals[not_id]>
+            <Function test_step_stamp_all_row_identity_refusals[id_alias]>
+            <Function test_step_stamp_all_row_identity_refusals[mixed_epoch]>
+            <Function test_step_stamp_all_row_identity_refusals[world]>
+            <Function test_step_stamp_all_row_identity_refusals[episode]>
+            <Function test_step_stamp_all_row_identity_refusals[local]>
+            <Function test_step_stamp_all_row_identity_refusals[overflow]>
+            <Function test_step_stamp_all_row_order_and_geometry>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[rank0-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[rank0-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[rank0-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[rank2-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[rank2-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[rank2-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[short-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[short-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[short-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[long-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[long-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[long-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[list-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[list-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[list-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[none-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[none-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[none-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[float-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[float-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[float-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[int32-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[int32-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[int32-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[meta-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[meta-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[meta-eligible]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[sparse-world_episode_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[sparse-eligible_seqs]>
+            <Function test_step_stamp_tensor_shape_dtype_layout_device[sparse-eligible]>
+            <Function test_step_stamp_tensor_domains_include_last_row[world_episode_seqs-0]>
+            <Function test_step_stamp_tensor_domains_include_last_row[world_episode_seqs--1]>
+            <Function test_step_stamp_tensor_domains_include_last_row[eligible_seqs--1]>
+            <Function test_step_stamp_owns_inputs_and_outputs>
+            <Function test_primitive_refusal_has_no_external_effects>
+            <Function test_cpu_stamp_never_probes_or_initializes_cuda>
+            <Function test_step_stamp_cuda_ownership_when_available>
+
+========================= 64 tests collected in 0.05s ==========================

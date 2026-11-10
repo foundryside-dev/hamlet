@@ -1,0 +1,9 @@
+{
+  "proposal": "CLOCK-STAMP-ABI-PROPOSAL.md",
+  "sha256": "5251388f5ad7c0328b6be4825be595e4b3f8fafd2271f1babd6618ded8bac0f0",
+  "review": "CLOCK-STAMP-ABI-REVIEW-R2.md",
+  "review_sha256": "59e0baf7f1c5884c7994967b17c3203868c194f30e0c2e4a9a86d87421ad3b10",
+  "root_disposition": "Adopt additive currentprimitive ABI; tests-onlyauthoringclearance, meaningfulREDbeforeproduction",
+  "not_authorized": "No actualbank/receipt/phase authority or extra branch/worktree/repositorycopy; no capabilityscope reduction",
+  "existing_continuation": "All original66packets/54requirements/22lenses and integrated gates remain."
+}

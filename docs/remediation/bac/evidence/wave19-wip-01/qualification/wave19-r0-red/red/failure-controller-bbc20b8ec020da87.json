@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_domains_include_last_row[world_episode_seqs--1]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "field = 'world_episode_seqs', bad = -1\n\n    @pytest.mark.parametrize(\"field,bad\", [(\"world_episode_seqs\", 0), (\"world_episode_seqs\", -1), (\"eligible_seqs\", -1)])\n    def test_step_stamp_tensor_domains_include_last_row(field, bad):\n>       values = _inputs()\n                 ^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:230: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs\n    _, event_id, _ = _api()\n                     ^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    def _api():\n        names = (\"ServiceClock\", \"CuriosityEventId\", \"CuriosityStepStamp\")\n        for name in names:\n>           assert hasattr(ws, name), f\"Missing promised public clock/stamp ABI: {name}\"\nE           AssertionError: Missing promised public clock/stamp ABI: ServiceClock\nE           assert False\nE            +  where False = hasattr(ws, 'ServiceClock')\n\ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError",
+  "candidate_tree": "5cddef656fdb0873b225975f288cb032d8332a3a"
+}

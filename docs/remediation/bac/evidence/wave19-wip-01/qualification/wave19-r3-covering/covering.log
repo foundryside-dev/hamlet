@@ -1,0 +1,55 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_pw_scope_contract.py F           [100%]
+
+=================================== FAILURES ===================================
+__________________ test_scope_defaults_and_identity_roundtrip __________________
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave19-r3-covering/test_scope_defaults_and_identi0')
+
+    def test_scope_defaults_and_identity_roundtrip(tmp_path: Path) -> None:
+        manifest = json.loads((NATIVE / "manifest.json").read_text())
+        assert manifest["producer_sha"] == PRODUCER
+        assert {item["label"] for item in manifest["artifacts"]} == set(NATIVE_DIGESTS)
+        for item in manifest["artifacts"]:
+            artifact = NATIVE / item["artifact"]
+            assert item["producer_sha"] == PRODUCER and item["schema_version"] == "1.41"
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == item["sha256"] == NATIVE_DIGESTS[item["label"]]
+            # Historical bytes/metadata remain DATA; current native1.42 refuses1.41.
+            historical = item["effective_run"]
+            assert historical["execution_hash"] == item["execution_hash"]
+            assert historical["training_hash"] == item["training_hash"]
+            assert historical["authored_identity"]
+            assert "curiosity_scope" not in historical["exploration"]
+            if item["label"] == "options-authored":
+                assert historical["authored_options"]["serving"]["policy_mode"] == "mc_dropout"
+                assert historical["authored_options"]["replay"]["sampling_mode"] == "independent_with_replacement"
+                assert historical["authored_options"]["checkpoint"]["save_initial"] is True
+            with pytest.raises(ValueError):
+                CompiledUniverse.load_from_cache(artifact)
+            with pytest.raises(ValueError):
+>               EffectiveRunConfig.from_dict(historical)
+
+tests/test_townlet/regressions/bac/test_pw_scope_contract.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'townlet.config.effective_run.EffectiveRunConfig'>
+payload = {'authored_brain_hash': '7b29b57b8318e11001ae00fbb01559cd69b0d7a807878d771048386944fc9f5f', 'authored_identity': '654d...1'}, 'optimizer': {'adam_beta1': 0.9, 'adam_beta2': 0.999, 'adam_eps': 1e-08, 'learning_rate': 0.0001, ...}, ...}, ...}
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> EffectiveRunConfig:
+>       static_data = dict(payload["static_policy"])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'static_policy'
+
+src/townlet/config/effective_run.py:118: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_contract.py::test_scope_defaults_and_identity_roundtrip
+============================== 1 failed in 0.05s ===============================

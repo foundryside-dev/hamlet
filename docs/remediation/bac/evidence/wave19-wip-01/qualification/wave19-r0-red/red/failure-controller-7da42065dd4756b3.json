@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[none-eligible_seqs]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "field = 'eligible_seqs', kind = 'none'\n\n    @pytest.mark.parametrize(\"field\", [\"world_episode_seqs\", \"eligible_seqs\", \"eligible\"])\n    @pytest.mark.parametrize(\n        \"kind\", [\"rank0\", \"rank2\", \"short\", \"long\", \"list\", \"none\", \"float\", \"int32\", \"wrong_bool\", \"meta\", \"sparse\"]\n    )\n    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):\n>       values = _inputs()\n                 ^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs\n    _, event_id, _ = _api()\n                     ^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    def _api():\n        names = (\"ServiceClock\", \"CuriosityEventId\", \"CuriosityStepStamp\")\n        for name in names:\n>           assert hasattr(ws, name), f\"Missing promised public clock/stamp ABI: {name}\"\nE           AssertionError: Missing promised public clock/stamp ABI: ServiceClock\nE           assert False\nE            +  where False = hasattr(ws, 'ServiceClock')\n\ntests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError",
+  "candidate_tree": "5cddef656fdb0873b225975f288cb032d8332a3a"
+}

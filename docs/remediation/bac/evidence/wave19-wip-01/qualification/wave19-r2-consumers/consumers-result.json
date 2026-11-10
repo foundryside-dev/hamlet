@@ -1,0 +1,29 @@
+{
+  "name": "consumers",
+  "exit_code": 1,
+  "seconds": 11.142276287078857,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "3",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave19-r2-consumers"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers.log",
+  "sha256": "4de0c3ddf49ba6f1fbc3ff0f0a8502d0d840eff51817cfdfb63aeb5d1b5bc697",
+  "candidate_tree": "808e9975155d089dd4c62996dbb996359d774fc6",
+  "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+  "manifest_sha256": "18299e28745162346d08ca8121fd73f78f4ce71dc39bf3a266c1da22f05e8bcd",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

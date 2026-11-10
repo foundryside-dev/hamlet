@@ -1,0 +1,14 @@
+{
+  "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+  "candidate_tree": "808e9975155d089dd4c62996dbb996359d774fc6",
+  "counts": {
+    "failed": 1,
+    "passed": 55,
+    "errors": 0
+  },
+  "wall_seconds": 11.142276287078857,
+  "cause": "Obsolete native1.41 positive compatibility load assertion; current1.42 deliberatelyrefuses per ownerno-compat. Later current-native positive section not reached; repaircausalprerequisite before rerun.",
+  "custody": "PASS192source573configs13artifacts4processes/index/import/Torch1/14registry1available",
+  "clock_core": "SeparateR2joint94PASS2CUDA_SKIP,independent63PASS1skip; no newclockbehaviorregression",
+  "sessions": "ALLCLOSED beforefixturewriter"
+}

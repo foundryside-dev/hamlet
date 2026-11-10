@@ -1,0 +1,1454 @@
+{
+  "status": "BOUNDED CLOCK/STAMP AND CURRENT OWNER FIXTURE HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+  "packet": "Public local service clock and immutable all-row curiosity event stamp primitives",
+  "evidence_base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+  "evidence_candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+  "execution_subtrees": {
+    "src": "dc09c2679958cff5fc64998a61af7ae8402b816b",
+    "tests": "6415fd23328d557bc9c6b6c41da183cefb3e93e0",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e"
+  },
+  "inventories": {
+    "T21": [
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 323,
+        "sha256": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/effective_run.py",
+        "lines": 371,
+        "sha256": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "CLOCK-STAMP": [
+      {
+        "path": "src/townlet/exploration/world_curiosity_state.py",
+        "lines": 847,
+        "sha256": "ec3cf8ded83f952ca4c1993b084b2ee0c7f1e611bf172ab31830ecfdc27f352d",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/exploration_policy.py",
+        "lines": 768,
+        "sha256": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+        "lines": 798,
+        "sha256": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py",
+        "lines": 316,
+        "sha256": "bffc26fff70116ac18d3cc43fa6c73c747c0e5ae7779abf077646aa0116a1a1e",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+        "lines": 250,
+        "sha256": "06f8a23deea73de495ee0adc427317386dc1e75487fb2bd6eb7496ed9214b295",
+        "present": true
+      }
+    ]
+  },
+  "source_files": {
+    ".defaults-ratchet": "68ef67b35dd79367f8c89133b1d0b1401c0eb795b3c1d8fadd7c0005075df2bc",
+    "AGENTS.md": "2db4cc23dbf6e2890c3279ea34a068c38f4ee1c8dfd5ecf838541dd93586672e",
+    "docs/remediation/bac/STATUS.md": "4632f3592159e60b4b37333c6e840ca230aa7274a2e0c236c807bb7a949005b9",
+    "docs/remediation/bac/acceptance-ledger.json": "557ac591127ae18afc6e9d978cd17fec3e98876ed476f1d0724995f64ddba614",
+    "docs/remediation/bac/evidence/T15-interface-preparation.json": "72b073837abe3c88d5caee0d40643f7e81e4931fc0d9c701c7b3dd68c0ff761e",
+    "docs/remediation/bac/evidence/X04-acceptance-overlay.json": "bd1e028dd6df9ed2bbaad38cb93a9aa0adeffd28ba227e8441110c2d27b68d8c",
+    "docs/remediation/bac/evidence/email-only-identity-mapping.json": "c9a60f082540f5d5e222aa515607680d551778ed83a4aca3b8fcc5430c481543",
+    "docs/remediation/bac/evidence/wave05-qualification.json": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5",
+    "docs/remediation/bac/evidence/wave06-qualification.json": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f",
+    "docs/remediation/bac/evidence/wave06-source-binding.md": "aa1803ad05ce03aa41f9f4f79517311dc7638e5505494540a242dac2e7f8bd05",
+    "docs/remediation/bac/evidence/wave07-qualification.json": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10",
+    "docs/remediation/bac/evidence/wave07-source-binding.md": "8006ad17951fe056b71f23c487371e0e3c4baa25c7545b88f24203a4c931d21f",
+    "docs/remediation/bac/evidence/wave08-qualification.json": "e2b9c1cc0ceefa79382fb20011cdd264c94341d9829bb1c780c0376e0a612283",
+    "docs/remediation/bac/evidence/wave08-source-binding.md": "089e048452aee6f6bf9c5c681a82ffc1b027c635a335abf9681ee670ca99109e",
+    "docs/remediation/bac/package-reviews/PW02-implementation.md": "d043a9769b81a2d95a3c85155b253c3090a2dc4f75d29c3bdf69e12f537e9216",
+    "docs/remediation/bac/package-reviews/PW02-independent-review.md": "03299c0fdaeace1a51ef23fdadc7947bf5685d02957db4975b2d159ed08b3c7a",
+    "docs/remediation/bac/package-reviews/PW02-key-ownership-finding.md": "64e3a27ba5bee32521702628524bc1670f01d0714ad22adeaca1d121c56222a3",
+    "docs/remediation/bac/package-reviews/T06-implementation.md": "be1e6a853e9fcfdb75aa77f6ab58a658e782ba49d99aef2de7afd28e659de121",
+    "docs/remediation/bac/package-reviews/T06-independent-review.md": "25ca43e41e64945f75381aaaa74600986d92e7e3f75f3f8f8346c9d638d344e3",
+    "docs/remediation/bac/package-reviews/T06-preservation-finding.md": "b83c42525b09f70994b3ec13332343413719011599bad42eeb7096b9b64b7022",
+    "docs/remediation/bac/package-reviews/T06-transport-initial-review.md": "554c8008e97d4d9bdf0bd5bac0d97227537655ad445bd1bdf017e2233b62bcbb",
+    "docs/remediation/bac/package-reviews/T07-clock-finding.md": "3d52b56dc1ebc10dde222dc0dae9e25772d5820153fd7ead7572205f47a4e084",
+    "docs/remediation/bac/package-reviews/T07-common-binding.md": "f38edfc29dd0e02f289a27f48c5cf6206d1846f121270b3e7fd8635087248612",
+    "docs/remediation/bac/package-reviews/T07-implementation.md": "d9d63bd8fc406f872be7a4f34650189870d840146fc906b72b30f9c3a22885ac",
+    "docs/remediation/bac/package-reviews/T07-independent-review.md": "79387e41a3b6501c1a87e8f80262cb6d8a30c92be296cf1f8590282ce8594d4b",
+    "docs/remediation/bac/package-reviews/T07-scope-finding.md": "9ed00d59b257bb7e1535bf98479a7e518a0bef5574ab4a6b83aa322aa73c620f",
+    "docs/remediation/bac/package-reviews/T11-implementation.md": "9c79533e65adc501fe3714d7cc29d1a56b8ccf7676afd17744f8f2c98ff2483c",
+    "docs/remediation/bac/package-reviews/T11-independent-review.md": "cf88d21b87a53dcced008cdc8a4482b410fb28f3b22ad6fd2ce62c8202602b8e",
+    "docs/remediation/bac/package-reviews/T12-checkpoint-owner-review.md": "6fe2d4b38477f30fad2b8b99021211d8b0c2cd3c90574a39d8aa39b4f9e2e9f1",
+    "docs/remediation/bac/package-reviews/T12-common-binding.md": "6b097398da6daa9339bd9c83712c378967e48f43f508a58cdf8697d985d86145",
+    "docs/remediation/bac/package-reviews/T12-implementation.md": "43f27778ac9256782d665f1e5d218c430c3b5ac699ec1e49ceb2ad990d9b7f12",
+    "docs/remediation/bac/package-reviews/T12-independent-review.md": "808dcfc041826b88aa1b13a679aed8b49ee23e3cac55bfa7f18365e31e6cda01",
+    "docs/remediation/bac/package-reviews/T12-inspection-design-review.md": "f29b568531ad2493cca472c22936b285619fc0242cbeca641be5ba4b7a6a2721",
+    "docs/remediation/bac/package-reviews/T12-inspection-finding.md": "1b54e50fc4ba507e4bdc5f886c27ee787fbaae579f8fc1c3b2f82d69536f2f57",
+    "docs/remediation/bac/package-reviews/T12-inspection-native-handoff.md": "63c7d057e98ae7d980c85366bd513997eeda5c1a6a51e554d015c45343757c3d",
+    "docs/remediation/bac/package-reviews/T12-inspection-transport.md": "7c6f11ebc0634832a3aa7c1464c45b1942aff26a135118dc167cf728e9b570f5",
+    "docs/remediation/bac/package-reviews/T12-native-proof-review.md": "8a6f093b5698626eb15acc5f79c357f9aebf19d0c20ab21bdca4728caebe0178",
+    "docs/remediation/bac/package-reviews/T13-authored-reachability.md": "d87871f80fc20c8ee6936dd9a83deb9b95a8793aa698b5feb750e60ef43f83ec",
+    "docs/remediation/bac/package-reviews/T13-consumer-review.md": "33fea7a7c3ba4f078905c0c22b9f62908d6c693764979bf61a328250d37b3803",
+    "docs/remediation/bac/package-reviews/T13-implementation.md": "07c0b4901b600acf375758a19a9cacb72d019c0648246387e4d38bf7ee61aef7",
+    "docs/remediation/bac/package-reviews/T13-independent-review.md": "ae44aa60413f65c03e1308f72abdbc5fd6d37c105acca0e06e3e051c4a9f082b",
+    "docs/remediation/bac/package-reviews/T13-initial-findings.md": "d739097c349da2eb7041835ba032c960a2d44e61a5004a6d651330b95a225770",
+    "docs/remediation/bac/package-reviews/T13-max-findings.md": "e50b94cf54a832258abc4698ff78340319c351ed888500b772fefcf0a2bdb96a",
+    "docs/remediation/bac/package-reviews/T13-native-proof-review.md": "b403982953ea1383dcb9c7b5e0711ff7d45cabc2de30f5d83999960264d001ef",
+    "docs/remediation/bac/package-reviews/T13-owner-review.md": "50e1529208a31d3fd4238b46b4a763c0e87a03b0ee870f0b4442a90886081560",
+    "docs/remediation/bac/package-reviews/T14-admission-clarification.md": "0ae2044a42eed3e9377e3da39a0a3df4dbda4ff8c1c36f4b7f57c3f671303fe6",
+    "docs/remediation/bac/package-reviews/T14-core-execution.md": "7b24523c89cec70d056cd041bde35a1f8e8eb723cf6a33be0fc9ed84e4ffb272",
+    "docs/remediation/bac/package-reviews/T14-estimator-causal-finding.md": "0c9774700fd3a8ef0dcb50ccfe287b279211fe52d804e762f5b7b0d3cf782cca",
+    "docs/remediation/bac/package-reviews/T14-estimator-execution.md": "bb6c1f4d44144804c5eae74969ac15f265b6eec7255f03ee4fe2aba962708484",
+    "docs/remediation/bac/package-reviews/T14-estimator-review.md": "0eb44fe985e3868c74356ebbf44ab111f12126abb942eebe6ff0d6d4dd4c5975",
+    "docs/remediation/bac/package-reviews/T14-implementation.md": "5c0b4920939846046ef812c94200c6d7843fa6ee901d8b0bc09c2095a20f23c5",
+    "docs/remediation/bac/package-reviews/T14-independent-review.md": "c7817f6547c13af3989f7dd9b12a5cfc2e564e67614bede2779dc130c130aab3",
+    "docs/remediation/bac/package-reviews/T14-interface-review.md": "c5ef82eb558fae52dc4dd3e5b3502ab8eb247c31514429babe13f59ab5e7fed6",
+    "docs/remediation/bac/package-reviews/T14-interface.md": "2d7e60bc40956270dbbc39f26b81f74461caf5360e2ac1a00306004940903f05",
+    "docs/remediation/bac/package-reviews/T14-native-execution.md": "8b871adf5d4de844818239f18f5e4c173d6eedcfb72a48e091a19cd14961314c",
+    "docs/remediation/bac/package-reviews/T14-native-handoff.md": "52121819607642724bf843b763b7b25594a3571ce81de7397e6ef6eea4f67eda",
+    "docs/remediation/bac/package-reviews/T14-native-review.md": "29114502f1ddbf900c76bd198636f6dca6f28fe157e262852223182e89ca5650",
+    "docs/remediation/bac/package-reviews/T14-owner-execution.md": "349f9cff4ea6f11a8db6ef7798b7541a95f09ddaa15d9b675d23550dcc631bf1",
+    "docs/remediation/bac/package-reviews/T14-owner-review.md": "d1177a1af38f47e8b449bd67cdc17b361a39548ea7ca6549ada551b4c330add2",
+    "docs/remediation/bac/package-reviews/T15-config-contracts.md": "e591daa76c71d669a86e46cc997c2a8ee2ab14ae536f19e19492eeddb9aea4b4",
+    "docs/remediation/bac/package-reviews/T15-constructor-factory.md": "9044eba1c1ccc7f586bb8011f8f6b1b4325026817f1b1608e92f3c3ce4232755",
+    "docs/remediation/bac/package-reviews/T15-constructor-runtime.md": "5c919b1a992610afb29d5cd2fd6b3a56593f3a4585975c69029949b5f4d7d36f",
+    "docs/remediation/bac/package-reviews/T15-constructor-suppliers.md": "3dd5ed3c07be30245673c722bae42ec7dba90db214b97492e5db51c9dcdbfdf6",
+    "docs/remediation/bac/package-reviews/T15-constructor-units.md": "0119730e7e6aeb2150c9e9bd1907918809146f4dfea85a17a6440c2bb7cd747a",
+    "docs/remediation/bac/package-reviews/T15-flat-contracts.md": "16871a3d981de3f7c3a0ad6140fa19675c3f975d54fa214ba2342866f0f17fc4",
+    "docs/remediation/bac/package-reviews/T15-implementation-readiness.md": "22e8102a0c291a561d757a2152049744c1d335a2547fb2cc515701a307e1dcea",
+    "docs/remediation/bac/package-reviews/T15-interface-review.md": "7cfddfcf4d46253b3c70ee7788a385379702134a037b0933fafced02d0c07f42",
+    "docs/remediation/bac/package-reviews/T15-interface.md": "359e21ccccc79d0c5b082257c68176dab565248caf2c1cef8435afd1994a845b",
+    "docs/remediation/bac/package-reviews/T15-preparation.md": "4d8bc45d8744fcc2623244f5e01641df9170539a7b1ee2b33770c65ccaffd70f",
+    "docs/remediation/bac/package-reviews/T15-provider-contracts.md": "69e08cdada3dbf2070fabdf2ccb882ecec22e50f7887ef5aca011e82e6675cf2",
+    "docs/remediation/bac/package-reviews/X04-mean-TD-triage.md": "03604920a82682235ed6a85f73d33a0c9a5e05d55139a2b2bbe27410e9abcc6f",
+    "scripts/check_episode_lanes.py": "19e0b83130f2467a2bfd890dc79e95de6d7694e79f7fa996fa16c66b43e62eb7",
+    "scripts/run_demo.py": "0029a2d758ed45907be30c6e8a21003798ddaef99dad392acc2c8a0ce3abd43a",
+    "src/townlet/agent/network_factory.py": "31b1340b6a125754ae15dbcc981223a4a6f4056ebf9db38ffbe63ba0ff9dd75c",
+    "src/townlet/agent/networks.py": "24d4a8627255dab42b3b9b64995c62235f71f25ea04cdbaace6616f1b6e899ed",
+    "src/townlet/agent/optimizer_factory.py": "56af1a9c8edb70a25b43a6e10aa3080d9a7b8becff112924e21a9429d994717d",
+    "src/townlet/config/bac_options.py": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+    "src/townlet/config/brain_config.py": "6c041ed40de507dfed81dc4b3a58cbb728d446228f6fd831ee115348aa559079",
+    "src/townlet/config/curriculum.py": "a65e3a3b4d02182f96e56d0ad3fd93c72b7e9921b64b5f9c272456250d620227",
+    "src/townlet/config/effective_run.py": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+    "src/townlet/config/exploration.py": "b5292e6d193ab224e76f727b63d9e078fdac0ca706ae0ee7f58e7f723302951d",
+    "src/townlet/config/exploration_policy.py": "af8843ec1a270cfa49ec44b7ac5615d33db0d4d16b2d169d161bb4a1cd402c8c",
+    "src/townlet/config/resolved_launch.py": "67b5b38d729ef45a87bdcc1c2a834e8fc9d290708d9b2ee8f78dfe5093f840f4",
+    "src/townlet/config/training_v2_config.py": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+    "src/townlet/config/world_roster.py": "1c3f4ad0f29e663a3f7976b10593e08223bba2b46420b2d4472451a78c667f33",
+    "src/townlet/curriculum/adversarial.py": "2194cc4075096670181a50cf1be2158cd68334a07111818ad75382cd73890f4f",
+    "src/townlet/curriculum/base.py": "d961844d5738ac85d26d5dd57520d1954718ee93e482e5133d4323d14c149268",
+    "src/townlet/curriculum/factory.py": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+    "src/townlet/curriculum/static.py": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+    "src/townlet/demo/database.py": "7335e9798d15e14721e5278cb4e7402eea7f7da2344187c56f8bc8e42b93902e",
+    "src/townlet/demo/runner.py": "e1c4b6c00923416f6fdf9e70976ea57a4a706e38a2ea228b4b10273906d6aacf",
+    "src/townlet/demo/unified_server.py": "626634171c744ecac9ac825f5db5727e3407031efd6c8fe0dcac5a1058e2a02c",
+    "src/townlet/environment/env_factory.py": "aa1b2cdf00ed25fcc63b57b944876504d77219d147b3265e820ff2ad88b2d2f0",
+    "src/townlet/environment/vectorized_env.py": "5508110716c38d89497c6d3c0443d6eba15f7bd546b9f2231dd86a41f5b6c166",
+    "src/townlet/exploration/adaptive_intrinsic.py": "80ecb26fb33626cc9efd271422c69cdae495412f5db94a505eb59628b58b6cd9",
+    "src/townlet/exploration/count_based.py": "163cb33f06799a75c887ff7beb58e4897875c94a4780ab722d019f714b33e9c1",
+    "src/townlet/exploration/epsilon_greedy.py": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+    "src/townlet/exploration/icm.py": "8004aec68d19c962df0cf6785b00af32c8553a3746fee95be39009555f9d44b8",
+    "src/townlet/exploration/rnd.py": "821fd3095e896a5b98d44a671906f9c5cbccec2f00fa430a6f5bb8acb24e4109",
+    "src/townlet/exploration/world_curiosity_state.py": "ec3cf8ded83f952ca4c1993b084b2ee0c7f1e611bf172ab31830ecfdc27f352d",
+    "src/townlet/population/vectorized.py": "629efddfd259aa5bc39f8c4c119b506f1c1eeb17b338c564751dc0ddc820cd92",
+    "src/townlet/recording/data_structures.py": "b8b2a5b2c202e8fc28ee907b645391cfb32f7d1a5530f528fa8ae6e076171158",
+    "src/townlet/recording/receipts.py": "f4f90c3ae1584965cbfc7ad84170fb3b0413ba5599a9eeb3d0d447f48b6fd647",
+    "src/townlet/recording/recorder.py": "8fca0b033bdc74f9e8146006c029b8bce6228b067f89b72109e1a886f4a32825",
+    "src/townlet/training/clock_ledger.py": "117caf9f2dfcc486d71284e6d9206f351eef690b6acf425f841beb3b3ba52571",
+    "src/townlet/training/episode.py": "53b52a8a56d5fc2714604198fc4516c5c4d48258537a9dcbe4ccd00dae743cbf",
+    "src/townlet/training/historical_checkpoint.py": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+    "src/townlet/training/per_sampling.py": "0efe801f01a31082aa52c4b9bd40c356d1c97f89690b07c7835b541b7f2c6de6",
+    "src/townlet/training/prioritized_replay_buffer.py": "290eadca0305658abdd4aec361a9b167ac63d7a887438b602c19c2eaf9020de9",
+    "src/townlet/training/q_targets.py": "39485fe2447dc4065bd7b806775c93c0e66b51827b088605fba98505b100491f",
+    "src/townlet/training/replay_buffer.py": "d6fd0517488cfde5291c33ce03f67923c407af932794fb8a902b10e1d137f1c8",
+    "src/townlet/training/replay_contract.py": "3eaa725bd6d592b7524dd249125877eb91a1f707d4dfd12fbfb59b5b6cc6356c",
+    "src/townlet/training/sequential_replay_buffer.py": "f958b1ed79bab5a37422353a04a9d78c05969950dfbf994436b4e1ce0e73392c",
+    "src/townlet/training/state.py": "a6f22b0b26ca6422e6a0710f9268386e8d2b7162e1a5e9a43a2decdea4c9d3e3",
+    "src/townlet/universe/compiled.py": "d8e2734b0845c7d23ac79180a724b216d7c881e079352356f108cb294d2b7384",
+    "src/townlet/universe/compiler.py": "521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92",
+    "src/townlet/universe/compilers/metadata.py": "811dc301202433253832f84743cba65823f0d7c273a73d65e376d35a5e2f6beb",
+    "src/townlet/universe/declarations.py": "a06b1fe8f3d16046935ded0fac95cf3312bb3f76bb937a757fb5f9ee598d84bd",
+    "src/townlet/universe/errors.py": "af30223624658d5d9cad3f56232353433f72a340d1fdb4caec69b581f91c2a53",
+    "src/townlet/vfs/random_draws.py": "751e5766b5efd99a79ccc86c410d76534c397ed9ece59ca67cf2ae4fd83ef676",
+    "tests/test_townlet/_fixtures/brain_configs.py": "aac8397902f8f038bee0c3da913c1a6b3930478d70c8a82156898231605cc9f4",
+    "tests/test_townlet/_fixtures/config.py": "f25801c31ddb8354cc8b63a25fa145b518a65c05b275d19f558cf6f4e3f04fb8",
+    "tests/test_townlet/_fixtures/environment.py": "21bd79b1736efd53fdacb76ca6a6f4abaf3917340204aef74994ba20b6af745c",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured-with-per4-archive.pt": "029558d19fdae42f14e61432af8353c1c078db554a7e3b39519d39b50dadfe60",
+    "tests/test_townlet/fixtures/bac_per_current5/per5-captured.pt": "9a85394d9f36cd5660fe7a6c6944d600ce18e44410b63f5beb50203fd379b296",
+    "tests/test_townlet/fixtures/bac_per_current5/portable-manifest.json": "b3008db4299682714674b6f5b809c41b58efb9a9452299ad005383e8fe2b8780",
+    "tests/test_townlet/fixtures/bac_sequence_current6/portable-manifest.json": "426f8b8ec2db1d0e0800300b4a85b825d2d1cb594a8339add27e159d2bd6c875",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured-with-sequence5-archive.pt": "0a40c2dbba0d64f804f91f1a5600994385777a660d4a40c851e7aa3111fa239b",
+    "tests/test_townlet/fixtures/bac_sequence_current6/sequence6-captured.pt": "02e19371fc3131db51a9569fc6d5175de5a11416e2d6cea075d441ebd8bc8434",
+    "tests/test_townlet/integration/test_authored_episode_lanes.py": "1aa95fc7764c9e85dfdc16d8f1d43f4014d86fedc18c7bcfdc627bf8779c56ac",
+    "tests/test_townlet/integration/test_checkpointing.py": "70d13c5df324111b1e9f53aba91360edfe31a0abb1cf2e5a3c7cf46b6e08968d",
+    "tests/test_townlet/integration/test_compact_token_acceptance.py": "a9a911a37679ffb850583fefaa7b73907a3f350d86959238d718c5ffb85867dc",
+    "tests/test_townlet/integration/test_recording_recorder.py": "517341fb44d5edb7cdc85dc4bb6b4f8840de7ce741695d594b766038f8d6e962",
+    "tests/test_townlet/integration/test_recording_substrate.py": "806f4f11e1a00b8dc058b643531ff78cdcea5b84c9e027fbac5993d655fcea9c",
+    "tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py": "06ee4ca2e9dff88539ed8cb3120048fc058772d009fa5962ee28f127db7d8f77",
+    "tests/test_townlet/integration/test_recurrent_bptt_runtime.py": "105656e944001f44213e8c721bc98d7c99e8d8512aa1172eeabc93ea0f3df0a7",
+    "tests/test_townlet/integration/test_reward_component_flow.py": "e56dc0e57e5cc9013b88bda67f661937d9d51df872d21b0163edd05f2c2618ce",
+    "tests/test_townlet/integration/test_runner_hyperparams_v21.py": "237ca50b9deb1e585c7d37d1134896b4fe1a29dde12b4de7a401210e317c4db0",
+    "tests/test_townlet/integration/test_training_loop.py": "207500289444d904f33d1961164fec493433a3f1514562ff541ce5fced11c722",
+    "tests/test_townlet/properties/test_replay_buffer_properties.py": "5678e826ce7fcb0574deb23441cc54b9e355b3c7adc446595269e2d7ae628a17",
+    "tests/test_townlet/regressions/bac/test_count_provider.py": "0de2db0e0d2de868d803b97e8e8f0e277b365178dfddacaaa5825de65c5fed94",
+    "tests/test_townlet/regressions/bac/test_curriculum_compiled_roster.py": "bd5a364931be94f2930c278ab5f21bf1a497814e727d93057f538da3bf7e2f38",
+    "tests/test_townlet/regressions/bac/test_curriculum_events.py": "57750efea277a256969851ba8413eb17aa5d8810f02b673d6f02639838807ffd",
+    "tests/test_townlet/regressions/bac/test_curriculum_factory.py": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+    "tests/test_townlet/regressions/bac/test_discovery.py": "eb73ca825614ba593549135253caab0b723cc07b53bf91ac3e2801fd9e73e500",
+    "tests/test_townlet/regressions/bac/test_effective_run.py": "1685b2c09aa59c6687a49accebf62be591e64716f91469ef85e332d8b765cdd9",
+    "tests/test_townlet/regressions/bac/test_icm_provider.py": "3759cd590ca7f6c348294ac6d58341cb7f7101cf25bfca7bfdeaea4ecdd645f8",
+    "tests/test_townlet/regressions/bac/test_launch_transport.py": "1bceb21245ebeff9ba6bc93d10603f669d964d2dbbfebdcfed56fbf8f3910d91",
+    "tests/test_townlet/regressions/bac/test_learner_legality.py": "5f6273a8054bde34f89ab77eb98c8b4c0bb9428b586511b976cecae19c33e71e",
+    "tests/test_townlet/regressions/bac/test_outcome_clocks.py": "66069b051f1165ee50a15cc106aac0919f3447f9ef0ed1395aeaaa70e5dc21e9",
+    "tests/test_townlet/regressions/bac/test_per_estimator.py": "2e08f44397d626a95b4b0f5142021e408250b50067fbfc16c01f2c6ae4459866",
+    "tests/test_townlet/regressions/bac/test_per_history.py": "4ea99d20fa18333d249b0ce1408b91c99c12194e6d7ddcd0788c5b4f8c492da1",
+    "tests/test_townlet/regressions/bac/test_per_native_learner.py": "6348f247dc9b5060a650f87fe8bee1d9c18ece46a868c40b6021f0360c19da16",
+    "tests/test_townlet/regressions/bac/test_public_loaders.py": "74789aa9ec679e3b9db3547600bc7e7e7c76a321f607605b4048a63b282c556d",
+    "tests/test_townlet/regressions/bac/test_pw_clock_stamp.py": "bffc26fff70116ac18d3cc43fa6c73c747c0e5ae7779abf077646aa0116a1a1e",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py": "5e671b5693eb3741424b1fadb098eca6ea3d5f51599dddc1513c1f2292847848",
+    "tests/test_townlet/regressions/bac/test_pw_scope_contract.py": "06f8a23deea73de495ee0adc427317386dc1e75487fb2bd6eb7496ed9214b295",
+    "tests/test_townlet/regressions/bac/test_recording_drain.py": "90b876583bcc6bf047cfd7f424dac889a86103b5109bef29c38bcce838e18912",
+    "tests/test_townlet/regressions/bac/test_recurrent_per.py": "941747bb722eaa2c7a33dc7fa879dc591481f29cc73cfb4d837334854c8533bb",
+    "tests/test_townlet/regressions/bac/test_recurrent_per_native.py": "a2c6d57a2585f60471f4df8e54867dfa6ac781686d5e4bf2aab21ffd8b66335d",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py": "0477b2531b8a1a109bf71285310c0beda725e295f11c51f61f6713005c2f6a62",
+    "tests/test_townlet/regressions/bac/test_runner_readiness.py": "2352066710ef7d97de02efb498021f26f7ffc50e2ce2afe96ea6ba4bbee04ce4",
+    "tests/test_townlet/regressions/bac/test_sequence_history.py": "5b4626bc9557bbd86a5b25dad5e2cbf2b7ae49d211c2b6d125bdbd1c2386a7dc",
+    "tests/test_townlet/regressions/bac/test_sequence_inspection_native.py": "017cd03d37065359096123660f9d61af4744d66df0054ae544d57c703bdcf6d3",
+    "tests/test_townlet/regressions/bac/test_token_binding.py": "bdb25f6e33bae64ede392dfb8ed4fbe4b7521a6dc201184e547decaeabefe544",
+    "tests/test_townlet/regressions/bac/test_uniform_history.py": "a0ee835fc7a862216bddcddcac647ffff954f59f1842be5f8f4c77656fe899fd",
+    "tests/test_townlet/regressions/bac/test_world_constructor_transport.py": "daad8f762000886969762d52e2a415cc4a853d875621daf24449b9815bc61592",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py": "31a7d0d607a643f0e1f5b36f951fd10188f62d37b3981eadf5f928e39151b006",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py": "3a7ae1dd63d56b2f81b7a3a2d8a8b7302355747d7c61431bbcc6fb8dec4ab675",
+    "tests/test_townlet/regressions/fixtures/episode_lanes.py": "9de34aa9764fe2cef766aace4e6ebd391543621fa90def16b5614292e476ec7f",
+    "tests/test_townlet/regressions/test_episode_lane_artifact_pipeline.py": "1bd025f4fd8c1a18f25235ed94718e68826a8c301386906d8a09ccd85710cc1f",
+    "tests/test_townlet/regressions/test_episode_lane_learning.py": "e328726c20e82dfc6754fb4623211aae24f8a7bd70530864ef49e913b804ad2c",
+    "tests/test_townlet/regressions/test_episode_lane_population.py": "5c306090ecdf7ec50c699ffb48913376a40fd12e58feb682bfc1ceb514ecd4f8",
+    "tests/test_townlet/regressions/test_episode_lane_sinks.py": "e6631eb7e2375165a1e1131eaf88999e8debb024d37ef736bf9eadcdacd3fbde",
+    "tests/test_townlet/regressions/test_episode_recording_shutdown.py": "9874eed75d1b7491a5a8ef5fca1af7430b61aaff52037b8948b84e2636b67fa2",
+    "tests/test_townlet/unit/config/test_training_v2_config_dto.py": "eaeed185ee43e72b7c7179705b52fb53dd8085e7ca366c2f5c9b0bd52e0c61be",
+    "tests/test_townlet/unit/demo/test_unified_server_unit.py": "0e4e90f087d69772ba25438871f4b4c19618a1076d73546246f6ae4a63eaaa28",
+    "tests/test_townlet/unit/oracle/test_episode_lane_comparator.py": "5a259e6ab4236caf3d1b20323ee089522c101b4e91d8a294e2deb84595536d30",
+    "tests/test_townlet/unit/population/test_action_selection.py": "81ffc9ef6390f2a64471f3e9daf3ea77c751d1bc0e97ff6cbd5b03eede65b2b1",
+    "tests/test_townlet/unit/population/test_double_dqn_algorithm.py": "b9b12150109541ed53f75fc692661c305f075b616827bac4c37a83afbe859e5a",
+    "tests/test_townlet/unit/population/test_recurrent_training.py": "32f3a4e7996a5798c17b10a1ae69ad6d22631a2421549c33501f3764560325f9",
+    "tests/test_townlet/unit/population/test_vectorized_population.py": "9e0b50095cd29470afc92d42a740a800e34c731aea12abfa96a7d60d89b1015c",
+    "tests/test_townlet/unit/recording/test_recorder.py": "11d2391ec0bd7c7e105f8e8d45ce81d5771c4d87961dfee696e432ac3b15576b",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer.py": "52db935fa6ede75d87abacbf22de3f13415463e880b65c2d78114464ff15affa",
+    "tests/test_townlet/unit/training/test_prioritized_replay_buffer_components.py": "b6dd85342a68223394786c0c6c4a80c4af45662b77df7972689067e7e50ebaaf",
+    "tests/test_townlet/unit/training/test_replay_buffer_components.py": "639e83cdf9a050a97edb0417aba1a89b507e329b2bfe2e4a438ce71ea8e3b6ce",
+    "tests/test_townlet/unit/training/test_replay_buffers.py": "61b688ea5fa7ef31d023b76b9ea3e48cc57e27787a19bee21eacd10071d647d9",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py": "18cff4fa681e5c08ec759301b3ebbed69568bc8ab80b7ccea3e6c260294f373a",
+    "tests/test_townlet/unit/training/test_token_checkpoint_gates.py": "6957a3ab973f9c993d16e110c276c03ff15d2e93d73a49481c48dd0ef4db8629",
+    "tests/test_townlet/unit/vfs/test_random_expressions.py": "a6e034c8fe5212c73453a3e7203a689d4f6f384f5544f2751c2f0ccfd1943613",
+    "tests/test_townlet/unit/vfs/test_verify_r3_repairs.py": "fa60d49bd430f983bd53e38b21a2014338fb5e6dcae3d30a759b51be9270bd9d",
+    "tests/test_townlet/unit/vfs/test_vtc_bounds_clamps.py": "dd4f875ae554bfcf2fc84ea47b162a4dd27b304ab4be45f595c5754e7fbb23cc"
+  },
+  "config_changes": {},
+  "receipt": {
+    "status": "BOUNDED CLOCK/STAMP AND CURRENT OWNER FIXTURE HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+    "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+    "candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+    "results": {
+      "collection": {
+        "job": "collection",
+        "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+        "candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.302660942077637,
+        "source_guards": 192,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "covering": {
+        "job": "covering",
+        "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+        "candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 15.52407431602478,
+        "source_guards": 192,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "owned": {
+        "job": "owned",
+        "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+        "candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+        "exit_code": 0,
+        "counts": {
+          "passed": 150,
+          "skipped": 2,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 38.57833528518677,
+        "source_guards": 192,
+        "process_identities": 3,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "independent": {
+        "job": "independent",
+        "base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+        "candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+        "exit_code": 0,
+        "counts": {
+          "passed": 65,
+          "skipped": 1,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 16.583308696746826,
+        "source_guards": 192,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "guards": {
+      "mypy": {
+        "exit_code": 1,
+        "seconds": 0.5952575206756592,
+        "sha256": "c7a5a16c3503547678d06bf1f1ff7b5bb529b99a7a8e913cc1d0304d524e47ee"
+      },
+      "ruff": {
+        "exit_code": 0,
+        "seconds": 0.2300417423248291,
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      "expression-doc": {
+        "exit_code": 0,
+        "seconds": 1.9993433952331543,
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      },
+      "black": {
+        "exit_code": 0,
+        "seconds": 55.57698440551758,
+        "sha256": "4d9120357a7b6b0c1a461dd243a9c9522de2722294b24bb685c5a833025a0986"
+      },
+      "no-defaults": {
+        "exit_code": 0,
+        "seconds": 0.8881704807281494,
+        "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8"
+      }
+    },
+    "CLI": "ActualR2PASS136.22438836097717s. R4src/config/scripts exactbyteidentical; explicitreuse withsourceequivalence receipt, notR4rerun.",
+    "reviews": "SameAstra fixedsource+fixture specification/qualityPASS; freshR4independent65PASS1CUDA_SKIP. No unresolvedownedmaterialfinding.",
+    "inventories": "Whole5/2979actual<=5/4900projected; no6thsource/helper.",
+    "open": "Globalmypy7requiredoracle/POPcallererrors; actual bank/servicephases/dedup/provider/POP/runner/nativeparent/ambientRNG/manifests/effects/learning/E2E/defaultsuite/coverage/slow/hardware/final54requirements22lenses+synthesis requiredOPEN. CUDAunavailable.",
+    "next": "ApprovedPW04backendABI5b3aae78... testsfirst; original28/66releasesunchanged."
+  },
+  "artifacts": {
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-collection/collection/identity-controller.json": {
+      "sha256": "66d7d9bffd6361e0632e85849cb3cdf4056e70599816c176678f272113c8e909",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-collection/collection-custody.json": {
+      "sha256": "d00458a1e1ca9fb71850e96746f96eeb37a4e5bd4ce2616dee4012feb70f8379",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-collection/collection-result.json": {
+      "sha256": "2bcd9caccf5dba96033b64c09f94c239d462384b3efa6dc2ed908d799ba35f32",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-collection/collection.log": {
+      "sha256": "112ed0a3db2202bec8d4daf3662987d9ffbe087490eb1c363d8bf1a29699c0c7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-05046fd7394bf4ea.json": {
+      "sha256": "338cf0784aa90e1b03845b2b08d1a2f91b4ffbcc09e1c591627d6e2a175505d8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-05046fd7394bf4ea.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-05b5be98bb1f08e0.json": {
+      "sha256": "5570b6fdbc6b8d7a71eae24fd603326f1005c51aecace8b955942ba445591e82",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-05b5be98bb1f08e0.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-077264bc00aca9f8.json": {
+      "sha256": "05d8400a136d302502b6283eaf6cbf345b875044bc60c1f535183c161de4b394",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-077264bc00aca9f8.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-0ad47fd13757c898.json": {
+      "sha256": "cc1d6e8f2241eaa292a01fcb47ff30ac5f8bb03cda3ce02436e580b636dfe5b5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-0ad47fd13757c898.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-0db2ff918db6c92f.json": {
+      "sha256": "21298787d3e02150760d8c63cd4676dba6331e242f2524d88ffbeb5f8a2b4f7b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-0db2ff918db6c92f.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-1123d6d27c54a224.json": {
+      "sha256": "847edc23d66e2ca3ef0ad2dfe9c455038bfc4af13370ea26fa61fb1d0f16cdf1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-1123d6d27c54a224.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-22b15335dfc7ec27.json": {
+      "sha256": "1f7de87aaf2b84922a55eb4ee85bb8a8e09995575ddd7f5118507f001ebc5491",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-22b15335dfc7ec27.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-233f3b753b9b3cfb.json": {
+      "sha256": "0549280e389f53ea2fb90b20255d1f77dadd50a303cf748f5ed4bc1ed39c4ba8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-233f3b753b9b3cfb.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-25093fb2e454693f.json": {
+      "sha256": "a7eda7d7cd1c766e0b978e84fb0a85bae5fb3e70231ff74768b725ab82823e0f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-25093fb2e454693f.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-28c49e118632d85e.json": {
+      "sha256": "98f11d5dc4075d51a7bc18f36fea09acd16d2eaf4d51a6b1696047d1d3504a7f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-28c49e118632d85e.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-2d5de010f8e77d9e.json": {
+      "sha256": "86ea9ed79144d0907ad7f41a988a2d177b43d4bb0187e93ef1f3127442c1b106",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-2d5de010f8e77d9e.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-2d75f29117d6ba29.json": {
+      "sha256": "d53398b586e6c57f81f3bd75340dadbbd22a50b0bb243db361040d48b12a1e71",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-2d75f29117d6ba29.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-2ec72bc8ce9822b5.json": {
+      "sha256": "4819ae271d2df634583214e8937d93b9b9a6d1320b7feaad0f77033738105897",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-2ec72bc8ce9822b5.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-35a8f352f631834b.json": {
+      "sha256": "26005485849c5bbf650b450dbb5dc672734940bd8ab2280b6eba66813afeef20",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-35a8f352f631834b.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-37213401e534cd45.json": {
+      "sha256": "82ddfe5a01417997a0e067e6faa8332c3373bb80000393a07065aed6b885d643",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-37213401e534cd45.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-3a07e96f9ec8d484.json": {
+      "sha256": "9e5a0702c961b20bbaa6e7d6db7979510951d950d88ce68f75e493328ed50797",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-3a07e96f9ec8d484.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-3a747a4500c9828d.json": {
+      "sha256": "06e278f9073a6caae4beda6a0038acea22316b7e4ee18e8ce081ce583d89baa5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-3a747a4500c9828d.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-3fc1597a2e1139b7.json": {
+      "sha256": "72e3a8c7df2d249d71a40aec2df27e8369ae228b8d7af4c84e497415a07c7334",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-3fc1597a2e1139b7.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-420f1ac60d2965a3.json": {
+      "sha256": "406a895dd3f8d13109c706c188a2c2b784fdf76fa9264f181e7a438b259ec239",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-420f1ac60d2965a3.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-42838417ce9c8424.json": {
+      "sha256": "75a3cb7d567da31cc96f4d7a89500fa7d9b66065012e82afe6f399279cd82609",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-42838417ce9c8424.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4448f6771c2118a8.json": {
+      "sha256": "13609b839fabe2cb904ea3387b9568304cc52f15e749cdf732273598637d1940",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4448f6771c2118a8.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4543524cb7b373a3.json": {
+      "sha256": "6a0aaf1c6ee2794b8d2d6e271119f445355d6a094da0cced02cc8a7d318e8e62",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4543524cb7b373a3.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4a8bcd765d3f125e.json": {
+      "sha256": "093d9460d9798b259107ac1d7b8bc5a3bce68ccb9e808e31fdcd014406c2cdd2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4a8bcd765d3f125e.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4ac331b6ccf9cf6f.json": {
+      "sha256": "d92d3e932b7b9a1d1e28c7519558b63f1251397221e64efb4325397a2ed85dac",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4ac331b6ccf9cf6f.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4d6d5172cdadd3f1.json": {
+      "sha256": "b2a102351406be8af45aa3f8aed8928380f2f54d4380b31976ed7b806ab047c5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4d6d5172cdadd3f1.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4d77026fee811913.json": {
+      "sha256": "f3f52a5c4147851cc06111487e4548244de5f2a9f1e574e1698ee0ae353ac005",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4d77026fee811913.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4e3b235bf603c7ae.json": {
+      "sha256": "566a735e0b32039009bd42f65dffc751e2c1cb4a9d6a3ffb7814f7ebbe8564e8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4e3b235bf603c7ae.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-4f80aacd57366494.json": {
+      "sha256": "26a054a7f09ec3f26233d9b262567893d576967016a0ec32f64d92327d4a45c5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-4f80aacd57366494.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-515d99e0dae5ab29.json": {
+      "sha256": "9fca0eb8c45e19e44d694b1c590e854b7116391ee0bb22f0c04ef3c0b0fbad6a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-515d99e0dae5ab29.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-51edb67fd852619c.json": {
+      "sha256": "c420d73e097f51b4cdd1a444eee152de2ae3817ab9e27723ee2727c18b4a2aa4",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-51edb67fd852619c.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-56d0c9c43267f80c.json": {
+      "sha256": "26c95041b7a49e855bcd52ae3cb49774d3e36fbb4ac80939d49006788db3c777",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-56d0c9c43267f80c.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-58faa25a63d2cff0.json": {
+      "sha256": "e97cb6381a0e6eedc40e929c89148a483f01df98996ba0744dd00e409d5bf6ad",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-58faa25a63d2cff0.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-5ef70b0fc9c171a2.json": {
+      "sha256": "4d7ab6ff752eaf6e8559f9ff1213ac27ccaebbf5ac6d5041bd789506ae3b0f8c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-5ef70b0fc9c171a2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-5f491bcce0c18fc2.json": {
+      "sha256": "7cbb5c4617224a8a095eaabd8012c454ef8ea9e3dd0997d3167b768dc781aa0d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-5f491bcce0c18fc2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-6a2164dfa4652a45.json": {
+      "sha256": "1ddc7253f6d1e0b125a647c29681536e99e2bafb88b2aac460af80f01f80e290",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-6a2164dfa4652a45.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-71ed7875d1cecf3d.json": {
+      "sha256": "d2efe7c287fdd34c5ff5d6abb0c944ccd21acb494ee23a3a0ae736b7c78c7eb5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-71ed7875d1cecf3d.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-75946e2fcd7e2d29.json": {
+      "sha256": "f50a1af620b58e32d130ce88457a9e5ae5b73c506252c3987cef62091f896346",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-75946e2fcd7e2d29.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-79f8a3298bfdce51.json": {
+      "sha256": "2126014c2abb6a05c280a88bbb7962bfe48918cd48684757eb4d4b5cddaa0d56",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-79f8a3298bfdce51.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-7a0bf11e08926a98.json": {
+      "sha256": "a7b5a1e3be02676f71094ff14cda9810486eed4bc6f3ecab1d4b65bd757944bb",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-7a0bf11e08926a98.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-7b13b21938316311.json": {
+      "sha256": "635cacbfd2f6dd335a773c9efa902be95c3962bc1db8f6a819b9f5224d5cfc3b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-7b13b21938316311.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-7da42065dd4756b3.json": {
+      "sha256": "76b85af8b72b3288c66acefce94bf56aa921d499a3dc1064d99e8e1547d657d1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-7da42065dd4756b3.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-94842b5b8815bd99.json": {
+      "sha256": "f68b219c8480734f458dff90fe4385557e73b3ca67f12edeccf1ee7de01f3b25",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-94842b5b8815bd99.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-98c65762529b6cf1.json": {
+      "sha256": "6c3932f20d9544c44a594115ea629edb0018f96306c95b1b198e3b849ac28549",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-98c65762529b6cf1.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-9d5f616e44f57ee3.json": {
+      "sha256": "6e8f2ff31b398e2aac8f2ca7756b066473b3d1c5c64e95aefebe47f036f56599",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-9d5f616e44f57ee3.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-a073959dd60ed648.json": {
+      "sha256": "4b554ce19d66e07a869ffb81ce04dfea84c6e5b8dcf9082c02d21ae558d207d1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-a073959dd60ed648.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-aad493df3042ffdc.json": {
+      "sha256": "e4e16c4878c4a394a573ca5e08b87a1a20dd63fb5e253a98629fc1ed2b68745e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-aad493df3042ffdc.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-b09036413c1058c3.json": {
+      "sha256": "d6305bd0aab703684c412e16c4aaa043174eca743e47b75ba99628e596e95535",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-b09036413c1058c3.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-b81fabd71af5b7bc.json": {
+      "sha256": "5f9197b9b66daceef4f32947c8c82eac2e5915e227512413ef5018b6a2592a4a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-b81fabd71af5b7bc.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-bb7f86d63ffd7266.json": {
+      "sha256": "5ca51c4a4a22a7fa4a65a4d03a677cc42a9858f5103c13462ce983a55a75ed0d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-bb7f86d63ffd7266.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-bbc20b8ec020da87.json": {
+      "sha256": "661f5956a59607ee030b646ff86d905705b5ee924a603edf5e9652e694d442f0",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-bbc20b8ec020da87.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-bd1c0dc1a79802ef.json": {
+      "sha256": "b0bf93214cabeae28cb02f00a06e6d46e8ff6599967336a9e58f1756ab9a0d1a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-bd1c0dc1a79802ef.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-be3c47f26f152ec7.json": {
+      "sha256": "1ad9b51cca6ea728d89527a0cba2cc2faed4355d97cce4d415b9d4a71a99ecef",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-be3c47f26f152ec7.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-be9edc642f49bcbb.json": {
+      "sha256": "ad5495c88530d480987470bebb6c2e38be0b9a354cf9572920f8375d4aa1998b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-be9edc642f49bcbb.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-cc591bfb0b028e6c.json": {
+      "sha256": "1ff25417727a7e057dc7170f958003c559e49fe500b4baf84dae817fdf529f3e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-cc591bfb0b028e6c.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-cc813338e7fd650c.json": {
+      "sha256": "4469d920f4be2e248e3a60b2105d81189a5cb16bd5352aa82f4ed1f2ce89069c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-cc813338e7fd650c.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-cec5c8ed4dfbb171.json": {
+      "sha256": "b04c312708abc8dd234ff377e6d03408720ee2fe80d885747c3a9071cd752d6c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-cec5c8ed4dfbb171.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-d08b442d829e3aa4.json": {
+      "sha256": "63b1e600ce792b7aa0885e3e7062487aedfc111b7fd9832c6c337c31fc52cbba",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-d08b442d829e3aa4.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-d1a3b8dc3e2db91f.json": {
+      "sha256": "414ef9e5aaa5b07bf1df0b760f9ddb2f31f150224c1a6286d3a55cd1a8248a4f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-d1a3b8dc3e2db91f.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-d2696ada3704d603.json": {
+      "sha256": "505aadb138c02f217baa75bf167c53ac884191a2f0e4966da7d5510a4fcf7fab",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-d2696ada3704d603.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-d5ecd401d4efd07d.json": {
+      "sha256": "faac7e6e098d80bfb4eb9d7d1b0ef183f446f5310affa46c14bd7a2e18c076f8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-d5ecd401d4efd07d.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-ea933a1d3225fcb6.json": {
+      "sha256": "69fe94ba44d7357d8791d0330ff1f7278a1d2ef02ddb7ccd971caccb8893f354",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-ea933a1d3225fcb6.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-eb260a3e3d2776ce.json": {
+      "sha256": "358d43cdf87e10242829f65d8dd3a35f5d63b9d36d63d0bdbffebb5fa854f929",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-eb260a3e3d2776ce.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-ef974b12966b25bf.json": {
+      "sha256": "54d2e5647f0a79e7f4e6c46de58407b0cb334da13eca850999ec5e395e1e619f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-ef974b12966b25bf.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/failure-controller-fe6966da4e400a2a.json": {
+      "sha256": "cfb4dd2c77d142c0ecf6c10ef43d77943593ab143ac20f5dbc53951fdd81be5d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/failure-controller-fe6966da4e400a2a.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red/identity-controller.json": {
+      "sha256": "66d7d9bffd6361e0632e85849cb3cdf4056e70599816c176678f272113c8e909",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red-result.json": {
+      "sha256": "c721080fb1a1733ae9a0692506d908d199ab4f203a249a298301fb06a4b66538",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red/red.log": {
+      "sha256": "64f07f5950908b69c27cd7f2fcf8c50d8dbac9aa3bdc6e13dd144606f6987bd6",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red/red.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-collection/collection/identity-controller.json": {
+      "sha256": "30a1b3b0f69d883ef9bda642f382ba6fcef7e423dd5e114c474d9a5606dc27d8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-collection/collection-custody.json": {
+      "sha256": "fb46ca92c402e8e7e7d9232a716ef86c9690d1eff35d92a84d28f09bd28c6763",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-collection/collection-result.json": {
+      "sha256": "1731dec250e22855db2f6450dc2c4e7627966b12e4a95f977c21c5a4c2dadb38",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-collection/collection.log": {
+      "sha256": "8b832bdd8d8f3135be533fdc2b7328f79acef9c411444e52c4fe010b74474fe5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-compiler-cli/compiler-cli-result.json": {
+      "sha256": "f5bb5c2efc14e536c890374c549cfbfdb22955742545a90070fe5ac14c8ebf01",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-compiler-cli/compiler-cli-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-compiler-cli/compiler-cli.log": {
+      "sha256": "985a5576df8caeb0ec160e06f8a9e5edda4bd6588be820bc17ecc96bcdef400b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-compiler-cli/compiler-cli.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/black-result.json": {
+      "sha256": "6757130cf7a751dc858bc0003624d74b7be3b6327763803687eb98d889ca5cad",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/black.log": {
+      "sha256": "2dc0f006f03c54eba4d67577604acc0c2d6ac8519c438c1ad475839fa0aef924",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/expression-doc-result.json": {
+      "sha256": "4fc34b8e0b3c5787605c7d096f152b766d57e933d7840459be3c51eb83521e90",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/mypy-result.json": {
+      "sha256": "dac1460e11c206d2b265729f64c529b587284d32e857f1a0c97f77f6f4f2c483",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/mypy.log": {
+      "sha256": "0c209b39782c33ea8926efc79e27adbd845b6046a1970c52245336a44822bbda",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/no-defaults-result.json": {
+      "sha256": "fabcc828a57755ae4d83c397e5a64544d373abe43b956f4e05b3a360fd2fff37",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/ruff-result.json": {
+      "sha256": "16dc7b471826a643a1d1653daa1f7861ea06ee989cce19a11a3f2dc110a8a0ac",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-independent/independent/identity-controller.json": {
+      "sha256": "30a1b3b0f69d883ef9bda642f382ba6fcef7e423dd5e114c474d9a5606dc27d8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-independent/independent/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-independent/independent-custody.json": {
+      "sha256": "38105564d982c9ae4de2cafa342f66b7c4e0bd88c86f5b72e31b9ce3fd9ed334",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-independent/independent-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-independent/independent-result.json": {
+      "sha256": "6ec8067aa5142e0cf9d45a093e87f1f2d563c9167e6ce24a30550c747401cdb3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-independent/independent-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-independent/independent.log": {
+      "sha256": "9c90eddbe73f2ef8e9e3fb91db5b5f6e8f75112a0f391f724a7fbab2ffb05a0c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-independent/independent.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned/identity-controller.json": {
+      "sha256": "30a1b3b0f69d883ef9bda642f382ba6fcef7e423dd5e114c474d9a5606dc27d8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned/identity-gw0.json": {
+      "sha256": "32a950efeba13e8f0241a3ab475d065606abde345187acb495cf092e027a3189",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned/identity-gw1.json": {
+      "sha256": "b16ce39e9ea40bd011e4193ec8e3ba146122dbf2851b4f6f8fb366ce32e41ddf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned/identity-gw2.json": {
+      "sha256": "47dd1bca4bfd3e557b72aafda253864b0bdc569912125e0a63bfe25722cd3a76",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned/identity-gw2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned-custody.json": {
+      "sha256": "de0431e6a73c71343d2c24b63c19d8d3f21dd22dfae6f31e0a425eac53a198b4",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned-result.json": {
+      "sha256": "e724cd9ab3191382d1850aa09dcc72fa9859cb0956a723f9dbbda9929c4fa4fa",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned/owned.log": {
+      "sha256": "74e7dafbe7b7dba072c3380bb399bee8aa908e468b92fa54916788d64d10fc47",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned/owned.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-collection/collection/identity-controller.json": {
+      "sha256": "34845c0f7feded3104412e952d3faf657c0aa646523bb46f45afdcffd5073d15",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-collection/collection-custody.json": {
+      "sha256": "fe28f0c5c7352d48b7a84f1a4212f41f07fa0138f4edfe53ff1ac873f905ce86",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-collection/collection-result.json": {
+      "sha256": "fd7dd24f83c65d82b8dbddb40eb2aa0bc88c501f5ec308d9536bfd6b5913b87c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-collection/collection.log": {
+      "sha256": "9088239943420adff56349e82228c62267c723aa9e62397addf125ad72d3b9ab",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-compiler-cli/compiler-cli-result.json": {
+      "sha256": "a3f0afdf6686a13801accd2a554d70466228e64abe83581c297facefa12ba8c5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-compiler-cli/compiler-cli-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-compiler-cli/compiler-cli.log": {
+      "sha256": "a9c91aed1e9e57ae627c3439de6163841c739ad9f8c396379372a591a61392c1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-compiler-cli/compiler-cli.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumer-collection/consumer-collection/identity-controller.json": {
+      "sha256": "34845c0f7feded3104412e952d3faf657c0aa646523bb46f45afdcffd5073d15",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumer-collection/consumer-collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumer-collection/consumer-collection-custody.json": {
+      "sha256": "b09c66c54b4408c41e2bc067e7b73696bbf3442d402115c485608f8505ebab8a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumer-collection/consumer-collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumer-collection/consumer-collection-result.json": {
+      "sha256": "c8a9acb8e49197d001e41ab48c9c47d15ea491652e27cc0b36f9506896f1230d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumer-collection/consumer-collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumer-collection/consumer-collection.log": {
+      "sha256": "64e037920bd4aa898c49d77897853b7c5440f88dc6625c238e791f31e2df62af",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumer-collection/consumer-collection.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers/failure-controller-fc51451f14fc77d2.json": {
+      "sha256": "6b52e9c95ab2abe902db24998a290f31e5a7f5c40ac1d32f72bec2fb56b5554d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers/failure-controller-fc51451f14fc77d2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers/failure-gw1-fc51451f14fc77d2.json": {
+      "sha256": "3ff3490a96f24ffa8c7573fc8335209d5d5525ef847c890b77bef7de72785a76",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers/failure-gw1-fc51451f14fc77d2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers/identity-controller.json": {
+      "sha256": "34845c0f7feded3104412e952d3faf657c0aa646523bb46f45afdcffd5073d15",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers/identity-gw0.json": {
+      "sha256": "759f1e2feb8ff1e7e6a9718a10cd7dba3e74ba85f31647de542e202360b4b736",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers/identity-gw1.json": {
+      "sha256": "077dc6f23da17c7f52262e5d81ae85368ab5bd40dbdb717582fad9d018f89be2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers/identity-gw2.json": {
+      "sha256": "1bacc918cf2ce712522a1ffb2945680bba915595e05e9610c046c114666db797",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers/identity-gw2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers-result.json": {
+      "sha256": "ee72df8ccdac71cc992ccc467f788e476deada430ec401bf654c19d631d79b55",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers/consumers.log": {
+      "sha256": "4de0c3ddf49ba6f1fbc3ff0f0a8502d0d840eff51817cfdfb63aeb5d1b5bc697",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers/consumers.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/black-result.json": {
+      "sha256": "25cecd4a0acc2b969fe863ba0f79d066d066030ff171423643ec3328d260efbc",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/black.log": {
+      "sha256": "4d9120357a7b6b0c1a461dd243a9c9522de2722294b24bb685c5a833025a0986",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/expression-doc-result.json": {
+      "sha256": "c90e5e255aa2086a6283da804d0b33eb69c5fd33bd8fb9fc224799c513ba4f95",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/mypy-result.json": {
+      "sha256": "69a4588b044ef59d7a5fc5b100cb87e192fd3680e66d680817b11d37367f6008",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/mypy.log": {
+      "sha256": "c7a5a16c3503547678d06bf1f1ff7b5bb529b99a7a8e913cc1d0304d524e47ee",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/no-defaults-result.json": {
+      "sha256": "6da070dbfcccd3603df4c15683776696c24f2189dc54306cf2a4667106357ae1",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/ruff-result.json": {
+      "sha256": "b80c6fcf7477f0f6b44dbe0fa4cb02c59b0690c9b4d2a84afbf28322689053ca",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-independent/independent/identity-controller.json": {
+      "sha256": "34845c0f7feded3104412e952d3faf657c0aa646523bb46f45afdcffd5073d15",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-independent/independent/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-independent/independent-custody.json": {
+      "sha256": "1236376d70ba7790346fd25450b79c012afd49e8d814c18d666e95f96dbf7a98",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-independent/independent-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-independent/independent-result.json": {
+      "sha256": "24f5596127823898b2a7e971958529f3162f3b356e7aba7634d42f616c10d07a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-independent/independent-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-independent/independent.log": {
+      "sha256": "a0992521620f5ef35549756bca752079f716a57f85e1cab522af0663debdf279",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-independent/independent.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned/identity-controller.json": {
+      "sha256": "34845c0f7feded3104412e952d3faf657c0aa646523bb46f45afdcffd5073d15",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned/identity-gw0.json": {
+      "sha256": "759f1e2feb8ff1e7e6a9718a10cd7dba3e74ba85f31647de542e202360b4b736",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned/identity-gw1.json": {
+      "sha256": "077dc6f23da17c7f52262e5d81ae85368ab5bd40dbdb717582fad9d018f89be2",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned/identity-gw2.json": {
+      "sha256": "1bacc918cf2ce712522a1ffb2945680bba915595e05e9610c046c114666db797",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned/identity-gw2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned-custody.json": {
+      "sha256": "8677b4024f61d6aad6026ab369bc10e7735a0db7e2700b79fc108fcab06798f5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned-result.json": {
+      "sha256": "fb50f6594a8292d6eea45a371d46080b344bfe2cfb9f379d8f62e05e7c0840b0",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned/owned.log": {
+      "sha256": "0b733631bc98c726cad809ff4165d48a2919e7123106a89960d2041a1770b0fa",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned/owned.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-collection/collection/identity-controller.json": {
+      "sha256": "b3011d82b842d5ff5f939e3d27fe98e7c1264fda0d32ec0bb5e977235d168603",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-collection/collection-custody.json": {
+      "sha256": "d1e96cb70d0c63efe0c9040fcc5a3fc3dcc89b4c0ff17670b88004eca96b895f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-collection/collection-result.json": {
+      "sha256": "7da6bcbb96aab918ae111d5bae450b9959eac43c7f46bdf074594d4e3e4c816e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-collection/collection.log": {
+      "sha256": "49b184df7dd44fa224155f85d1ce60f84c44de7f40348c392ff0011510b169a5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-covering/covering/failure-controller-fc51451f14fc77d2.json": {
+      "sha256": "74073d7d8a7e079ddcc66116c81e9d4829208785db31897ca5c656ffd0475fe4",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-covering/covering/failure-controller-fc51451f14fc77d2.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-covering/covering/identity-controller.json": {
+      "sha256": "b3011d82b842d5ff5f939e3d27fe98e7c1264fda0d32ec0bb5e977235d168603",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-covering/covering/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-covering/covering-result.json": {
+      "sha256": "3295f1729eb44a5656d68d7f7f998bae0837e715b8fecf2491106c06cf1d5742",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-covering/covering-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-covering/covering.log": {
+      "sha256": "575bd7fc6e2a964514d616e241f115334ba61fdc6c140e40274b7b35bf5ad005",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-covering/covering.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/black-result.json": {
+      "sha256": "bd1a7fd8364ffdae5ba53ed779f87ff0c502e3bb891da1a8598396febc2c324f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/black.log": {
+      "sha256": "4d9120357a7b6b0c1a461dd243a9c9522de2722294b24bb685c5a833025a0986",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/expression-doc-result.json": {
+      "sha256": "bcf3edfc5942ec2441e789a46972594b9808fc96c3fa97458c321733776eca74",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/mypy-result.json": {
+      "sha256": "921926397603ebc741ff58f44956d1f074adec7e499d8388ee23207467163544",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/mypy.log": {
+      "sha256": "c7a5a16c3503547678d06bf1f1ff7b5bb529b99a7a8e913cc1d0304d524e47ee",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/no-defaults-result.json": {
+      "sha256": "6869d61e151863da39bd6bb9044bc85e3330d7e4607794a6497493de9671df36",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/ruff-result.json": {
+      "sha256": "de200b6dc077cd2b398efb62bc0874f12269eaebefb0ee782301b8f62abb00b9",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-collection/collection/identity-controller.json": {
+      "sha256": "d9e48dd8b7b0ca44f3203505eadc52420a1d08a8bfe5fe0c8793be1bfab4cf53",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-collection/collection/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-collection/collection-custody.json": {
+      "sha256": "829d1a1f5df5e144bbfe5385dae8a26ec117f5e24b65482c5071fd9f22087e9b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-collection/collection-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-collection/collection-result.json": {
+      "sha256": "32c2615e02be79a6c38f3b72a411299ddb89eea191b30f3a0bede674a201ccca",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-collection/collection-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-collection/collection.log": {
+      "sha256": "813ac30cfc069969f0d19cead562b62cf24438ce039a27de2279246c6be2f25e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-collection/collection.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-covering/covering/identity-controller.json": {
+      "sha256": "d9e48dd8b7b0ca44f3203505eadc52420a1d08a8bfe5fe0c8793be1bfab4cf53",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-covering/covering/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-covering/covering-custody.json": {
+      "sha256": "97a08fa6e3c0e9b931835e22c3c0dd31d76f4c092f60ed164893e9b39e9fa140",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-covering/covering-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-covering/covering-result.json": {
+      "sha256": "b2e31b7e863a0c712154a68b633bd99adb47a3d8aa6a34cc9530d58a85358446",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-covering/covering-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-covering/covering.log": {
+      "sha256": "bcce068b4ad461c03353b4f5def5449007355ac5cfb642c01ae1eaf91f2831aa",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-covering/covering.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/black-result.json": {
+      "sha256": "1c85dd2419c01b5f3f67a47087dbf250e311314eb10dbb07e286125d566b56e4",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/black-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/black.log": {
+      "sha256": "4d9120357a7b6b0c1a461dd243a9c9522de2722294b24bb685c5a833025a0986",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/black.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/expression-doc-result.json": {
+      "sha256": "b1dafa80984936dff3b41362d20a286dfb1d0dd375b4c35aed052358b6fcb7db",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/expression-doc-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/expression-doc.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/mypy-result.json": {
+      "sha256": "29dc64d291e36f48231314adc7cbabd97b3f9464af7fbb46a5fe75c880819813",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/mypy-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/mypy.log": {
+      "sha256": "c7a5a16c3503547678d06bf1f1ff7b5bb529b99a7a8e913cc1d0304d524e47ee",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/mypy.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/no-defaults-result.json": {
+      "sha256": "1b8e5f2216574fca784e425d91b8b77db69283ef3974af9f42b937a969d3f423",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/no-defaults-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/no-defaults.log": {
+      "sha256": "74886bd95538c15502227e3bd55654a2a499de9e9539fcdfca7d1d12926d11c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/no-defaults.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/ruff-result.json": {
+      "sha256": "787637bed5a5653862571f228413aae97aaaa6dcc3069deab08206f08f59813c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/ruff-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards/ruff.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-independent/independent/identity-controller.json": {
+      "sha256": "d9e48dd8b7b0ca44f3203505eadc52420a1d08a8bfe5fe0c8793be1bfab4cf53",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-independent/independent/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-independent/independent-custody.json": {
+      "sha256": "16661624c70a0e246da0633b42b375a6367d44b27e1726f9e22e1be2e49a8324",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-independent/independent-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-independent/independent-result.json": {
+      "sha256": "7ccb16212da8d403c16b931900eb457f7839a1b76e10cd8cd1c465038f4b6ce7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-independent/independent-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-independent/independent.log": {
+      "sha256": "ea68b608ee199a99f598075ff1ea0e5c9677ced5024443941f6f1e9a56b66c81",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-independent/independent.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned/owned/identity-controller.json": {
+      "sha256": "d9e48dd8b7b0ca44f3203505eadc52420a1d08a8bfe5fe0c8793be1bfab4cf53",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned/owned/identity-controller.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned/owned/identity-gw0.json": {
+      "sha256": "c5a2b1315aa48671aa42d746be4d5ee69800c982990e56540af3b757d35101a5",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned/owned/identity-gw0.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned/owned/identity-gw1.json": {
+      "sha256": "d11c9dc2169e23786f0f9364a444a03a034080eea1944e0fab9f71aceaf659b7",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned/owned/identity-gw1.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned/owned-custody.json": {
+      "sha256": "9b7f2f095ffc6dc1456f98aea1c435e92074678400d4babce8eb8f4411de1f92",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned/owned-custody.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned/owned-result.json": {
+      "sha256": "ade67cafe03f37d77be4b7dbe24e3ab93a247dd6db2c4a7c281db6a8a5432a0c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned/owned-result.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned/owned.log": {
+      "sha256": "41a95295b648f4f64da791d3f011a59fa4e121892db174f3afa117b9240e1d9b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned/owned.log"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-collection-spec.json": {
+      "sha256": "32ea388ea43f0c29fecf198338533d5a698346f654cbd349e2c3ed76eff2575a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-owned-spec.json": {
+      "sha256": "755c5a74be1ae5b522d77eec2f41ca42ea5c5d86974599a1e9870f403dc5ddbd",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r0-red-spec.json": {
+      "sha256": "04e3a9d8ebaf61e6f08ba851e135ef5b16bebe63713ba47d2fde2f0e9ceef263",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r0-red-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-collection-spec.json": {
+      "sha256": "a4b01347bb0f7a4c8cd9cebccd7eedd517d33fb07849af19ef82a6b2a3623f85",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-compiler-cli-spec.json": {
+      "sha256": "3e38ef858fd389a32f2283744f3747d0e018c2fc4950f7714dc353a8ca1a96c8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-compiler-cli-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-guards-spec.json": {
+      "sha256": "6c46152630af50fbce3283c07c2877373eb4202c8d05c1d1ad73903030fea4b8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-independent-spec.json": {
+      "sha256": "a0fafc976b415cd4f302a2b51e90c013d97af38a43118a7a5115a12ea93c818c",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r1-owned-spec.json": {
+      "sha256": "03c52334d810baf79f1fc0e6dc995f7fdfca7299930a4fcc144f26b3a4754c93",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r1-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-collection-spec.json": {
+      "sha256": "2487f4f088a030bff169ba234e9d7d4516185fdf496162451eac52ca404242ec",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-compiler-cli-spec.json": {
+      "sha256": "388669954f14812e6fa27ef75988fb706d90e97ddc0b5b4e7ea5a9432a6f164a",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-compiler-cli-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumer-collection-spec.json": {
+      "sha256": "e63c77a62d42e30477f6049002ec0659fe5d4e27519311d6b3eb594e8aefcc37",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumer-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-consumers-spec.json": {
+      "sha256": "9cd67cd108da1893de7316e61f0e2a29873ed8d794f3e17264ad819064a3f641",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-consumers-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-guards-spec.json": {
+      "sha256": "1df73b19ecec4042c3336be57937cdae65ace860ada05fbd99d8cc98d33cf207",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-independent-spec.json": {
+      "sha256": "a43c08653fec7c3e0a3400f9b0ea17a577f2559e5882eb42448d084f89577025",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r2-owned-spec.json": {
+      "sha256": "b8d5f38f43ee7e35f69ec203c0e9c66c3263303f23adc27b1776d48eb6eb4ebb",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r2-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-collection-spec.json": {
+      "sha256": "82f1c1d9a365cb2468e3cae65134b80d15e9c98f18d92f7c1f091302ddba54b8",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-covering-spec.json": {
+      "sha256": "136646aac7315e252e8259e1962f7b9c01f73ce96fe5f5a3b67f332a416a4c8b",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-covering-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-guards-spec.json": {
+      "sha256": "77b28a363bbd8e45feaa5d479ccef8c27703b58249d60390aef230a9adc05a97",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-independent-spec.json": {
+      "sha256": "5f5d3a023a801731ad5fa9a8241cd61c7055a455e4f1fe24c93815981ec4def3",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r3-owned-spec.json": {
+      "sha256": "a5c20bedffbcd47fcaa792c6b395edf6a71b7b7a16598e33e26e681d8c662232",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r3-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-collection-spec.json": {
+      "sha256": "f50ec347bba1b1b7f9af2993eb9ae65dafa95017f4610c2cbbe33478f9096d5e",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-collection-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-covering-spec.json": {
+      "sha256": "ab7fa59fed65b145f3dde5d5945a6b19471f29c6524e168d5ac96c6e68b3446d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-covering-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-guards-spec.json": {
+      "sha256": "13d0d14273b7c4497443b8cc2ebc37912f5e9e12ce1d11e772cb36db122112d4",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-guards-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-independent-spec.json": {
+      "sha256": "aff189d92f0149b3d9a223dd08f7110f13a0759fd8d4aac13b5122e0bf6a0d4f",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-independent-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/qualification/wave19-r4-owned-spec.json": {
+      "sha256": "3423a7db29234a3228e58eb80f3aef9595f7ca7399e961a5f11016a3d9919555",
+      "original": "/workspace/bac-review-2026-11-01/qualification/wave19-r4-owned-spec.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r0-candidate.json": {
+      "sha256": "140137743e3014135bb79a15a450597397db0f5c8cae65eef08f1248af76c80f",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r0-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r0-fixture-resource-preflight.json": {
+      "sha256": "29e2214523b2401aea6c726ee04aaf638c75557a4c288b061bf42675c75fd168",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r0-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r0-red-postflight.json": {
+      "sha256": "e61af56f2e773409a96c9a92be4a385f668d79ad795be7270c3ce185c9679622",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r0-red-postflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r1-candidate.json": {
+      "sha256": "658610e0db3d689b83425198b151e27b75858239a9d37bcddbc89500c8669f72",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r1-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r1-fixture-resource-preflight.json": {
+      "sha256": "c1757e0e1cf7cdc64993be24d84585a806798159da231f850d83e921380cf531",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r1-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r2-ast-equivalence.json": {
+      "sha256": "779b2c092a924eebcee73a98b685c9e1746b3f98afdef32d702336a3c1b2a40b",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r2-ast-equivalence.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r2-candidate.json": {
+      "sha256": "7e4549d0e3d813d1247b55c8dd2a9bc035a0c00893d1f20d2639161b3dcb7589",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r2-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r2-consumer-candidate.json": {
+      "sha256": "18299e28745162346d08ca8121fd73f78f4ce71dc39bf3a266c1da22f05e8bcd",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r2-consumer-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r2-consumer-red-postflight.json": {
+      "sha256": "00393739f979da58ec8c44440ff0e9f9181f5de1a9f34f841bce206930a632ee",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r2-consumer-red-postflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r2-fixture-resource-preflight.json": {
+      "sha256": "cec85c799a5e906ab59ebb34316c2a11bcd44cd486de1fcf4334a832437e897c",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r2-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r3-candidate.json": {
+      "sha256": "93b2ef179b7f9b06fa16fb50b36540e59eeb9f2a744a23b604816ce478d4254a",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r3-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r3-covering-postflight.json": {
+      "sha256": "0afd4317c532faae61d2eed12a382a4510f0bb697bfd259d09425d01c235ea75",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r3-covering-postflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r3-fixture-resource-preflight.json": {
+      "sha256": "192423e1756d6b1f6cfc104168b6cc38bfdfa7e77eeeee96781bd58eaed8e42c",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r3-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r3-source-equivalence.json": {
+      "sha256": "50f3fd4c453cf0c236dfd8432459e0fb620086557129bef741e3027b5cda061d",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r3-source-equivalence.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r4-candidate.json": {
+      "sha256": "bac7b3d9779ddef3fab11b2c3e670508b7d7298f7782fdf0a3a0a451145163e4",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r4-candidate.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r4-checkpoint-receipt.json": {
+      "sha256": "fefd26020e9b4e6cc03849f2aa6f726fd0422668715e5d685ec1c1e289c9aec3",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r4-checkpoint-receipt.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r4-fixture-resource-preflight.json": {
+      "sha256": "95e7e14d2cae068ca163ac6449682a1bee299aac023ebf998a8a7af558dafe3c",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r4-fixture-resource-preflight.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19/r4-source-equivalence.json": {
+      "sha256": "87783eaa9e13bde5d5f056a14653d064d094d6ac2ea65ada457fbd41bf3f3afd",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19/r4-source-equivalence.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-ABI-FIX-R1.md": {
+      "sha256": "2728018c9862fa5ce798ba062611522d98c1c82a0d978be302a13a5188ce8f41",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-ABI-FIX-R1.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-ABI-PROPOSAL-R1.md": {
+      "sha256": "dd37a9aa538780fa96c7fb6e67df4de84c5f749e644baa9faefe4ec4981050c2",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-ABI-PROPOSAL-R1.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-ABI-PROPOSAL.md": {
+      "sha256": "5251388f5ad7c0328b6be4825be595e4b3f8fafd2271f1babd6618ded8bac0f0",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-ABI-PROPOSAL.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-ABI-REVIEW-R1.md": {
+      "sha256": "34f333b9daf0d18b03546c23492e6e6a0d03b06c69ba88a43f0115fcb8e63484",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-ABI-REVIEW-R1.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-ABI-REVIEW-R2.md": {
+      "sha256": "59e0baf7f1c5884c7994967b17c3203868c194f30e0c2e4a9a86d87421ad3b10",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-ABI-REVIEW-R2.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-ACTIVATION.json": {
+      "sha256": "336109b1d307e21e648fe189b5fcab935718ff74d385b5ae722598a2e1934a53",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-ACTIVATION.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-PRODUCTION-REPORT.md": {
+      "sha256": "29dd866804dcc717e506460ff6ad0f421fc4c604a6daf41a504ab6466fd54c05",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-PRODUCTION-REPORT.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-FIX-REPORT.md": {
+      "sha256": "ce33e3d5cae9f8101df9370d33ac2579ae085bb6d6b3fdcab8ff895d3e6c04a0",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-FIX-REPORT.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-FIX-brief.md": {
+      "sha256": "608f2353468aa4a2138f903d7d05251bb88bd1e5aec2d663cc544e111d17347d",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-FIX-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-r3-review-package.md": {
+      "sha256": "24431978f52dec571082ed1d24d45cb845aef8be2359cdaa43f1a74b0c841395",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-r3-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-r4-independent-review.md": {
+      "sha256": "fa1982520b195607110aecb98f7d6a50066b522e592ae4b9da9397efe8dfddb7",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-r4-independent-review.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-r4-review-package.md": {
+      "sha256": "f7d599eec6a7cba704a805519dc041b0fbdd41f6187725e7ca1dbbb657289640",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-SCOPE-OWNER-r4-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-TESTS-FIRST-REPORT.md": {
+      "sha256": "f56afb50ec30e48441b3aefd6c2c392dd1dbc747f75a4b2a72f6f02e35459818",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-TESTS-FIRST-REPORT.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-brief.md": {
+      "sha256": "c0e6d5e225a14483cf0d3c6fab6908321a8a8d6b8483153679df0c251bc5a488",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-r1-independent-review.md": {
+      "sha256": "ddc9d2241609cf99fcd542144114db200d4118f3dff322c887816a64c3d045e2",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-r1-independent-review.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-r1-review-package.md": {
+      "sha256": "89543c0d495f82c090462ed9ac781246eeac8cef304462cc3f9594cc4704de79",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-r1-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-r2-fix-review-package.md": {
+      "sha256": "1cd94be6cabd4c2f0e34d11c9489a7808fed542c2ab36a511d4d321f497ec03b",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-r2-fix-review-package.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CLOCK-STAMP-r2-independent-review.md": {
+      "sha256": "6e1020748ec3b1a034c64ea9a9020ab1e6623623115895fe6c28e6f8c054967b",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CLOCK-STAMP-r2-independent-review.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/CURRENT-CLOCK-STAMP-CONTRACT.md": {
+      "sha256": "da74aff4fcd2724cad290e97dd72739a279806c8ee39814bcffc5f71ce9fd28e",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CURRENT-CLOCK-STAMP-CONTRACT.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave19-preparation/PW04-BOUNDED-EXECUTION-RULING.md": {
+      "sha256": "54e5ee7258907d8abddde0460eaa39e49c46d3ae233924632626a174bca9baff",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/PW04-BOUNDED-EXECUTION-RULING.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave20-preparation/PW04-BACKEND-ABI-PROPOSAL-R1.md": {
+      "sha256": "d2bc61534add2e5ab73ed8edbf3668c99549b8f67ffb70bbc02d880d65023a41",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-BACKEND-ABI-PROPOSAL-R1.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave20-preparation/PW04-BACKEND-ABI-PROPOSAL.md": {
+      "sha256": "5b3aae78fc62715f5eabd752acf341327c382957a7613a1105dae83f46be3465",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-BACKEND-ABI-PROPOSAL.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave20-preparation/PW04-BACKEND-ABI-REVIEW-R1.md": {
+      "sha256": "3ca713596e8a2ed6acca27c100747f39e3f7d80b0735b6ef5f24b2e108efca12",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-BACKEND-ABI-REVIEW-R1.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave20-preparation/PW04-BACKEND-ABI-REVIEW-R2.md": {
+      "sha256": "5ff4bc025bcf568b7df39f84b3d9a444f3a2d2a12b32a5e0ab43a0415ba512c5",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-BACKEND-ABI-REVIEW-R2.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave20-preparation/PW04-BACKEND-ACTIVATION.json": {
+      "sha256": "0021614654d9f5cf559511c63c7c4e3764dd1599db6c8eb8aaaf74a919e1a4db",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-BACKEND-ACTIVATION.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/wave20-preparation/PW04-BACKEND-brief.md": {
+      "sha256": "fc7821c38ae02c4115f642b73a3a0094e307694c91e8a598269548b2c0a786f6",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave20-preparation/PW04-BACKEND-brief.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/capture_wave14_round.py.txt": {
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "original": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/verify_bac_run.py.txt": {
+      "sha256": "54ab0a2cf47b90a42a010770813fbfffe8abf9a767f74151fc462829e15c6d32",
+      "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/run_bac_packet_checks_locked.py.txt": {
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "original": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/bac_source_identity.py.txt": {
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "original": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/publish_wave19_wip01.py.txt": {
+      "sha256": "22cbddf786af6636d830ab763ba9927fa0af6b9c96baa03dc6b1a3d779013906",
+      "original": "/workspace/bac-review-2026-11-01/qualification/publish_wave19_wip01.py"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/execution-CURRENT-STATE.json": {
+      "sha256": "b4fc63856b340e35b2660d2530952b70de9d69230513be89389c3266a7ba97e2",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/CURRENT-STATE.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/execution-progress.md": {
+      "sha256": "ad668e519912173fcb69ef244137440b4bc1900913d10a0dcbb2befdf436f34b",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/progress.md"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/execution-tasks.json": {
+      "sha256": "fa49766eb6d305e7d3c454d0cf86c4dcebd3cf36e73a55c9f391c0e9b28b46a8",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/tasks.json"
+    },
+    "docs/remediation/bac/evidence/wave19-wip-01/execution-final-review-lenses.json": {
+      "sha256": "370765b575f6102965ab24f81a418a2619072f5a6c68cf563451fb9ea598b43d",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/final-review-lenses.json"
+    },
+    "docs/remediation/bac/CURRENT-CLOCK-STAMP-CONTRACT.md": {
+      "sha256": "da74aff4fcd2724cad290e97dd72739a279806c8ee39814bcffc5f71ce9fd28e",
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave19-preparation/CURRENT-CLOCK-STAMP-CONTRACT.md"
+    }
+  },
+  "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+  "publication": "Authorized existingremote branch; continue planned work. No branch/worktree/copy,PR,merge or deletion.",
+  "next_abi": "Reviewed PW04 backend local cadence/native preparation/component hook ABI included; implementation follows. Actual POP/runner/native qualification remains required OPEN.",
+  "custody": "14 registry records/MAIN1available;13historical paths unavailable,preserved. Privatebackup excluded."
+}

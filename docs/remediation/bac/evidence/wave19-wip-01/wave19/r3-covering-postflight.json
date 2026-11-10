@@ -1,0 +1,9 @@
+{
+  "candidate_tree": "3c5b206d27a0b07064f9933da72706f0d8cf01ef",
+  "failed": 1,
+  "wall_seconds": 3.463489294052124,
+  "cause": "Newtestassumed ValueError forunsupportedstandaloneoldEF; actualloudrefusal KeyError static_policy. ParentcompiledoldnativeValueErrorcontrolpassed. Currentpositive tail notyetreached.",
+  "disposition": "Correct newtest to specificactualmissingrequiredfieldrefusal; do notchangeproductionorcatchcurrentpositiveerrors",
+  "evidence": "Wrapperpre/postexactsource/index192guards and controlleridentity/config/artifactverified; sessionsclosedbeforefixtureauthor",
+  "next": "Reruncoveringfirstbeforebroaderjoint"
+}

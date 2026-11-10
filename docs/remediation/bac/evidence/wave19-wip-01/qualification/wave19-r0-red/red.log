@@ -1,0 +1,1725 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 64 items
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py FFFFFFFFFFFFFF [ 21%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                       [100%]
+
+=================================== FAILURES ===================================
+____________________ test_service_clock_strict_typed_units _____________________
+
+    def test_service_clock_strict_typed_units():
+>       clock, _, _ = _api()
+                      ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+___________________ test_event_id_initial_and_exact_identity ___________________
+
+    def test_event_id_initial_and_exact_identity():
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_________________ test_step_stamp_first_eligible_and_inactive __________________
+
+    def test_step_stamp_first_eligible_and_inactive():
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[list-event_ids] _______________
+
+field = 'event_ids', kind = 'list'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[list-world_ids] _______________
+
+field = 'world_ids', kind = 'list'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+___________ test_step_stamp_sequence_refusals[tuple_alias-event_ids] ___________
+
+field = 'event_ids', kind = 'tuple_alias'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+___________ test_step_stamp_sequence_refusals[tuple_alias-world_ids] ___________
+
+field = 'world_ids', kind = 'tuple_alias'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[empty-event_ids] ______________
+
+field = 'event_ids', kind = 'empty'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[empty-world_ids] ______________
+
+field = 'world_ids', kind = 'empty'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[short-event_ids] ______________
+
+field = 'event_ids', kind = 'short'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[short-world_ids] ______________
+
+field = 'world_ids', kind = 'short'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[long-event_ids] _______________
+
+field = 'event_ids', kind = 'long'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_sequence_refusals[long-world_ids] _______________
+
+field = 'world_ids', kind = 'long'
+
+    @pytest.mark.parametrize("field", ["event_ids", "world_ids"])
+    @pytest.mark.parametrize("kind", ["list", "tuple_alias", "empty", "short", "long"])
+    def test_step_stamp_sequence_refusals(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____________ test_step_stamp_all_row_identity_refusals[duplicate] _____________
+
+case = 'duplicate'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____________ test_step_stamp_all_row_identity_refusals[empty_id] ______________
+
+case = 'empty_id'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____________ test_step_stamp_all_row_identity_refusals[alias_id] ______________
+
+case = 'alias_id'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_all_row_identity_refusals[not_id] _______________
+
+case = 'not_id'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____________ test_step_stamp_all_row_identity_refusals[id_alias] ______________
+
+case = 'id_alias'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____________ test_step_stamp_all_row_identity_refusals[mixed_epoch] ____________
+
+case = 'mixed_epoch'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______________ test_step_stamp_all_row_identity_refusals[world] _______________
+
+case = 'world'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______________ test_step_stamp_all_row_identity_refusals[episode] ______________
+
+case = 'episode'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______________ test_step_stamp_all_row_identity_refusals[local] _______________
+
+case = 'local'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____________ test_step_stamp_all_row_identity_refusals[overflow] ______________
+
+case = 'overflow'
+
+    @pytest.mark.parametrize(
+        "case", ["duplicate", "empty_id", "alias_id", "not_id", "id_alias", "mixed_epoch", "world", "episode", "local", "overflow"]
+    )
+    def test_step_stamp_all_row_identity_refusals(case):
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__________________ test_step_stamp_all_row_order_and_geometry __________________
+
+    def test_step_stamp_all_row_order_and_geometry():
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[rank0-world_episode_seqs] __
+
+field = 'world_episode_seqs', kind = 'rank0'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[rank0-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'rank0'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[rank0-eligible] _______
+
+field = 'eligible', kind = 'rank0'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[rank2-world_episode_seqs] __
+
+field = 'world_episode_seqs', kind = 'rank2'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[rank2-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'rank2'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[rank2-eligible] _______
+
+field = 'eligible', kind = 'rank2'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[short-world_episode_seqs] __
+
+field = 'world_episode_seqs', kind = 'short'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[short-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'short'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[short-eligible] _______
+
+field = 'eligible', kind = 'short'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[long-world_episode_seqs] ___
+
+field = 'world_episode_seqs', kind = 'long'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____ test_step_stamp_tensor_shape_dtype_layout_device[long-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'long'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[long-eligible] ________
+
+field = 'eligible', kind = 'long'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[list-world_episode_seqs] ___
+
+field = 'world_episode_seqs', kind = 'list'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____ test_step_stamp_tensor_shape_dtype_layout_device[list-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'list'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[list-eligible] ________
+
+field = 'eligible', kind = 'list'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[none-world_episode_seqs] ___
+
+field = 'world_episode_seqs', kind = 'none'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____ test_step_stamp_tensor_shape_dtype_layout_device[none-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'none'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[none-eligible] ________
+
+field = 'eligible', kind = 'none'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[float-world_episode_seqs] __
+
+field = 'world_episode_seqs', kind = 'float'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[float-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'float'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[float-eligible] _______
+
+field = 'eligible', kind = 'float'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[int32-world_episode_seqs] __
+
+field = 'world_episode_seqs', kind = 'int32'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[int32-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'int32'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[int32-eligible] _______
+
+field = 'eligible', kind = 'int32'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_ test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-world_episode_seqs] _
+
+field = 'world_episode_seqs', kind = 'wrong_bool'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-eligible_seqs] __
+
+field = 'eligible_seqs', kind = 'wrong_bool'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-eligible] _____
+
+field = 'eligible', kind = 'wrong_bool'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+__ test_step_stamp_tensor_shape_dtype_layout_device[meta-world_episode_seqs] ___
+
+field = 'world_episode_seqs', kind = 'meta'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_____ test_step_stamp_tensor_shape_dtype_layout_device[meta-eligible_seqs] _____
+
+field = 'eligible_seqs', kind = 'meta'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______ test_step_stamp_tensor_shape_dtype_layout_device[meta-eligible] ________
+
+field = 'eligible', kind = 'meta'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_ test_step_stamp_tensor_shape_dtype_layout_device[sparse-world_episode_seqs] __
+
+field = 'world_episode_seqs', kind = 'sparse'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_shape_dtype_layout_device[sparse-eligible_seqs] ____
+
+field = 'eligible_seqs', kind = 'sparse'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______ test_step_stamp_tensor_shape_dtype_layout_device[sparse-eligible] _______
+
+field = 'eligible', kind = 'sparse'
+
+    @pytest.mark.parametrize("field", ["world_episode_seqs", "eligible_seqs", "eligible"])
+    @pytest.mark.parametrize(
+        "kind", ["rank0", "rank2", "short", "long", "list", "none", "float", "int32", "wrong_bool", "meta", "sparse"]
+    )
+    def test_step_stamp_tensor_shape_dtype_layout_device(field, kind):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_domains_include_last_row[world_episode_seqs-0] _____
+
+field = 'world_episode_seqs', bad = 0
+
+    @pytest.mark.parametrize("field,bad", [("world_episode_seqs", 0), ("world_episode_seqs", -1), ("eligible_seqs", -1)])
+    def test_step_stamp_tensor_domains_include_last_row(field, bad):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+____ test_step_stamp_tensor_domains_include_last_row[world_episode_seqs--1] ____
+
+field = 'world_episode_seqs', bad = -1
+
+    @pytest.mark.parametrize("field,bad", [("world_episode_seqs", 0), ("world_episode_seqs", -1), ("eligible_seqs", -1)])
+    def test_step_stamp_tensor_domains_include_last_row(field, bad):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+______ test_step_stamp_tensor_domains_include_last_row[eligible_seqs--1] _______
+
+field = 'eligible_seqs', bad = -1
+
+    @pytest.mark.parametrize("field,bad", [("world_episode_seqs", 0), ("world_episode_seqs", -1), ("eligible_seqs", -1)])
+    def test_step_stamp_tensor_domains_include_last_row(field, bad):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+___________________ test_step_stamp_owns_inputs_and_outputs ____________________
+
+    def test_step_stamp_owns_inputs_and_outputs():
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+________________ test_primitive_refusal_has_no_external_effects ________________
+
+    def test_primitive_refusal_has_no_external_effects():
+>       _, event_id, _ = _api()
+                         ^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+_______________ test_cpu_stamp_never_probes_or_initializes_cuda ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4023a409d0>
+
+    def test_cpu_stamp_never_probes_or_initializes_cuda(monkeypatch):
+>       values = _inputs()
+                 ^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:287: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:29: in _inputs
+    _, event_id, _ = _api()
+                     ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+________________ test_step_stamp_cuda_ownership_when_available _________________
+
+    def test_step_stamp_cuda_ownership_when_available():
+>       _api()
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:298: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        names = ("ServiceClock", "CuriosityEventId", "CuriosityStepStamp")
+        for name in names:
+>           assert hasattr(ws, name), f"Missing promised public clock/stamp ABI: {name}"
+E           AssertionError: Missing promised public clock/stamp ABI: ServiceClock
+E           assert False
+E            +  where False = hasattr(ws, 'ServiceClock')
+
+tests/test_townlet/regressions/bac/test_pw_clock_stamp.py:24: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_service_clock_strict_typed_units
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_event_id_initial_and_exact_identity
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_first_eligible_and_inactive
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[list-event_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[list-world_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[tuple_alias-event_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[tuple_alias-world_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[empty-event_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[empty-world_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[short-event_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[short-world_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[long-event_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_sequence_refusals[long-world_ids]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[duplicate]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[empty_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[alias_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[not_id]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[id_alias]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[mixed_epoch]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[world]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[episode]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[local]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_identity_refusals[overflow]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_all_row_order_and_geometry
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[rank0-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[rank0-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[rank0-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[rank2-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[rank2-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[rank2-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[short-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[short-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[short-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[long-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[long-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[long-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[list-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[list-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[list-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[none-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[none-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[none-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[float-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[float-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[float-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[int32-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[int32-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[int32-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[wrong_bool-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[meta-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[meta-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[meta-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[sparse-world_episode_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[sparse-eligible_seqs]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_shape_dtype_layout_device[sparse-eligible]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_domains_include_last_row[world_episode_seqs-0]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_domains_include_last_row[world_episode_seqs--1]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_tensor_domains_include_last_row[eligible_seqs--1]
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_owns_inputs_and_outputs
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_primitive_refusal_has_no_external_effects
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_cpu_stamp_never_probes_or_initializes_cuda
+FAILED tests/test_townlet/regressions/bac/test_pw_clock_stamp.py::test_step_stamp_cuda_ownership_when_available
+============================== 64 failed in 0.70s ==============================

@@ -1,0 +1,22 @@
+{
+  "job": "original-env-regressions",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "candidate_tree": "d5481fce58bf63de8071ba24ba26dc6dfe0b18ad",
+  "exit_code": 0,
+  "counts": {
+    "passed": 57,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 46.9848256111145,
+  "source_guards": 804,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "candidate_tree": "d5481fce58bf63de8071ba24ba26dc6dfe0b18ad",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'VectorizedHamletEnv' object has no attribute 'validate_initial_participation_reading'. Did you mean: 'validate_initial_participation'?",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_accepts_genuine_committed_preactivation",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

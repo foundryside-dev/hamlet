@@ -1,0 +1,560 @@
+{
+  "status": "UNRELEASED WIP; no package or repository release",
+  "at": "2026-11-10T21:51:49.755499+00:00",
+  "candidate_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+  "scope": "Current canonical ENV/RWC/population flow and original failure custody repairs, with all reviewed remaining parent/native/current-caller gaps explicit.",
+  "root": {
+    "env": {
+      "job": "env",
+      "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+      "exit_code": 0,
+      "counts": {
+        "passed": 31,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 27.05924963951111,
+      "source_guards": 800,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "parent": {
+      "job": "parent",
+      "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+      "exit_code": 0,
+      "counts": {
+        "passed": 44,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 25.62364888191223,
+      "source_guards": 800,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "independent": {
+    "env": {
+      "job": "env",
+      "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+      "exit_code": 0,
+      "counts": {
+        "passed": 31,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 24.376317501068115,
+      "source_guards": 800,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "parent": {
+      "job": "parent",
+      "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+      "exit_code": 0,
+      "counts": {
+        "passed": 44,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 20.507395267486572,
+      "source_guards": 800,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "overlap": "The same75 cases in each execution; not150 unique cases.",
+  "focused_commands": {
+    "root": [
+      {
+        "name": "env",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+          "-x",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r10-env"
+        ]
+      },
+      {
+        "name": "parent",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+          "-x",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r10-parent"
+        ]
+      }
+    ],
+    "independent": [
+      {
+        "name": "env",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+          "-x",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r10-independent-env"
+        ]
+      },
+      {
+        "name": "parent",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+          "-x",
+          "-q",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "bac_source_identity",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r10-independent-parent"
+        ]
+      }
+    ]
+  },
+  "owner_suite_commands": "Actual31ENV+44parent bounded regression selections; broadexistingowner/currentcaller suites and fullrepository remain required.",
+  "static_commands": [
+    {
+      "name": "ruff-global",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ]
+    },
+    {
+      "name": "black-global",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ]
+    },
+    {
+      "name": "mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    },
+    {
+      "name": "no-defaults",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ]
+    },
+    {
+      "name": "expression-doc",
+      "args": [
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ]
+    }
+  ],
+  "static": {
+    "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+    "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+    "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+    "source_guards": 800,
+    "configs": 573,
+    "artifacts": 13,
+    "results": [
+      {
+        "name": "ruff-global",
+        "exit_code": 0,
+        "seconds": 0.10445761680603027,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-static/ruff-global.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      {
+        "name": "black-global",
+        "exit_code": 0,
+        "seconds": 62.368104696273804,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-static/black-global.log",
+        "sha256": "1d60c5b3e30a799035194ee23410397136947599c869d0dd42ac1ba28703c67d"
+      },
+      {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 2.005887508392334,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-static/mypy.log",
+        "sha256": "e2626aa971f812d4320d36ce730dff6f87486fa24436430ef37d90cf5cf56058"
+      },
+      {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 0.9240343570709229,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-static/no-defaults.log",
+        "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+      },
+      {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 1.9061462879180908,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r10-static/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      }
+    ],
+    "all_passed": false,
+    "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+  },
+  "compiler_cli": {
+    "status": "PASS required compiler CLI and all actual process identities",
+    "base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+    "candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+    "packs": 34,
+    "process_identities": 35,
+    "source_guards_per_process": 800,
+    "configs_per_process": 573,
+    "artifacts_per_process": 13,
+    "wall_seconds": 152.1208357810974,
+    "log_sha256": "7894c88222d7294a3e41085d6e571d6dba9a3fde4ab37dc3d22e0fbdbf0e8b6d",
+    "profile_hashes": {
+      "compiler-cli/compiler-processes/137695.json": "729a12706e6d71cbf3452b9cf010aa6ce3257a98ae9da914cc8f9492c27bbdaf",
+      "compiler-cli/compiler-processes/137744.json": "8514d90bd1d54de017636c64ec652693d8e8e90b46f36cb0089662ce58e095a6",
+      "compiler-cli/compiler-processes/137770.json": "90d9b5a32f110bc3faea8db3f40253320585ba92d213c28fa905bf9af989aa3b",
+      "compiler-cli/compiler-processes/137796.json": "dec1bc177e4a80f180b2b244dd832130c2cd4ff5ead3676768be34b0a34b1177",
+      "compiler-cli/compiler-processes/137821.json": "8789d6f636141fa56001b533f1807e044774d529e0043fe8f1de9f991a650061",
+      "compiler-cli/compiler-processes/137887.json": "bca76520606eb2a29503b9b149915a2554e5111e45f6f39aa7b869ee90be7911",
+      "compiler-cli/compiler-processes/137943.json": "ee39b5c77abdd401773ca51fcbb76878f64d024e64248cedfb9a3c1dbc2f4975",
+      "compiler-cli/compiler-processes/137976.json": "f394ca78b90fb43acd5ccb8e4fae088ebcd2f6d6d6c5ff4c172cadb45dd103f8",
+      "compiler-cli/compiler-processes/138001.json": "3c7f6c47962fceca0e2b57c239057a2d8c77c04d99053e524d9e98095bd98987",
+      "compiler-cli/compiler-processes/138032.json": "102cc4764a48872e2512a2d19f4a55681db10567835c9847047eff374fdc8068",
+      "compiler-cli/compiler-processes/138057.json": "aef90337116f534d89180b255724170f239ac124aaeca545d04e6b341ca46e8f",
+      "compiler-cli/compiler-processes/138082.json": "210673361583dc358ae108362eafd2c3761358c36c202ea9c0551276f08c11d9",
+      "compiler-cli/compiler-processes/138115.json": "765ae3da485bffb5043b3086aab9c7438ea64b1898b047d6c287b2d4f4a3ab35",
+      "compiler-cli/compiler-processes/138140.json": "d9707b5645433775f1235059bae0f9eb16826aef38e11a3edf3892619d58cba5",
+      "compiler-cli/compiler-processes/138174.json": "52afbd437904b06ba006d2bf52a6177f08dfc0dd3069f9c534d839a0bc1652bb",
+      "compiler-cli/compiler-processes/138247.json": "11919dd966108d2410a68091076e8a102c1ba18131d07f34203a637b1b2dbe70",
+      "compiler-cli/compiler-processes/138285.json": "3bf9e833cbaed68a76a079f37130c8ef05c3f1fdaab40d237d6eb30d9eca098b",
+      "compiler-cli/compiler-processes/138320.json": "22cd11b7df428e4d0a5fb44526bfbef1be85fd2d55388a864d459d3f6a47b21a",
+      "compiler-cli/compiler-processes/138345.json": "021293b4d627a9ffb16b71c2381305d4da23de8fcf648acf6b17ccdbd8e33480",
+      "compiler-cli/compiler-processes/138370.json": "a383046684d5e80c7f6ee737d10fb9f33066e74763bc98a83b1aefb07769436c",
+      "compiler-cli/compiler-processes/138395.json": "722a8fbefd8c544c7cc9bda188c154eb1568ce26d5b57043f17d2f6cbecac4dc",
+      "compiler-cli/compiler-processes/138422.json": "be02339e9f40a7eaaba3a533479712022d07c61b8a4999b47717eebe4538dc5f",
+      "compiler-cli/compiler-processes/138447.json": "f6ada861023127d8d484380840eb772aaabaaa5b94fc7ba719169607936a43ee",
+      "compiler-cli/compiler-processes/138479.json": "9ac0f18e47c64c43cac93cd1d9d773fe5de544cf7f96b07c668e1a59d53f81ce",
+      "compiler-cli/compiler-processes/138504.json": "03a5878fc6341ef927c1b25055f5114bb442edab2eaa2e657d08f9a9a747de05",
+      "compiler-cli/compiler-processes/138529.json": "a9746e408505ad9df4f42a4355f8406280d6516fd8bfb85ce010ecb58b048974",
+      "compiler-cli/compiler-processes/138644.json": "74338a99b937f73df7c6a83e89d61e2f7628aab77f62675e0ca17c6ffbc4f090",
+      "compiler-cli/compiler-processes/138677.json": "8347dd198ffc943aff077e8f987b2c9a209dd616d212758154afb7fe628e33c8",
+      "compiler-cli/compiler-processes/138702.json": "8d2394b5fd60affe8ffcf3caf5aa2fe52c099f28edb90b5979006db401b6a5d0",
+      "compiler-cli/compiler-processes/138727.json": "b41c8b98f61ce93fb25007559fb8aafcc668a130e6eac3614c0ca8a62a4ed4ef",
+      "compiler-cli/compiler-processes/138751.json": "60ceee83a5d62a501f41c3c2aac5bfbf50b78b4ab4f5c9255e191c757d4bc9c8",
+      "compiler-cli/compiler-processes/138776.json": "7e3679baef5d9dd735782ddb6832439b1ea9acb568015fbcb6893f815fc9e548",
+      "compiler-cli/compiler-processes/138800.json": "a5797fce93913a111c282e6850ab9782f1715748de1c60561406eb61bf51203e",
+      "compiler-cli/compiler-processes/138824.json": "cde826fc00210123e68c398a4b279cfe5354326f579a199ba2b161de30e773c1",
+      "compiler-cli/compiler-processes/138849.json": "6c2c8e2f1993b2347802337baf761412cf7baeac2a010e07320562b4dbdd874b"
+    },
+    "scope": "Compiler fleet only; not repository or whole-BAC qualification."
+  },
+  "review_record": {
+    "ENV": "OwningSPEC/QUALITY/APItruthAPPROVED; latebindingP2addressed withactualRED/GREEN+independentexecution.",
+    "parent": "CHANGES REQUIRED: originalsinglebatchA/Baddressed; A2multi-batchretry andD2install-binding remain, C/fullD/E/Fintegrationstillrequired.",
+    "README": "Affectedparagraphonly verifiedsource facts\u2192draft\u2192separateadversarialENV+parentreview; broaderdatedstampunchanged."
+  },
+  "review_sha256": {
+    "wave35-preparation/T18e-ENV-CANONICAL-INDEPENDENT-REVIEW.md": "9bd24f14c3d00022f0ff68908ee042d3b56bc61a65d856e98e57b8f85e309d2b",
+    "wave35-preparation/T18e-PARENT-STEP-INDEPENDENT-REVIEW.md": "2863539ed5d12409ecc11381d6eaa8fe445341162ed57f3f8aac2b4faaf3bd83",
+    "wave35-preparation/README-DOC-REVIEW-PARENT.md": "5d5faebf71ac2fb8a7279b34f2ad64a2c397d4d13f2dd8b82c5e6ee23dd26825",
+    "wave35-preparation/T18e-NATIVE-RESET-CORRELATION-ASTRA-REVIEW.md": "8fafbe7538126d6cad6b687e35936463ffd4d2a58efda31ed1faab2a2347563b"
+  },
+  "public_contract": {
+    "source": "wave35-preparation/T18e-CANONICAL-REWARD-FLOW-API.md",
+    "sha256": "17d65c59e5e39ae8be676970f63b2910c6f7f9df556b3cb8fc86483661200567",
+    "truth": "ActualAPIs/limits/currentqualification source-reviewed; no wholeparent/BAC support claim."
+  },
+  "README": {
+    "approved_draft_sha256": "2f60bc7d45ef8e44e32348c784f6e1e346a99b6b7f128d23f768d290c5a29cce",
+    "method": "Boundedaffectedparagraphsource-groundtruth/draft/adversarialreview, notfullREADMEmergeverification."
+  },
+  "full_suite_status": {
+    "current_candidate": "NOT RUN; NOT GREEN",
+    "last_actual_base": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+    "last_actual_counts": {
+      "failed": 1010,
+      "passed": 7285,
+      "skipped": 21,
+      "errors": 231,
+      "warnings": 40
+    },
+    "evidence": "docs/remediation/bac/evidence/wave35-wip-01.json",
+    "reason": "Known required currentconstructor/lifecycle/runner/native/caller prerequisites remain. Repair causally before broadrepeat; no release/fullgate waiver."
+  },
+  "full_suite_reason": "Unreleasedcheckpoint, all current boundary releases remain withheld; currentdefault/full/coverage/slow/applicablehardware/CI gates are owed.",
+  "unrun_checks": [
+    "Currentunfilteredrepository/defaultcoverage>=70/slow/applicablehardware",
+    "Currentexternalaction/oracleconsumer andremainingcallerowners",
+    "Nativefullparent/T26/ordinaryrunner/reset/correlation/learning qualification",
+    "NewremoteSHA CI not yet published/observed",
+    "CUDA unavailable/unqualified"
+  ],
+  "next_full_gate": "G3/earlieraffectedboundary aftercausalprerequisites; G6/G7 final54requirements22freshlenses+learning/end-to-end criteriaunchanged.",
+  "source_inventory": {
+    "T21": [
+      {
+        "path": "src/townlet/config/bac_options.py",
+        "lines": 323,
+        "sha256": "cc0b2b9cfbbfd6396a9080b90bd65692f964e04c75693a164408f59f0dab3ee6",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/training_v2_config.py",
+        "lines": 435,
+        "sha256": "2803a9572b9836e857815c734b15f47ae20f2bb65b490f639be49b7fa49bd863",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/effective_run.py",
+        "lines": 371,
+        "sha256": "9ec1ddfa5259e9d5ffa2880e2cf65dab1e22b939aae50f80d1396f307fba8999",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+        "lines": 377,
+        "sha256": "6e0c34ccd474f7592a6b17cdfcc8daf2d286ed7fd8b7f86f9320a0526a7c40a5",
+        "present": true
+      }
+    ],
+    "W34-T18d-CURRENT-RUNTIME": [
+      {
+        "path": "src/townlet/config/exploration_policy.py",
+        "lines": 1299,
+        "sha256": "fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67",
+        "present": true
+      },
+      {
+        "path": "src/townlet/exploration/epsilon_greedy.py",
+        "lines": 118,
+        "sha256": "f9100a2f7f6a053a06d420d850a979d1c1e4a528461727c2a1405da5daeec059",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/historical_checkpoint.py",
+        "lines": 675,
+        "sha256": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+        "present": true
+      },
+      {
+        "path": "src/townlet/exploration/scoped_curiosity.py",
+        "lines": 1284,
+        "sha256": "294ef0f8d9f11e74869567e21f2ca44b623fe1cd54ca5c3eb59819c80681a05f",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+        "lines": 1226,
+        "sha256": "151742778748b41ef40af13df0b5fbd5ce87d825ef3e3d2a4365c2f2822f314f",
+        "present": true
+      }
+    ],
+    "W34-CURRENT-CURRICULUM-CONSUMER-REPAIR": [
+      {
+        "path": "tests/test_townlet/unit/curriculum/test_curriculums.py",
+        "lines": 753,
+        "sha256": "c414386e87ab43d11bfbae86cb5264102b9cb8985f2fcf618157cf0519e278da",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/adversarial.py",
+        "lines": 537,
+        "sha256": "2194cc4075096670181a50cf1be2158cd68334a07111818ad75382cd73890f4f",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/base.py",
+        "lines": 66,
+        "sha256": "d961844d5738ac85d26d5dd57520d1954718ee93e482e5133d4323d14c149268",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/static.py",
+        "lines": 64,
+        "sha256": "22ff977b07fa494a1f6b403b312af2c5f6e22780af472e6c132832213782cc59",
+        "present": true
+      },
+      {
+        "path": "src/townlet/curriculum/factory.py",
+        "lines": 58,
+        "sha256": "10be467c8ca72853bd8c6cceac60e6e13fcb4f202f1511fc7a9040539dbd9c71",
+        "present": true
+      }
+    ],
+    "W35-T18e-REAL-COMPOSER-PRIMITIVE": [
+      {
+        "path": "src/townlet/vfs/vtc.py",
+        "lines": 3510,
+        "sha256": "a2d14e8bf9d7363e36f5778182395a4e5110052ca5591efacb1c98d63dad4390",
+        "present": true
+      },
+      {
+        "path": "src/townlet/environment/dac_engine.py",
+        "lines": 977,
+        "sha256": "b129d7ac5cdbf7e6ed27dd6cd5f9529dc9e7d2e0154b43a4db028d7aef78e317",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_intrinsic_scale_composer.py",
+        "lines": 195,
+        "sha256": "0ad34fdfb781a5679762a2eacfa4ff2d86a026967e5039fe514e81a2fce0e745",
+        "present": true
+      }
+    ],
+    "W35-T18e-PARENT-STEP-HANDOFF": [
+      {
+        "path": "src/townlet/population/vectorized.py",
+        "lines": 2599,
+        "sha256": "e0cb09ba4a002eedb3d291928eb9b274dac1eb97768053ab723ad217f8f17211",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/exploration_policy.py",
+        "lines": 1299,
+        "sha256": "fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/clock_ledger.py",
+        "lines": 48,
+        "sha256": "e7b40260b027bc63fd2cb751a4fb55840564c36a38d78fca30f876d9e41473e0",
+        "present": true
+      },
+      {
+        "path": "src/townlet/training/state.py",
+        "lines": 263,
+        "sha256": "a6f22b0b26ca6422e6a0710f9268386e8d2b7162e1a5e9a43a2decdea4c9d3e3",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "lines": 668,
+        "sha256": "a794a5a9beb5639b132c6f01f042026d436da8d7c994df2b1f2e93d930156c51",
+        "present": true
+      }
+    ],
+    "W35-T18e-ENV-CANONICAL": [
+      {
+        "path": "src/townlet/environment/vectorized_env.py",
+        "lines": 2452,
+        "sha256": "3b65e6f143edf1a1a363b6b537376f2e8f3f5dc1f7ce6f6feb8ba9c06bca5256",
+        "present": true
+      },
+      {
+        "path": "src/townlet/environment/reward_calculator.py",
+        "lines": 68,
+        "sha256": "72368cb6f10eb96ad4f772fbcf46b4229c809091ff6b5414764382141ae0b45c",
+        "present": true
+      },
+      {
+        "path": "src/townlet/config/exploration_policy.py",
+        "lines": 1299,
+        "sha256": "fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "lines": 668,
+        "sha256": "a794a5a9beb5639b132c6f01f042026d436da8d7c994df2b1f2e93d930156c51",
+        "present": true
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+        "lines": 341,
+        "sha256": "9d4c9812af426a6611e4169a4b33b2d52f4762ba4157ffc1278e3891ae2d54c8",
+        "present": true
+      }
+    ]
+  },
+  "curiosity_scope": "Sharedalternative+strictper_world bothretained; allfivefamilies inboundedphase/reward regressions.",
+  "curiosity_origin": "Currentownedruntime/nativebasis unchangedbythisWIP; nativelearningresetdesignnotyetimplemented.",
+  "world_binding": "Actualreservation/acceptedtoken/owneractivation; oncefresh-unboundENVruntimeclaimbinding; originalparentfullrole/nativerestoregapsremain.",
+  "guarantee": "Onlynamedactualsource/evidence; notwholeBAC or repositorygreen.",
+  "local_clock_units": "Existingtotal_steps+1 authoritativeclaim andseven-unitClockLedger; nativecross-ownercorrelationstillrequired.",
+  "mode_limitations": "Testsusegenuinecomponentswithlimitedcooperativeboundarycontrol, notwholeactualHC/T26/servingproof.",
+  "remaining_required": [
+    "A2 identicalmulti-batchretry afterpartialchildfailure",
+    "D2 rolebindbetweenprepare/install",
+    "C authenticmixedparticipation lifecycle",
+    "D fullstable-role completed restore",
+    "E sameBANK/native transferreset",
+    "F nativehistory/cache/ledger/outerworldcorrelation",
+    "Oracle/currentexternalactionentry andboundedcaller migrations",
+    "Ordinaryrunner/allfinalgates"
+  ],
+  "optional_P3": "Existingledger/reviewnotesretainoptionalcleanup; no requiredfindingrelabelledoptional."
+}

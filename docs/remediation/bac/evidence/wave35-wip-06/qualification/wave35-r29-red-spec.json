@@ -1,0 +1,83 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r29-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r29-red",
+  "workers": 3,
+  "jobs": [
+    {
+      "name": "env-causal-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_accepts_genuine_committed_preactivation",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r29-env-red"
+      ]
+    },
+    {
+      "name": "pop-causal-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_reset_seals_retirement_before_population_activation",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r29-pop-red"
+      ]
+    },
+    {
+      "name": "original-env-regressions",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_genuine_reset_prepares_retirement_without_publication",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_commit_publishes_owned_geometry_without_physics",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_no_retirement_preserves_ordinary_active_transition",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_validator_accepts_later_genuine_active_lane_terminal",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_separate_all_inactive_ordinary_step_contract_is_preserved",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_direct_ordinary_activation_remains_available_without_decision",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_whole_retirement_uses_real_empty_abandonment",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_missing_real_empty_proof_refuses_without_release",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_invalid_retirement_ids_refuse_before_publication",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_intent_identity_and_exact_content_are_required",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_pure_commit_refusal_retains_exact_preparation",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_changed_intent_and_second_commit_cannot_replace_decision",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_prepublication_physical_tamper_quarantines",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_active_validator_rejects_tamper_before_any_transition",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_active_validator_requires_private_predecessor_and_issued_result",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_duplicate_reset_preserves_seal_and_activation_closes_window",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_pending_decision_refuses_duplicate_reset_reentry",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_live_empty_candidate_mask_refuses_before_publication",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_mask_callback_physical_mutation_is_not_blessed_as_fresh",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_prepublication_allocation_failure_invalidates_old_handle",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_exception_after_status_publication_quarantines_without_rollback",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_postpublication_activation_failure_quarantines",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_prepared_capability_cannot_cross_receiver_or_restore_phase",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_constructed_step_is_not_an_authority_after_retirement",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_claim_cleanup_cannot_resume_physics",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_return_healthy_validation",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_activate_quarantined_episode",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r29-original-env"
+      ]
+    }
+  ]
+}

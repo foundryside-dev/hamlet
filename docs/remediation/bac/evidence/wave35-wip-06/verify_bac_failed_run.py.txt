@@ -1,0 +1,62 @@
+"""Verify exact custody of a completed failing pytest run without calling it green."""
+from pathlib import Path
+import collections
+import hashlib
+import json
+import re
+import subprocess
+import sys
+
+spec = json.loads(Path(sys.argv[1]).read_text())
+r = Path(spec['root'])
+mp = Path(spec['manifest'])
+m = json.loads(mp.read_text())
+out = Path(spec['output'])
+job = spec['jobs'][0]
+name = job['name']
+result = json.loads((out / (name + '-result.json')).read_text())
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=r, text=True).strip()
+assert result['exit_code'] != 0
+assert result['base_commit'] == m['base_commit'] and result['candidate_tree'] == m['candidate_tree']
+assert result['manifest_sha256'] == sha(mp)
+assert sha(Path(result['log'])) == result['sha256']
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree']
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=r).returncode == 0
+for group in ('source_files', 'configs', 'artifacts'):
+    for p, h in m[group].items():
+        assert sha(r / p) == h, (group, p)
+for p, h in m.get('auxiliary_harness', {}).items():
+    assert sha(Path(p)) == h, p
+assert subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=r, text=True) == m['worktree_registry']
+assert [{'path': s[9:], 'directory_exists': Path(s[9:]).is_dir()} for s in m['worktree_registry'].splitlines() if s.startswith('worktree ')] == m['worktree_availability']
+args = job['args']
+workers = int(args[args.index('-n') + 1]) if '-n' in args else 0
+ids = {p.stem.removeprefix('identity-'): json.loads(p.read_text()) for p in (out / name).glob('identity-*.json')}
+assert set(ids) == {'controller', *('gw' + str(k) for k in range(workers))}
+for k, d in ids.items():
+    assert d['sha'] == m['base_commit'] and d['candidate_tree'] == m['candidate_tree'], k
+    assert d['threads'] == 1 and d['module'] == str(r / 'src/townlet/__init__.py'), k
+log = Path(result['log']).read_text()
+lines = [s for s in log.splitlines() if re.search(r'\d+ (?:failed|passed|errors).* in \d+(?:\.\d+)?s', s)]
+assert lines, 'No completed pytest summary; interrupted/crashed is not a complete failing gate'
+summary = lines[-1]
+counts = {k: 0 for k in ('failed', 'passed', 'skipped', 'errors', 'xfailed', 'xpassed', 'warnings')}
+counts.update({k: int(n) for n, k in re.findall(r'(\d+) (failed|passed|skipped|errors|xfailed|xpassed|warnings)', summary)})
+failures = {}
+for p in (out / name).glob('failure-*.json'):
+    d = json.loads(p.read_text())
+    assert d['candidate_tree'] == m['candidate_tree']
+    failures.setdefault((d['nodeid'], d['phase']), d)
+assert len(failures) == counts['failed'] + counts['errors'], (len(failures), counts)
+signatures = collections.defaultdict(list)
+for d in failures.values():
+    es = [s[1:].strip() for s in d['longrepr'].splitlines() if s.startswith('E ')]
+    signature = es[-1] if es else 'nonstandard assertion trace; actual full report retained'
+    signatures[signature].append({'nodeid': d['nodeid'], 'phase': d['phase']})
+index = {'status': 'FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE', 'base_commit': m['base_commit'], 'candidate_tree': m['candidate_tree'], 'unique_node_phase_failures': len(failures), 'affected_paths': sorted({d['nodeid'].split('::')[0] for d in failures.values()}), 'signatures': [{'error': k, 'count': len(v), 'cases': v} for k, v in sorted(signatures.items(), key=lambda kv: -len(kv[1]))]}
+(out / (name + '-failure-index.json')).write_text(json.dumps(index, indent=2) + '\n')
+report = {'status': 'COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE', 'base_commit': m['base_commit'], 'candidate_tree': m['candidate_tree'], 'exit_code': result['exit_code'], 'counts': counts, 'summary': summary, 'wall_seconds': result['seconds'], 'source_guards': len(m['source_files']), 'process_identities': len(ids), 'configs': len(m['configs']), 'artifacts': len(m['artifacts']), 'registry': len(m['worktree_availability']), 'available': sum(x['directory_exists'] for x in m['worktree_availability']), 'source_index_import_threads_fixture_custody': 'PASS', 'unique_node_phase_failures': len(failures), 'affected_files': len(index['affected_paths']), 'signature_groups': len(signatures), 'disposition': 'Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional.'}
+(out / (name + '-negative-custody.json')).write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps(report, indent=2))

@@ -1,0 +1,25 @@
+{
+  "name": "pop-causal-red",
+  "exit_code": 1,
+  "seconds": 44.43609881401062,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_reset_seals_retirement_before_population_activation",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r29-pop-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r29-red/pop-causal-red.log",
+  "sha256": "723ff80f4da5e6750cc87a179378eec8911c4d4c282ba5fc1b92c8d53baec74e",
+  "candidate_tree": "d5481fce58bf63de8071ba24ba26dc6dfe0b18ad",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "manifest_sha256": "752dfbeb3162138c543b648afbdf00014b052e9d4b992d5b6ffd8ec2f57058cb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

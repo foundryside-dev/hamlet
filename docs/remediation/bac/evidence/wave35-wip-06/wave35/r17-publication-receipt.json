@@ -1,0 +1,39 @@
+{
+  "status": "PUSHED; exact remote SHA/tree verified; UNRELEASED WIP",
+  "sha": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "tree": "8bf08f02050737324526c453bdc77fbf905c8ecb",
+  "branch": "project-recovery-bac-2026-11-01",
+  "observed_at": "2026-11-10T23:27:36.142Z",
+  "execution_candidate": "b0e3814b982eca65fa8ea3cb0dd7391a97009793",
+  "execution_subtree_equivalence": "PASS",
+  "evidence": "docs/remediation/bac/evidence/wave35-wip-03.json",
+  "artifact_count": 301,
+  "changed_paths": 312,
+  "CI": [
+    {
+      "name": "Lint",
+      "id": 42923434197,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42923434197"
+    },
+    {
+      "name": "Config Validation",
+      "id": 42923434170,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42923434170"
+    },
+    {
+      "name": "Tests",
+      "id": 42923434167,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42923434167"
+    }
+  ],
+  "limits": "No package/whole-BAC release, PR, merge or final CI pass. Owner runner and loss integration fixtures/producers remain required. Original28/38/66 unchanged. No new branch/worktree/checkout/deletion."
+}

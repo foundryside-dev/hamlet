@@ -1,0 +1,24 @@
+{
+  "name": "pop-collection",
+  "exit_code": 0,
+  "seconds": 4.1090381145477295,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r29-collection/pop-collection.log",
+  "sha256": "de2e2b8a212d56b7573e6d6d65badf631f085389e9334eefe1e2fbe3b89e3da6",
+  "candidate_tree": "d5481fce58bf63de8071ba24ba26dc6dfe0b18ad",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "manifest_sha256": "752dfbeb3162138c543b648afbdf00014b052e9d4b992d5b6ffd8ec2f57058cb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

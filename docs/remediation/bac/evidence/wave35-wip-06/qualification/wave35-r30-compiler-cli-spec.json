@@ -1,0 +1,19 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r30-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r30-compiler-cli",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "compiler-cli",
+      "args": [
+        "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py"
+      ]
+    }
+  ],
+  "auxiliary_harness": {
+    "/workspace/bac-review-2026-11-01/qualification/exec_identity_compiler_cli.py": "3dd8d5823288f5b4dd634a3be39f840561822388f2bd6bb4f8d6c81eb6f30665",
+    "/workspace/bac-review-2026-11-01/qualification/compiler_identity_startup/sitecustomize.py": "21fc9c4ab9281ddd25ef5c78b806b67a5b6a2f58d6f93485f23d8eea191760b5"
+  },
+  "scope": "Current C ENV required compiler fleet; all actual wrapper/child source-import-thread identities. No fullrepo/BAC qualification."
+}

@@ -2,8 +2,8 @@
 
 Breaks targeted: publishing before ready, accepting lookalike capabilities, reopening
 retired lanes, performing physics/provider work during retirement, and leaking a
-partly published decision. Real Q/Adam/replay/curriculum owners are constructed,
-but no learner, replay admission or curriculum completion is claimed here.
+partly published decision. Real Q/Adam/replay/curriculum owners are constructed;
+declared component closure uses real sinks, without claiming POP learning/replay.
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ from townlet.curriculum.factory import build_curriculum
 from townlet.environment.vectorized_env import WorldReceiptIssuer
 from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor
 from townlet.training.clock_ledger import ClockLedger, PreparedVectorStep
+from townlet.training.episode import EpisodeCompletion, LaneOutcome, freeze_lane_outcome
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.universe.compiler import UniverseCompiler
 
@@ -78,8 +79,8 @@ def compiled() -> Any:
 class ComponentPopulation:
     """Actual registered component owner with retained issued decision/step custody.
 
-    Unsupported parent-global commit/native requests fail closed. This controller
-    owns a component ClockLedger, not a reconstructed production POP history.
+    Unsupported commit/native requests fail closed. Canonical component boundary
+    commitments own a component ClockLedger, not production POP history.
     """
 
     def __init__(self, compiled: Any):
@@ -110,11 +111,13 @@ class ComponentPopulation:
             training, curriculum_options=effective.options.curriculum, static_policy=effective.static_policy, device=self.device
         )
         self.curriculum.initialize_population(len(IDS))
+        self.curriculum_issuer = WorldReceiptIssuer(owner=self.curriculum)
         policy = resolve_exploration_policy(
             drive_intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0, apply_modifiers=[]),
             training=training,
             options=options,
         )
+        self.policy = policy
         descriptor = WorldCuriosityDescriptor.from_policy(
             policy,
             world_ids=IDS,
@@ -137,6 +140,9 @@ class ComponentPopulation:
         )
         assert self.bank is not None and self.bank is not self.runtime
         self.issuer = WorldReceiptIssuer(owner=self)
+        self.completion_request: Any = None
+        self.committed_batches: dict[int, Any] = {}
+        self.current_epsilons = self.runtime.epsilon_tensor(batch_size=len(IDS), device=self.device)
         self.ledger = ClockLedger()
         self.revision = 0
         self.intent: Any = None
@@ -153,12 +159,12 @@ class ComponentPopulation:
             "population": self,
             "curiosity": self.bank,
             "curriculum": self.curriculum,
-            "exploration": self.runtime,
+            "exploration": self,  # Real component coordinator owns its child commit journal.
             "network": self.q,
             "optimizer": self.optimizer,
             "scheduler": self if self.scheduler is None else self.scheduler,
             "replay": self.replay,
-            "selection": self.runtime,
+            "selection": self,  # Owns actual diagnostic epsilon telemetry supplied below.
         }
         self.authority = self.env.bind_boundary_authority(owner=self, role_owners=self.roles)
         release = self.authority.bootstrap(first_batch_episode=0)
@@ -177,7 +183,10 @@ class ComponentPopulation:
         return self.bank_issuer
 
     def validate_committed_batch(self, *, batch_episode: Any, outcomes: Any) -> None:
-        raise ValueError("ENV component does not own a committed parent-global batch")
+        request = self.completion_request
+        content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, outcomes))
+        if request is None or request != (self.accepted, batch_episode, content):
+            raise ValueError("ENV component does not own this canonical completion request")
 
     def validate_parent_cadence(self, *, cadence: Any, mode: Any, accepted: Any, parent_restore: Any) -> None:
         raise ValueError("ENV component does not install parent-native cadence")
@@ -291,6 +300,7 @@ class ComponentPopulation:
         self.ledger = self.ledger.advance(vector_ticks=1, eligible_transitions=int(info["active_on_entry"].sum()))
         self.current_obs = observations.detach().clone()
         self.completed = dones.detach().clone()
+        info["component_selection_epsilons"] = self.current_epsilons
         return observations, rewards, dones, info, receipts
 
     def prepare_empty_episode_evidence(self, *, accepted: Any) -> Any:
@@ -906,4 +916,326 @@ def test_observation_cleanup_cannot_activate_quarantined_episode(compiled: Any, 
     assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
     assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
     assert rig.activation is None
+    assert_unchanged(rig, before)
+
+
+def test_reading_validator_accepts_genuine_committed_preactivation(compiled: Any) -> None:
+    """Q1 causal RED reaches the absent reading API after genuine reset/decision commit."""
+    rig = ComponentPopulation(compiled)
+    rig.publish(prepare(rig))
+    assert rig.env.world_phase == "active-awaiting-activation" and rig.activation is None
+    before, revision = witness(rig), rig.env._world_revision
+    assert (
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+        is None
+    )
+    assert rig.env.world_phase == "active-awaiting-activation" and rig.env._world_revision == revision
+    assert_unchanged(rig, before)
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    with pytest.raises(ValueError):
+        rig.env.step(torch.zeros(len(IDS), dtype=torch.long), vector_step=PreparedVectorStep())
+
+
+@pytest.mark.parametrize("damage", ["copy_result", "foreign_result", "copy_token", "mutated_record", "predecessor"])
+def test_reading_validator_authenticates_current_private_reading(compiled: Any, damage: str) -> None:
+    rig = activated(compiled)
+    participation, accepted, predecessor = rig.participation, rig.accepted, rig.current_obs.clone()
+    if damage == "copy_result":
+        participation = replace(participation)
+    elif damage == "foreign_result":
+        participation = activated(compiled).participation
+    elif damage == "copy_token":
+        accepted = replace(accepted)
+    elif damage == "mutated_record":
+        fields = participation.payload
+        fields["observation"].add_(1)
+        participation = replace(participation, _payload=fields)
+    else:
+        predecessor.add_(0.25)
+    before, revision = witness(rig), rig.env._world_revision
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=accepted, participation=participation, predecessor=predecessor)
+    assert rig.env._world_revision == revision
+    assert_unchanged(rig, before)
+
+
+@pytest.mark.parametrize("field", ["positions", "meters", "dones", "step_counts"])
+def test_reading_validator_rejects_public_physical_tamper(compiled: Any, field: str) -> None:
+    rig = activated(compiled)
+    value = getattr(rig.env, field)
+    if field == "dones":
+        value[1] = False
+    else:
+        value.reshape(-1)[0] += 1
+    before, revision = witness(rig), rig.env._world_revision
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
+    assert_unchanged(rig, before)
+
+
+def test_reading_validator_cleanup_is_durable(compiled: Any, monkeypatch: Any) -> None:
+    rig = activated(compiled)
+    encode = rig.env._encode_observations
+    abandonments: list[Any] = []
+
+    def encode_then_abandon() -> Any:
+        observation = encode()
+        abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
+        return observation
+
+    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+    before, revision = witness(rig), rig.env._world_revision
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
+    assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
+    assert_unchanged(rig, before)
+
+
+def test_pending_decision_cannot_be_used_as_reading_authority(compiled: Any) -> None:
+    rig = ComponentPopulation(compiled)
+    prepared = prepare(rig)
+    before = witness(rig)
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=prepared, predecessor=rig.current_obs)
+    assert_unchanged(rig, before)
+    rig.publish(prepared)  # A pure refused query must not consume the actual pending decision.
+    equal(rig.env.dones, torch.tensor([False, True]))
+
+
+def test_failed_episode_cannot_use_retained_reading_authority(compiled: Any) -> None:
+    rig = activated(compiled)
+    rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure")
+    before = witness(rig)
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert rig.env.world_phase == "quarantined"
+    assert_unchanged(rig, before)
+
+
+def test_activation_in_progress_refuses_recursive_reading(compiled: Any, monkeypatch: Any) -> None:
+    """The readable preactivation phase must not bypass actual activation's busy fence."""
+    rig = ComponentPopulation(compiled)
+    rig.publish(prepare(rig))
+    encode = rig.env._encode_observations
+    refused: list[bool] = []
+
+    def encode_with_query() -> Any:
+        observation = encode()
+        with pytest.raises(ValueError):
+            rig.env.validate_initial_participation_reading(
+                accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs
+            )
+        refused.append(True)
+        return observation
+
+    monkeypatch.setattr(rig.env, "_encode_observations", encode_with_query)
+    before, revision = witness(rig), rig.env._world_revision
+    rig.activate()
+    assert refused == [True] and rig.env.world_phase == "active"
+    assert rig.env._world_revision == revision
+    assert_unchanged(rig, before)
+
+
+def reading_phase(compiled: Any, phase: str) -> ComponentPopulation:
+    """Earn completed phases through a declared one-step component cap and real sinks."""
+    rig = ComponentPopulation(compiled)
+    rig.publish(prepare(rig))
+    if phase == "active-awaiting-activation":
+        return rig
+    rig.activate()
+    if phase == "active":
+        return rig
+    observations, rewards, _, info, _ = rig.step()
+    equal(rig.env.step_counts, torch.tensor([1, 0]))
+    event = LaneOutcome(
+        outcome=EpisodeCompletion(
+            agent_idx=0,
+            reason="cap",
+            survival_time=1,
+            final_observation=observations[0].detach().cpu().clone(),
+            final_meters=rig.env.meters[0].detach().cpu().clone(),
+        ),
+        batch_episode=rig.accepted.batch_episode,
+        planned_horizon=1,
+        reward_total=float(rewards[0]),
+        reward_extrinsic=float(info["reward_components"]["extrinsic"][0]),
+        reward_intrinsic=float(info["reward_components"]["intrinsic"][0]),
+        reward_shaping=float(info["reward_components"]["shaping"][0]),
+        policy_entropy=0.0,  # The real component control always chooses WAIT, not a Q policy.
+        world_id=IDS[0],
+        world_episode_seq=rig.accepted.world_episode_seqs[0],
+    )
+    outcomes = (event,)
+    content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, outcomes))
+    key = rig.accepted.batch_episode
+    rig.completion_before = owned(rig.runtime.checkpoint_state())
+    curriculum = rig.curriculum.prepare_episode_outcomes(outcomes)
+    bank = rig.runtime.prepare_completion(
+        accepted=rig.accepted, boundary_key=key, completion_content=content, outcomes=outcomes, participated_world_ids=(IDS[0],)
+    )
+    close = rig.env.prepare_episode_close(
+        accepted=rig.accepted,
+        boundary_key=key,
+        completion_content=content,
+        participated_world_ids=(IDS[0],),
+        dispositions=bank.prepared_receipt,
+    )
+    rig.env.freeze_episode_close(close)
+    rig.close_context = (curriculum, bank, close, outcomes, content, key)
+    if phase == "boundary-pending":
+        return rig
+    return finish_reading_close(rig, phase)
+
+
+def finish_reading_close(rig: ComponentPopulation, phase: str) -> ComponentPopulation:
+    curriculum, bank, close, outcomes, content, key = rig.close_context
+    rig.curriculum.commit_prepared_episode_outcomes(curriculum)
+    retirement = rig.runtime.commit_completion(prepared=bank)
+    rig.completion_request = (rig.accepted, key, content)
+    rig.runtime.commit_batch_episode(batch_episode=key, outcomes=outcomes)
+    original_before = rig.completion_before["selector"]["epsilon"]
+    expected_after = max(rig.policy.epsilon_end, original_before * rig.policy.epsilon_decay)
+    published = rig.runtime.checkpoint_state()  # BANK completion is committed; no pending export.
+    assert rig.runtime.epsilon == expected_after
+    equal(
+        published["selector"],
+        {
+            "epsilon": expected_after,
+            "epsilon_min": rig.policy.epsilon_end,
+            "epsilon_decay": rig.policy.epsilon_decay,
+        },
+    )
+    equal(
+        published["cadence"]["last_committed"],
+        {
+            "batch_episode": key,
+            "completion_content": content,
+            "epsilon_before": original_before,
+            "epsilon_after": expected_after,
+        },
+    )
+    rig.runtime.commit_batch_episode(batch_episode=key, outcomes=outcomes)  # Exact supported retry, not another completion.
+    equal(rig.runtime.checkpoint_state(), published)
+    rig.committed_batches[key] = content
+    rig.completed = torch.ones_like(rig.completed)  # Genuine declared component cap finalized A; B was already retired.
+    rig.ledger = rig.ledger.advance(completed_batch_episodes=1)
+    rig.current_epsilons = rig.runtime.epsilon_tensor(batch_size=len(IDS), device=rig.device)
+    equal(rig.current_epsilons, torch.full((len(IDS),), rig.runtime.epsilon, dtype=torch.float32))
+    closure = rig.env.close_episode(close, dispositions=retirement)
+    assert dict(retirement.dispositions)[IDS[1]] == "retired_nonparticipating"
+    if phase == "closed-awaiting-release":
+        return rig
+    fields = {"accepted": rig.accepted, "boundary_key": key, "completion_content": content}
+    effects = rig.issuer.issue(
+        kind="boundary_effects",
+        payload={
+            "batch_episode": key,
+            "accepted_identity": rig.accepted,
+            "completion_content": content,
+            "retirement_receipt": retirement,
+            "curriculum_receipt": rig.curriculum_issuer.issue(kind="curriculum_receipt", payload=fields),
+            **{
+                name: rig.issuer.issue(kind=name, payload=fields)
+                for name in ("exploration_receipt", "population_commit_receipt", "epsilon_install_receipt", "selection_sync_receipt")
+            },
+        },
+    )
+    rig.release = rig.authority.completed(closure=closure, effects=effects)
+    rig.env.install_boundary_release(rig.release)
+    assert phase == "released-completed"
+    return rig
+
+
+@pytest.mark.parametrize("phase", ["active-awaiting-activation", "active", "closed-awaiting-release", "released-completed"])
+def test_reading_validator_preserves_each_genuine_healthy_phase(compiled: Any, monkeypatch: Any, phase: str) -> None:
+    claim, claim_calls = ComponentPopulation.claim_vector_step, []
+
+    def observed_claim(owner: ComponentPopulation, *, prepared: Any, **candidate: Any) -> int:
+        claim_calls.append(prepared)
+        return claim(owner, prepared=prepared, **candidate)
+
+    monkeypatch.setattr(ComponentPopulation, "claim_vector_step", observed_claim)
+    rig = reading_phase(compiled, phase)
+    claim_calls.clear()  # Earned closed phases used their genuine claim before this reading boundary.
+    assert rig.env.world_phase == phase
+    components_before, runtime_before = component_state(rig), rig.runtime.checkpoint_state()
+    before, revision = witness(rig), rig.env._world_revision
+
+    def forbidden_mask(**kwargs: Any) -> Any:
+        raise AssertionError("a pure reading must not recompute action masks")
+
+    monkeypatch.setattr(rig.env.action_mask_builder, "build", forbidden_mask)
+    rig.participation.observation.add_(100)
+    rig.participation.action_masks.fill_(True)
+    for _ in range(2):
+        assert (
+            rig.env.validate_initial_participation_reading(
+                accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs
+            )
+            is None
+        )
+    assert rig.env.world_phase == phase and rig.env._world_revision == revision
+    assert_unchanged(rig, before)
+    equal(component_state(rig), components_before)
+    equal(rig.runtime.checkpoint_state(), runtime_before)
+    if phase != "active":
+        with pytest.raises(ValueError):
+            rig.env.validate_initial_participation(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+        with pytest.raises(ValueError):
+            rig.env.step(torch.zeros(len(IDS), dtype=torch.long), vector_step=PreparedVectorStep())
+    assert claim_calls == []
+
+
+def test_frozen_close_refuses_reading_without_consuming_sink_handles(compiled: Any) -> None:
+    rig = reading_phase(compiled, "boundary-pending")
+    original_context = rig.close_context
+    before = witness(rig)
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert rig.env.world_phase == "boundary-pending"
+    assert_unchanged(rig, before)
+    finish_reading_close(rig, "released-completed")
+    assert rig.close_context is original_context and rig.env.world_phase == "released-completed"
+    assert rig.ledger.completed_batch_episodes == 1
+    assert rig.committed_batches == {original_context[5]: original_context[4]}
+
+
+def test_new_genuine_reset_invalidates_prior_reading_identity(compiled: Any) -> None:
+    rig = reading_phase(compiled, "released-completed")
+    old_participation, old_accepted = rig.participation, rig.accepted
+    reservation = rig.env.prepare_episode(batch_episode=rig.release.next_batch_episode, release=rig.release)
+    reset = rig.env.reset(reservation=reservation)
+    rig.reservation, rig.reset, rig.accepted, rig.current_obs = reservation, reset, reset.accepted, reset.observation
+    rig.participation = rig.activation = None
+    rig.retired = None
+    rig.step_started = False
+    rig.publish(prepare(rig))
+    assert rig.accepted is not old_accepted and rig.accepted.world_episode_seqs == (2, 2)
+    before = witness(rig)
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=old_participation, predecessor=rig.current_obs)
+    rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert_unchanged(rig, before)
+    rig.activate()
+    _, _, _, info, _ = rig.step()
+    equal(info["component_selection_epsilons"], rig.runtime.epsilon_tensor(batch_size=len(IDS), device=rig.device))
+
+
+@pytest.mark.parametrize("damage", ["dtype", "width", "nonfinite"])
+def test_reading_validator_requires_actual_finite_observation_geometry(compiled: Any, damage: str) -> None:
+    rig = activated(compiled)
+    predecessor = rig.current_obs.clone()
+    if damage == "dtype":
+        predecessor = predecessor.to(torch.float64)
+    elif damage == "width":
+        predecessor = predecessor[:, :-1]
+    else:
+        predecessor[0, 0] = float("nan")
+    before, revision = witness(rig), rig.env._world_revision
+    with pytest.raises(ValueError):
+        rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=predecessor)
+    assert rig.env._world_revision == revision and rig.env.world_phase == "active"
     assert_unchanged(rig, before)

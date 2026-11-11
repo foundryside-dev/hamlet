@@ -1,0 +1,35 @@
+{
+  "status": "PUSHED_EXACT_SHA_TREE_VERIFIED_UNRELEASED_WIP",
+  "sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "tree": "cad40c9dcff0f5e04ba4758ea43ad9ea7b4d26c2",
+  "branch": "project-recovery-bac-2026-11-01",
+  "observed_utc": "2026-11-10 19:47:33 UTC",
+  "ci": [
+    {
+      "name": "Tests",
+      "id": 42888279948,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42888279948"
+    },
+    {
+      "name": "Config Validation",
+      "id": 42888280047,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42888280047"
+    },
+    {
+      "name": "Lint",
+      "id": 42888280323,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42888280323"
+    }
+  ],
+  "remaining": "CurrentRWC/parent/worldcaller/native/replay/fullqualification required;28qualified38remaining66total unchanged",
+  "no_new_project_branch_worktree_checkout": true
+}

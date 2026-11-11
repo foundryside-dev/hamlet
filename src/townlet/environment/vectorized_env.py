@@ -2596,6 +2596,19 @@ class VectorizedHamletEnv:
     ) -> None:
         """Authenticate current sealed activity/physical reading before parent effects."""
         self._require_phase("active")
+        self._validate_participation_reading(accepted=accepted, participation=participation, predecessor=predecessor)
+
+    def validate_initial_participation_reading(
+        self, *, accepted: WorldAcceptedEpisode, participation: WorldRecord, predecessor: torch.Tensor
+    ) -> None:
+        """Validate retained observation custody for a query, without opening physics."""
+        self._require_phase("active-awaiting-activation", "active", "closed-awaiting-release", "released-completed")
+        self._validate_participation_reading(accepted=accepted, participation=participation, predecessor=predecessor)
+
+    def _validate_participation_reading(
+        self, *, accepted: WorldAcceptedEpisode, participation: WorldRecord, predecessor: torch.Tensor
+    ) -> None:
+        """Shared non-issuing read; public wrappers retain their fixed phase policies."""
         self._accepted(accepted)
         self._valid_record(participation, "initial_participation")
         committed = self._participation_committed

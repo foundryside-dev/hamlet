@@ -1,0 +1,74 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 57 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_initial_participation_population.py>
+            <Function test_reset_seals_retirement_before_population_activation>
+            <Function test_decision_preserves_state_and_equal_reset_cannot_reopen_it>
+            <Function test_actual_a_learning_replay_private_b_and_next_cycle>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[observation-step]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[observation-greedy]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[observation-0.5]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[observation-prepare]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[observation-claim]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[activity-step]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[activity-greedy]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[activity-0.5]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[activity-prepare]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[activity-claim]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[counts-step]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[counts-greedy]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[counts-0.5]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[counts-prepare]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[counts-claim]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[physical-step]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[physical-greedy]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[physical-0.5]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[physical-prepare]>
+            <Function test_owned_corruption_refuses_before_q_replay_curriculum_rng[physical-claim]>
+            <Function test_unowned_inference_preserves_legal_actions_q_display_and_lifetime[greedy]>
+            <Function test_unowned_inference_preserves_legal_actions_q_display_and_lifetime[0.0]>
+            <Function test_unowned_inference_preserves_legal_actions_q_display_and_lifetime[1.0]>
+            <Function test_unowned_inference_preserves_legal_actions_q_display_and_lifetime[0.5]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[greedy-False]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[greedy-True]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[0.0-False]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[0.0-True]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[1.0-False]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[1.0-True]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[0.5-False]>
+            <Function test_compatible_foreign_masks_keep_their_effect_without_changing_episode_authority[0.5-True]>
+            <Function test_owned_reading_survives_healthy_phases_without_granting_physics[greedy]>
+            <Function test_owned_reading_survives_healthy_phases_without_granting_physics[0.5]>
+            <Function test_pending_and_failed_custody_cannot_use_unowned_inference[reset]>
+            <Function test_pending_and_failed_custody_cannot_use_unowned_inference[finalization]>
+            <Function test_pending_and_failed_custody_cannot_use_unowned_inference[prepared_step]>
+            <Function test_pending_and_failed_custody_cannot_use_unowned_inference[close_frozen]>
+            <Function test_pending_and_failed_custody_cannot_use_unowned_inference[failed]>
+            <Function test_postpublication_activation_failure_quarantines_without_reusable_reset>
+            <Function test_mutating_foreign_mask_callback_stops_selection_after_its_real_q_effects[greedy]>
+            <Function test_mutating_foreign_mask_callback_stops_selection_after_its_real_q_effects[0.5]>
+            <Function test_current_initial_boundary_restore_does_not_import_live_decision_authority>
+            <Function test_public_epsilon_preserves_existing_helper_arguments_results_and_draws[0.0]>
+            <Function test_public_epsilon_preserves_existing_helper_arguments_results_and_draws[0.5]>
+            <Function test_public_epsilon_preserves_existing_helper_arguments_results_and_draws[1.0]>
+            <Function test_reading_identity_refuses_copies_foreign_records_and_stale_generation>
+            <Function test_native_install_custody_blocks_unowned_selector_reentry>
+            <Function test_reset_prepublication_state_mutation_fails_closed_without_an_activation>
+            <Function test_recurrent_reading_keeps_one_forward_hidden_advance_and_q_display[greedy-False]>
+            <Function test_recurrent_reading_keeps_one_forward_hidden_advance_and_q_display[greedy-True]>
+            <Function test_recurrent_reading_keeps_one_forward_hidden_advance_and_q_display[0.5-False]>
+            <Function test_recurrent_reading_keeps_one_forward_hidden_advance_and_q_display[0.5-True]>
+            <Function test_whole_retirement_uses_genuine_empty_owner_proofs_and_abandonment>
+
+========================= 57 tests collected in 0.19s ==========================

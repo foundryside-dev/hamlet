@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "candidate_tree": "802ae5dbdc1e58ca6ba2ec83a4a8dae6a703e01c",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: VectorizedPopulation.reset() got an unexpected keyword argument 'retired_world_ids'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_reset_seals_retirement_before_population_activation",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

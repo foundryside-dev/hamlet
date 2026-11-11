@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_accepts_genuine_committed_preactivation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_reading_validator_accepts_genuine_committed_preactivation(compiled: Any) -> None:\n        \"\"\"Q1 causal RED reaches the absent reading API after genuine reset/decision commit.\"\"\"\n        rig = ComponentPopulation(compiled)\n        rig.publish(prepare(rig))\n        assert rig.env.world_phase == \"active-awaiting-activation\" and rig.activation is None\n        before, revision = witness(rig), rig.env._world_revision\n        assert (\n>           rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            is None\n        )\nE       AttributeError: 'VectorizedHamletEnv' object has no attribute 'validate_initial_participation_reading'. Did you mean: 'validate_initial_participation'?\n\ntests/test_townlet/regressions/bac/test_initial_participation_env.py:928: AttributeError",
+  "candidate_tree": "8d909f5d7c2b6f94e8b13eb62eb65b737e1101d5"
+}

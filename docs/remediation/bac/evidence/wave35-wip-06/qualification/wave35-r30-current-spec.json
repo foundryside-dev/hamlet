@@ -1,0 +1,43 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r30-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r30-current",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "component",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r30-component"
+      ]
+    },
+    {
+      "name": "coherent-owners",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+        "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r30-coherent-owners"
+      ]
+    }
+  ]
+}

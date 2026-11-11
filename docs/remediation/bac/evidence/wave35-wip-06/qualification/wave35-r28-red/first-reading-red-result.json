@@ -1,0 +1,25 @@
+{
+  "name": "first-reading-red",
+  "exit_code": 1,
+  "seconds": 9.686233282089233,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_accepts_genuine_committed_preactivation",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r28-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r28-red/first-reading-red.log",
+  "sha256": "68431f8547b9aa7d7c6e0d69dd7ab0bcb3c8bd551b176f122fa1ae814780a20d",
+  "candidate_tree": "8d909f5d7c2b6f94e8b13eb62eb65b737e1101d5",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "manifest_sha256": "d92c00c50fe34598a8510a1ee5c0df0b32c84405b1965f94f0fbe0f541902d79",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

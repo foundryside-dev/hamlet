@@ -1,0 +1,25 @@
+{
+  "name": "env-causal-red",
+  "exit_code": 1,
+  "seconds": 43.28624773025513,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_accepts_genuine_committed_preactivation",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r29-env-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r29-red/env-causal-red.log",
+  "sha256": "32d5be1e7b82d71883e634b48b9db329813486acb1db36ec6ab1d40bfbaff920",
+  "candidate_tree": "d5481fce58bf63de8071ba24ba26dc6dfe0b18ad",
+  "base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "manifest_sha256": "752dfbeb3162138c543b648afbdf00014b052e9d4b992d5b6ffd8ec2f57058cb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

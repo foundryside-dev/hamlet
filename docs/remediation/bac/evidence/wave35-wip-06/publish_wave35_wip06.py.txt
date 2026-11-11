@@ -1,0 +1,120 @@
+"""Publish qualified R30 ENV reading proof; retain all larger BAC obligations."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave35/r30-candidate.json').read_text())
+receipt = json.loads((W / 'wave35/r30-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['status'] == 'UNRELEASED WIP; no package or repository release'
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+for key, count in (('root_component', 80), ('independent_component', 80), ('coherent_owners', 293)):
+    proof = receipt[key]
+    assert proof['exit_code'] == 0 and proof['counts']['passed'] == count
+    assert proof['source_index_import_threads_fixture_custody'] == 'PASS'
+assert receipt['compiler_cli']['packs'] == 34 and receipt['compiler_cli']['process_identities'] == 35
+assert receipt['static']['all_passed'] is False
+for row in receipt['documents'].values():
+    assert sha(W / row['draft']) == row['sha256'], row['draft']
+    assert sha(R / row['target']) == row['prior_sha256'], row['target']
+for path, digest in receipt['review_sha256'].items():
+    assert sha(W / path) == digest, path
+assert sha(W / receipt['author_report']) == receipt['author_report_sha256']
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p)
+             for p in ('src', 'tests', 'configs', 'scripts', '.defaults-ratchet')}
+out = D / 'evidence/wave35-wip-06'
+mp = D / 'evidence/wave35-wip-06.json'
+assert not out.exists() and not mp.exists()
+out.mkdir()
+artifacts = {}
+
+
+def copy(source, target):
+    assert source.is_file() and not target.exists(), str(target)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+    assert sha(source) == sha(target)
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': sha(target), 'original': str(source)}
+
+
+for p in sorted(Q.glob('wave35-r*')):
+    match = re.match(r'wave35-r([0-9]+)(?:-|$)', p.name)
+    if match is None or not 27 <= int(match.group(1)) <= 30:
+        continue
+    if p.is_dir():
+        for f in sorted(p.rglob('*')):
+            if f.is_file() and f.suffix in ('.json', '.log'):
+                copy(f, out / 'qualification' / p.name / f.relative_to(p))
+    elif p.suffix == '.json':
+        copy(p, out / 'qualification' / p.name)
+for folder in ('wave35', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'verify_bac_failed_run.py',
+             'verify_bac_static_run.py', 'run_bac_packet_checks_locked.py', 'bac_source_identity.py',
+             'exec_identity_compiler_cli.py', 'verify_bac_compiler_cli_run.py', 'publish_wave35_wip06.py'):
+    copy(Q / name, out / (name + '.txt'))
+copy(Q / 'compiler_identity_startup/sitecustomize.py', out / 'compiler_identity_startup/sitecustomize.py.txt')
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+for key, row in receipt['documents'].items():
+    source, target = W / row['draft'], R / row['target']
+    copy(target, out / ('previous-' + key + '-contract.md'))
+    target.write_bytes(source.read_bytes())
+    assert sha(target) == row['sha256']
+    artifacts[row['target']] = {'sha256': sha(target), 'original': str(source), 'prior_sha256': row['prior_sha256']}
+status = D / 'STATUS.md'
+before_status = status.read_text()
+assert before_status.startswith('# BAC implementation status\n')
+current = """
+
+Latest checkpoint: the ENV initial-participation API now includes a source-verified pure reading validator for healthy preactivation, active, closed-awaiting-release and released-completed states at tested candidate `1f86a18c49747607e6b8a10e2fc8719aa15a0cc9`. The original training validator stays active-only; reading grants no execution rights. Exact private decision/current accepted/reset/generation/status/count/physical predecessor custody and durable postcallback quarantine remain required. This is **unreleased work in progress**: **28 qualified / 38 remaining / 66 total** is unchanged. The [checkpoint evidence](evidence/wave35-wip-06.json) and [current four-API contract](CURRENT-INITIAL-PARTICIPATION-CONTRACT.md) record the qualified component and remaining integration.
+
+Root's 80 component cases and independent Astra's same 80 passed; these are not 160 unique cases, and the first core case overlaps. The separate 293-case owner selection passed (ENV31, parent47, model-native61, nonmodel-native154). Tests earn genuine component completion, verify exact EPS/canonical cadence before effects, and prove the same pending completion handles remain usable after a refused frozen-close reading. Both authored-evidence P2 repairs and actual whole-source/specification/quality/API truth reviews are approved. The 34-pack compiler fleet passed with all 35 actual process identities, each checking 804 source guards, 573 configurations and 13 artifacts. Named pytest executions have full controller/index/import/thread/source/configuration/artifact/14-registry MAIN1 custody. Global Ruff, Black, expression documentation and unchanged 600 defaults guard pass. Mypy still fails with six required existing oracle-driver errors; global gates are not all green. CUDA remains unavailable and unqualified.
+
+Actual POP retired-reset consumption, private pre-Q participation authority and additional owned-episode public-selector checks are not implemented yet. Its repaired 66-case authored suite collected and has independent assertion/design approval, but the required reset keyword remains a genuine causal RED; no learning/replay/mixed-closure/next-cycle execution is claimed for that consumer. Existing unowned/completed/compatible foreign-mask inference remains required and must be preserved. Old world-lifecycle _Run and separate shared fx.Rig need genuine current protocol migration before their failed owner selection is repeated. R0 RNG admission/CPU Adam proof, BANK/CP epochs/history/reset provenance, native correlation/stable-owner full D/E/F, ordinary runner/serving/current mechanics/oracle, all-family/scope/manual controls and the remaining finite packages stay required. Full/default, coverage at least 70%, slow/applicable hardware, learning/end-to-end evidence, 54 requirements, 22 fresh final review lenses plus synthesis, exact-final-remote CI and source-verified documentation remain owed. No new general active zero-tick simulator continuation or process-cohort exact restore is made a closure prerequisite. Earlier entries below are historical checkpoints.
+"""
+status.write_text('# BAC implementation status' + current + before_status[len('# BAC implementation status'):])
+manifest = {'status': receipt['status'], 'packet': 'Pure retained initial-participation reading with active-only execution authority',
+            'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+            'execution_subtrees': execution, 'inventories': m['inventories'], 'source_files': m['source_files'],
+            'config_changes': m['config_changes'], 'receipt': receipt, 'artifacts': artifacts,
+            'qualified_progress': '28 original packages qualified,38 remaining,66 total unchanged; actual POP/native/current caller/final gates required.',
+            'publication': 'Existing authorized remote branch only; no new branch/worktree/checkout/source copy/PR/merge/deletion; private bundle excluded.',
+            'next': 'Actual POP consumer/learning/replay/mixed closure and current fixtures, RNG/BANK/CP/native/runner/mechanics/final gates.'}
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+subprocess.run(['git', 'add', '-f', '--', *artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md'], cwd=R, check=True)
+tree = git('write-tree')
+for path, digest in execution.items():
+    assert git('rev-parse', tree + ':' + path) == digest, path
+allowed_prose = {'docs/remediation/bac/STATUS.md', 'docs/remediation/bac/CURRENT-INITIAL-PARTICIPATION-CONTRACT.md'}
+for path, digest in m['source_files'].items():
+    if path not in allowed_prose:
+        assert sha(R / path) == digest, path
+for path, row in artifacts.items():
+    assert sha(R / path) == row['sha256'], path
+staged = git('diff', '--cached', '--name-only').splitlines()
+assert set(staged) == set(m['changed_paths']) | set(artifacts) | {mp.relative_to(R).as_posix(), 'docs/remediation/bac/STATUS.md'}
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave35-wip-06/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree,
+          'source_equivalence': 'PASS exact src/tests/configs/scripts/ratchet; only approved CURRENT contract and STATUS prose differ among guarded paths',
+          'artifact_count': len(artifacts), 'staged_paths': staged}
+(Q / 'wave35-wip-06-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

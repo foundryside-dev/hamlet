@@ -1,0 +1,151 @@
+diff --git a/src/townlet/exploration/epsilon_greedy.py b/src/townlet/exploration/epsilon_greedy.py
+index 2d315733..565de3d4 100644
+--- a/src/townlet/exploration/epsilon_greedy.py
++++ b/src/townlet/exploration/epsilon_greedy.py
+@@ -21,7 +21,7 @@ from townlet.training.state import BatchedAgentState
+ 
+ @dataclass(slots=True)
+ class _PreparedEpsilon:
+-    owner: EpsilonGreedyExploration
++    owner: NoneExploration
+     epsilon: float
+     decay: float
+     minimum: float
+@@ -141,8 +141,18 @@ class EpsilonGreedyExploration(ExplorationStrategy):
+ 
+     def load_state(self, state: dict[str, Any]) -> None:
+         """Restore the diagnostic triple, including explicit base-class callers."""
+-        prepared = EpsilonGreedyExploration.prepare_state(self, state)
+-        EpsilonGreedyExploration.install_state(self, prepared)
++        epsilon, decay, minimum = _diagnostics(state)
++        self.epsilon = epsilon
++        self.epsilon_decay = decay
++        self.epsilon_min = minimum
++
++
++class NoneExploration(EpsilonGreedyExploration):
++    """Concrete no-novelty backend with its own native preparation contract.
++
++    Global selectors and other diagnostic subclasses share EPS behavior without
++    inheriting this family's opaque prepared-state or reset signatures.
++    """
+ 
+     def prepare_state(self, state: dict[str, Any]) -> _PreparedEpsilon:
+         """Validate finite diagnostic transport off-side, without policy bounds."""
+@@ -158,10 +168,10 @@ class EpsilonGreedyExploration(ExplorationStrategy):
+         self.epsilon_min = prepared.minimum
+         prepared.used = True
+ 
+-    def prepare_learning_reset(self, *, fresh: EpsilonGreedyExploration) -> _PreparedEpsilon:
++    def prepare_learning_reset(self, *, fresh: NoneExploration) -> _PreparedEpsilon:
+         """Retain diagnostics for genuine none; the outer owner qualifies freshness."""
+-        if type(self) is not EpsilonGreedyExploration or type(fresh) is not EpsilonGreedyExploration or fresh is self:
+-            raise ValueError("none reset requires distinct exact epsilon-greedy family owners")
++        if type(self) is not NoneExploration or type(fresh) is not NoneExploration or fresh is self:
++            raise ValueError("none reset requires distinct exact none family owners")
+         epsilon, decay, minimum = _diagnostics(self.checkpoint_state())
+         start, fresh_decay, fresh_minimum = _diagnostics(fresh.checkpoint_state())
+         if decay != fresh_decay or minimum != fresh_minimum or not minimum <= epsilon <= start:
+diff --git a/src/townlet/exploration/provider_factory.py b/src/townlet/exploration/provider_factory.py
+index c7355c68..4a8e5b8a 100644
+--- a/src/townlet/exploration/provider_factory.py
++++ b/src/townlet/exploration/provider_factory.py
+@@ -9,7 +9,7 @@ from townlet.config.exploration_policy import ResolvedExplorationPolicy
+ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+ from townlet.exploration.base import ExplorationStrategy
+ from townlet.exploration.count_based import CountExploration
+-from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
++from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration, NoneExploration
+ from townlet.exploration.icm import ICMExploration
+ from townlet.exploration.rnd import RNDExploration
+ from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
+@@ -86,7 +86,7 @@ def make_backend(
+         rng.validate_binding(descriptor=expected_descriptor, world_id=world_id, cuda_devices=cuda_devices)
+ 
+     if policy.strategy == "none":
+-        return make_policy_selector(policy)
++        return NoneExploration(epsilon=policy.epsilon_start, epsilon_decay=policy.epsilon_decay, epsilon_min=policy.epsilon_end)
+     parameters = policy.provider_parameters
+     if policy.strategy == "count_based":
+         return CountExploration(
+diff --git a/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py b/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py
+index 18ccada2..4621f971 100644
+--- a/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py
++++ b/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py
+@@ -21,8 +21,8 @@ from townlet.config.bac_options import BaCOptions
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+ from townlet.config.exploration_policy import resolve_exploration_policy
+ from townlet.exploration.count_based import CountExploration
+-from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+-from townlet.exploration.provider_factory import make_backend
++from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration, NoneExploration
++from townlet.exploration.provider_factory import make_backend, make_policy_selector
+ 
+ SCOPES = ("shared", "per_world")
+ FAMILIES = ("count_based", "none")
+@@ -97,11 +97,9 @@ def _new(compiled, family, scope):
+             device="cpu",
+         )
+     else:
+-        backend = EpsilonGreedyExploration(
+-            epsilon=selected.epsilon_start, epsilon_decay=selected.epsilon_decay, epsilon_min=selected.epsilon_end
+-        )
++        backend = NoneExploration(epsilon=selected.epsilon_start, epsilon_decay=selected.epsilon_decay, epsilon_min=selected.epsilon_end)
+     _unchanged_rng(before)
+-    assert type(backend) is (CountExploration if family == "count_based" else EpsilonGreedyExploration)
++    assert type(backend) is (CountExploration if family == "count_based" else NoneExploration)
+     return backend
+ 
+ 
+@@ -291,7 +289,7 @@ def test_reset_refuses_before_mutating_either_real_native(compiled, family, scop
+     elif bad == "subclass":
+         if family == "none":
+ 
+-            class Derived(EpsilonGreedyExploration):
++            class Derived(NoneExploration):
+                 pass
+ 
+             fresh = Derived(epsilon=fresh.epsilon, epsilon_decay=fresh.epsilon_decay, epsilon_min=fresh.epsilon_min)
+@@ -514,7 +512,7 @@ def test_private_factory_rejects_missing_ownership_before_construction(compiled,
+ def test_eps_exact_transport_preserves_finite_values_outside_reset_policy_bounds(epsilon, decay, minimum):
+     # Existing finite native transport is distinct from qualified selected reset.
+     source = EpsilonGreedyExploration(epsilon=epsilon, epsilon_decay=decay, epsilon_min=minimum)
+-    target = EpsilonGreedyExploration(epsilon=1.0, epsilon_decay=0.9, epsilon_min=0.1)
++    target = NoneExploration(epsilon=1.0, epsilon_decay=0.9, epsilon_min=0.1)
+     state = {"epsilon": epsilon, "epsilon_decay": decay, "epsilon_min": minimum}
+     rng = _ambient()
+     prepared = target.prepare_state(state)
+@@ -524,3 +522,33 @@ def test_eps_exact_transport_preserves_finite_values_outside_reset_policy_bounds
+     source.load_state(state)
+     _unchanged_rng(rng)
+     _equal(source.checkpoint_state(), state)
++
++
++@pytest.mark.parametrize("scope", SCOPES)
++def test_selector_stays_plain_eps_and_native_families_keep_diagnostic_inheritance(compiled, scope):
++    selected = selected_policy(compiled, "none", scope, "paced_fifo")
++    rng = _ambient()
++    selector = make_policy_selector(selected)
++    _unchanged_rng(rng)
++    assert type(selector) is EpsilonGreedyExploration
++    native = _new(compiled, "none", scope)
++    assert type(native) is NoneExploration and isinstance(native, EpsilonGreedyExploration)
++    count = _new(compiled, "count_based", scope)
++    assert isinstance(count, EpsilonGreedyExploration)
++    _learn_count(count)
++    count_before = count.checkpoint_state()
++    marker = object()
++    native.marker = marker
++    diagnostics = {"epsilon": selected.epsilon_start, "epsilon_decay": selected.epsilon_decay, "epsilon_min": selected.epsilon_end}
++    diagnostics["epsilon"] = max(selected.epsilon_end, selected.epsilon_start * selected.epsilon_decay)
++    rng = _ambient()
++    EpsilonGreedyExploration.load_state(count, diagnostics)
++    EpsilonGreedyExploration.load_state(native, diagnostics)
++    selector.load_state(diagnostics)
++    _unchanged_rng(rng)
++    _equal(selector.checkpoint_state(), diagnostics)
++    _equal(native.checkpoint_state(), diagnostics)
++    assert native.marker is marker
++    count_after = count.checkpoint_state()
++    _equal({key: count_after[key] for key in EPS_KEYS}, diagnostics)
++    _equal({key: count_after[key] for key in COUNT_KEYS - EPS_KEYS}, {key: count_before[key] for key in COUNT_KEYS - EPS_KEYS})

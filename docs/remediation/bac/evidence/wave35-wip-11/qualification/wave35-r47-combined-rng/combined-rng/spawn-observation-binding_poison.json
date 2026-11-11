@@ -1,0 +1,8 @@
+{
+  "exitcode": 0,
+  "manifest_sha256": "19ceda5fe9ffcfbd6ef69f8a1113b4cc9e67e01469608621dc728fecf21c6383",
+  "message": "binding poison fail closed",
+  "process_pid": 195878,
+  "qualified": true,
+  "queued_pid": 195878
+}

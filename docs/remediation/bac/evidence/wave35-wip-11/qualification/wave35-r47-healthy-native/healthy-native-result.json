@@ -1,0 +1,24 @@
+{
+  "name": "healthy-native",
+  "exit_code": 0,
+  "seconds": 5.579748630523682,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r47-healthy-native/healthy-native.log",
+  "sha256": "418ae43650c1e8aa267f2e9c4d86330a8496154b676e04e2ef49a2084e534064",
+  "candidate_tree": "8828819d905559e02f1865c768609c0acd66b139",
+  "base_commit": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+  "manifest_sha256": "19ceda5fe9ffcfbd6ef69f8a1113b4cc9e67e01469608621dc728fecf21c6383",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

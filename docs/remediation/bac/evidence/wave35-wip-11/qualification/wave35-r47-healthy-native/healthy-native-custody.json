@@ -1,0 +1,22 @@
+{
+  "job": "healthy-native",
+  "base_commit": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+  "candidate_tree": "8828819d905559e02f1865c768609c0acd66b139",
+  "exit_code": 0,
+  "counts": {
+    "passed": 3,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 5.579748630523682,
+  "source_guards": 809,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

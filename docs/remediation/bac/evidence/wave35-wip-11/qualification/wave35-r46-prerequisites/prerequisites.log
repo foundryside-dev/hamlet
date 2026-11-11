@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 8 items
+
+tests/test_townlet/regressions/bac/test_pw_rng_binding.py .              [ 12%]
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py F
+
+=================================== FAILURES ===================================
+________________ test_private_rng_restores_global_streams[rnd] _________________
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_private_rng_restores_global_streams(kind):
+        # Genuine shared and private learning use their explicitly selected clocks.
+        native = _factory(kind, service_clock_unit="vector_tick")(None)
+        before = copy.deepcopy(native.checkpoint_state())
+        native_sources = type("Sources", (), {"python": random, "numpy": np.random.default_rng(13)})()
+        _, reward, after = _exercise(native, native_sources, 2, 0, clock=ws.ServiceClock("vector_tick", 0))
+        assert torch.isfinite(reward).all()
+>       _assert_learning(before, after, kind, 1, 0)
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:296: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+before = {'embed_dim': 4, 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon_min': 0.01, ...}
+after = {'embed_dim': 4, 'epsilon': 1.0, 'epsilon_decay': 0.995, 'epsilon_min': 0.01, ...}
+kind = 'rnd', updates = 1, pending = 0
+
+    def _assert_learning(before, after, kind, updates, pending):
+        old, new = _rnd_state(_learning_snapshot(before), kind), _rnd_state(_learning_snapshot(after), kind)
+>       assert new["schema"] == ("icm-state-v2" if kind == "icm" else "rnd-state-v2")
+E       AssertionError: assert 'rnd-state-v3' == 'rnd-state-v2'
+E         
+E         - rnd-state-v2
+E         ?            ^
+E         + rnd-state-v3
+E         ?            ^
+
+tests/test_townlet/regressions/bac/test_pw_rng_domains.py:222: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+========================= 1 failed, 1 passed in 1.64s ==========================

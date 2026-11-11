@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r47-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r47-healthy-native",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "healthy-native",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x"
+      ]
+    }
+  ]
+}

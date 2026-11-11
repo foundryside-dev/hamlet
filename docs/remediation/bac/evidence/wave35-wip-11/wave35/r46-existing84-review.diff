@@ -1,0 +1,1185 @@
+diff --git a/tests/test_townlet/regressions/bac/test_pw_rng_binding.py b/tests/test_townlet/regressions/bac/test_pw_rng_binding.py
+index dc1d5558..8341e14c 100644
+--- a/tests/test_townlet/regressions/bac/test_pw_rng_binding.py
++++ b/tests/test_townlet/regressions/bac/test_pw_rng_binding.py
+@@ -1,30 +1,36 @@
+ """Public binding preflight must compose with real owned construction without draws."""
+ 
+ from __future__ import annotations
+ 
++import hashlib
++import json
++import os
+ import random
++import subprocess
++import sys
+ from collections.abc import Mapping
+ from copy import copy, deepcopy
+ from dataclasses import replace
+ from pathlib import Path
+ from typing import Any
+ 
+ import numpy as np
+ import pytest
+ import torch
+ import yaml
+ 
+ from townlet.config.bac_options import BaCOptions
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+ from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
+ from townlet.config.training_v2_config import TrainingV2Config
++from townlet.exploration import rng_custody
+ from townlet.exploration import world_curiosity_state as world_state
+ from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+ from townlet.exploration.world_curiosity_state import (
+     WORLD_SEED_COMPONENTS,
+     OwnedWorldBackend,
+     WorldCuriosityDescriptor,
+     WorldRNGState,
+     derive_world_seed,
+ )
+ 
+@@ -95,67 +101,67 @@ def test_binding_fixture_prerequisite(binding: tuple[Any, ...]) -> None:
+     policy, descriptor, rng = binding
+     assert policy.strategy == "none" and policy.curiosity_scope == "per_world"
+     assert WorldCuriosityDescriptor.from_dict(descriptor.to_dict()) == descriptor
+     before = rng.snapshot()
+     ambient = _ambient(())
+     candidates = []
+ 
+     def factory(candidate: WorldRNGState) -> EpsilonGreedyExploration:
+         assert candidate is not rng
+         candidates.append(candidate)
+-        with pytest.raises(RuntimeError, match="quiescent"):
++        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
+             candidate.snapshot()
+-        with pytest.raises(RuntimeError, match="quiescent"):
++        with pytest.raises(RuntimeError, match="^RNG membership requires exclusive idle custody$"):
+             WorldRNGState.from_snapshot(before, descriptor=descriptor, world_id="world-A", cuda_devices=())
+         return _backend(policy)
+ 
+     owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+     assert len(candidates) == 1
+-    _same(owner.snapshot()["rng"], before)
++    _same(owner.snapshot(lineage=None)["rng"], before)
+     _same(rng.snapshot(), before)
+     _same(_ambient(()), ambient)
+ 
+ 
+ def test_binding_inside_actual_owned_constructor(binding: tuple[Any, ...]) -> None:
+     policy, descriptor, rng = binding
+     before = rng.snapshot()
+     ambient = _ambient(())
+     candidates = []
+ 
+     def factory(candidate: WorldRNGState) -> EpsilonGreedyExploration:
+         assert candidate is not rng
+         candidates.append(candidate)
+         installed = _ambient(())
+         _validate(candidate, descriptor, "world-A", ())
+         _same(_ambient(()), installed)
+         return _backend(policy)
+ 
+     owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+     assert len(candidates) == 1
+-    _same(owner.snapshot()["rng"], before)
++    _same(owner.snapshot(lineage=None)["rng"], before)
+     _same(rng.snapshot(), before)
+     _same(_ambient(()), ambient)
+ 
+ 
+ @pytest.mark.parametrize("component", WORLD_SEED_COMPONENTS)
+ def test_binding_read_preserves_every_stream(binding: tuple[Any, ...], component: str) -> None:
+     _, descriptor, rng = binding
+     before = rng.snapshot()
+     ambient = _ambient(())
+     _validate(rng, descriptor, "world-A", ())
+     with rng.activate(component) as sources:
+         installed = _ambient(())
+         pcg = deepcopy(sources.numpy.bit_generator.state)
+         _validate(rng, descriptor, "world-A", ())
+         _same(sources.numpy.bit_generator.state, pcg)
+         _same(_ambient(()), installed)
+-        with pytest.raises(RuntimeError, match="quiescent"):
++        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
+             rng.snapshot()
+     _same(rng.snapshot(), before)
+     _same(_ambient(()), ambient)
+ 
+ 
+ def test_binding_preserves_actual_candidate_domain_draws(binding: tuple[Any, ...]) -> None:
+     policy, descriptor, rng = binding
+     before = rng.snapshot()
+     ambient = _ambient(())
+     seen = []
+@@ -166,21 +172,21 @@ def test_binding_preserves_actual_candidate_domain_draws(binding: tuple[Any, ...
+         for component in WORLD_SEED_COMPONENTS:
+             with candidate.activate(component) as sources:
+                 _validate(candidate, descriptor, "world-A", ())
+                 torch.rand(2)
+                 sources.python.random()
+                 sources.numpy.random()
+                 np.random.random()
+         return _backend(policy)
+ 
+     owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+-    after = owner.snapshot()["rng"]
++    after = owner.snapshot(lineage=None)["rng"]
+     _same(after, seen[0].snapshot())
+     for component in WORLD_SEED_COMPONENTS:
+         assert not torch.equal(after["components"][component]["torch_cpu"], before["components"][component]["torch_cpu"])
+     _same(rng.snapshot(), before)
+     _same(_ambient(()), ambient)
+ 
+ 
+ @pytest.mark.parametrize("ids", [("world-B", "world-A"), ("spectator", "world-A"), ("world-A",)])
+ def test_binding_ignores_spectator_roster_and_order(binding: tuple[Any, ...], ids: tuple[str, ...]) -> None:
+     policy, _, rng = binding
+@@ -192,23 +198,23 @@ def test_binding_ignores_spectator_roster_and_order(binding: tuple[Any, ...], id
+     _same(rng.snapshot(), before)
+ 
+ 
+ def test_binding_rejects_other_owner_inside_activation(binding: tuple[Any, ...]) -> None:
+     _, descriptor, rng = binding
+     other = WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
+     before = other.snapshot()
+     with rng.activate("model_init"):
+         _validate(rng, descriptor, "world-A", ())
+         installed = _ambient(())
+-        with pytest.raises(RuntimeError, match="[Cc]ross-owner"):
++        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
+             _validate(other, descriptor, "world-A", ())
+-        with pytest.raises(RuntimeError, match="[Cc]ross-owner"):
++        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
+             with other.activate("service"):
+                 pytest.fail("different owner was activated")
+         _same(_ambient(()), installed)
+     _same(other.snapshot(), before)
+ 
+ 
+ @pytest.mark.parametrize(
+     "probe",
+     [
+         "id",
+@@ -321,21 +327,21 @@ def test_binding_refuses_broken_owner(binding: tuple[Any, ...], monkeypatch: pyt
+     ambient = _ambient(())
+ 
+     def fail_capture() -> Any:
+         raise RuntimeError("injected capture failure")
+ 
+     with monkeypatch.context() as patch:
+         patch.setattr(torch, "get_rng_state", fail_capture)
+         with pytest.raises(RuntimeError, match="injected capture failure"):
+             with rng.activate("model_init"):
+                 pytest.fail("capture unexpectedly succeeded")
+-    with pytest.raises(RuntimeError, match="[Uu]sable|capture|resume"):
++    with pytest.raises(RuntimeError, match="^Private RNG state is unusable after failed capture$"):
+         _validate(rng, descriptor, "world-A", ())
+     _same(_ambient(()), ambient)
+ 
+ 
+ def test_binding_cpu_never_queries_cuda(binding: tuple[Any, ...], monkeypatch: pytest.MonkeyPatch) -> None:
+     _, descriptor, rng = binding
+ 
+     def forbidden() -> Any:
+         pytest.fail("CPU binding queried CUDA")
+ 
+@@ -357,63 +363,219 @@ def test_binding_cuda_domain(binding: tuple[Any, ...]) -> None:
+         _validate(rng, descriptor, "world-A", devices)
+         with pytest.raises(ValueError):
+             _validate(rng, descriptor, "world-A", ())
+     with pytest.raises(ValueError):
+         _validate(cpu, descriptor, "world-A", devices)
+     with pytest.raises(ValueError):
+         _validate(rng, descriptor, "world-A", (torch.cuda.device_count(),))
+     owner = OwnedWorldBackend.construct(
+         rng=rng, factory=lambda candidate: (_validate(candidate, descriptor, "world-A", devices), _backend(policy))[1]
+     )
+-    _same(owner.snapshot()["rng"], before)
++    _same(owner.snapshot(lineage=None)["rng"], before)
+     _same(rng.snapshot(), before)
+     _same(_ambient(devices), ambient)
+ 
+ 
+ def test_binding_validates_actual_owned_descriptor(binding: tuple[Any, ...]) -> None:
+     _, descriptor, rng = binding
+     malformed = copy(descriptor)
+     object.__setattr__(malformed, "seeds", {})
+     state = rng.snapshot()
+     # The existing public constructor can receive an unvalidated descriptor.
+     owner = WorldRNGState(malformed, "world-A", (), state["components"])
+     before = owner.snapshot()
+     ambient = _ambient(())
+     with pytest.raises(ValueError):
+         _validate(owner, descriptor, "world-A", ())
+     _same(owner.snapshot(), before)
+     _same(_ambient(()), ambient)
+ 
+ 
+-def test_binding_refuses_quarantined_coordinator(binding: tuple[Any, ...], monkeypatch: pytest.MonkeyPatch) -> None:
++def test_binding_refuses_quarantined_coordinator(binding: tuple[Any, ...]) -> None:
+     _, descriptor, rng = binding
+-    other = WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
+     _validate(rng, descriptor, "world-A", ())
+-    ambient = _ambient(())
+-    original_set = torch.set_rng_state
+-    calls = 0
+-
+-    def fail_restoration(state: torch.Tensor) -> None:
+-        nonlocal calls
+-        calls += 1
+-        if calls == 2:
+-            raise RuntimeError("injected restoration failure")
+-        original_set(state)
++    parent_before, ambient = rng.snapshot(), _ambient(())
++    root = Path(world_state.__file__).resolve().parents[3]
++    source_hashes = {
++        str(Path(module.__file__).resolve()): hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
++        for module in (world_state, rng_custody)
++    }
++    expected_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
++    profile = {
++        "python_executable": sys.executable,
++        "python_version": sys.version,
++        "torch_version": torch.__version__,
++        "torch_threads": torch.get_num_threads(),
++        "torch_interop_threads": torch.get_num_interop_threads(),
++    }
++    script = r"""
++import hashlib
++import json
++import os
++import random
++import subprocess
++import sys
++import types
++from pathlib import Path
++import numpy as np
++import torch
+ 
++root, expected_head, encoded_hashes, encoded_profile, encoded_descriptor = sys.argv[1:]
++expected_hashes, expected_profile = json.loads(encoded_hashes), json.loads(encoded_profile)
++qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
++qualified = any(name in os.environ for name in qualification_names)
++if qualified:
++    assert all(os.environ.get(name) for name in qualification_names), "incomplete qualification environment"
++    import bac_source_identity
++    bac_source_identity.pytest_configure(types.SimpleNamespace(workerinput={"workerid": "binding_poison"}))
++else:
++    torch.set_num_threads(expected_profile["torch_threads"])
++actual_profile = {
++    "python_executable": sys.executable, "python_version": sys.version,
++    "torch_version": torch.__version__, "torch_threads": torch.get_num_threads(),
++    "torch_interop_threads": torch.get_num_interop_threads(),
++}
++assert actual_profile == expected_profile, (actual_profile, expected_profile)
++sys.path.insert(0, str(Path(root) / "src"))
++from townlet.exploration import rng_custody, rnd, world_curiosity_state as ws
++imports = {"world_curiosity_state": str(Path(ws.__file__).resolve()),
++           "rng_custody": str(Path(rng_custody.__file__).resolve()), "rnd": str(Path(rnd.__file__).resolve())}
++def custody():
++    assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == expected_head
++    for filename, expected in expected_hashes.items():
++        assert hashlib.sha256(Path(filename).read_bytes()).hexdigest() == expected
++    assert imports["world_curiosity_state"] in expected_hashes and imports["rng_custody"] in expected_hashes
++    if qualified:
++        assert Path(os.environ["BAC_QUAL_ROOT"]).resolve() == Path(root).resolve()
++        manifest_bytes = Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()
++        manifest = json.loads(manifest_bytes)
++        assert expected_head == os.environ["BAC_QUAL_SHA"] == manifest["base_commit"]
++        for name, module in list(sys.modules.items()):
++            if name == "townlet" or name.startswith("townlet."):
++                filename = getattr(module, "__file__", None)
++                if filename is not None:
++                    path = Path(filename).resolve()
++                    relative = str(path.relative_to(root))
++                    assert relative in manifest["source_files"], (name, relative)
++                    assert hashlib.sha256(path.read_bytes()).hexdigest() == manifest["source_files"][relative]
++    return {"pid": os.getpid(), **actual_profile, "imports": imports}
++initial = custody()
++if qualified:
++    output = Path(os.environ["BAC_QUAL_OUTPUT"])
++    receipt = output / "identity-binding_poison.json"
++    identity = json.loads(receipt.read_text())
++    identity.update(pid=os.getpid(), manifest_sha256=hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++                    debug=__debug__, interop_threads=torch.get_num_interop_threads(), imports=imports)
++    receipt.write_text(json.dumps(identity, sort_keys=True, indent=2))
++    destination = output / "spawn-identity-binding_poison.json"
++    assert not destination.exists(), destination
++    receipt.rename(destination)
++descriptor = ws.WorldCuriosityDescriptor.from_dict(json.loads(encoded_descriptor))
++first = ws.WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
++other = ws.WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
++first.validate_binding(descriptor=descriptor, world_id="world-A", cuda_devices=())
++other.validate_binding(descriptor=descriptor, world_id="world-A", cuda_devices=())
++random.seed(41)
++random.gauss(0, 1)
++np.random.seed(43)
++np.random.normal()
++saved_torch, saved_python, saved_numpy = torch.get_rng_state().clone(), random.getstate(), np.random.get_state()
++real_torch, real_python, real_numpy = torch.set_rng_state, random.setstate, np.random.set_state
++swaps, drawn = [], []
++def torch_setter(state):
++    swaps.append("torch")
++    if drawn and torch.equal(state, saved_torch):
++        raise RuntimeError("injected restoration failure")
++    real_torch(state)
++def python_setter(state):
++    swaps.append("python")
++    real_python(state)
++def numpy_setter(state):
++    swaps.append("numpy")
++    real_numpy(state)
++def retains_failure(error):
++    return "injected restoration failure" in str(error) or any(
++        retains_failure(item) for item in getattr(error, "exceptions", ())) or (
++        error.__cause__ is not None and retains_failure(error.__cause__))
++torch.set_rng_state, random.setstate, np.random.set_state = torch_setter, python_setter, numpy_setter
++try:
++    with first.activate("model_init") as sources:
++        torch.rand(3)
++        random.gauss(0, 1)
++        sources.python.random()
++        np.random.normal(size=3)
++        sources.numpy.normal(size=3)
++        drawn.append(True)
++except BaseException as error:
++    assert retains_failure(error), repr(error)
++else:
++    raise AssertionError("restoration failure was swallowed")
++assert drawn and swaps[-3:] == ["torch", "python", "numpy"]
++assert random.getstate() == saved_python
++actual_numpy = np.random.get_state()
++assert actual_numpy[0] == saved_numpy[0] and np.array_equal(actual_numpy[1], saved_numpy[1])
++assert actual_numpy[2:] == saved_numpy[2:]
++installed = (torch.get_rng_state().clone(), random.getstate(), np.random.get_state())
++before_refusal = list(swaps)
++try:
++    other.validate_binding(descriptor=descriptor, world_id="world-A", cuda_devices=())
++except RuntimeError as error:
++    assert str(error) == "Ambient RNG domain is poisoned after failed restoration", str(error)
++else:
++    raise AssertionError("poisoned domain permitted unrelated binding")
++assert swaps == before_refusal, "refused binding still swapped global streams"
++assert torch.equal(installed[0], torch.get_rng_state()) and installed[1] == random.getstate()
++now_numpy = np.random.get_state()
++assert installed[2][0] == now_numpy[0] and np.array_equal(installed[2][1], now_numpy[1])
++assert installed[2][2:] == now_numpy[2:]
++assert custody() == initial
++print("BAC_CHILD_RESULT " + json.dumps({"pid": os.getpid(), "message": "binding poison fail closed"}))
++"""
++    child = subprocess.Popen(
++        [
++            sys.executable,
++            "-c",
++            script,
++            str(root),
++            expected_head,
++            json.dumps(source_hashes),
++            json.dumps(profile),
++            json.dumps(descriptor.to_dict()),
++        ],
++        cwd=root,
++        stdout=subprocess.PIPE,
++        stderr=subprocess.PIPE,
++        text=True,
++    )
+     try:
+-        with monkeypatch.context() as patch:
+-            # Preserve coordinator quarantine isolation across tests; the failure
+-            # itself comes from the real activation restoration path.
+-            patch.setattr(world_state, "_rng_unusable", None)
+-            patch.setattr(torch, "set_rng_state", fail_restoration)
+-            with pytest.raises(RuntimeError, match="injected restoration failure"):
+-                with rng.activate("model_init"):
+-                    pass
+-            installed = _ambient(())
+-            with pytest.raises(RuntimeError, match="unusable"):
+-                _validate(other, descriptor, "world-A", ())
+-            _same(_ambient(()), installed)
++        try:
++            stdout, stderr = child.communicate(timeout=60)
++        except subprocess.TimeoutExpired:
++            child.terminate()
++            try:
++                child.communicate(timeout=5)
++            except subprocess.TimeoutExpired:
++                child.kill()
++                child.communicate(timeout=5)
++            raise
+     finally:
+-        original_set(ambient["torch"])
+-        random.setstate(ambient["python"])
+-        np.random.set_state(ambient["numpy"])
++        assert child.stdout is not None and child.stderr is not None
++        child.stdout.close()
++        child.stderr.close()
++    assert child.returncode == 0, stdout + stderr
++    messages = [json.loads(line.removeprefix("BAC_CHILD_RESULT ")) for line in stdout.splitlines() if line.startswith("BAC_CHILD_RESULT ")]
++    assert len(messages) == 1 and messages[0] == {"pid": child.pid, "message": "binding poison fail closed"}
++    qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
++    if any(name in os.environ for name in qualification_names):
++        assert all(os.environ.get(name) for name in qualification_names)
++        observation = {
++            "process_pid": child.pid,
++            "queued_pid": messages[0]["pid"],
++            "exitcode": child.returncode,
++            "qualified": True,
++            "message": messages[0]["message"],
++            "manifest_sha256": hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++        }
++        with (Path(os.environ["BAC_QUAL_OUTPUT"]) / "spawn-observation-binding_poison.json").open("x") as stream:
++            json.dump(observation, stream, sort_keys=True, indent=2)
++    _same(rng.snapshot(), parent_before)
+     _same(_ambient(()), ambient)
+diff --git a/tests/test_townlet/regressions/bac/test_pw_rng_domains.py b/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
+index 75332d67..d52cf706 100644
+--- a/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
++++ b/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
+@@ -1,30 +1,32 @@
+ """PW02 primitive proof; native provider validation/hooks and bank wiring remain later gates."""
+ 
+ from __future__ import annotations
+ 
+ import copy
+ import hashlib
+ import json
++import os
+ import random
+ import subprocess
+ import sys
+ import threading
+ from collections import OrderedDict
+ from collections.abc import Mapping
+ from pathlib import Path
+ 
+ import numpy as np
+ import pytest
+ import torch
+ 
+ from townlet.config.bac_options import RNDOptions
++from townlet.exploration import rng_custody
+ from townlet.exploration import world_curiosity_state as ws
+ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+ from townlet.exploration.icm import ICMExploration
+ from townlet.exploration.rnd import RNDExploration
+ 
+ KINDS = ("rnd", "icm", "adaptive_rnd")
+ 
+ 
+ def _equal(left, right):
+     assert type(left) is type(right)
+@@ -259,23 +261,23 @@ def _owner(kind, world, ids):
+ def _validate_backend(candidate, payload):
+     # Validate the complete current native schema without installing candidate state.
+     before, transported = copy.deepcopy(candidate.checkpoint_state()), copy.deepcopy(payload)
+     candidate.validate_state(payload)
+     _equal(before, candidate.checkpoint_state())
+     _equal(transported, payload)
+ 
+ 
+ def _restore(owner, payload, kind):
+     prepared = owner.prepare_restore(
+-        payload, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend
++        payload, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend, lineage=None
+     )
+-    owner.install(prepared)
++    owner.install(prepared, lineage=None)
+     return prepared
+ 
+ 
+ def _find(value, key):
+     if isinstance(value, Mapping):
+         if key in value:
+             return value[key]
+         for child in value.values():
+             result = _find(child, key)
+             if result is not None:
+@@ -295,87 +297,92 @@ def test_private_rng_restores_global_streams(kind):
+     random.seed(17)
+     random.gauss(0, 1)  # Keep a cached Gaussian in the exact global state.
+     np.random.seed(19)
+     np.random.normal()
+     global_before = _globals(())
+     rng = _rng(kind, "world1", ("world0", "world1"))
+     original_rng = rng.snapshot()
+     _, owned_type = _api()
+     owner = owned_type.construct(rng=rng, factory=_factory(kind, service_clock_unit="world_eligible_admission"))
+     _equal(original_rng, rng.snapshot())
+-    constructed_rng = owner.snapshot()["rng"]
++    constructed_rng = owner.snapshot(lineage=None)["rng"]
+     used = {"model_init", "predictor"} if kind == "icm" else {"target", "predictor"}
+     for component in ws.WORLD_SEED_COMPONENTS:
+         before_component = original_rng["components"][component]
+         after_component = constructed_rng["components"][component]
+         if component in used:
+             assert not torch.equal(before_component["torch_cpu"], after_component["torch_cpu"])
+             for field in before_component.keys() - {"torch_cpu"}:
+                 _equal(before_component[field], after_component[field])
+         else:
+             _equal(before_component, after_component)
+     _equal(global_before, _globals(()))
+-    initial = owner.call(lambda backend, sources: backend.checkpoint_state())
++    initial = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)
+     _, _, tail = owner.call(
+-        lambda backend, sources: _exercise(backend, sources, 1, 0, clock=ws.ServiceClock("world_eligible_admission", 1))
++        lambda backend, sources: _exercise(backend, sources, 1, 0, clock=ws.ServiceClock("world_eligible_admission", 1)), lineage=None
+     )
+     tail_state = _rnd_state(tail, kind)
+     assert not tail_state["optimizer"]["state"]
+     _, _, trained = owner.call(
+-        lambda backend, sources: _exercise(backend, sources, 1, 1, clock=ws.ServiceClock("world_eligible_admission", 2))
++        lambda backend, sources: _exercise(backend, sources, 1, 1, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
+     )
+     _assert_learning(initial, trained, kind, 1, 0)
+     _equal(global_before, _globals(()))
+-    saved = owner.snapshot()
++    saved = owner.snapshot(lineage=None)
+     continuation = owner.call(
+-        lambda backend, sources: _exercise(backend, sources, 2, 2, clock=ws.ServiceClock("world_eligible_admission", 4))
++        lambda backend, sources: _exercise(backend, sources, 2, 2, clock=ws.ServiceClock("world_eligible_admission", 4)), lineage=None
+     )
+     _restore(owner, saved, kind)
+     _equal(global_before, _globals(()))
+-    replayed = owner.call(lambda backend, sources: _exercise(backend, sources, 2, 2, clock=ws.ServiceClock("world_eligible_admission", 4)))
++    replayed = owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 2, clock=ws.ServiceClock("world_eligible_admission", 4)), lineage=None
++    )
+     _equal(continuation, replayed)
+     _assert_learning(initial, replayed[2], kind, 2, 0)
+     _equal(global_before, _globals(()))
+ 
+ 
+ @pytest.mark.parametrize("kind", KINDS)
+ def test_world1_rng_independent_of_world0_calls(kind):
+     global_before = _globals(())
+     baseline = _owner(kind, "world1", ("world1",))
+     interleaved = _owner(kind, "world1", ("spectator", "world1", "world0"))
+     other = _owner(kind, "world0", ("world0", "world1"))
+-    _equal(baseline.snapshot(), interleaved.snapshot())
+-    other_before = other.snapshot()
++    _equal(baseline.snapshot(lineage=None), interleaved.snapshot(lineage=None))
++    other_before = other.snapshot(lineage=None)
+     admitted_position = 0
+     for tick in range(3):
+         admitted_position += 2
+         expected = baseline.call(
+             lambda backend, sources: _exercise(
+                 backend, sources, 2, tick, clock=ws.ServiceClock("world_eligible_admission", admitted_position)
+-            )
++            ),
++            lineage=None,
+         )
+         other.call(
+             lambda backend, sources: _exercise(
+                 backend, sources, 2, tick, clock=ws.ServiceClock("world_eligible_admission", admitted_position)
+-            )
++            ),
++            lineage=None,
+         )
+-        saved_other = other.snapshot()
++        saved_other = other.snapshot(lineage=None)
+         _restore(other, saved_other, kind)
+         actual = interleaved.call(
+             lambda backend, sources: _exercise(
+                 backend, sources, 2, tick, clock=ws.ServiceClock("world_eligible_admission", admitted_position)
+-            )
++            ),
++            lineage=None,
+         )
+         _equal(expected, actual)
+-        _equal(baseline.snapshot(), interleaved.snapshot())
++        _equal(baseline.snapshot(lineage=None), interleaved.snapshot(lineage=None))
+     with pytest.raises(AssertionError):
+-        _equal(other_before, other.snapshot())
++        _equal(other_before, other.snapshot(lineage=None))
+     _equal(global_before, _globals(()))
+ 
+ 
+ def test_native_global_rng_counterexample_and_private_continuation():
+     torch.manual_seed(123)
+     state = torch.get_rng_state().clone()
+     first = _factory("rnd", service_clock_unit="vector_tick")(None)
+     assert not torch.equal(state, torch.get_rng_state())
+     second = _factory("rnd", service_clock_unit="vector_tick")(None)
+     assert any(
+@@ -405,130 +412,149 @@ def test_constructor_compute_failure_restoration_and_quarantine(kind, after_upda
+         _factory(kind, service_clock_unit="world_eligible_admission")(private)
+         with private.activate("model_init") as sources:
+             _draw(sources)
+         raise KeyboardInterrupt("constructor cancellation")
+ 
+     with pytest.raises(KeyboardInterrupt, match="constructor cancellation"):
+         owned_type.construct(rng=rng, factory=broken_factory)
+     _equal(global_before, _globals(()))
+     owner = _owner(kind, "world1", ("world1",))
+     other = _owner(kind, "world0", ("world0",))
+-    healthy, unaffected = owner.snapshot(), other.snapshot()
+-    learner_before = owner.call(lambda backend, sources: backend.checkpoint_state())
++    healthy, unaffected = owner.snapshot(lineage=None), other.snapshot(lineage=None)
++    learner_before = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)
+     observed = []
+ 
+     def fail_after_update(backend, sources):
+         if after_update:
+             observed.append(_learning_snapshot(_exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2))[2]))
+         else:
+             _draw(sources)
+         raise RuntimeError("live callback failure")
+ 
+     with pytest.raises(RuntimeError, match="live callback failure"):
+-        owner.call(fail_after_update)
++        owner.call(fail_after_update, lineage=None)
+     _equal(global_before, _globals(()))
+-    _equal(unaffected, other.snapshot())
+-    diagnostic = owner.snapshot()
++    _equal(unaffected, other.snapshot(lineage=None))
++    diagnostic = owner.snapshot(lineage=None)
+     if after_update:
+         _assert_learning(learner_before, observed[0], kind, 1, 0)
+         model = "encoder" if kind == "icm" else "predictor_network"
+         _equal(_rnd_state(observed[0], kind)[model], _find(diagnostic, model))
+         _equal(_rnd_state(observed[0], kind)["optimizer"], _find(diagnostic, "optimizer"))
+     with pytest.raises(AssertionError):
+         _equal(_find(healthy, "components"), _find(diagnostic, "components"))
+     with pytest.raises(AssertionError):
+         _equal(healthy, diagnostic)
+     with pytest.raises((RuntimeError, ValueError), match="quarantin|failed"):
+-        owner.call(lambda backend, sources: backend.checkpoint_state())
++        owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)
+     with pytest.raises((RuntimeError, ValueError)):
+         owner.prepare_restore(
+-            diagnostic, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend
++            diagnostic,
++            factory=_factory(kind, service_clock_unit="world_eligible_admission"),
++            validate_backend=_validate_backend,
++            lineage=None,
+         )
+     _restore(owner, healthy, kind)
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)))
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++    )
+     _equal(global_before, _globals(()))
+ 
+ 
+ def _mutate_arrays(value):
+     if isinstance(value, torch.Tensor):
+         value.fill_(0)
+     elif isinstance(value, np.ndarray):
+         value.fill(0)
+     elif isinstance(value, Mapping):
+         for child in value.values():
+             _mutate_arrays(child)
+     elif isinstance(value, (list, tuple)):
+         for child in value:
+             _mutate_arrays(child)
+ 
+ 
+ @pytest.mark.parametrize("kind", KINDS)
+ def test_owned_snapshot_restore_aliases_and_late_load_failure(kind):
+     owner = _owner(kind, "world1", ("world1",))
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)))
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 1, 1, clock=ws.ServiceClock("world_eligible_admission", 3)))
+-    saved = owner.snapshot()
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++    )
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 1, 1, clock=ws.ServiceClock("world_eligible_admission", 3)), lineage=None
++    )
++    saved = owner.snapshot(lineage=None)
+     pristine = copy.deepcopy(saved)
+     original_payload = copy.deepcopy(pristine)
+-    exposed = owner.call(lambda backend, sources: backend.checkpoint_state())
++    exposed = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)
+     _mutate_arrays(exposed)
+     if kind == "adaptive_rnd":
+         exposed["survival_history"].append(9999)
+-    _equal(pristine, owner.snapshot())
++    _equal(pristine, owner.snapshot(lineage=None))
+     _mutate_arrays(saved)
+-    _equal(pristine, owner.snapshot())
++    _equal(pristine, owner.snapshot(lineage=None))
+     second = _owner(kind, "world1", ("world1", "spectator"))
+     prepared = owner.prepare_restore(
+-        pristine, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend
++        pristine, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend, lineage=None
+     )
+-    with pytest.raises((ValueError, RuntimeError)):
+-        second.install(prepared)
+-    owner.install(prepared)
+-    with pytest.raises((ValueError, RuntimeError)):
+-        owner.install(prepared)
++    with pytest.raises(ValueError, match="^Prepared backend is foreign, fabricated or already consumed$"):
++        second.install(prepared, lineage=None)
++    # The admitted foreign attempt stales released work; prepare afresh for the
++    # independent positive install, with no intervening admitted operation.
++    prepared = owner.prepare_restore(
++        pristine,
++        factory=_factory(kind, service_clock_unit="world_eligible_admission"),
++        validate_backend=_validate_backend,
++        lineage=None,
++    )
++    owner.install(prepared, lineage=None)
++    with pytest.raises(ValueError, match="^Prepared backend is foreign, fabricated or already consumed$"):
++        owner.install(prepared, lineage=None)
+     _restore(second, pristine, kind)
+-    stable = second.snapshot()
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 1, 2, clock=ws.ServiceClock("world_eligible_admission", 4)))
+-    _equal(stable, second.snapshot())
++    stable = second.snapshot(lineage=None)
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 1, 2, clock=ws.ServiceClock("world_eligible_admission", 4)), lineage=None
++    )
++    _equal(stable, second.snapshot(lineage=None))
+     _equal(original_payload, pristine)
+-    before, globals_before = owner.snapshot(), _globals(())
++    before, globals_before = owner.snapshot(lineage=None), _globals(())
+     invalid = copy.deepcopy(pristine)
+     invalid["unexpected"] = 1
+     with pytest.raises((ValueError, TypeError)):
+         owner.prepare_restore(
+-            invalid, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend
++            invalid, factory=_factory(kind, service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend, lineage=None
+         )
+-    _equal(before, owner.snapshot())
++    _equal(before, owner.snapshot(lineage=None))
+ 
+     def late_factory(rng):
+         candidate = _factory(kind, service_clock_unit="world_eligible_admission")(rng)
+         real_load = candidate.load_state
+ 
+         def fail_load(payload):
+             real_load(payload)
+             torch.rand(2)
+             random.gauss(0, 1)
+             np.random.normal()
+             raise RuntimeError("late candidate load")
+ 
+         candidate.load_state = fail_load
+         return candidate
+ 
+     def validate_late(candidate, payload):
+         # Validate genuine provider data before the intentionally late failing load.
+         _validate_backend(candidate, payload)
+ 
+     with pytest.raises(RuntimeError, match="late candidate load"):
+-        owner.prepare_restore(pristine, factory=late_factory, validate_backend=validate_late)
+-    _equal(before, owner.snapshot())
++        owner.prepare_restore(pristine, factory=late_factory, validate_backend=validate_late, lineage=None)
++    _equal(before, owner.snapshot(lineage=None))
+     _equal(globals_before, _globals(()))
+-    _equal(stable, second.snapshot())
++    _equal(stable, second.snapshot(lineage=None))
+ 
+ 
+ def test_named_substream_recipe_and_activation_bound_python_facade():
+     rng = _rng("rnd", "world1", ("world1",))
+     descriptor = _descriptor("rnd", ("world1",))
+ 
+     def derived(suffix):
+         return ws.derive_world_seed(training_seed=29, world_id="world1", provider_kind="rnd", component=f"service/{suffix}")
+ 
+     python = random.Random(derived("python"))
+@@ -539,39 +565,41 @@ def test_named_substream_recipe_and_activation_bound_python_facade():
+     before = _globals(())
+     with rng.activate("service") as sources:
+         _equal(expected, _draw(sources))
+     _equal(before, _globals(()))
+     with pytest.raises((RuntimeError, ValueError)):
+         sources.python.random()
+ 
+ 
+ def test_snapshot_callback_failure_restores_and_quarantines():
+     owner = _owner("rnd", "world1", ("world1",))
+-    healthy, before = owner.snapshot(), _globals(())
++    healthy, before = owner.snapshot(lineage=None), _globals(())
+ 
+     def install_failure(backend, sources):
+         def broken_snapshot():
+             torch.rand(2)
+             random.gauss(0, 1)
+             np.random.normal()
+             raise RuntimeError("snapshot callback failure")
+ 
+         backend.checkpoint_state = broken_snapshot
+ 
+-    owner.call(install_failure)
++    owner.call(install_failure, lineage=None)
+     with pytest.raises(RuntimeError, match="snapshot callback failure"):
+-        owner.snapshot()
++        owner.snapshot(lineage=None)
+     _equal(before, _globals(()))
+     with pytest.raises((RuntimeError, ValueError), match="quarantin|failed"):
+-        owner.call(lambda backend, sources: 1)
++        owner.call(lambda backend, sources: 1, lineage=None)
+     _restore(owner, healthy, "rnd")
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)))
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++    )
+     _equal(before, _globals(()))
+ 
+ 
+ def test_invalid_rng_snapshot_is_pure_and_nested_components_resume():
+     rng = _rng("rnd", "world1", ("world1",))
+     other = _rng("rnd", "world0", ("world0",))
+     saved, global_before = rng.snapshot(), _globals(())
+     for field, value in (("unexpected", 1), ("world_id", "wrong"), ("components", {}), ("cuda_devices", (0,))):
+         malformed = copy.deepcopy(saved)
+         malformed[field] = value
+@@ -659,59 +687,69 @@ def test_used_cuda_domain_restoration_when_hardware_available():
+     finally:
+         for device, state in before[3].items():
+             torch.cuda.set_rng_state(state, device)
+ 
+ 
+ def test_restoration_failure_poisoning_isolated_from_pytest():
+     _api()
+     source = Path(ws.__file__).resolve()
+     root = source.parents[3]
+     expected_hash = hashlib.sha256(source.read_bytes()).hexdigest()
++    domain_source = Path(rng_custody.__file__).resolve()
++    domain_hash = hashlib.sha256(domain_source.read_bytes()).hexdigest()
+     expected_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+     parent_profile = {
+         "python_executable": sys.executable,
+         "python_version": sys.version,
+         "torch_version": torch.__version__,
+         "torch_threads": torch.get_num_threads(),
+         "torch_interop_threads": torch.get_num_interop_threads(),
+     }
+     script = r"""
+ import hashlib
+ import json
+ import os
+ import fcntl
+ import random
+ import subprocess
+ import sys
++import types
+ from pathlib import Path
+ import numpy as np
+ import torch
+ 
+-source, expected_hash, expected_head, root, encoded_profile = sys.argv[1:]
++source, expected_hash, domain_source, domain_hash, expected_head, root, encoded_profile = sys.argv[1:]
+ expected_profile = json.loads(encoded_profile)
+-torch.set_num_threads(expected_profile["torch_threads"])
+-torch.set_num_interop_threads(expected_profile["torch_interop_threads"])
++qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
++qualified = any(name in os.environ for name in qualification_names)
++if qualified:
++    assert all(os.environ.get(name) for name in qualification_names), "incomplete qualification environment"
++    import bac_source_identity
++    bac_source_identity.pytest_configure(types.SimpleNamespace(workerinput={"workerid": "domains_poison"}))
++else:
++    torch.set_num_threads(expected_profile["torch_threads"])
+ actual_profile = {
+     "python_executable": sys.executable,
+     "python_version": sys.version,
+     "torch_version": torch.__version__,
+     "torch_threads": torch.get_num_threads(),
+     "torch_interop_threads": torch.get_num_interop_threads(),
+ }
+-assert actual_profile == expected_profile
++assert actual_profile == expected_profile, (actual_profile, expected_profile)
+ sys.path.insert(0, str(Path(root) / "src"))
++from townlet.exploration import rng_custody, rnd
+ from townlet.exploration import world_curiosity_state as ws
+ assert Path(ws.__file__).resolve() == Path(source)
+ assert hashlib.sha256(Path(ws.__file__).read_bytes()).hexdigest() == expected_hash
++assert Path(rng_custody.__file__).resolve() == Path(domain_source)
++assert hashlib.sha256(Path(rng_custody.__file__).read_bytes()).hexdigest() == domain_hash
+ assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == expected_head
+-qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
+-qualified = any(name in os.environ for name in qualification_names)
+ def custody():
+     assert all(os.environ.get(name) for name in qualification_names), "incomplete qualification environment"
+     assert Path(os.environ["BAC_QUAL_ROOT"]).resolve() == Path(root).resolve()
+     assert actual_profile["torch_threads"] == 1
+     manifest_bytes = Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()
+     manifest = json.loads(manifest_bytes)
+     sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+     assert sha == expected_head == os.environ["BAC_QUAL_SHA"] == manifest["base_commit"]
+     with (Path(root) / ".superpowers/bac-qualification-index.lock").open("a+") as lock:
+         fcntl.flock(lock, fcntl.LOCK_EX)
+@@ -732,25 +770,38 @@ def custody():
+             filename = getattr(module, "__file__", None)
+             if filename is not None:
+                 path = Path(filename).resolve()
+                 relative = str(path.relative_to(Path(root)))
+                 assert relative in source_hashes, (name, relative)
+                 assert path == Path(root) / "src" / Path(*name.split(".")).with_suffix(".py") or (
+                     path == Path(root) / "src" / Path(*name.split(".")) / "__init__.py"
+                 ), (name, path)
+                 import_paths[name] = str(path)
+     assert import_paths["townlet.exploration.world_curiosity_state"] == source
++    assert import_paths["townlet.exploration.rng_custody"] == domain_source
+     return {"pid": os.getpid(), "sha": sha, "candidate_tree": tree, **actual_profile,
+             "import_path": str(Path(ws.__file__).resolve()), "import_paths": import_paths,
+             "source_hashes": source_hashes, "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest()}
+ if qualified:
+     initial_custody = custody()
++    output = Path(os.environ["BAC_QUAL_OUTPUT"])
++    identity_path = output / "identity-domains_poison.json"
++    identity = json.loads(identity_path.read_text())
++    identity.update(pid=os.getpid(), manifest_sha256=initial_custody["manifest_sha256"], debug=__debug__,
++                    interop_threads=torch.get_num_interop_threads(),
++                    imports={"world_curiosity_state": str(Path(ws.__file__).resolve()),
++                             "rng_custody": str(Path(rng_custody.__file__).resolve()),
++                             "rnd": str(Path(rnd.__file__).resolve())})
++    identity_path.write_text(json.dumps(identity, sort_keys=True, indent=2))
++    destination = output / "spawn-identity-domains_poison.json"
++    assert not destination.exists(), destination
++    identity_path.rename(destination)
+ seeds = {world: {component: ws.derive_world_seed(training_seed=29, world_id=world, provider_kind="rnd", component=component)
+                  for component in ws.WORLD_SEED_COMPONENTS} for world in ("a", "b")}
+ descriptor = ws.WorldCuriosityDescriptor(
+     schema_version=1, scope="per_world", provider_kind="rnd", provider_parameter_hash="a" * 64,
+     observation_dim=3, action_dim=2, world_ids=("a", "b"), seed_policy="world_id_derived_v1",
+     service_clock_unit="world_eligible_admission", origin="authored", guarantee="world_id_owned_state",
+     training_seed=29, seeds=seeds)
+ first = ws.WorldRNGState.create(descriptor=descriptor, world_id="a", cuda_devices=())
+ second = ws.WorldRNGState.create(descriptor=descriptor, world_id="b", cuda_devices=())
+ random.seed(41)
+@@ -790,122 +841,174 @@ except BaseException as error:
+ else:
+     raise AssertionError("restoration failure was swallowed")
+ assert drawn and random.getstate() == saved_python
+ actual_numpy = np.random.get_state()
+ assert actual_numpy[0] == saved_numpy[0] and np.array_equal(actual_numpy[1], saved_numpy[1])
+ assert actual_numpy[2:] == saved_numpy[2:]
+ before_refusal = list(swaps)
+ try:
+     with second.activate("service"):
+         raise AssertionError("unusable coordinator permitted activation")
+-except (RuntimeError, ValueError) as error:
+-    assert any(word in str(error).lower() for word in ("unusable", "poison", "failed", "restoration")), str(error)
++except RuntimeError as error:
++    assert str(error) == "Ambient RNG domain is poisoned after failed restoration", str(error)
++else:
++    raise AssertionError("poisoned domain failed to refuse activation")
+ assert swaps == before_refusal, "refused activation still swapped global streams"
+ if qualified:
+     final_custody = custody()
+     assert final_custody == initial_custody
+     output = Path(os.environ["BAC_QUAL_OUTPUT"])
+     assert output.is_absolute() and output.is_dir()
+     receipt = output / f"subprocess-custody-poisoning-{os.getpid()}.json"
+     with receipt.open("x") as stream:
+         json.dump({**final_custody, "poisoning_assertions_passed": True}, stream, sort_keys=True, indent=2)
+         stream.flush()
+         os.fsync(stream.fileno())
+ print("isolated restoration custody and coordinator refusal verified")
++print("BAC_CHILD_RESULT " + json.dumps({"pid": os.getpid(), "message": "domains poison fail closed"}))
+ """
+-    result = subprocess.run(
+-        [sys.executable, "-c", script, str(source), expected_hash, expected_head, str(root), json.dumps(parent_profile)],
++    child = subprocess.Popen(
++        [
++            sys.executable,
++            "-c",
++            script,
++            str(source),
++            expected_hash,
++            str(domain_source),
++            domain_hash,
++            expected_head,
++            str(root),
++            json.dumps(parent_profile),
++        ],
+         cwd=root,
+-        capture_output=True,
++        stdout=subprocess.PIPE,
++        stderr=subprocess.PIPE,
+         text=True,
+-        timeout=60,
+     )
+-    assert result.returncode == 0, result.stdout + result.stderr
+-    assert "isolated restoration custody and coordinator refusal verified" in result.stdout
++    try:
++        try:
++            stdout, stderr = child.communicate(timeout=60)
++        except subprocess.TimeoutExpired:
++            child.terminate()
++            try:
++                child.communicate(timeout=5)
++            except subprocess.TimeoutExpired:
++                child.kill()
++                child.communicate(timeout=5)
++            raise
++    finally:
++        assert child.stdout is not None and child.stderr is not None
++        child.stdout.close()
++        child.stderr.close()
++    assert child.returncode == 0, stdout + stderr
++    assert "isolated restoration custody and coordinator refusal verified" in stdout
++    messages = [json.loads(line.removeprefix("BAC_CHILD_RESULT ")) for line in stdout.splitlines() if line.startswith("BAC_CHILD_RESULT ")]
++    assert len(messages) == 1 and messages[0] == {"pid": child.pid, "message": "domains poison fail closed"}
++    qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
++    if any(name in os.environ for name in qualification_names):
++        assert all(os.environ.get(name) for name in qualification_names)
++        observation = {
++            "process_pid": child.pid,
++            "queued_pid": messages[0]["pid"],
++            "exitcode": child.returncode,
++            "qualified": True,
++            "message": messages[0]["message"],
++            "manifest_sha256": hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++        }
++        with (Path(os.environ["BAC_QUAL_OUTPUT"]) / "spawn-observation-domains_poison.json").open("x") as stream:
++            json.dump(observation, stream, sort_keys=True, indent=2)
+ 
+ 
+ @pytest.mark.parametrize("array_kind", ["plain", "structured"])
+ def test_object_array_result_does_not_alias_live_adaptive_history(array_kind):
+     owner = _owner("adaptive_rnd", "world1", ("world1",))
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)))
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++    )
+ 
+     def history_array(backend, sources):
+         if array_kind == "plain":
+             result = np.empty(1, dtype=object)
+             result[0] = backend.survival_history
+         else:
+             result = np.empty(1, dtype=[("history", object)])
+             result["history"][0] = backend.survival_history
+         return result
+ 
+-    exported = owner.call(history_array)
++    exported = owner.call(history_array, lineage=None)
+     # Compare native history AFTER the callback: wrapper revision changes are irrelevant.
+-    before_history = owner.call(lambda backend, sources: backend.checkpoint_state())["survival_history"]
++    before_history = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)["survival_history"]
+     assert before_history and exported.dtype.hasobject
+     returned_history = exported[0] if array_kind == "plain" else exported["history"][0]
+     returned_history.append(12345.0)
+-    after_history = owner.call(lambda backend, sources: backend.checkpoint_state())["survival_history"]
++    after_history = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)["survival_history"]
+     _equal(before_history, after_history)
+     assert returned_history == [*before_history, 12345.0]
+ 
+ 
+ @pytest.mark.parametrize("kind", KINDS)
+ @pytest.mark.parametrize("composite_key", [False, True], ids=["native", "tuple"])
+ def test_learned_adam_mapping_keys_and_values_are_owned(kind, composite_key):
+     globals_before = _globals(())
+     owner = _owner(kind, "world1", ("world1",))
+     control = _owner(kind, "world1", ("world1",))
+-    initial = owner.call(lambda backend, sources: backend.checkpoint_state())
+-    _equal(initial, control.call(lambda backend, sources: backend.checkpoint_state()))
+-    trained = owner.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)))
++    initial = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)
++    _equal(initial, control.call(lambda backend, sources: backend.checkpoint_state(), lineage=None))
++    trained = owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++    )
+     _equal(
+         trained,
+-        control.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2))),
++        control.call(
++            lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++        ),
+     )
+     _assert_learning(initial, trained[2], kind, 1, 0)
+ 
+     def native_adam_state(backend, sources):
+         learner = backend.rnd if kind == "adaptive_rnd" else backend
+         state = learner.optimizer.state
+         return {("parameter", key): value for key, value in state.items()} if composite_key else state
+ 
+-    exported = owner.call(native_adam_state)
+-    control.call(native_adam_state)
++    exported = owner.call(native_adam_state, lineage=None)
++    control.call(native_adam_state, lineage=None)
+     assert exported
+     key = next(iter(exported))
+     parameter = key[1] if composite_key else key
+     moments = exported[key]
+     assert isinstance(parameter, torch.Tensor)
+     assert float(moments["step"]) == 1
+     assert torch.count_nonzero(moments["exp_avg"]) > 0
+     parameter_before = parameter.detach().clone()
+     moment_before = moments["exp_avg"].clone()
+-    before = owner.snapshot()
+-    _equal(before, control.snapshot())
++    before = owner.snapshot(lineage=None)
++    _equal(before, control.snapshot(lineage=None))
+     revision_before = owner._revision
+     with torch.no_grad():
+         parameter.add_(12345)
+         moments["exp_avg"].add_(12345)
+     assert not torch.equal(parameter_before, parameter)
+     assert not torch.equal(moment_before, moments["exp_avg"])
+     # No callback or snapshot occurs between this revision capture and comparison.
+     assert owner._revision == revision_before
+-    _equal(before, owner.snapshot())
++    _equal(before, owner.snapshot(lineage=None))
+     _equal(globals_before, _globals(()))
+     assert not parameter.requires_grad and parameter.grad_fn is None
+-    continued = owner.call(lambda backend, sources: _exercise(backend, sources, 2, 1, clock=ws.ServiceClock("world_eligible_admission", 4)))
++    continued = owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 1, clock=ws.ServiceClock("world_eligible_admission", 4)), lineage=None
++    )
+     expected = control.call(
+-        lambda backend, sources: _exercise(backend, sources, 2, 1, clock=ws.ServiceClock("world_eligible_admission", 4))
++        lambda backend, sources: _exercise(backend, sources, 2, 1, clock=ws.ServiceClock("world_eligible_admission", 4)), lineage=None
+     )
+     _equal(expected, continued)
+     _assert_learning(initial, continued[2], kind, 2, 0)
+-    _equal(owner.snapshot(), control.snapshot())
++    _equal(owner.snapshot(lineage=None), control.snapshot(lineage=None))
+     _equal(globals_before, _globals(()))
+ 
+ 
+ def test_true_a_b_a_nested_activation_preserves_both_streams():
+     rng = _rng("rnd", "world1", ("world1",))
+     saved, globals_before = rng.snapshot(), _globals(())
+     with rng.activate("service") as a:
+         a1 = _draw(a)
+         with rng.activate("target") as b:
+             b1 = _draw(b)
+@@ -921,25 +1024,30 @@ def test_true_a_b_a_nested_activation_preserves_both_streams():
+         _equal(a3, _draw(a))
+     with control.activate("target") as b:
+         _equal(b1, _draw(b))
+         _equal(b2, _draw(b))
+     _equal(control.snapshot(), rng.snapshot())
+     _equal(globals_before, _globals(()))
+ 
+ 
+ def test_stale_prepared_restore_refuses_after_real_owner_update():
+     owner = _owner("rnd", "world1", ("world1",))
+-    initial = owner.call(lambda backend, sources: backend.checkpoint_state())
+-    owner.call(lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)))
++    initial = owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None)
++    owner.call(
++        lambda backend, sources: _exercise(backend, sources, 2, 0, clock=ws.ServiceClock("world_eligible_admission", 2)), lineage=None
++    )
+     prepared = owner.prepare_restore(
+-        owner.snapshot(), factory=_factory("rnd", service_clock_unit="world_eligible_admission"), validate_backend=_validate_backend
++        owner.snapshot(lineage=None),
++        factory=_factory("rnd", service_clock_unit="world_eligible_admission"),
++        validate_backend=_validate_backend,
++        lineage=None,
+     )
+     _, _, updated = owner.call(
+-        lambda backend, sources: _exercise(backend, sources, 2, 1, clock=ws.ServiceClock("world_eligible_admission", 4))
++        lambda backend, sources: _exercise(backend, sources, 2, 1, clock=ws.ServiceClock("world_eligible_admission", 4)), lineage=None
+     )
+     _assert_learning(initial, updated, "rnd", 2, 0)
+-    before, globals_before = owner.snapshot(), _globals(())
+-    with pytest.raises(ValueError, match="destination changed"):
+-        owner.install(prepared)
+-    _equal(updated, owner.call(lambda backend, sources: backend.checkpoint_state()))
+-    _equal(before, owner.snapshot())
++    before, globals_before = owner.snapshot(lineage=None), _globals(())
++    with pytest.raises(ValueError, match="^Prepared backend destination changed$"):
++        owner.install(prepared, lineage=None)
++    _equal(updated, owner.call(lambda backend, sources: backend.checkpoint_state(), lineage=None))
++    _equal(before, owner.snapshot(lineage=None))
+     _equal(globals_before, _globals(()))

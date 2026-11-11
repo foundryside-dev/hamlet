@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 import random
+import subprocess
+import sys
 from collections.abc import Mapping
 from copy import copy, deepcopy
 from dataclasses import replace
@@ -18,6 +23,7 @@ from townlet.config.bac_options import BaCOptions
 from townlet.config.drive_as_code import IntrinsicStrategyConfig
 from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
 from townlet.config.training_v2_config import TrainingV2Config
+from townlet.exploration import rng_custody
 from townlet.exploration import world_curiosity_state as world_state
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.exploration.world_curiosity_state import (
@@ -102,15 +108,15 @@ def test_binding_fixture_prerequisite(binding: tuple[Any, ...]) -> None:
     def factory(candidate: WorldRNGState) -> EpsilonGreedyExploration:
         assert candidate is not rng
         candidates.append(candidate)
-        with pytest.raises(RuntimeError, match="quiescent"):
+        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
             candidate.snapshot()
-        with pytest.raises(RuntimeError, match="quiescent"):
+        with pytest.raises(RuntimeError, match="^RNG membership requires exclusive idle custody$"):
             WorldRNGState.from_snapshot(before, descriptor=descriptor, world_id="world-A", cuda_devices=())
         return _backend(policy)
 
     owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
     assert len(candidates) == 1
-    _same(owner.snapshot()["rng"], before)
+    _same(owner.snapshot(lineage=None)["rng"], before)
     _same(rng.snapshot(), before)
     _same(_ambient(()), ambient)
 
@@ -131,7 +137,7 @@ def test_binding_inside_actual_owned_constructor(binding: tuple[Any, ...]) -> No
 
     owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
     assert len(candidates) == 1
-    _same(owner.snapshot()["rng"], before)
+    _same(owner.snapshot(lineage=None)["rng"], before)
     _same(rng.snapshot(), before)
     _same(_ambient(()), ambient)
 
@@ -148,7 +154,7 @@ def test_binding_read_preserves_every_stream(binding: tuple[Any, ...], component
         _validate(rng, descriptor, "world-A", ())
         _same(sources.numpy.bit_generator.state, pcg)
         _same(_ambient(()), installed)
-        with pytest.raises(RuntimeError, match="quiescent"):
+        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
             rng.snapshot()
     _same(rng.snapshot(), before)
     _same(_ambient(()), ambient)
@@ -173,7 +179,7 @@ def test_binding_preserves_actual_candidate_domain_draws(binding: tuple[Any, ...
         return _backend(policy)
 
     owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
-    after = owner.snapshot()["rng"]
+    after = owner.snapshot(lineage=None)["rng"]
     _same(after, seen[0].snapshot())
     for component in WORLD_SEED_COMPONENTS:
         assert not torch.equal(after["components"][component]["torch_cpu"], before["components"][component]["torch_cpu"])
@@ -199,9 +205,9 @@ def test_binding_rejects_other_owner_inside_activation(binding: tuple[Any, ...])
     with rng.activate("model_init"):
         _validate(rng, descriptor, "world-A", ())
         installed = _ambient(())
-        with pytest.raises(RuntimeError, match="[Cc]ross-owner"):
+        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
             _validate(other, descriptor, "world-A", ())
-        with pytest.raises(RuntimeError, match="[Cc]ross-owner"):
+        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
             with other.activate("service"):
                 pytest.fail("different owner was activated")
         _same(_ambient(()), installed)
@@ -328,7 +334,7 @@ def test_binding_refuses_broken_owner(binding: tuple[Any, ...], monkeypatch: pyt
         with pytest.raises(RuntimeError, match="injected capture failure"):
             with rng.activate("model_init"):
                 pytest.fail("capture unexpectedly succeeded")
-    with pytest.raises(RuntimeError, match="[Uu]sable|capture|resume"):
+    with pytest.raises(RuntimeError, match="^Private RNG state is unusable after failed capture$"):
         _validate(rng, descriptor, "world-A", ())
     _same(_ambient(()), ambient)
 
@@ -364,7 +370,7 @@ def test_binding_cuda_domain(binding: tuple[Any, ...]) -> None:
     owner = OwnedWorldBackend.construct(
         rng=rng, factory=lambda candidate: (_validate(candidate, descriptor, "world-A", devices), _backend(policy))[1]
     )
-    _same(owner.snapshot()["rng"], before)
+    _same(owner.snapshot(lineage=None)["rng"], before)
     _same(rng.snapshot(), before)
     _same(_ambient(devices), ambient)
 
@@ -384,36 +390,192 @@ def test_binding_validates_actual_owned_descriptor(binding: tuple[Any, ...]) -> 
     _same(_ambient(()), ambient)
 
 
-def test_binding_refuses_quarantined_coordinator(binding: tuple[Any, ...], monkeypatch: pytest.MonkeyPatch) -> None:
+def test_binding_refuses_quarantined_coordinator(binding: tuple[Any, ...]) -> None:
     _, descriptor, rng = binding
-    other = WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
     _validate(rng, descriptor, "world-A", ())
-    ambient = _ambient(())
-    original_set = torch.set_rng_state
-    calls = 0
+    parent_before, ambient = rng.snapshot(), _ambient(())
+    root = Path(world_state.__file__).resolve().parents[3]
+    source_hashes = {
+        str(Path(module.__file__).resolve()): hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
+        for module in (world_state, rng_custody)
+    }
+    expected_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+    profile = {
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "torch_version": torch.__version__,
+        "torch_threads": torch.get_num_threads(),
+        "torch_interop_threads": torch.get_num_interop_threads(),
+    }
+    script = r"""
+import hashlib
+import json
+import os
+import random
+import subprocess
+import sys
+import types
+from pathlib import Path
+import numpy as np
+import torch
 
-    def fail_restoration(state: torch.Tensor) -> None:
-        nonlocal calls
-        calls += 1
-        if calls == 2:
-            raise RuntimeError("injected restoration failure")
-        original_set(state)
-
+root, expected_head, encoded_hashes, encoded_profile, encoded_descriptor = sys.argv[1:]
+expected_hashes, expected_profile = json.loads(encoded_hashes), json.loads(encoded_profile)
+qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
+qualified = any(name in os.environ for name in qualification_names)
+if qualified:
+    assert all(os.environ.get(name) for name in qualification_names), "incomplete qualification environment"
+    import bac_source_identity
+    bac_source_identity.pytest_configure(types.SimpleNamespace(workerinput={"workerid": "binding_poison"}))
+else:
+    torch.set_num_threads(expected_profile["torch_threads"])
+actual_profile = {
+    "python_executable": sys.executable, "python_version": sys.version,
+    "torch_version": torch.__version__, "torch_threads": torch.get_num_threads(),
+    "torch_interop_threads": torch.get_num_interop_threads(),
+}
+assert actual_profile == expected_profile, (actual_profile, expected_profile)
+sys.path.insert(0, str(Path(root) / "src"))
+from townlet.exploration import rng_custody, rnd, world_curiosity_state as ws
+imports = {"world_curiosity_state": str(Path(ws.__file__).resolve()),
+           "rng_custody": str(Path(rng_custody.__file__).resolve()), "rnd": str(Path(rnd.__file__).resolve())}
+def custody():
+    assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == expected_head
+    for filename, expected in expected_hashes.items():
+        assert hashlib.sha256(Path(filename).read_bytes()).hexdigest() == expected
+    assert imports["world_curiosity_state"] in expected_hashes and imports["rng_custody"] in expected_hashes
+    if qualified:
+        assert Path(os.environ["BAC_QUAL_ROOT"]).resolve() == Path(root).resolve()
+        manifest_bytes = Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()
+        manifest = json.loads(manifest_bytes)
+        assert expected_head == os.environ["BAC_QUAL_SHA"] == manifest["base_commit"]
+        for name, module in list(sys.modules.items()):
+            if name == "townlet" or name.startswith("townlet."):
+                filename = getattr(module, "__file__", None)
+                if filename is not None:
+                    path = Path(filename).resolve()
+                    relative = str(path.relative_to(root))
+                    assert relative in manifest["source_files"], (name, relative)
+                    assert hashlib.sha256(path.read_bytes()).hexdigest() == manifest["source_files"][relative]
+    return {"pid": os.getpid(), **actual_profile, "imports": imports}
+initial = custody()
+if qualified:
+    output = Path(os.environ["BAC_QUAL_OUTPUT"])
+    receipt = output / "identity-binding_poison.json"
+    identity = json.loads(receipt.read_text())
+    identity.update(pid=os.getpid(), manifest_sha256=hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
+                    debug=__debug__, interop_threads=torch.get_num_interop_threads(), imports=imports)
+    receipt.write_text(json.dumps(identity, sort_keys=True, indent=2))
+    destination = output / "spawn-identity-binding_poison.json"
+    assert not destination.exists(), destination
+    receipt.rename(destination)
+descriptor = ws.WorldCuriosityDescriptor.from_dict(json.loads(encoded_descriptor))
+first = ws.WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
+other = ws.WorldRNGState.create(descriptor=descriptor, world_id="world-A", cuda_devices=())
+first.validate_binding(descriptor=descriptor, world_id="world-A", cuda_devices=())
+other.validate_binding(descriptor=descriptor, world_id="world-A", cuda_devices=())
+random.seed(41)
+random.gauss(0, 1)
+np.random.seed(43)
+np.random.normal()
+saved_torch, saved_python, saved_numpy = torch.get_rng_state().clone(), random.getstate(), np.random.get_state()
+real_torch, real_python, real_numpy = torch.set_rng_state, random.setstate, np.random.set_state
+swaps, drawn = [], []
+def torch_setter(state):
+    swaps.append("torch")
+    if drawn and torch.equal(state, saved_torch):
+        raise RuntimeError("injected restoration failure")
+    real_torch(state)
+def python_setter(state):
+    swaps.append("python")
+    real_python(state)
+def numpy_setter(state):
+    swaps.append("numpy")
+    real_numpy(state)
+def retains_failure(error):
+    return "injected restoration failure" in str(error) or any(
+        retains_failure(item) for item in getattr(error, "exceptions", ())) or (
+        error.__cause__ is not None and retains_failure(error.__cause__))
+torch.set_rng_state, random.setstate, np.random.set_state = torch_setter, python_setter, numpy_setter
+try:
+    with first.activate("model_init") as sources:
+        torch.rand(3)
+        random.gauss(0, 1)
+        sources.python.random()
+        np.random.normal(size=3)
+        sources.numpy.normal(size=3)
+        drawn.append(True)
+except BaseException as error:
+    assert retains_failure(error), repr(error)
+else:
+    raise AssertionError("restoration failure was swallowed")
+assert drawn and swaps[-3:] == ["torch", "python", "numpy"]
+assert random.getstate() == saved_python
+actual_numpy = np.random.get_state()
+assert actual_numpy[0] == saved_numpy[0] and np.array_equal(actual_numpy[1], saved_numpy[1])
+assert actual_numpy[2:] == saved_numpy[2:]
+installed = (torch.get_rng_state().clone(), random.getstate(), np.random.get_state())
+before_refusal = list(swaps)
+try:
+    other.validate_binding(descriptor=descriptor, world_id="world-A", cuda_devices=())
+except RuntimeError as error:
+    assert str(error) == "Ambient RNG domain is poisoned after failed restoration", str(error)
+else:
+    raise AssertionError("poisoned domain permitted unrelated binding")
+assert swaps == before_refusal, "refused binding still swapped global streams"
+assert torch.equal(installed[0], torch.get_rng_state()) and installed[1] == random.getstate()
+now_numpy = np.random.get_state()
+assert installed[2][0] == now_numpy[0] and np.array_equal(installed[2][1], now_numpy[1])
+assert installed[2][2:] == now_numpy[2:]
+assert custody() == initial
+print("BAC_CHILD_RESULT " + json.dumps({"pid": os.getpid(), "message": "binding poison fail closed"}))
+"""
+    child = subprocess.Popen(
+        [
+            sys.executable,
+            "-c",
+            script,
+            str(root),
+            expected_head,
+            json.dumps(source_hashes),
+            json.dumps(profile),
+            json.dumps(descriptor.to_dict()),
+        ],
+        cwd=root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
     try:
-        with monkeypatch.context() as patch:
-            # Preserve coordinator quarantine isolation across tests; the failure
-            # itself comes from the real activation restoration path.
-            patch.setattr(world_state, "_rng_unusable", None)
-            patch.setattr(torch, "set_rng_state", fail_restoration)
-            with pytest.raises(RuntimeError, match="injected restoration failure"):
-                with rng.activate("model_init"):
-                    pass
-            installed = _ambient(())
-            with pytest.raises(RuntimeError, match="unusable"):
-                _validate(other, descriptor, "world-A", ())
-            _same(_ambient(()), installed)
+        try:
+            stdout, stderr = child.communicate(timeout=60)
+        except subprocess.TimeoutExpired:
+            child.terminate()
+            try:
+                child.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.communicate(timeout=5)
+            raise
     finally:
-        original_set(ambient["torch"])
-        random.setstate(ambient["python"])
-        np.random.set_state(ambient["numpy"])
+        assert child.stdout is not None and child.stderr is not None
+        child.stdout.close()
+        child.stderr.close()
+    assert child.returncode == 0, stdout + stderr
+    messages = [json.loads(line.removeprefix("BAC_CHILD_RESULT ")) for line in stdout.splitlines() if line.startswith("BAC_CHILD_RESULT ")]
+    assert len(messages) == 1 and messages[0] == {"pid": child.pid, "message": "binding poison fail closed"}
+    qualification_names = ("BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT")
+    if any(name in os.environ for name in qualification_names):
+        assert all(os.environ.get(name) for name in qualification_names)
+        observation = {
+            "process_pid": child.pid,
+            "queued_pid": messages[0]["pid"],
+            "exitcode": child.returncode,
+            "qualified": True,
+            "message": messages[0]["message"],
+            "manifest_sha256": hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
+        }
+        with (Path(os.environ["BAC_QUAL_OUTPUT"]) / "spawn-observation-binding_poison.json").open("x") as stream:
+            json.dump(observation, stream, sort_keys=True, indent=2)
+    _same(rng.snapshot(), parent_before)
     _same(_ambient(()), ambient)

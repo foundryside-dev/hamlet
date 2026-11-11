@@ -1,0 +1,86 @@
+diff --git a/workspace/bac-review-2026-11-01/qualification/wave35-r47-review-domains-before.txt b/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
+index d52cf706..944caf97 100644
+--- a/workspace/bac-review-2026-11-01/qualification/wave35-r47-review-domains-before.txt
++++ b/tests/test_townlet/regressions/bac/test_pw_rng_domains.py
+@@ -212,47 +212,55 @@ def _rnd_state(state, kind):
+ 
+ 
+ def _learning_snapshot(value):
+     # Preserve native mapping kinds, entry order and recursive Torch metadata,
+     # while independently owning the reference snapshot and its leaves.
+     return copy.deepcopy(value)
+ 
+ 
+ def _assert_learning(before, after, kind, updates, pending):
+     old, new = _rnd_state(_learning_snapshot(before), kind), _rnd_state(_learning_snapshot(after), kind)
+-    assert new["schema"] == ("icm-state-v2" if kind == "icm" else "rnd-state-v2")
++    assert new["schema"] == ("icm-state-v3" if kind == "icm" else "rnd-state-v3")
+     if kind == "adaptive_rnd":
+-        assert after["schema"] == "adaptive-intrinsic-state-v2"
++        assert after["schema"] == "adaptive-intrinsic-state-v3"
+     model = "encoder" if kind == "icm" else "predictor_network"
+     assert any(not torch.equal(old[model][key], value) for key, value in new[model].items())
+     moments = new["optimizer"]["state"]
+     assert moments and all(float(item["step"]) == updates for item in moments.values())
+     assert any(torch.count_nonzero(item["exp_avg"]) > 0 for item in moments.values())
+     assert any(torch.count_nonzero(item["exp_avg_sq"]) > 0 for item in moments.values())
+     if kind == "icm":
++        origin_before, origin_after = old["optimizer_epoch_origin"], new["optimizer_epoch_origin"]
++        expected_step = new["counters"]["optimizer_updates"] - origin_after
+         assert new["counters"]["optimizer_updates"] == updates
+         assert new["counters"]["consumed_rows"] == updates * 2
+         assert len(new["pending"]) == pending
+         assert new["counters"]["admitted_rows"] == updates * 2 + pending + new["counters"]["dropped_rows"]
+         service = new
+         admitted = new["counters"]["admitted_rows"]
+         assert new["counters"]["dropped_rows"] == 0
+     else:
+         _equal(old["fixed_network"], new["fixed_network"])
+         service = new["predictor_service"]
++        origin_before, origin_after = old["predictor_service"]["optimizer_epoch_origin"], service["optimizer_epoch_origin"]
++        expected_step = service["optimizer_updates"] - origin_after + service["optimizer_step_offset"]
+         assert service["optimizer_updates"] == updates and service["consumed_rows"] == updates * 2
+         assert len(service["pending_observations"]) == pending
+         assert service["admitted_rows"] == updates * 2 + pending + service["dropped_rows"]
+-        assert service["version"] == 2 and service["optimizer_step_offset"] == 0
++        assert service["version"] == 3 and service["optimizer_step_offset"] == 0
+         assert service["dropped_rows"] == 0
+         assert new["reward_rms_count"] > old["reward_rms_count"]
+         admitted = service["admitted_rows"]
++    # These fixtures perform ordinary learning and exact restore, never reset.
++    assert type(origin_before) is int and origin_before == 0
++    assert type(origin_after) is int and origin_after == 0
++    assert all(float(item["step"]) == expected_step for item in moments.values())
+     assert 0 <= service["ordinary_updates_at_position"] <= 1
+     if service["service_clock_unit"] == "world_eligible_admission":
+         assert service["service_position"] == admitted
+         if kind != "icm":
+             assert service["step_counter"] == 0
+ 
+ 
+ def _owner(kind, world, ids):
+     _, owned_type = _api()
+     return owned_type.construct(rng=_rng(kind, world, ids), factory=_factory(kind, service_clock_unit="world_eligible_admission"))
+@@ -606,21 +614,21 @@ def test_invalid_rng_snapshot_is_pure_and_nested_components_resume():
+         with pytest.raises((ValueError, TypeError)):
+             type(rng).from_snapshot(malformed, descriptor=_descriptor("rnd", ("world1",)), world_id="world1", cuda_devices=())
+         _equal(saved, rng.snapshot())
+         _equal(global_before, _globals(()))
+     with rng.activate("service") as sources:
+         first = _draw(sources)
+         with rng.activate("service") as nested:
+             second = _draw(nested)
+         with rng.activate("target") as target:
+             _draw(target)
+-        with pytest.raises((ValueError, RuntimeError)):
++        with pytest.raises(RuntimeError, match="^Unrelated same-thread RNG reentry is forbidden$"):
+             with other.activate("service"):
+                 pytest.fail("cross-owner nested activation entered")
+         third = _draw(sources)
+     control = type(rng).from_snapshot(saved, descriptor=_descriptor("rnd", ("world1",)), world_id="world1", cuda_devices=())
+     with control.activate("service") as sources:
+         _equal(first, _draw(sources))
+         _equal(second, _draw(sources))
+         _equal(third, _draw(sources))
+     _equal(global_before, _globals(()))
+ 

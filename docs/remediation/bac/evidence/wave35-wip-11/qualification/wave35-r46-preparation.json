@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-11T11:49:10.145176+00:00",
+  "head": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+  "expected_existing_nodes": 84,
+  "baseline": "/workspace/bac-review-2026-11-01/qualification/wave35-existing84-node-baseline.json",
+  "source_writer": "bac_rng_owner_regression_readiness",
+  "next": "Seal two tests; capture r46 against r45; replace generated collection before execution; collect137/exact84 then targeted meaningful controls and full84. Frozen-source static/source reviews parallel.",
+  "cpu": "400000 100000",
+  "memory_current": "2196058112",
+  "memory_max": "17179869184",
+  "competing_workload": "ps actual observed: no active training/qualification Python runner; old python zombie entries retained/not cancelled",
+  "parallel_execution_plan": "Collection and global static in parallel after source freeze; fresh Astra actual-four-source review concurrently; root targeted genuine owner prerequisites then full84, independent model selected controls; CLI may run alongside tests if required. Root index-writing custody verifiers sequential."
+}

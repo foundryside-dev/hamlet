@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+  "candidate_tree": "677b59d5e9d5737fa7afa812ecdca4f8ba552cb7",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py"
+  ],
+  "signatures": [
+    {
+      "error": "?            ^",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_rng_domains.py::test_private_rng_restores_global_streams[rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

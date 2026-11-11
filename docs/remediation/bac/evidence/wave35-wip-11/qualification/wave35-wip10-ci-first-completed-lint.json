@@ -1,0 +1,26 @@
+{
+  "observed_at": "2026-11-11T11:50:52.759826+00:00",
+  "head_sha": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+  "source": "GitHub Primary actions runs and lint jobs REST actual read",
+  "config_validation": {
+    "run_id": 43012071384,
+    "conclusion": "success",
+    "updated_at": "2026-11-11T11:29:32Z"
+  },
+  "lint": {
+    "run_id": 43012071347,
+    "job_id": 130493906416,
+    "conclusion": "failure",
+    "ruff": "success",
+    "black": "success",
+    "mypy": "failure",
+    "no_defaults": "skipped",
+    "updated_at": "2026-11-11T11:28:41Z",
+    "detailed_error_cause": "not inferred from step status; local qualified R45 separately records14BANK+6oracle errors"
+  },
+  "tests": {
+    "run_id": 43012071356,
+    "status": "in_progress",
+    "updated_at": "2026-11-11T11:27:19Z"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "status": "DURABLE WIP10 PUSHED AND INDEPENDENT REMOTE SHA/TREE VERIFIED; not BAC release",
+  "commit": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+  "tree": "2e67a72570db8ef9ce8868059e6584a64d4b3e5d",
+  "branch": "project-recovery-bac-2026-11-01",
+  "evidence_candidate_tree": "20ce0b5758dba020c520f97dcce68f5cecd25ce5",
+  "checkpoint_receipt_sha256": "0ca6584f326efe498bd8ac839db0dd2170c7f213cf2c6a1283a1bd6b8bdda4b1",
+  "remote_verification": "GitHub Primary branch REST connector independently matched commit AND tree after completed push",
+  "CI_observed_at": "2026-11-11T11:28:22Z",
+  "CI": [
+    {
+      "id": 43012071347,
+      "name": "Lint",
+      "status": "in_progress",
+      "updated_at": "2026-11-11T11:27:20Z"
+    },
+    {
+      "id": 43012071356,
+      "name": "Tests",
+      "status": "in_progress",
+      "updated_at": "2026-11-11T11:27:19Z"
+    },
+    {
+      "id": 43012071384,
+      "name": "Config Validation",
+      "status": "in_progress",
+      "updated_at": "2026-11-11T11:27:19Z"
+    }
+  ],
+  "CI_limit": "No green claim; final exact candidateCI remains required",
+  "clean_at_commit": true,
+  "artifact_count": 530,
+  "staged_paths": 535,
+  "executable_equivalence": "Exact qualified R45 src/tests/configs/scripts/ratchet",
+  "accounting": "28qualified/38remaining/66total unchanged; no globalrelease",
+  "next": "Actual older84caller andBANK/CPsharedpurebootstrap/domainbeforelock/lineage/directcaller/outerfullD/native/runner/mechanics/finalgates",
+  "creation": "No new branch/worktree/checkout/PR/merge/deletion; existing14registered/MAIN1available retained",
+  "private_bundle": "Preserved locally and excluded from publication",
+  "assembler": "publish_wave35_wip10.py EXECUTED; NEVER RERUN"
+}

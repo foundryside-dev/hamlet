@@ -1,0 +1,30 @@
+diff --git a/tests/test_townlet/regressions/bac/test_icm_provider.py b/tests/test_townlet/regressions/bac/test_icm_provider.py
+index 1accff94..4879faa9 100644
+--- a/tests/test_townlet/regressions/bac/test_icm_provider.py
++++ b/tests/test_townlet/regressions/bac/test_icm_provider.py
+@@ -118,7 +118,8 @@ def test_icm_uses_action_and_successor():
+     provider = _provider(PARAMETERS, "paced_fifo", "service_before_admit")
+     context = _rows(2, 0)
+     before = deepcopy(provider.checkpoint_state())
+-    assert before["schema"] == "icm-state-v2"
++    assert before["schema"] == "icm-state-v3"
++    assert before["optimizer_epoch_origin"] == 0
+     assert before["service_clock_unit"] == "vector_tick"
+     reward = provider.compute_transition_novelty(context, update_stats=False)
+     _, expected = _objective(provider, context, PARAMETERS)
+diff --git a/tests/test_townlet/regressions/bac/test_rnd_service.py b/tests/test_townlet/regressions/bac/test_rnd_service.py
+index 500b2556..e29d0ef4 100644
+--- a/tests/test_townlet/regressions/bac/test_rnd_service.py
++++ b/tests/test_townlet/regressions/bac/test_rnd_service.py
+@@ -189,8 +189,9 @@ def test_direct_minibatch_and_current_native_state_refuse_diagnostic_import():
+                 operation(diagnostic)
+             equal(before, current.checkpoint_state())
+     native = rnd.checkpoint_state()
+-    assert native["schema"] == "rnd-state-v2"
+-    assert native["predictor_service"]["version"] == 2
++    assert native["schema"] == "rnd-state-v3"
++    assert native["predictor_service"]["version"] == 3
++    assert native["predictor_service"]["optimizer_epoch_origin"] == 0
+     assert native["predictor_service"]["service_clock_unit"] == "vector_tick"
+     restored.load_state(native)
+     equal(native, restored.checkpoint_state())

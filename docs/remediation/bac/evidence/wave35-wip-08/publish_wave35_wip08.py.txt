@@ -1,0 +1,129 @@
+"""Publish qualified R35 CPU Adam RNG profile; retain all larger BAC obligations."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave35/r35-candidate.json').read_text())
+receipt = json.loads((W / 'wave35/r35-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['status'] == 'UNRELEASED WIP; no package or repository release'
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+for family, proof in receipt['fresh_family_processes'].items():
+    assert proof['job'] == 'family-' + family and proof['counts']['passed'] == 1
+    assert proof['exit_code'] == 0 and proof['source_index_import_threads_fixture_custody'] == 'PASS'
+for key, count in (('controls', 2), ('independent_same_six', 6)):
+    proof = receipt[key]
+    assert proof['exit_code'] == 0 and proof['counts']['passed'] == count
+    assert proof['counts']['warnings'] == 1
+    assert proof['source_index_import_threads_fixture_custody'] == 'PASS'
+assert receipt['static']['all_passed'] is False
+for row in receipt['documents'].values():
+    assert sha(W / row['draft']) == row['sha256'], row['draft']
+    if row['prior_sha256'] is None:
+        assert not (R / row['target']).exists(), row['target']
+    else:
+        assert sha(R / row['target']) == row['prior_sha256'], row['target']
+for path, digest in receipt['review_sha256'].items():
+    assert sha(W / path) == digest, path
+assert sha(W / receipt['author_report']) == receipt['author_report_sha256']
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p)
+             for p in ('src', 'tests', 'configs', 'scripts', '.defaults-ratchet')}
+out = D / 'evidence/wave35-wip-08'
+mp = D / 'evidence/wave35-wip-08.json'
+assert not out.exists() and not mp.exists()
+out.mkdir()
+artifacts = {}
+
+
+def copy(source, target):
+    assert source.is_file() and not target.exists(), str(target)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+    assert sha(source) == sha(target)
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': sha(target), 'original': str(source)}
+
+
+for p in sorted(Q.glob('wave35-r*')):
+    match = re.match(r'wave35-r([0-9]+)(?:-|$)', p.name)
+    if match is None or not int(match.group(1)) == 35:
+        continue
+    if p.is_dir():
+        for f in sorted(p.rglob('*')):
+            if f.is_file() and f.suffix in ('.json', '.log'):
+                copy(f, out / 'qualification' / p.name / f.relative_to(p))
+    elif p.suffix == '.json':
+        copy(p, out / 'qualification' / p.name)
+for folder in ('wave35', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch') and p.name != 'T18e-WORLD-LIFECYCLE-CURRENT-MIGRATION.md':
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'verify_bac_failed_run.py',
+             'verify_bac_static_run.py', 'run_bac_packet_checks_locked.py', 'bac_source_identity.py',
+             'exec_identity_compiler_cli.py', 'verify_bac_compiler_cli_run.py', 'publish_wave35_wip08.py'):
+    copy(Q / name, out / (name + '.txt'))
+copy(Q / 'compiler_identity_startup/sitecustomize.py', out / 'compiler_identity_startup/sitecustomize.py.txt')
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+for key, row in receipt['documents'].items():
+    source, target = W / row['draft'], R / row['target']
+    if row['prior_sha256'] is not None:
+        copy(target, out / ('previous-' + key + '-contract.md'))
+    target.write_bytes(source.read_bytes())
+    assert sha(target) == row['sha256']
+    artifacts[row['target']] = {'sha256': sha(target), 'original': str(source), 'prior_sha256': row['prior_sha256']}
+status = D / 'STATUS.md'
+before_status = status.read_text()
+assert before_status.startswith('# BAC implementation status\n')
+current = """
+
+Latest checkpoint: a source-reviewed executable CPU Adam profile witness at candidate `22ee68664004f4cb0b0177e8f92db1686211b18e` qualifies genuine RND, adaptive inner RND, ICM and Q OptimizerFactory construction profiles. Each first and second actual ordinary dense CPU public Adam step updates real parameters, moments and counters while preserving Python, legacy NumPy and CPU Torch RNG states and next-draw continuation. This is **unreleased work in progress**: **28 qualified / 38 remaining / 66 total** is unchanged. The [checkpoint evidence](evidence/wave35-wip-08.json) and [current exact CPU profile](CURRENT-CPU-ADAM-RNG-PROFILE.md) bind the installed library, admitted inputs, effects and limits.
+
+Root ran the four families in separate fresh processes plus two serial control cases; independent Astra ran the same six cases in one fresh serial process. These are six unique cases, not twelve. The actual stochastic instance pre-hook changes all three RNG streams, is removed in finally, and the next clean step preserves them again. Genuine first sparse-gradient refusal preserves the measured state and parameters; its one sparse-invariant construction warning is recorded in both root control and independent runs. The custody parser now handles singular and plural warnings; the original omitted warning and an intermediate administrative job-name regression are preserved and explicitly invalidated in the correction audit. No application rerun or warning suppression manufactured closure.
+
+Fresh family processes observe Dynamo absent before the actual constructor and present after construction, before the first measured step. No optimizer step warmup occurs; this is first-step-empty-state evidence with a warm library, not a fully cold-library or RNG-free constructor claim. Exact Torch2.11.0+cu130 and optimizer.py/adam.py hashes match the pinned source facts in each process. Named runs verify 805 source guards, 573 configurations, 13 artifacts, index/import/thread custody and the full 14-record worktree registry with MAIN1 available. Global Ruff, Black, expression documentation and unchanged 600 defaults guard pass. Mypy still fails with six required existing oracle-driver errors; global gates are not all green. CUDA remains unavailable and unqualified.
+
+This independent-owner ordinary Adam arithmetic need not acquire a global RNG gate solely to protect RNG. Same-owner copying/reset/publication still needs mutation exclusion; actual stochastic constructors, forward/backward, hooks, closures and other admitted entrypoints need their own RNG custody. No production wrapper, manual-step ban, replacement/signed-delta removal or new cohort checkpoint scope is introduced. R0 shared/private entrypoint enrollment and exclusion/exact private fork restore, BANK/CP epochs/history/reset provenance and native stable-owner full D/E/F/T26 remain required. Old world-lifecycle _Run and separate shared fx.Rig current protocol migrations, ordinary runner/serving/current mechanics/oracle, all-family/scope/manual controls and the remaining finite packages stay required. Full/default, coverage at least 70%, slow/applicable hardware, learning/end-to-end evidence, 54 requirements, 22 fresh final review lenses plus synthesis, exact-final-remote CI and source-verified documentation remain owed. Prior coherent population/compiler evidence retains its exact original source binding; it is not relabelled a new R35 execution. Earlier entries below are historical checkpoints.
+"""
+status.write_text('# BAC implementation status' + current + before_status[len('# BAC implementation status'):])
+manifest = {'status': receipt['status'], 'packet': 'Executable exact ordinary dense CPU Adam RNG profile and stochastic-hook control',
+            'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+            'execution_subtrees': execution, 'inventories': m['inventories'], 'source_files': m['source_files'],
+            'config_changes': m['config_changes'], 'receipt': receipt, 'artifacts': artifacts,
+            'qualified_progress': '28 original packages qualified,38 remaining,66 total unchanged; actual POP/native/current caller/final gates required.',
+            'publication': 'Existing authorized remote branch only; no new branch/worktree/checkout/source copy/PR/merge/deletion; private bundle excluded.',
+            'next': 'Genuine _Run/shared fx.Rig current fixtures and actual R0 RNG admission/exclusion, BANK/CP/native/runner/mechanics/final gates.', 'excluded_active_unsealed_prose': 'T18e-WORLD-LIFECYCLE-CURRENT-MIGRATION.md; next owner still readonly'}
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+subprocess.run(['git', 'add', '-f', '--', *artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md'], cwd=R, check=True)
+tree = git('write-tree')
+for path, digest in execution.items():
+    assert git('rev-parse', tree + ':' + path) == digest, path
+allowed_prose = {'docs/remediation/bac/STATUS.md'}
+for path, digest in m['source_files'].items():
+    if path not in allowed_prose:
+        assert sha(R / path) == digest, path
+for path, row in artifacts.items():
+    assert sha(R / path) == row['sha256'], path
+staged = git('diff', '--cached', '--name-only').splitlines()
+assert set(staged) == set(m['changed_paths']) | set(artifacts) | {mp.relative_to(R).as_posix(), 'docs/remediation/bac/STATUS.md'}
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave35-wip-08/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree,
+          'source_equivalence': 'PASS exact src/tests/configs/scripts/ratchet; only approved STATUS prose differs among guarded paths; new CPU profile contract matches independently approved SHA',
+          'artifact_count': len(artifacts), 'staged_paths': staged}
+(Q / 'wave35-wip-08-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

@@ -1,0 +1,72 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r35-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-families",
+  "workers": 4,
+  "jobs": [
+    {
+      "name": "family-rnd",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_cpu_adam_public_steps_preserve_global_rng[rnd]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-rnd"
+      ]
+    },
+    {
+      "name": "family-adaptive",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_cpu_adam_public_steps_preserve_global_rng[adaptive]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-adaptive"
+      ]
+    },
+    {
+      "name": "family-icm",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_cpu_adam_public_steps_preserve_global_rng[icm]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-icm"
+      ]
+    },
+    {
+      "name": "family-q_factory",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_cpu_adam_public_steps_preserve_global_rng[q_factory]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-q_factory"
+      ]
+    }
+  ]
+}

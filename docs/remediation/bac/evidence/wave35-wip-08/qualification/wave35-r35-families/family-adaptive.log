@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py CPU_ADAM environment torch=2.11.0+cu130 dynamo_before_setup=False
+CPU_ADAM source=/workspace/hamlet/.venv/lib/python3.13/site-packages/torch/optim/optimizer.py lines=1193 sha256=ea3497233845529a212f81d4d325828eadc20f387ab94b1c21b96057f0001536
+CPU_ADAM source=/workspace/hamlet/.venv/lib/python3.13/site-packages/torch/optim/adam.py lines=991 sha256=7e5c8482c91b88e355a8bdf1d4b1930e8d961fb99f00c2179946b164a03652b6
+CPU_ADAM family=adaptive dynamo_before_constructor=False
+CPU_ADAM family=adaptive dynamo_after_constructor=True
+CPU_ADAM actual_group={'lr': 0.001, 'betas': (0.9, 0.999), 'eps': 1e-08, 'weight_decay': 0, 'amsgrad': False, 'maximize': False, 'foreach': None, 'capturable': False, 'differentiable': False, 'fused': None, 'decoupled_weight_decay': False}
+CPU_ADAM step=1 dynamo_before_step=True coldness=observed-module-presence-only no_optimizer_warmup=true
+CPU_ADAM step=1 rng_equal_python_numpy_torch=(True, True, True) dynamo_after_step=True
+CPU_ADAM step=2 dynamo_before_step=True coldness=observed-module-presence-only no_optimizer_warmup=true
+CPU_ADAM step=2 rng_equal_python_numpy_torch=(True, True, True) dynamo_after_step=True
+.
+
+============================== 1 passed in 6.41s ===============================

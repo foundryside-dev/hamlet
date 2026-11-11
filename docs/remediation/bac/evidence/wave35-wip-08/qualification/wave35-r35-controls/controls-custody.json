@@ -1,0 +1,22 @@
+{
+  "job": "controls",
+  "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+  "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+  "exit_code": 0,
+  "counts": {
+    "passed": 2,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 1
+  },
+  "wall_seconds": 11.932508707046509,
+  "source_guards": 805,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

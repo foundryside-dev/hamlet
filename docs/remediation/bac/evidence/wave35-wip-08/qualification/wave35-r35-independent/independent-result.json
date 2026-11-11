@@ -1,0 +1,25 @@
+{
+  "name": "independent",
+  "exit_code": 0,
+  "seconds": 20.395822048187256,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-s",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-independent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-independent/independent.log",
+  "sha256": "5b1a1ccc651d1b9165db2e6eecedc888ea6c80f6775b5634ccc5fd68c412063e",
+  "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+  "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+  "manifest_sha256": "6e73ae5db7c0846da2b851ad43deeacc39430a323938f696dfb20ddc8520a25e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

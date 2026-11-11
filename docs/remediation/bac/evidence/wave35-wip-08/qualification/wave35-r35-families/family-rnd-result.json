@@ -1,0 +1,25 @@
+{
+  "name": "family-rnd",
+  "exit_code": 0,
+  "seconds": 11.366589307785034,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_cpu_adam_public_steps_preserve_global_rng[rnd]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-s",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-rnd"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-families/family-rnd.log",
+  "sha256": "ef6b8b78b0e72cf2e11f7c6953cacd79c2286321c74b7204a555f342ec97f655",
+  "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+  "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+  "manifest_sha256": "6e73ae5db7c0846da2b851ad43deeacc39430a323938f696dfb20ddc8520a25e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

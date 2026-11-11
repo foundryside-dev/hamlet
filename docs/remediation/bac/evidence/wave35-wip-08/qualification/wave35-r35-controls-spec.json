@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r35-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_stochastic_instance_hook_is_detected_and_removed",
+        "tests/test_townlet/regressions/bac/test_cpu_adam_rng_profile.py::test_sparse_cpu_adam_refusal_preserves_global_rng",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r35-controls"
+      ]
+    }
+  ]
+}

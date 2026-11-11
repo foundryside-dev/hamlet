@@ -1,0 +1,58 @@
+import hashlib
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+q = Path(__file__).parent
+sp = Path(sys.argv[1])
+s = json.loads(sp.read_text())
+m = json.loads(Path(s['manifest']).read_text())
+out = Path(s['output'])
+root = Path(s['root'])
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+for path, digest in s['auxiliary_harness'].items():
+    assert sha(Path(path)) == digest, path
+subprocess.run([sys.executable, str(q / 'verify_bac_static_run.py'), str(sp)], check=True, capture_output=True, text=True)
+result = json.loads((out / 'compiler-cli-result.json').read_text())
+assert result['exit_code'] == 0
+log = Path(result['log']).read_text()
+assert 'Universe compiler CLI validation passed' in log
+packs = re.findall(r'Validating (configs/\S+) via CLI', log)
+assert len(packs) == len(set(packs)) == 34, packs
+files = sorted((out / 'compiler-cli/compiler-processes').glob('*.json'))
+assert not list((out / 'compiler-cli/compiler-processes').glob('FAIL-*'))
+profiles = [json.loads(p.read_text()) for p in files]
+assert len(profiles) == 35
+wrappers = [p for p in profiles if any(str(a).endswith('validate_compiler_cli.py') for a in p['argv'])]
+assert len(wrappers) == 1
+wrapper = wrappers[0]
+children = [p for p in profiles if p is not wrapper]
+observed = []
+for p in profiles:
+    assert p['status'] == 'PASS'
+    assert p['sha'] == m['base_commit'] and p['candidate_tree'] == m['candidate_tree']
+    assert p['manifest_sha256'] == sha(Path(s['manifest']))
+    assert p['source_hashes'] == m['source_files']
+    # The pinned startup hook hashes every entry before publishing these counts.
+    assert p['configs'] == len(m['configs']) and p['artifacts'] == len(m['artifacts'])
+    assert p['module'] == str(root / 'src/townlet/__init__.py')
+    assert p['executable'] == str(root / '.venv/bin/python')
+    assert p['python'].startswith('3.13.5 ') and p['torch'] == '2.11.0+cu130'
+    assert p['threads'] == 1 and p['interop_threads'] == 5
+    if p is not wrapper:
+        assert p['ppid'] == wrapper['pid']
+        paths = [str(a) for a in p['argv'] if str(a).startswith(str(root / 'configs') + '/')]
+        assert len(paths) == 1
+        observed.append(Path(paths[0]).relative_to(root).as_posix())
+assert sorted(observed) == sorted(packs)
+report = {'status': 'PASS required compiler CLI and all actual process identities',
+          'base_commit': m['base_commit'], 'candidate_tree': m['candidate_tree'],
+          'packs': 34, 'process_identities': 35, 'source_guards_per_process': len(m['source_files']),
+          'configs_per_process': len(m['configs']), 'artifacts_per_process': len(m['artifacts']),
+          'wall_seconds': result['seconds'], 'log_sha256': result['sha256'],
+          'profile_hashes': {p.relative_to(out).as_posix(): sha(p) for p in files},
+          'scope': 'Compiler fleet only; not repository or whole-BAC qualification.'}
+(out / 'compiler-cli-custody.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'profile_hashes'}, indent=2))

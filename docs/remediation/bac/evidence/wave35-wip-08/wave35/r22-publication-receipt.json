@@ -1,0 +1,46 @@
+{
+  "status": "DURABLE UNRELEASED WIP; no package/repository release or merge",
+  "published_at": "2026-11-11T01:19:52.237652+00:00",
+  "commit": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "tree": "81a6db2a3464c0ffc71ab5cbdea15084ba7aa626",
+  "branch": "project-recovery-bac-2026-11-01",
+  "remote_sha": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "remote_tree": "81a6db2a3464c0ffc71ab5cbdea15084ba7aa626",
+  "remote_verification": "GitHub branch API exact SHA/tree after completed authorized git push, independently matches local commit/tree",
+  "execution_candidate": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+  "execution_equivalence": "src/tests/configs/scripts/.defaults-ratchet subtrees all exactly match tested R22 candidate",
+  "evidence_manifest": "docs/remediation/bac/evidence/wave35-wip-04.json",
+  "artifacts": 280,
+  "changed_paths": 287,
+  "worktree": "clean",
+  "full_source_guard_change_during_assembly": "Only intended postqualification docs/remediation/bac/STATUS.md prose; complete executable subtrees unchanged. Initial overbroad postassembly guard correctly noticed intended document edit; corrected verification permits only exact STATUS path and verifies all others.",
+  "tests": "R22coherent293PASS,separatebasic182PASS,independentSAME154PASS;BANK34PASS1FAIL,restore0PASS1FAILbeforeintendedassertions; all source/process custody PASS",
+  "CI_observed_utc": "2026-11-11T01:18:07Z",
+  "CI": [
+    {
+      "id": 42937937163,
+      "name": "Config Validation",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 42937935171,
+      "name": "Tests",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 42937935134,
+      "name": "Lint",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "progress": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "authority": "Existing authorized branch push only; no new branch/worktree/checkout/source copy/PR/merge/deletion. Private email bundle excluded.",
+  "next": "Genuine initial participation producer/actual POP consumer and shared fixture complete lifecycle; required RNG/BANK/native stable owners/current callers/final gates; not a routine halt."
+}

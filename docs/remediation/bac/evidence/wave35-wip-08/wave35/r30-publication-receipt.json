@@ -1,0 +1,93 @@
+{
+  "commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "tree": "dd59e7a7cee429ff71a2e9814431132971f4eaf0",
+  "branch": "project-recovery-bac-2026-11-01",
+  "remote_SHA_and_tree": "PASS independentGitHubbranchAPI exactidentity",
+  "source_equivalence": "PASS R30exactsrc/tests/configs/scripts/ratchet; approvedCURRENTcontract+STATUSprose only guardedpathchanges",
+  "evidence_candidate_tree": "1f86a18c49747607e6b8a10e2fc8719aa15a0cc9",
+  "artifact_count": 348,
+  "changed_paths": 353,
+  "CI_snapshot_UTC": "2026-11-11T04:20:00Z",
+  "CI": [
+    {
+      "name": "Lint",
+      "id": 42958525018,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "name": "Config Validation",
+      "id": 42958524922,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "name": "Tests",
+      "id": 42958524949,
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "status": "DURABLE UNRELEASED WIP, notwholeBAC/repositoryqualification",
+  "assembler": "publish_wave35_wip06.py EXECUTED, NEVER RERUN",
+  "publication_authority": "Userauthorizesallworkpushestoexistingremote; no branch/worktree/checkout/sourcecopy/PR/merge/deletion",
+  "next": "ActualPOPconsumerimplementationandrequirednextfinitegates, no routinehalt",
+  "latest_CI": {
+    "observed": "2026-11-11T05:59:34Z",
+    "exact_head": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "runs": [
+      {
+        "name": "Config Validation",
+        "id": 42958524922,
+        "status": "completed",
+        "conclusion": "success",
+        "updated_at": "2026-11-11T04:22:44Z"
+      },
+      {
+        "name": "Lint",
+        "id": 42958525018,
+        "status": "completed",
+        "conclusion": "failure",
+        "updated_at": "2026-11-11T04:21:07Z"
+      },
+      {
+        "name": "Tests",
+        "id": 42958524949,
+        "status": "completed",
+        "conclusion": "failure",
+        "updated_at": "2026-11-11T05:05:21Z"
+      }
+    ],
+    "cause": "not inferred from status alone; final repository acceptance remains required"
+  },
+  "CI_observation_history": [
+    {
+      "observed": "2026-11-11T04:24:37Z",
+      "exact_head": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "runs": [
+        {
+          "name": "Config Validation",
+          "id": 42958524922,
+          "status": "completed",
+          "conclusion": "success",
+          "updated_at": "2026-11-11T04:22:44Z"
+        },
+        {
+          "name": "Lint",
+          "id": 42958525018,
+          "status": "completed",
+          "conclusion": "failure",
+          "updated_at": "2026-11-11T04:21:07Z"
+        },
+        {
+          "name": "Tests",
+          "id": 42958524949,
+          "status": "in_progress",
+          "conclusion": null,
+          "updated_at": "2026-11-11T04:20:00Z"
+        }
+      ],
+      "cause": "not inferredfromstatusalone"
+    }
+  ]
+}

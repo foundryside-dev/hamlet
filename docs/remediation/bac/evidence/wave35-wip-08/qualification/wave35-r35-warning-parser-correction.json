@@ -1,0 +1,42 @@
+{
+  "problem": "positive custody parser matched plural warnings only; actual pytest singular 1 warning was omitted",
+  "before_verifier_sha256": "54ab0a2cf47b90a42a010770813fbfffe8abf9a767f74151fc462829e15c6d32",
+  "after_verifier_sha256": "7a95e00045aa0d859f9726f30d36e65c1174b42b4624f58a0a07ed7b04205730",
+  "original_controls_custody": {
+    "job": "controls",
+    "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+    "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+    "exit_code": 0,
+    "counts": {
+      "passed": 2,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 11.932508707046509,
+    "source_guards": 805,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "actual_summary": "2 passed, 1 warning in 6.66s",
+  "source": "wave35-r35-controls/controls.log",
+  "disposition": "Reparse same closed immutable runtime log with singular/plural matcher; no application rerun or source/test change. Historical pre-fix receipt preserved here. Sparse-invariant UserWarning recorded honestly as optional P3; no hidden suppression.",
+  "initial_repair_regression": {
+    "problem": "Parser loop variable name shadowed original job name; first repair wrote warnings-custody.json with correct counts but wrong job identity",
+    "disposition": "Intermediate misnamed receipt preserved but invalid; second administrative repair uses distinct count_name/count_label/count_matches, then reparses same closed log. No application rerun/source change."
+  },
+  "corrected_verifier_sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+  "verified_corrected_receipt": {
+    "path": "wave35-r35-controls/controls-custody.json",
+    "job": "controls",
+    "passed": 2,
+    "warnings": 1,
+    "runtime_reexecuted": false
+  }
+}

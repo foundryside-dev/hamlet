@@ -1,0 +1,36 @@
+{
+  "observed_at": "2026-11-10T21:00:30.548Z",
+  "source": "GitHub connector public GET",
+  "sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+  "tree": "cad40c9dcff0f5e04ba4758ea43ad9ea7b4d26c2",
+  "runs": [
+    {
+      "id": 42888280323,
+      "name": "Lint",
+      "head_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "status": "completed",
+      "conclusion": "failure",
+      "updated_at": "2026-11-10T19:45:46Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42888280323"
+    },
+    {
+      "id": 42888280047,
+      "name": "Config Validation",
+      "head_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "status": "completed",
+      "conclusion": "success",
+      "updated_at": "2026-11-10T19:46:58Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42888280047"
+    },
+    {
+      "id": 42888279948,
+      "name": "Tests",
+      "head_sha": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "status": "completed",
+      "conclusion": "failure",
+      "updated_at": "2026-11-10T20:47:44Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42888279948"
+    }
+  ],
+  "interpretation": "Exact durable WIP checkpoint; CI not green. No failure cause inferred."
+}

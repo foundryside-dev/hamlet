@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "candidate_tree": "93a182c2131c75df8b5238b3205a7302b358d684",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_return_healthy_validation",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

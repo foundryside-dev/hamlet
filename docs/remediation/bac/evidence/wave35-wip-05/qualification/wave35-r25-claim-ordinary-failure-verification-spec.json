@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r25-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r25-cleanup-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "claim-ordinary",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_claim_cleanup_cannot_resume_physics[False]",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r25-cleanup-claim-ordinary"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r26-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r26-current",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "component",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r26-component"
+      ]
+    },
+    {
+      "name": "covering-owners",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "tests/test_townlet/regressions/bac/test_env_accepted_auth.py",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+        "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+        "-x",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r26-covering-owners"
+      ]
+    }
+  ]
+}

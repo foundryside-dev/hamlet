@@ -1,0 +1,251 @@
+diff --git a/src/townlet/environment/vectorized_env.py b/src/townlet/environment/vectorized_env.py
+index d4a87c93..f9fe8bd2 100644
+--- a/src/townlet/environment/vectorized_env.py
++++ b/src/townlet/environment/vectorized_env.py
+@@ -1318,16 +1318,20 @@ class VectorizedHamletEnv:
+         vector_tick = self._claim_vector_step(
+             prepared=vector_step,
+             accepted=accepted,
+             world_ids=self.world_ids,
+             predecessor=predecessor,
+             actions=actions,
+             active_on_entry=active_on_entry,
+         )
++        # Claim is a genuine owner callback and may perform fail-closed cleanup.
++        # No-decision episodes require this check too, before the first write.
++        self._require_phase("active")
++        self._accepted(accepted)
+         self._check_committed_participation()
+         self._world_revision += 1
+         self.vfs_registry.reset_tick_scoped()
+         refusals_before = 0
+         if self.effect_manager is not None:
+             refusals_before = len(self.effect_manager.spawn_refusals)
+         # 1. Execute actions and track successful interactions
+         successful_interactions = self._action_executor._execute_actions(actions)
+@@ -2269,30 +2273,29 @@ class VectorizedHamletEnv:
+             "meters",
+             "dones",
+             "step_counts",
+             "intrinsic_weights",
+             "interaction_progress",
+             "last_interaction_position",
+             "_unique_affordances_count",
+         )
+-        return owned_value(
+-            {
+-                "tensors": {name: getattr(self, name) for name in names},
+-                "tick": self.global_tick,
+-                "hour": self.time_of_day,
+-                "affordances": self.affordances,
+-                "layout": self._affordance_layout_cache,
+-                "last_interaction": self.last_interaction_affordance,
+-                "last_affordances": self._last_affordances,
+-                "streaks": self._affordance_streaks,
+-                "seen": tuple(tuple(sorted(values)) for values in self._affordances_seen),
+-                "vfs": self._current_vfs_state(),
+-            }
+-        )
++        state: dict[str, Any] = {
++            "tensors": {name: getattr(self, name) for name in names},
++            "tick": self.global_tick,
++            "hour": self.time_of_day,
++            "affordances": self.affordances,
++            "layout": self._affordance_layout_cache,
++            "last_interaction": self.last_interaction_affordance,
++            "last_affordances": self._last_affordances,
++            "streaks": self._affordance_streaks,
++            "seen": tuple(tuple(sorted(values)) for values in self._affordances_seen),
++            "vfs": self._current_vfs_state(),
++        }
++        return {key: owned_value(value) for key, value in state.items()}
+ 
+     def _quarantine_participation(self) -> None:
+         self._participation_pending = None
+         self._participation_failed = True
+         self._world_phase = "quarantined"
+ 
+     def _check_participation_state(self, expected: Mapping[str, Any]) -> None:
+         if not same_value(expected, self._participation_state()):
+@@ -2303,26 +2306,25 @@ class VectorizedHamletEnv:
+         self._participation_pending = None
+         if expected is not None:
+             try:
+                 self._check_participation_state(expected)
+             except BaseException:
+                 # A failed read cannot certify a healthy replacement preparation.
+                 self._quarantine_participation()
+ 
+-    def _participation_reading(self, value: Any, *, mask: bool) -> None:
+-        shape = (self.num_agents, self.action_dim if mask else self.observation_dim)
+-        dtype = torch.bool if mask else torch.float32
++    def _participation_reading(self, value: Any, *, width: int, dtype: torch.dtype) -> None:
++        shape = (self.num_agents, width)
+         if (
+             not isinstance(value, torch.Tensor)
+             or value.layout != torch.strided
+             or value.shape != shape
+             or value.dtype != dtype
+             or value.device != self.device
+-            or (not mask and not bool(torch.isfinite(value).all()))
++            or (dtype == torch.float32 and not bool(torch.isfinite(value).all()))
+         ):
+             raise ValueError("initial participation reading has invalid geometry, dtype or device")
+ 
+     def _initial_participation_window(self, accepted: WorldAcceptedEpisode) -> None:
+         self._accepted(accepted)
+         if (
+             self._world_phase != "active-awaiting-activation"
+             or self._participation_failed
+@@ -2369,33 +2371,37 @@ class VectorizedHamletEnv:
+         if previous is not None and previous["intent"] is not intent:
+             raise ValueError("another initial participation intent is retained")
+         reset_state, reset_record = self._participation_reset_state, self._world_reset
+         assert reset_state is not None and reset_record is not None
+         self._participation_busy = True
+         try:
+             if previous is not None:
+                 self._check_initial_preparation(previous)
+-                return previous["prepared"]
++                retained = previous["prepared"]
++                if not isinstance(retained, WorldRecord):
++                    raise ValueError("retained initial participation preparation is invalid")
++                self._valid_record(retained, "prepared_initial_participation")
++                return retained
+             self._check_participation_state(reset_state)
+             if self.global_tick != 0 or bool(self.step_counts.any()) or bool(self.dones.any()):
+                 self._quarantine_participation()
+                 raise ValueError("initial participation requires pristine reset activity and counts")
+             observation = self._encode_observations().detach().clone()
+             self._check_participation_state(reset_state)
+-            self._participation_reading(observation, mask=False)
++            self._participation_reading(observation, width=self.observation_dim, dtype=torch.float32)
+             if not same_value(observation, reset_record.observation):
+                 self._quarantine_participation()
+                 raise ValueError("initial participation reset observation changed")
+             before = self._participation_state()
+             # One genuine fixed-reset legal mask. Dones is read only at the builtin
+             # builder's final clearing step, so derive retirement without a callback.
+             legal = self._build_action_masks()
+             self._check_participation_state(before)
+-            self._participation_reading(legal, mask=True)
++            self._participation_reading(legal, width=self.action_dim, dtype=torch.bool)
+             candidate_mask = legal.detach().clone()
+             candidate_dones = torch.tensor([key in retired for key in self.world_ids], dtype=torch.bool, device=self.device)
+             candidate_mask[candidate_dones] = False
+             if bool((~candidate_dones & ~candidate_mask.any(dim=1)).any()):
+                 raise ValueError("initial participation leaves a live world without a legal action")
+             self._check_participation_state(before)
+             self._initial_participation_window(accepted)
+             candidate_state = owned_value(before)
+@@ -2476,23 +2482,23 @@ class VectorizedHamletEnv:
+             or fields["population_revision"] != pending["population_revision"]
+         ):
+             raise ValueError("initial participation ready disagrees with retained preparation")
+         self._participation_busy = True
+         publishing = False
+         try:
+             self._check_initial_preparation(pending)
+             observation = self._encode_observations()
+-            self._participation_reading(observation, mask=False)
++            self._participation_reading(observation, width=self.observation_dim, dtype=torch.float32)
+             if not same_value(observation, pending["observation"]):
+                 self._quarantine_participation()
+                 raise ValueError("initial participation physical observation changed")
+             self._check_participation_state(pending["before"])
+             self._check_initial_preparation(pending)
+-            self._participation_reading(pending["mask"], mask=True)
++            self._participation_reading(pending["mask"], width=self.action_dim, dtype=torch.bool)
+             if (
+                 bool(pending["mask"][pending["dones"]].any())
+                 or bool((~pending["dones"] & ~pending["mask"].any(dim=1)).any())
+                 or not same_value(pending["candidate_state"]["tensors"]["dones"], pending["dones"])
+             ):
+                 raise ValueError("initial participation candidate changed")
+             revision = self._world_revision + 1
+             result = self._record(
+@@ -2527,43 +2533,55 @@ class VectorizedHamletEnv:
+             if publishing:
+                 self._quarantine_participation()
+             else:
+                 self._invalidate_participation(pending["before"])
+             raise
+         finally:
+             self._participation_busy = False
+ 
++    def _check_participation_custody(self, committed: Mapping[str, Any], *, phase: str) -> None:
++        if (
++            phase not in ("active-awaiting-activation", "active", "boundary-pending", "closed-awaiting-release", "released-completed")
++            or self._world_phase != phase
++            or self._participation_failed
++            or self._participation_pending is not None
++            or self._participation_committed is not committed
++            or committed["accepted"] is not self._world_accepted
++            or committed["reset"] is not self._world_reset
++            or committed["generation"] != self._world_generation
++            or committed["revision"] != self._world_revision
++        ):
++            self._quarantine_participation()
++            raise ValueError("initial participation lifecycle custody is stale or failed")
++        self._valid_record(committed["result"], "initial_participation")
++
+     def _check_committed_participation(self) -> None:
+         committed = self._participation_committed
+         if committed is None:
+             return
++        phase = self._world_phase
+         previous_busy = self._participation_busy
+         self._participation_busy = True
+         try:
+-            if (
+-                self._participation_failed
+-                or committed["accepted"] is not self._world_accepted
+-                or committed["reset"] is not self._world_reset
+-                or committed["generation"] != self._world_generation
+-                or committed["revision"] != self._world_revision
+-            ):
+-                self._quarantine_participation()
+-                raise ValueError("initial participation seal is stale or failed")
++            self._check_participation_custody(committed, phase=phase)
+             self._check_participation_state(committed["state"])
+             retired = committed["retired"]
+             if bool((~self.dones[retired]).any()) or bool(self.step_counts[retired].any()):
+                 self._quarantine_participation()
+                 raise ValueError("a sealed retired world cannot participate")
+             observation = self._encode_observations()
+-            self._participation_reading(observation, mask=False)
++            self._participation_reading(observation, width=self.observation_dim, dtype=torch.float32)
+             self._check_participation_state(committed["state"])
+             if not same_value(observation, committed["observation"]):
+                 self._quarantine_participation()
+                 raise ValueError("sealed current physical observation changed")
++            # Encoding/state reads may return unchanged bytes after legitimate
++            # abandonment. Physical equality never reinstates lifecycle authority.
++            self._check_participation_custody(committed, phase=phase)
+         finally:
+             self._participation_busy = previous_busy
+ 
+     def _advance_participation_witness(self, observation: torch.Tensor) -> None:
+         committed = self._participation_committed
+         if committed is not None:
+             retired = committed["retired"]
+             if bool((~self.dones[retired]).any()) or bool(self.step_counts[retired].any()):
+@@ -2578,17 +2596,17 @@ class VectorizedHamletEnv:
+     ) -> None:
+         """Authenticate current sealed activity/physical reading before parent effects."""
+         self._require_phase("active")
+         self._accepted(accepted)
+         self._valid_record(participation, "initial_participation")
+         committed = self._participation_committed
+         if committed is None or committed["result"] is not participation or committed["accepted"] is not accepted:
+             raise ValueError("initial participation requires the exact committed decision")
+-        self._participation_reading(predecessor, mask=False)
++        self._participation_reading(predecessor, width=self.observation_dim, dtype=torch.float32)
+         self._participation_busy = True
+         try:
+             self._check_committed_participation()
+             if not same_value(committed["observation"], predecessor):
+                 raise ValueError("initial participation predecessor disagrees with current physical reading")
+         finally:
+             self._participation_busy = False
+ 

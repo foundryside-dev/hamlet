@@ -1,0 +1,59 @@
+diff --git a/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py b/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py
+index 372ba601..18ccada2 100644
+--- a/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py
++++ b/tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py
+@@ -353,6 +353,54 @@ def test_count_rejects_nonfresh_or_mismatched_real_candidate(compiled, scope, ba
+     _equal(fresh.checkpoint_state(), fresh_before)
+ 
+ 
++@pytest.mark.parametrize("scope", SCOPES)
++@pytest.mark.parametrize("bad", ("source_zero", "source_bool", "source_key", "fresh_width", "fresh_capacity", "fresh_eviction"))
++def test_count_reset_validates_complete_actual_source_and_fresh_configuration(compiled, scope, bad):
++    backend = _new(compiled, "count_based", scope)
++    _learn_count(backend)
++    _decay(backend)
++    fresh = _new(compiled, "count_based", scope)
++    genuine_policy = copy.deepcopy(fresh.policy.to_dict())
++    assert fresh.checkpoint_state()["counts"] == {} and fresh.eviction_count == 0
++    assert backend.checkpoint_state()["counts"] and backend.eviction_count == 1
++    # Negative setup only: corrupt actual fields AFTER genuine learning/construction.
++    # These are malformed candidates, never fixtures claiming authentic learned work.
++    if bad == "source_zero":
++        backend._counts[next(iter(backend._counts))] = 0
++    elif bad == "source_bool":
++        backend._counts[next(iter(backend._counts))] = True
++    elif bad == "source_key":
++        value = backend._counts.pop(next(iter(backend._counts)))
++        backend._counts[()] = value
++    elif bad == "fresh_width":
++        fresh._quantization_width = 2.0
++    elif bad == "fresh_capacity":
++        fresh._max_entries = 4
++    else:
++        fresh._eviction_count = 1
++        assert fresh.checkpoint_state()["counts"] == {} and fresh.checkpoint_state()["lru"] == []
++    # Configuration corruption must never forge or change the genuine selected policy.
++    _equal(fresh.policy.to_dict(), genuine_policy)
++    before = copy.deepcopy(backend.checkpoint_state())
++    fresh_before = copy.deepcopy(fresh.checkpoint_state())
++    rng = _ambient()
++    with pytest.raises(ValueError):
++        backend.prepare_learning_reset(fresh=fresh)
++    _unchanged_rng(rng)
++    _equal(backend.checkpoint_state(), before)
++    _equal(fresh.checkpoint_state(), fresh_before)
++    _equal(fresh.policy.to_dict(), genuine_policy)
++    # A valid learned-source/fresh pair still succeeds through the SAME reset route.
++    control = _new(compiled, "count_based", scope)
++    _learn_count(control)
++    _decay(control)
++    diagnostics = {key: control.checkpoint_state()[key] for key in EPS_KEYS}
++    _reset(control, _new(compiled, "count_based", scope))
++    state = control.checkpoint_state()
++    assert state["counts"] == {} and state["lru"] == [] and state["eviction_count"] == 0
++    _equal({key: state[key] for key in EPS_KEYS}, diagnostics)
++
++
+ @pytest.mark.parametrize("scope", SCOPES)
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("field", ("epsilon", "epsilon_decay", "epsilon_min"))

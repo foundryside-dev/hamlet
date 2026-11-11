@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_genuine_reset_prepares_retirement_without_publication",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_genuine_reset_prepares_retirement_without_publication(compiled: Any) -> None:\n        \"\"\"Causal RED: current ENV lacks prepare after all genuine prerequisites succeed.\"\"\"\n        rig = ComponentPopulation(compiled)\n        assert rig.env.world_phase == \"active-awaiting-activation\"\n        assert rig.env.world_ids == IDS and rig.accepted is rig.reset.accepted\n        assert not bool(rig.env.dones.any()) and not bool(rig.env.step_counts.any())\n        assert rig.activation is None and rig.ledger == ClockLedger()\n        before = witness(rig)\n        intent = rig.request((IDS[1],))\n>       prepared = rig.env.prepare_initial_participation(accepted=rig.accepted, intent=intent)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'VectorizedHamletEnv' object has no attribute 'prepare_initial_participation'\n\ntests/test_townlet/regressions/bac/test_initial_participation_env.py:359: AttributeError",
+  "candidate_tree": "cd67d82df1b6c64c49901303a95deb916a33559e"
+}

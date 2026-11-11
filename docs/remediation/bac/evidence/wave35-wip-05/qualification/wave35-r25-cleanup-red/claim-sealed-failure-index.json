@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "candidate_tree": "93a182c2131c75df8b5238b3205a7302b358d684",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f6882113a10> = <test_initial_participation_env.ComponentPopulation object at 0x7f6882113770>.env",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_claim_cleanup_cannot_resume_physics[True]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

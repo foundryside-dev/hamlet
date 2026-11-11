@@ -1,0 +1,78 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py F
+
+=================================== FAILURES ===================================
+________________ test_claim_cleanup_cannot_resume_physics[True] ________________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6882027820>
+with_participation = True
+
+    @pytest.mark.parametrize("with_participation", [True, False])
+    def test_claim_cleanup_cannot_resume_physics(compiled: Any, monkeypatch: Any, with_participation: bool) -> None:
+        """A real once-claim followed by public cleanup must stop before ENV's write cut."""
+        claim = ComponentPopulation.claim_vector_step
+        abandonments: list[Any] = []
+    
+        def claim_then_abandon(owner: ComponentPopulation, *, prepared: Any, **candidate: Any) -> int:
+            tick = claim(owner, prepared=prepared, **candidate)
+            abandonments.append(owner.env.abandon_episode(accepted=owner.accepted, reason="runtime_failure"))
+            return tick
+    
+        # Construction binds this real owner callback once; no late ENV callback rebinding.
+        monkeypatch.setattr(ComponentPopulation, "claim_vector_step", claim_then_abandon)
+        rig = ComponentPopulation(compiled)
+        if with_participation:
+            rig.publish(prepare(rig))
+        rig.activate()
+        calls: list[str] = []
+        reset_tick = rig.env.vfs_registry.reset_tick_scoped
+        execute = rig.env._action_executor._execute_actions
+        reward, service = rig.runtime.reward, rig.runtime.admit_and_service
+    
+        def observed_reset() -> Any:
+            calls.append("registry")
+            return reset_tick()
+    
+        def observed_execute(actions: Any) -> Any:
+            calls.append("physics")
+            return execute(actions)
+    
+        def observed_reward(**kwargs: Any) -> Any:
+            calls.append("reward")
+            return reward(**kwargs)
+    
+        def observed_service(**kwargs: Any) -> Any:
+            calls.append("service")
+            return service(**kwargs)
+    
+        monkeypatch.setattr(rig.env.vfs_registry, "reset_tick_scoped", observed_reset)
+        monkeypatch.setattr(rig.env._action_executor, "_execute_actions", observed_execute)
+        monkeypatch.setattr(rig.runtime, "reward", observed_reward)
+        monkeypatch.setattr(rig.runtime, "admit_and_service", observed_service)
+        actions = torch.full((len(IDS),), rig.env.action_ids["WAIT"], dtype=torch.long)
+        prepared = rig.prepare_step(actions)
+        before, revision = witness(rig), rig.env._world_revision
+        with pytest.raises(ValueError):
+            rig.env.step(actions, vector_step=prepared)
+        assert rig.step_registry[id(prepared)]["claimed"] and rig.step_started
+        assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
+        assert rig.env.world_phase == "quarantined"
+>       assert rig.env._world_revision == revision
+E       assert 2 == 1
+E        +  where 2 = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f6882113a10>._world_revision
+E        +    where <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f6882113a10> = <test_initial_participation_env.ComponentPopulation object at 0x7f6882113770>.env
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:866: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_claim_cleanup_cannot_resume_physics[True]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 5.67s ===============================

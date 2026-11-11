@@ -1,0 +1,30 @@
+{
+  "name": "covering-owners",
+  "exit_code": 1,
+  "seconds": 69.90887928009033,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "tests/test_townlet/regressions/bac/test_env_accepted_auth.py",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r26-covering-owners"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r26-current/covering-owners.log",
+  "sha256": "3550fe798588e0e481724767e8d8e9aa8dd98b4bdbfb3248ea22b9f5e72c0178",
+  "candidate_tree": "575487046d3b1cc26c265c40848d30af2f68ff7d",
+  "base_commit": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "manifest_sha256": "1a493d76ef6d8519da638c501774b4763dca1549eb0885256db3321d9e936140",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

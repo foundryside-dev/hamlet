@@ -1,0 +1,341 @@
+diff --git a/src/townlet/exploration/adaptive_intrinsic.py b/src/townlet/exploration/adaptive_intrinsic.py
+index ac1a85f4..691bc3d3 100644
+--- a/src/townlet/exploration/adaptive_intrinsic.py
++++ b/src/townlet/exploration/adaptive_intrinsic.py
+@@ -259,7 +259,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
+         """Current native snapshot with independent nested tensors and history."""
+         return deepcopy(
+             {
+-                "schema": "adaptive-intrinsic-state-v2",
++                "schema": "adaptive-intrinsic-state-v3",
+                 "rnd_state": self.rnd.checkpoint_state(),
+                 **self._config(),
+                 "current_intrinsic_weight": self.current_intrinsic_weight,
+@@ -278,7 +278,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
+             if (
+                 not isinstance(state, dict)
+                 or state.keys() != self.checkpoint_state().keys()
+-                or state["schema"] != "adaptive-intrinsic-state-v2"
++                or state["schema"] != "adaptive-intrinsic-state-v3"
+             ):
+                 raise ValueError("Adaptive requires complete current native state")
+             config = {name: state[name] for name in self._config()}
+@@ -305,6 +305,26 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
+         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+             raise ValueError("Adaptive checkpoint is malformed") from error
+ 
++    def prepare_learning_reset(self, *, fresh: AdaptiveIntrinsicExploration) -> _PreparedAdaptive:
++        """Reset owned adaptive learning while retaining the inner service lifetime."""
++        if type(fresh) is not AdaptiveIntrinsicExploration or fresh is self:
++            raise ValueError("Adaptive reset requires a distinct actual adaptive factory candidate")
++        self.validate_state(self.checkpoint_state())
++        fresh.validate_state(fresh.checkpoint_state())
++        if self._config() != fresh._config() or self.device != fresh.device:
++            raise ValueError("Adaptive reset candidate differs from retained authored configuration")
++        if fresh.survival_history or fresh.current_intrinsic_weight != fresh.initial_intrinsic_weight:
++            raise ValueError("Adaptive reset candidate must have fresh history and initial weight")
++        prepared_rnd = self.rnd.prepare_learning_reset(fresh=fresh.rnd)
++        candidate = deepcopy(self)
++        # The nested handle is bound to the old inner owner. Its already-owned
++        # attributes become the off-side inner candidate without touching live state.
++        candidate.rnd.__dict__ = prepared_rnd.attributes
++        prepared_rnd.consumed = True
++        candidate.survival_history = []
++        candidate.current_intrinsic_weight = self.initial_intrinsic_weight
++        return _PreparedAdaptive(self, candidate.__dict__, False)
++
+     def install_state(self, prepared: _PreparedAdaptive) -> None:
+         if type(prepared) is not _PreparedAdaptive or prepared.owner is not self or prepared.consumed:
+             raise ValueError("Adaptive prepared state belongs to another destination or was consumed")
+diff --git a/src/townlet/exploration/icm.py b/src/townlet/exploration/icm.py
+index 54626ae4..b28f2450 100644
+--- a/src/townlet/exploration/icm.py
++++ b/src/townlet/exploration/icm.py
+@@ -117,6 +117,7 @@ class ICMExploration(EpsilonGreedyExploration):
+         self.optimizer = torch.optim.Adam(self._parameters(), lr=self.learning_rate)
+         self._pending: deque[dict[str, Any]] = deque()
+         self._counters = dict.fromkeys(_COUNTERS, 0)
++        self._optimizer_epoch_origin = 0
+         self._last_loss = 0.0
+         self._service_position: int | None
+         if service_clock_unit == "world_eligible_admission":
+@@ -293,7 +294,7 @@ class ICMExploration(EpsilonGreedyExploration):
+             dict[str, Any],
+             _owned(
+                 {
+-                    "schema": "icm-state-v2",
++                    "schema": "icm-state-v3",
+                     "policy": self.policy.to_dict(),
+                     "policy_identity": self.policy.policy_identity,
+                     "config": self._config(),
+@@ -306,6 +307,7 @@ class ICMExploration(EpsilonGreedyExploration):
+                     "epsilon_min": self.epsilon_min,
+                     "pending": list(self._pending),
+                     "counters": self._counters,
++                    "optimizer_epoch_origin": self._optimizer_epoch_origin,
+                     "last_loss": self._last_loss,
+                     "service_clock_unit": self.service_clock_unit,
+                     "service_position": self._service_position,
+@@ -384,8 +386,8 @@ class ICMExploration(EpsilonGreedyExploration):
+         """Validate and own every transported field before any live installation."""
+         try:
+             state = _owned(state)
+-            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v2":
+-                raise ValueError("ICM requires complete icm-state-v2 checkpoint")
++            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v3":
++                raise ValueError("ICM requires complete icm-state-v3 checkpoint")
+             if not isinstance(state["policy"], dict) or state["policy"].keys() != self.policy.to_dict().keys():
+                 raise ValueError("ICM checkpoint requires current complete policy fields")
+             policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+@@ -426,6 +428,11 @@ class ICMExploration(EpsilonGreedyExploration):
+                     ):
+                         raise ValueError("ICM checkpoint pending observation has invalid geometry/dtype/value")
+             updates = counters["optimizer_updates"]
++            origin = state["optimizer_epoch_origin"]
++            _number(origin, "optimizer epoch origin", True, 0)
++            if origin > updates:
++                raise ValueError("ICM optimizer epoch origin exceeds retained lifetime updates")
++            epoch_updates = updates - origin
+             if counters["consumed_rows"] != updates * self.training_batch_size or counters["mandatory_service_updates"] > updates:
+                 raise ValueError("ICM checkpoint service counters disagree")
+             if counters["admitted_rows"] != counters["consumed_rows"] + counters["dropped_rows"] + len(pending):
+@@ -454,12 +461,12 @@ class ICMExploration(EpsilonGreedyExploration):
+                 or not policy.epsilon_end <= state["epsilon"] <= policy.epsilon_start
+             ):
+                 raise ValueError("ICM checkpoint epsilon schedule disagrees with selected policy")
+-            if not updates and state["last_loss"] != 0:
++            if not epoch_updates and state["last_loss"] != 0:
+                 raise ValueError("ICM checkpoint has loss without a successful update")
+             encoder = self._model_state(self.encoder, state["encoder"])
+             inverse = self._model_state(self.inverse_model, state["inverse_model"])
+             forward = self._model_state(self.forward_model, state["forward_model"])
+-            optimizer = self._optimizer_state((encoder, inverse, forward), state["optimizer"], updates)
++            optimizer = self._optimizer_state((encoder, inverse, forward), state["optimizer"], epoch_updates)
+             owned_pending = deque(_owned(pending))
+         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+             raise ValueError("ICM checkpoint is malformed") from error
+@@ -468,9 +475,62 @@ class ICMExploration(EpsilonGreedyExploration):
+         candidate.policy, candidate._source_device = policy, config["device"]
+         candidate.epsilon, candidate.epsilon_decay, candidate.epsilon_min = state["epsilon"], state["epsilon_decay"], state["epsilon_min"]
+         candidate._pending, candidate._counters, candidate._last_loss = owned_pending, dict(counters), float(state["last_loss"])
++        candidate._optimizer_epoch_origin = origin
+         candidate._service_position, candidate._ordinary_updates_at_position = tick, budget
+         return _PreparedICM(self, candidate.__dict__, False)
+ 
++    def prepare_learning_reset(self, *, fresh: ICMExploration) -> _PreparedICM:
++        """Copy real fresh learning without altering service work or consuming RNG.
++
++        The enclosing owner supplies an already-constructed factory candidate and
++        owns RNG continuation, boundary authority and final publication freshness.
++        """
++        if type(fresh) is not ICMExploration or fresh is self:
++            raise ValueError("ICM reset requires a distinct actual ICM factory candidate")
++        current = self.checkpoint_state()
++        self.validate_state(current)
++        fresh_state = fresh.checkpoint_state()
++        fresh.validate_state(fresh_state)
++        if (
++            self.policy.to_dict() != fresh.policy.to_dict()
++            or {key: value for key, value in self._config().items() if key != "device"}
++            != {key: value for key, value in fresh._config().items() if key != "device"}
++            or self.device != fresh.device
++            or self.service_clock_unit != fresh.service_clock_unit
++            or self.epsilon_min != fresh.epsilon_min
++            or self.epsilon_decay != fresh.epsilon_decay
++        ):
++            raise ValueError("ICM reset candidate differs from retained selected policy or geometry")
++        for backend in (self, fresh):
++            actual = [parameter for group in backend.optimizer.param_groups for parameter in group["params"]]
++            expected = backend._parameters()
++            if (
++                type(backend.optimizer) is not torch.optim.Adam
++                or len(actual) != len(expected)
++                or any(parameter is not reference for parameter, reference in zip(actual, expected, strict=True))
++            ):
++                raise ValueError("ICM reset requires actual model/Adam Parameter pairing")
++        if (
++            any(fresh._counters.values())
++            or fresh._optimizer_epoch_origin != 0
++            or fresh._pending
++            or fresh._last_loss != 0
++            or fresh._ordinary_updates_at_position != 0
++            or fresh._service_position != (0 if self.service_clock_unit == "world_eligible_admission" else None)
++            or fresh.optimizer.state
++            or any(parameter.grad is not None for parameter in fresh._parameters())
++        ):
++            raise ValueError("ICM reset candidate must have genuine fresh learning and no service work")
++        for key in ("encoder", "inverse_model", "forward_model", "optimizer"):
++            current[key] = fresh_state[key]
++        current["optimizer_epoch_origin"] = self._counters["optimizer_updates"]
++        current["last_loss"] = 0.0
++        prepared = self.prepare_state(current)
++        for module_name in ("encoder", "inverse_model", "forward_model"):
++            for parameter in prepared.attributes[module_name].parameters():
++                parameter.grad = None
++        return prepared
++
+     def install_state(self, prepared: _PreparedICM) -> None:
+         if type(prepared) is not _PreparedICM or prepared.owner is not self or prepared.consumed:
+             raise ValueError("ICM prepared state belongs to another destination or was consumed")
+diff --git a/src/townlet/exploration/rnd.py b/src/townlet/exploration/rnd.py
+index e9080f63..fb621b1e 100644
+--- a/src/townlet/exploration/rnd.py
++++ b/src/townlet/exploration/rnd.py
+@@ -225,6 +225,7 @@ class RNDExploration(ExplorationStrategy):
+         self._consumed_rows = 0
+         self._dropped_rows = 0
+         self._optimizer_updates = 0
++        self._optimizer_epoch_origin = 0
+         self._service_position: int | None
+         if service_clock_unit == "world_eligible_admission":
+             self._service_position = 0
+@@ -550,7 +551,7 @@ class RNDExploration(ExplorationStrategy):
+     def checkpoint_state(self) -> dict[str, Any]:
+         """Owned snapshot, including FIFO order and clocks for learned-state resume."""
+         state = self.available_state()
+-        state["schema"] = "rnd-state-v2"
++        state["schema"] = "rnd-state-v3"
+         pending = torch.empty((0, self.obs_dim), device=self.device)
+         if self.obs_buffer:
+             pending = torch.stack(self.obs_buffer).detach().clone()
+@@ -561,7 +562,7 @@ class RNDExploration(ExplorationStrategy):
+         if self.service_options is not None:
+             options = self.service_options.model_dump()
+         state["predictor_service"] = {
+-            "version": 2,
++            "version": 3,
+             "training_batch_size": self.training_batch_size,
+             "options": options,
+             "pending_observations": pending,
+@@ -569,9 +570,10 @@ class RNDExploration(ExplorationStrategy):
+             "consumed_rows": self._consumed_rows,
+             "dropped_rows": self._dropped_rows,
+             "optimizer_updates": self._optimizer_updates,
++            "optimizer_epoch_origin": self._optimizer_epoch_origin,
+             # Capture the trusted live clock, including public manual optimizer
+             # steps outside recorded service updates. Restore validates this saved offset.
+-            "optimizer_step_offset": self._optimizer_step(self.optimizer) - self._optimizer_updates,
++            "optimizer_step_offset": self._optimizer_step(self.optimizer) - (self._optimizer_updates - self._optimizer_epoch_origin),
+             "service_clock_unit": self.service_clock_unit,
+             "service_position": self._service_position,
+             "ordinary_updates_at_position": self._ordinary_updates_at_position,
+@@ -735,8 +737,8 @@ class RNDExploration(ExplorationStrategy):
+         self.prepare_state(state)
+ 
+     def _prepare_state(self, state: dict[str, Any]) -> tuple[tuple[Any, Any, Any], list[torch.Tensor], dict[str, Any]]:
+-        if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "rnd-state-v2":
+-            raise ValueError("RND requires complete current rnd-state-v2 checkpoint")
++        if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "rnd-state-v3":
++            raise ValueError("RND requires complete current rnd-state-v3 checkpoint")
+         available = {key: value for key, value in state.items() if key not in {"schema", "predictor_service"}}
+         prepared = self._prepare_available_state(available)
+         service = state["predictor_service"]
+@@ -744,7 +746,7 @@ class RNDExploration(ExplorationStrategy):
+             raise ValueError("RND predictor service checkpoint fields mismatch")
+         if (
+             type(service["version"]) is not int
+-            or service["version"] != 2
++            or service["version"] != 3
+             or type(service["training_batch_size"]) is not int
+             or service["training_batch_size"] != self.training_batch_size
+         ):
+@@ -772,9 +774,13 @@ class RNDExploration(ExplorationStrategy):
+             if type(service[key]) is not int or service[key] < 0:
+                 raise ValueError(f"RND service {key} must be a nonnegative integer")
+         offset = service["optimizer_step_offset"]
+-        if type(offset) is not int or service["optimizer_updates"] + offset < 0:
++        origin = service["optimizer_epoch_origin"]
++        if type(origin) is not int or not 0 <= origin <= service["optimizer_updates"]:
++            raise ValueError("RND optimizer epoch origin must be an exact retained lifetime update count")
++        epoch_updates = service["optimizer_updates"] - origin
++        if type(offset) is not int or epoch_updates + offset < 0:
+             raise ValueError("RND optimizer step offset must describe a nonnegative Adam clock")
+-        if self._optimizer_step(prepared[2]) != service["optimizer_updates"] + offset:
++        if self._optimizer_step(prepared[2]) != epoch_updates + offset:
+             raise ValueError("RND Adam history does not match versioned service optimizer updates")
+         if type(service["service_clock_unit"]) is not str or service["service_clock_unit"] != self.service_clock_unit:
+             raise ValueError("RND checkpoint service unit differs from destination")
+@@ -817,6 +823,7 @@ class RNDExploration(ExplorationStrategy):
+             candidate._consumed_rows = service["consumed_rows"]
+             candidate._dropped_rows = service["dropped_rows"]
+             candidate._optimizer_updates = service["optimizer_updates"]
++            candidate._optimizer_epoch_origin = service["optimizer_epoch_origin"]
+             candidate._service_position = service["service_position"]
+             candidate._ordinary_updates_at_position = service["ordinary_updates_at_position"]
+             candidate.step_counter = service["step_counter"]
+@@ -824,6 +831,75 @@ class RNDExploration(ExplorationStrategy):
+         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+             raise ValueError("RND checkpoint is malformed") from error
+ 
++    def prepare_learning_reset(self, *, fresh: RNDExploration) -> _PreparedRND:
++        """Prepare fresh factory learning with unchanged owned service obligations.
++
++        Construction and its RNG continuation belong to the enclosing owner. This
++        method only validates/copies existing objects; it never constructs a model
++        or activates a random stream. The enclosing BANK authenticates freshness
++        and boundary revisions before installing its native prepared candidate.
++        """
++        if type(fresh) is not RNDExploration or fresh is self:
++            raise ValueError("RND reset requires a distinct actual RND factory candidate")
++        current = self.checkpoint_state()
++        self.validate_state(current)
++        fresh_state = fresh.checkpoint_state()
++        fresh.validate_state(fresh_state)
++        for backend in (self, fresh):
++            actual = [parameter for group in backend.optimizer.param_groups for parameter in group["params"]]
++            expected = list(backend.predictor_network.parameters())
++            if (
++                type(backend.optimizer) is not torch.optim.Adam
++                or len(actual) != len(expected)
++                or any(parameter is not reference for parameter, reference in zip(actual, expected, strict=True))
++            ):
++                raise ValueError("RND reset requires actual predictor/Adam Parameter pairing")
++            if any(parameter.requires_grad or parameter.grad is not None for parameter in backend.fixed_network.parameters()):
++                raise ValueError("RND reset requires a frozen gradient-free target")
++        if (
++            self.obs_dim != fresh.obs_dim
++            or self.embed_dim != fresh.embed_dim
++            or self.training_batch_size != fresh.training_batch_size
++            or self.device != fresh.device
++            or self.service_clock_unit != fresh.service_clock_unit
++            or self.service_options != fresh.service_options
++            or self.epsilon_min != fresh.epsilon_min
++            or self.epsilon_decay != fresh.epsilon_decay
++            or current["optimizer"]["param_groups"] != fresh_state["optimizer"]["param_groups"]
++        ):
++            raise ValueError("RND fresh candidate differs from the retained selected configuration")
++        service = fresh_state["predictor_service"]
++        if (
++            any(
++                service[key] != 0
++                for key in (
++                    "admitted_rows",
++                    "consumed_rows",
++                    "dropped_rows",
++                    "optimizer_updates",
++                    "optimizer_epoch_origin",
++                    "optimizer_step_offset",
++                    "ordinary_updates_at_position",
++                    "step_counter",
++                )
++            )
++            or len(service["pending_observations"])
++            or service["service_position"] != (0 if self.service_clock_unit == "world_eligible_admission" else None)
++            or fresh.optimizer.state
++            or any(parameter.grad is not None for parameter in fresh.predictor_network.parameters())
++            or (fresh.reward_rms.mean, fresh.reward_rms.var, fresh.reward_rms.count) != (0.0, 1.0, 1e-4)
++        ):
++            raise ValueError("RND reset candidate must have genuine fresh learning and no service work")
++        for key in ("fixed_network", "predictor_network", "optimizer", "reward_rms_mean", "reward_rms_var", "reward_rms_count"):
++            current[key] = fresh_state[key]
++        current["predictor_service"]["optimizer_epoch_origin"] = self._optimizer_updates
++        current["predictor_service"]["optimizer_step_offset"] = 0
++        prepared = self.prepare_state(current)
++        for module_name in ("fixed_network", "predictor_network"):
++            for parameter in prepared.attributes[module_name].parameters():
++                parameter.grad = None
++        return prepared
++
+     def install_state(self, prepared: _PreparedRND) -> None:
+         if type(prepared) is not _PreparedRND or prepared.owner is not self or prepared.consumed:
+             raise ValueError("RND prepared state belongs to another destination or was consumed")

@@ -1,0 +1,25 @@
+{
+  "name": "claim-ordinary",
+  "exit_code": 1,
+  "seconds": 10.700111389160156,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_claim_cleanup_cannot_resume_physics[False]",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r25-cleanup-claim-ordinary"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r25-cleanup-red/claim-ordinary.log",
+  "sha256": "47fbcd14e624bd98ec0db7236c97da167a15e740b0e0180c8cb234f50be2e7c0",
+  "candidate_tree": "93a182c2131c75df8b5238b3205a7302b358d684",
+  "base_commit": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "manifest_sha256": "bc32b6e8dde09e491eb2a763e257b241a6110803c51f71991510372f47480467",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

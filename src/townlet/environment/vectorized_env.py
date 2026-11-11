@@ -127,6 +127,8 @@ class WorldBoundaryAuthority:
     def _bound_env(self) -> VectorizedHamletEnv:
         if self._env._world_authority is not self:
             raise ValueError("boundary capability was not bound by this ENV")
+        self._env._participation_ingress()
+        self._env._check_committed_participation()
         return self._env
 
     def bootstrap(self, *, first_batch_episode: int) -> WorldRecord:
@@ -608,10 +610,12 @@ class VectorizedHamletEnv:
 
     def attach_runtime_registry(self, registry: AgentRuntimeRegistry) -> None:
         """Attach runtime registry for telemetry tracking."""
+        self._participation_ingress()
         self.runtime_registry = registry
 
     def set_exploration_runtime(self, *, exploration: ExplorationRuntime, claim_vector_step: Callable[..., int]) -> None:
         """Bind once before world role custody freezes; equal rebinding also refuses."""
+        self._participation_ingress()
         if self._exploration_bound or self._world_phase != "fresh-unbound":
             raise ValueError("exploration runtime must bind once before world authority registration")
         if not isinstance(exploration, ExplorationRuntime) or not callable(claim_vector_step):
@@ -622,6 +626,7 @@ class VectorizedHamletEnv:
 
     def _apply_configured_affordance_positions(self) -> None:
         """Load static affordance positions from config/optimization data."""
+        self._participation_ingress()
 
         if self.substrate.position_dim == 0:
             empty = torch.zeros(0, dtype=self.substrate.position_dtype, device=self.device)
@@ -707,6 +712,7 @@ class VectorizedHamletEnv:
         `tick` is a global like any other: one row per world. Every world steps in
         lockstep, so the engine writes the same instant into every row.
         """
+        self._participation_ingress()
         self.vfs_registry.set_engine_value("tick", torch.full((self.vfs_registry.num_worlds,), float(self.global_tick), device=self.device))
 
     def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
@@ -965,6 +971,7 @@ class VectorizedHamletEnv:
            after evaluation);
         6. observation.
         """
+        self._participation_ingress()
         # Refresh affordance layout each episode so randomization/configured layouts stay in sync.
         # randomize_affordance_positions() returns agent positions clear of every affordance.
         if self.randomize_affordances:
@@ -1075,6 +1082,11 @@ class VectorizedHamletEnv:
 
     def _get_observations(self) -> torch.Tensor:
         """Serialize this tick's compiled token observation, `[num_agents, total_dims]`."""
+        self._participation_ingress()
+        return self._encode_observations()
+
+    def _encode_observations(self) -> torch.Tensor:
+        """Internal fixed-state read, also used inside the participation guard."""
         return self._observation_encoder.encode(self.num_agents, self._build_token_publish_context())
 
     def _item_slot_batch(self) -> ItemSlotBatch | None:
@@ -1247,6 +1259,10 @@ class VectorizedHamletEnv:
         ``[num_agents, action_dim]`` bool tensor where ``True`` is a valid
         action; semantics are documented on the builder.
         """
+        self._participation_ingress()
+        return self._build_action_masks()
+
+    def _build_action_masks(self) -> torch.Tensor:
         return self.action_mask_builder.build(
             num_agents=self.num_agents,
             positions=self.positions,
@@ -1288,12 +1304,14 @@ class VectorizedHamletEnv:
             info: dict with metadata and owned bool [num_agents, action_dim]
                 successor_action_masks for this same committed observation/status
         """
+        self._participation_ingress()
         if self._world_phase != "active":
             raise ValueError("world episode must be accepted and activated before stepping")
         accepted = self._world_accepted
         if accepted is None:
             raise ValueError("active world episode requires its current accepted token")
         self._accepted(accepted)
+        self._check_committed_participation()
         predecessor = self._get_observations().detach().clone()
         actions = actions.detach().clone()
         active_on_entry = ~self.dones.detach().clone()
@@ -1305,6 +1323,11 @@ class VectorizedHamletEnv:
             actions=actions,
             active_on_entry=active_on_entry,
         )
+        # Claim is a genuine owner callback and may perform fail-closed cleanup.
+        # No-decision episodes require this check too, before the first write.
+        self._require_phase("active")
+        self._accepted(accepted)
+        self._check_committed_participation()
         self._world_revision += 1
         self.vfs_registry.reset_tick_scoped()
         refusals_before = 0
@@ -1453,10 +1476,12 @@ class VectorizedHamletEnv:
             "effect_spawn_refusals": () if self.effect_manager is None else tuple(self.effect_manager.spawn_refusals[refusals_before:]),
         }
 
+        self._advance_participation_witness(observations)
         return observations, rewards, self.dones, info
 
     def _evaluate_vfs_profiles(self) -> None:
         """Evaluate global then agent profile expressions and commit them to the registry."""
+        self._participation_ingress()
         if self.vfs_evaluator is not None and self.universe.compiled_vfs_profiles is not None:
             # Build execution context from current state
             bars_dict_vfs = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
@@ -1542,6 +1567,7 @@ class VectorizedHamletEnv:
 
     def vfs_random_state(self) -> dict[str, Any]:
         """Export owned current identity data, excluding provisional or failed attempts."""
+        self._participation_ingress()
         if self._world_phase in ("resetting", "restoring", "quarantined"):
             raise ValueError("VFS native export requires a stable authoritative context")
         if self.vfs_randomness.context != self._current_vfs_context():
@@ -1556,6 +1582,7 @@ class VectorizedHamletEnv:
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""
+        self._participation_ingress()
         return self._action_executor._execute_actions(actions)
 
     def _apply_vtc_passive_depletion(self, depletion_multiplier: float, active_mask: torch.Tensor) -> None:
@@ -1594,6 +1621,7 @@ class VectorizedHamletEnv:
         depletion_multiplier: float = 1.0,
     ) -> None:
         """Execute generic compiled VTC transition phases and commit their writes."""
+        self._participation_ingress()
         result = self.vtc_transition_runner.run_phases(
             phases,
             VTCTransitionContext(
@@ -1610,6 +1638,7 @@ class VectorizedHamletEnv:
         self._commit_vtc_transition_state(result)
 
     def _commit_vtc_transition_state(self, state: VTCTransitionState) -> None:
+        self._participation_ingress()
         # Authorize the complete selected operation before publishing any result.
         # The remaining snapshot values are reads, including immutable literals.
         for variable_id in sorted(state.attempted_vfs_targets):
@@ -1648,6 +1677,7 @@ class VectorizedHamletEnv:
         yields one value per world; one that reads only literals is world-invariant and
         yields a 0-d value, which is that same value in every world's row.
         """
+        self._participation_ingress()
         expression_var_names = {var.name for var in profile.variables if var.ast is not None}
         for var_name, value in updated_vfs.items():
             if var_name not in expression_var_names:
@@ -1677,6 +1707,7 @@ class VectorizedHamletEnv:
 
     def _set_vtc_bar_value(self, bar_name: str, value: torch.Tensor) -> None:
         """Write a VTC-updated bar tensor back to the environment meters."""
+        self._participation_ingress()
         meter_idx = self.meter_name_to_index[bar_name]
         expected = self.meters[:, meter_idx]
         if value.shape != expected.shape:
@@ -1685,10 +1716,12 @@ class VectorizedHamletEnv:
 
     def _handle_interactions(self, interact_mask: torch.Tensor) -> dict:
         """Handle INTERACT actions with multi-tick accumulation."""
+        self._participation_ingress()
         return self._action_executor._handle_interactions(interact_mask)
 
     def _handle_instant_interactions(self, interact_mask: torch.Tensor) -> dict:
         """Handle INTERACT action at affordances in instant mode."""
+        self._participation_ingress()
         return self._action_executor._handle_instant_interactions(interact_mask)
 
     def _calculate_shaped_rewards(
@@ -1734,6 +1767,7 @@ class VectorizedHamletEnv:
             - _unique_affordances_count: Count of unique affordances per agent
             - _affordances_seen: Set of unique affordances per agent
         """
+        self._participation_ingress()
         # Initialize streak tensors for all affordances if not present
         for affordance_name in self.affordances.keys():
             if affordance_name not in self._affordance_streaks:
@@ -1806,6 +1840,7 @@ class VectorizedHamletEnv:
             - 'ordering': List of affordance names in consistent order
             - 'position_dim': Dimensionality for validation (0=aspatial, 2=2D, 3=3D)
         """
+        self._participation_ingress()
         positions = {}
         for name, pos_tensor in self.affordances.items():
             # Convert tensor to list (handles any dimensionality)
@@ -1834,6 +1869,7 @@ class VectorizedHamletEnv:
         Raises:
             ValueError: If the checkpoint layout or any position is invalid.
         """
+        self._participation_ingress()
         validated_positions = self.validate_affordance_positions(checkpoint_data)
         for name in self.affordances:
             self.affordances[name] = validated_positions[name]
@@ -1841,6 +1877,7 @@ class VectorizedHamletEnv:
 
     def validate_affordance_positions(self, checkpoint_data: dict) -> dict[str, torch.Tensor]:
         """Validate checkpoint affordance positions without mutating environment state."""
+        self._participation_ingress()
         expected_keys = {"positions", "ordering", "position_dim"}
         if type(checkpoint_data) is not dict or set(checkpoint_data) != expected_keys:
             raise ValueError(f"Affordance checkpoint keys must be exactly {sorted(expected_keys)}")
@@ -1916,6 +1953,7 @@ class VectorizedHamletEnv:
         reads a declared position: under `randomize_affordances: true` none is consulted.
         """
 
+        self._participation_ingress()
         if not self.randomize_affordances:
             return None
 
@@ -2018,6 +2056,11 @@ class VectorizedHamletEnv:
         self._world_saved_binding: dict[str, Any] | None = None
         self._world_restored: tuple[WorldRecord, WorldRecord] | None = None
         self._world_vfs_pending: VFSWorldContext | None = None
+        self._participation_busy = False
+        self._participation_failed = False
+        self._participation_pending: dict[str, Any] | None = None
+        self._participation_committed: dict[str, Any] | None = None
+        self._participation_reset_state: dict[str, Any] | None = None
 
     @property
     def world_ids(self) -> tuple[str, ...]:
@@ -2036,6 +2079,7 @@ class VectorizedHamletEnv:
         return self._world_identity
 
     def _require_phase(self, *phases: str) -> None:
+        self._participation_ingress()
         if self._world_phase not in phases:
             raise ValueError(f"operation is unavailable in world phase {self._world_phase}")
 
@@ -2070,6 +2114,7 @@ class VectorizedHamletEnv:
             raise ValueError("world operation requires the installed release")
 
     def bind_boundary_authority(self, *, owner: object, role_owners: Mapping[str, object]) -> WorldBoundaryAuthority:
+        self._participation_ingress()
         if not isinstance(role_owners, Mapping) or set(role_owners) != _WORLD_ROLES or any(value is None for value in role_owners.values()):
             raise ValueError("boundary authority requires every actual role owner")
         if self._world_authority is not None:
@@ -2085,6 +2130,8 @@ class VectorizedHamletEnv:
         return self._world_authority
 
     def install_boundary_release(self, release: WorldRecord) -> WorldRecord:
+        self._participation_ingress()
+        self._check_committed_participation()
         self._valid_record(release, "release")
         if release is self._world_release:
             self._require_phase("bootstrap-ready", "released-completed")
@@ -2106,6 +2153,7 @@ class VectorizedHamletEnv:
 
     def prepare_episode(self, *, batch_episode: int, release: WorldRecord) -> WorldEpisodeReservation:
         self._require_phase("bootstrap-ready", "released-completed")
+        self._check_committed_participation()
         self._require_release(release)
         exact_integer(batch_episode, 0, "batch episode")
         if batch_episode != release.next_batch_episode:
@@ -2137,6 +2185,8 @@ class VectorizedHamletEnv:
             raise ValueError("reservation identity or cursor disagrees")
 
     def reset(self, *, reservation: WorldEpisodeReservation) -> WorldRecord:
+        self._participation_ingress()
+        self._check_committed_participation()
         previous = self._world_reservation
         duplicate = (
             isinstance(reservation, WorldEpisodeReservation)
@@ -2155,6 +2205,8 @@ class VectorizedHamletEnv:
             self._require_phase("active-awaiting-activation", "active", "closed-awaiting-release", "released-completed")
             return self._world_reset
         self.validate_episode_reservation(reservation)
+        self._participation_pending = self._participation_committed = self._participation_reset_state = None
+        self._participation_failed = False
         candidate = VFSWorldContext(
             training_seed=self._world_seed,
             world_ids=reservation.world_ids,
@@ -2187,6 +2239,7 @@ class VectorizedHamletEnv:
             self._world_equal = {}
             self._world_closure, self._world_release = None, None
             self._world_phase = "active-awaiting-activation"
+            self._participation_reset_state = self._participation_state()
             return receipt
         except BaseException:
             self._world_phase = "quarantined"
@@ -2202,11 +2255,367 @@ class VectorizedHamletEnv:
         """Authenticate current token identity; callers retain their phase checks."""
         self._accepted(accepted)
 
+    def _participation_ingress(self) -> None:
+        """Synchronous cooperative fence, not an inter-thread lock."""
+        if self._participation_busy or self._participation_pending is not None:
+            raise ValueError("initial participation owns the current operation window")
+
+    def _participation_state(self) -> dict[str, Any]:
+        """Own finite ENV state; builtin read purity covers unencoded manager state.
+
+        No simulator export/evaluation or guessed item/effect/history schema is used.
+        The supported mask/encoder graph reads those managers without mutation under
+        fixed builtin configuration and single-owner quiescence.
+        """
+        names = (
+            "positions",
+            "_velocity",
+            "meters",
+            "dones",
+            "step_counts",
+            "intrinsic_weights",
+            "interaction_progress",
+            "last_interaction_position",
+            "_unique_affordances_count",
+        )
+        state: dict[str, Any] = {
+            "tensors": {name: getattr(self, name) for name in names},
+            "tick": self.global_tick,
+            "hour": self.time_of_day,
+            "affordances": self.affordances,
+            "layout": self._affordance_layout_cache,
+            "last_interaction": self.last_interaction_affordance,
+            "last_affordances": self._last_affordances,
+            "streaks": self._affordance_streaks,
+            "seen": tuple(tuple(sorted(values)) for values in self._affordances_seen),
+            "vfs": self._current_vfs_state(),
+        }
+        return {key: owned_value(value) for key, value in state.items()}
+
+    def _quarantine_participation(self) -> None:
+        self._participation_pending = None
+        self._participation_failed = True
+        self._world_phase = "quarantined"
+
+    def _check_participation_state(self, expected: Mapping[str, Any]) -> None:
+        if not same_value(expected, self._participation_state()):
+            self._quarantine_participation()
+            raise ValueError("initial participation physical/status evidence changed")
+
+    def _invalidate_participation(self, expected: Mapping[str, Any] | None) -> None:
+        self._participation_pending = None
+        if expected is not None:
+            try:
+                self._check_participation_state(expected)
+            except BaseException:
+                # A failed read cannot certify a healthy replacement preparation.
+                self._quarantine_participation()
+
+    def _participation_reading(self, value: Any, *, width: int, dtype: torch.dtype) -> None:
+        shape = (self.num_agents, width)
+        if (
+            not isinstance(value, torch.Tensor)
+            or value.layout != torch.strided
+            or value.shape != shape
+            or value.dtype != dtype
+            or value.device != self.device
+            or (dtype == torch.float32 and not bool(torch.isfinite(value).all()))
+        ):
+            raise ValueError("initial participation reading has invalid geometry, dtype or device")
+
+    def _initial_participation_window(self, accepted: WorldAcceptedEpisode) -> None:
+        self._accepted(accepted)
+        if (
+            self._world_phase != "active-awaiting-activation"
+            or self._participation_failed
+            or self._world_reset is None
+            or self._world_reservation is None
+            or self._participation_reset_state is None
+            or self._world_frozen is not None
+            or self._participation_committed is not None
+            or "activation" in self._world_equal
+        ):
+            raise ValueError("initial participation requires an unactivated genuine reset")
+
+    def prepare_initial_participation(self, *, accepted: WorldAcceptedEpisode, intent: WorldOwnerReceipt) -> WorldRecord:
+        """Stage an owner-issued pre-first-transition retirement without publishing it."""
+        try:
+            return self._prepare_initial_participation(accepted=accepted, intent=intent)
+        except ValueError:
+            raise  # Pure input refusals precede the guarded staging work below.
+        except BaseException:
+            self._invalidate_participation(self._participation_reset_state)
+            raise
+
+    def _prepare_initial_participation(self, *, accepted: WorldAcceptedEpisode, intent: WorldOwnerReceipt) -> WorldRecord:
+        if self._participation_busy:
+            raise ValueError("initial participation cannot reenter")
+        self._initial_participation_window(accepted)
+        proof = WorldReceiptIssuer.validate(intent, "initial_participation_intent", self._world_role_owners["population"])
+        fields = proof.payload
+        if set(fields) != {"accepted", "world_ids", "retired_world_ids", "population_revision"}:
+            raise ValueError("initial participation intent requires exact fields")
+        retired = fields["retired_world_ids"]
+        if (
+            fields["accepted"] is not accepted
+            or type(fields["world_ids"]) is not tuple
+            or fields["world_ids"] != self.world_ids
+            or type(retired) is not tuple
+            or any(type(key) is not str or not key for key in retired)
+            or len(set(retired)) != len(retired)
+            or tuple(key for key in self.world_ids if key in retired) != retired
+        ):
+            raise ValueError("initial participation intent identity or ordered subset disagrees")
+        revision = exact_integer(fields["population_revision"], 0, "population revision")
+        previous = self._participation_pending
+        if previous is not None and previous["intent"] is not intent:
+            raise ValueError("another initial participation intent is retained")
+        reset_state, reset_record = self._participation_reset_state, self._world_reset
+        assert reset_state is not None and reset_record is not None
+        self._participation_busy = True
+        try:
+            if previous is not None:
+                self._check_initial_preparation(previous)
+                retained = previous["prepared"]
+                if not isinstance(retained, WorldRecord):
+                    raise ValueError("retained initial participation preparation is invalid")
+                self._valid_record(retained, "prepared_initial_participation")
+                return retained
+            self._check_participation_state(reset_state)
+            if self.global_tick != 0 or bool(self.step_counts.any()) or bool(self.dones.any()):
+                self._quarantine_participation()
+                raise ValueError("initial participation requires pristine reset activity and counts")
+            observation = self._encode_observations().detach().clone()
+            self._check_participation_state(reset_state)
+            self._participation_reading(observation, width=self.observation_dim, dtype=torch.float32)
+            if not same_value(observation, reset_record.observation):
+                self._quarantine_participation()
+                raise ValueError("initial participation reset observation changed")
+            before = self._participation_state()
+            # One genuine fixed-reset legal mask. Dones is read only at the builtin
+            # builder's final clearing step, so derive retirement without a callback.
+            legal = self._build_action_masks()
+            self._check_participation_state(before)
+            self._participation_reading(legal, width=self.action_dim, dtype=torch.bool)
+            candidate_mask = legal.detach().clone()
+            candidate_dones = torch.tensor([key in retired for key in self.world_ids], dtype=torch.bool, device=self.device)
+            candidate_mask[candidate_dones] = False
+            if bool((~candidate_dones & ~candidate_mask.any(dim=1)).any()):
+                raise ValueError("initial participation leaves a live world without a legal action")
+            self._check_participation_state(before)
+            self._initial_participation_window(accepted)
+            candidate_state = owned_value(before)
+            candidate_state["tensors"]["dones"] = candidate_dones.detach().clone()
+            prepared = self._record(
+                "prepared_initial_participation",
+                {
+                    "accepted": accepted,
+                    "intent": intent,
+                    "retired_world_ids": retired,
+                    "observation": observation,
+                    "action_masks": candidate_mask,
+                },
+            )
+            self._participation_pending = {
+                "prepared": prepared,
+                "accepted": accepted,
+                "intent": intent,
+                "reset": self._world_reset,
+                "reservation": self._world_reservation,
+                "generation": self._world_generation,
+                "revision": self._world_revision,
+                "population_revision": revision,
+                "retired": retired,
+                "before": before,
+                "candidate_state": candidate_state,
+                "observation": observation,
+                "mask": candidate_mask,
+                "dones": candidate_dones,
+            }
+            return prepared
+        except BaseException:
+            self._invalidate_participation(self._participation_reset_state)
+            raise
+        finally:
+            self._participation_busy = False
+
+    def _check_initial_preparation(self, pending: Mapping[str, Any]) -> None:
+        self._initial_participation_window(pending["accepted"])
+        if (
+            pending["reset"] is not self._world_reset
+            or pending["reservation"] is not self._world_reservation
+            or pending["generation"] != self._world_generation
+            or pending["revision"] != self._world_revision
+        ):
+            raise ValueError("initial participation preparation is stale")
+        self._check_participation_state(pending["before"])
+
+    def commit_initial_participation(self, *, prepared: WorldRecord, population_ready: WorldOwnerReceipt) -> WorldRecord:
+        """Publish a single staged decision; every fallible operation precedes dones."""
+        try:
+            return self._commit_initial_participation(prepared=prepared, population_ready=population_ready)
+        except ValueError:
+            raise  # Exact input refusals leave existing healthy pending custody.
+        except BaseException:
+            pending = self._participation_pending
+            if pending is not None:
+                self._invalidate_participation(pending["before"])
+            raise
+
+    def _commit_initial_participation(self, *, prepared: WorldRecord, population_ready: WorldOwnerReceipt) -> WorldRecord:
+        if self._participation_busy:
+            raise ValueError("initial participation cannot reenter")
+        self._valid_record(prepared, "prepared_initial_participation")
+        pending = self._participation_pending
+        if pending is None or pending["prepared"] is not prepared:
+            raise ValueError("initial participation preparation is not pending")
+        self._initial_participation_window(pending["accepted"])
+        proof = WorldReceiptIssuer.validate(population_ready, "initial_participation_ready", self._world_role_owners["population"])
+        fields = proof.payload
+        if set(fields) != {"accepted", "intent", "prepared", "population_revision"}:
+            raise ValueError("initial participation ready requires exact fields")
+        exact_integer(fields["population_revision"], 0, "population revision")
+        if (
+            fields["accepted"] is not pending["accepted"]
+            or fields["intent"] is not pending["intent"]
+            or fields["prepared"] is not prepared
+            or fields["population_revision"] != pending["population_revision"]
+        ):
+            raise ValueError("initial participation ready disagrees with retained preparation")
+        self._participation_busy = True
+        publishing = False
+        try:
+            self._check_initial_preparation(pending)
+            observation = self._encode_observations()
+            self._participation_reading(observation, width=self.observation_dim, dtype=torch.float32)
+            if not same_value(observation, pending["observation"]):
+                self._quarantine_participation()
+                raise ValueError("initial participation physical observation changed")
+            self._check_participation_state(pending["before"])
+            self._check_initial_preparation(pending)
+            self._participation_reading(pending["mask"], width=self.action_dim, dtype=torch.bool)
+            if (
+                bool(pending["mask"][pending["dones"]].any())
+                or bool((~pending["dones"] & ~pending["mask"].any(dim=1)).any())
+                or not same_value(pending["candidate_state"]["tensors"]["dones"], pending["dones"])
+            ):
+                raise ValueError("initial participation candidate changed")
+            revision = self._world_revision + 1
+            result = self._record(
+                "initial_participation",
+                {
+                    "accepted": pending["accepted"],
+                    "retired_world_ids": pending["retired"],
+                    "observation": pending["observation"],
+                    "action_masks": pending["mask"],
+                },
+            )
+            committed = {
+                "result": result,
+                "accepted": pending["accepted"],
+                "reset": pending["reset"],
+                "generation": self._world_generation,
+                "revision": revision,
+                "retired": pending["dones"].detach().clone(),
+                "state": pending["candidate_state"],
+                "observation": pending["observation"],
+            }
+            candidate_dones = pending["dones"]
+            self._check_initial_preparation(pending)
+            # No property read, clone, issuer, callback or allocation after this cut.
+            publishing = True
+            self.dones = candidate_dones
+            self._participation_committed = committed
+            self._participation_pending = None
+            self._world_revision = revision
+            return result
+        except BaseException:
+            if publishing:
+                self._quarantine_participation()
+            else:
+                self._invalidate_participation(pending["before"])
+            raise
+        finally:
+            self._participation_busy = False
+
+    def _check_participation_custody(self, committed: Mapping[str, Any], *, phase: str) -> None:
+        if (
+            phase not in ("active-awaiting-activation", "active", "boundary-pending", "closed-awaiting-release", "released-completed")
+            or self._world_phase != phase
+            or self._participation_failed
+            or self._participation_pending is not None
+            or self._participation_committed is not committed
+            or committed["accepted"] is not self._world_accepted
+            or committed["reset"] is not self._world_reset
+            or committed["generation"] != self._world_generation
+            or committed["revision"] != self._world_revision
+        ):
+            self._quarantine_participation()
+            raise ValueError("initial participation lifecycle custody is stale or failed")
+        self._valid_record(committed["result"], "initial_participation")
+
+    def _check_committed_participation(self) -> None:
+        committed = self._participation_committed
+        if committed is None:
+            return
+        phase = self._world_phase
+        previous_busy = self._participation_busy
+        self._participation_busy = True
+        try:
+            self._check_participation_custody(committed, phase=phase)
+            self._check_participation_state(committed["state"])
+            retired = committed["retired"]
+            if bool((~self.dones[retired]).any()) or bool(self.step_counts[retired].any()):
+                self._quarantine_participation()
+                raise ValueError("a sealed retired world cannot participate")
+            observation = self._encode_observations()
+            self._participation_reading(observation, width=self.observation_dim, dtype=torch.float32)
+            self._check_participation_state(committed["state"])
+            if not same_value(observation, committed["observation"]):
+                self._quarantine_participation()
+                raise ValueError("sealed current physical observation changed")
+            # Encoding/state reads may return unchanged bytes after legitimate
+            # abandonment. Physical equality never reinstates lifecycle authority.
+            self._check_participation_custody(committed, phase=phase)
+        finally:
+            self._participation_busy = previous_busy
+
+    def _advance_participation_witness(self, observation: torch.Tensor) -> None:
+        committed = self._participation_committed
+        if committed is not None:
+            retired = committed["retired"]
+            if bool((~self.dones[retired]).any()) or bool(self.step_counts[retired].any()):
+                self._quarantine_participation()
+                raise ValueError("a genuine step contradicted sealed retirement")
+            state = self._participation_state()
+            reading = observation.detach().clone()
+            committed["state"], committed["observation"], committed["revision"] = state, reading, self._world_revision
+
+    def validate_initial_participation(
+        self, *, accepted: WorldAcceptedEpisode, participation: WorldRecord, predecessor: torch.Tensor
+    ) -> None:
+        """Authenticate current sealed activity/physical reading before parent effects."""
+        self._require_phase("active")
+        self._accepted(accepted)
+        self._valid_record(participation, "initial_participation")
+        committed = self._participation_committed
+        if committed is None or committed["result"] is not participation or committed["accepted"] is not accepted:
+            raise ValueError("initial participation requires the exact committed decision")
+        self._participation_reading(predecessor, width=self.observation_dim, dtype=torch.float32)
+        self._participation_busy = True
+        try:
+            self._check_committed_participation()
+            if not same_value(committed["observation"], predecessor):
+                raise ValueError("initial participation predecessor disagrees with current physical reading")
+        finally:
+            self._participation_busy = False
+
     def activate_episode(
         self, *, accepted: WorldAcceptedEpisode, population_receipt: WorldOwnerReceipt, curiosity_receipt: WorldOwnerReceipt
     ) -> WorldRecord:
         self._require_phase("active-awaiting-activation", "active")
         self._accepted(accepted)
+        self._check_committed_participation()
         for role, receipt in (("population", population_receipt), ("curiosity", curiosity_receipt)):
             WorldReceiptIssuer.validate(receipt, "activation", self._world_role_owners[role])
             if set(receipt.payload) != {"accepted"} or receipt.accepted is not accepted:
@@ -2231,6 +2640,7 @@ class VectorizedHamletEnv:
     ) -> WorldRecord:
         self._require_phase("active", "closed-awaiting-release", "released-completed")
         self._accepted(accepted)
+        self._check_committed_participation()
         exact_integer(boundary_key, 0, "boundary key")
         participants = exact_world_ids(participated_world_ids)
         actual = {key for index, key in enumerate(self.world_ids) if int(self.step_counts[index]) > 0}
@@ -2263,6 +2673,7 @@ class VectorizedHamletEnv:
 
     def freeze_episode_close(self, prepared: WorldRecord) -> WorldRecord:
         self._require_phase("active", "boundary-pending", "closed-awaiting-release", "released-completed")
+        self._check_committed_participation()
         self._valid_record(prepared, "prepared_close")
         self._accepted(prepared.accepted)
         if prepared.revision != self._world_revision or (self._world_frozen is not None and self._world_frozen is not prepared):
@@ -2274,6 +2685,7 @@ class VectorizedHamletEnv:
 
     def close_episode(self, prepared: WorldRecord, *, dispositions: WorldOwnerReceipt) -> WorldRecord:
         self._require_phase("boundary-pending", "closed-awaiting-release", "released-completed")
+        self._check_committed_participation()
         self._valid_record(prepared, "prepared_close")
         if prepared is not self._world_frozen or prepared.revision != self._world_revision:
             raise ValueError("closure requires the frozen current preparation")
@@ -2297,6 +2709,13 @@ class VectorizedHamletEnv:
 
     def abandon_episode(self, *, accepted: WorldAcceptedEpisode, reason: str) -> WorldRecord:
         self._accepted(accepted)
+        if reason == "runtime_failure" and accepted is self._world_accepted:
+            # Fail-closed owner cleanup must work even while public entry is fenced.
+            if self._participation_busy or self._participation_pending is not None or self._participation_failed:
+                self._quarantine_participation()
+                return self._equal_record("abandonment", "abandonment", {"accepted": accepted, "reason": reason})
+        else:
+            self._participation_ingress()
         if reason not in ("empty_participation", "runtime_failure"):
             raise ValueError("unknown episode abandonment reason")
         if self._world_phase == "quarantined":
@@ -2306,6 +2725,7 @@ class VectorizedHamletEnv:
             return previous
         self._require_phase("active", "active-awaiting-activation")
         if reason == "empty_participation":
+            self._check_committed_participation()
             if bool((self.step_counts > 0).any()) or self._world_consumers is None:
                 raise ValueError("empty abandonment requires activated empty owners")
             for owner in self._world_consumers:
@@ -2325,6 +2745,8 @@ class VectorizedHamletEnv:
         self, *, kind: str, release: WorldRecord, retained_binding_batches: tuple[int, ...], initial: WorldRecord | None
     ) -> dict[str, Any]:
         self._require_release(release)
+        self._participation_ingress()
+        self._check_committed_participation()
         if not isinstance(retained_binding_batches, tuple):
             raise ValueError("retained history references require a tuple")
         for batch in retained_binding_batches:
@@ -2421,6 +2843,8 @@ class VectorizedHamletEnv:
         self._world_phase = "restoring"
         try:
             self._world_generation += 1
+            self._participation_pending = self._participation_committed = self._participation_reset_state = None
+            self._participation_failed = False
             self._world_cursors = dict(state["accepted_episode_seqs"])
             self._world_bindings = {item["batch_episode"]: owned_value(item) for item in state["accepted_bindings"]}
             self._world_last_closed = owned_value(state["last_closed_episode"])

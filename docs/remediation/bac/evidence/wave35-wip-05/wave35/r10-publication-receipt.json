@@ -1,0 +1,34 @@
+{
+  "status": "PUSHED; exact remote SHA/tree verified",
+  "observed_at": "2026-11-10T21:56:18.291Z",
+  "sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "tree": "c259ecb8f5f7e0ca92da201f838caaad888eaf7f",
+  "branch": "project-recovery-bac-2026-11-01",
+  "ci": [
+    {
+      "id": 42909388548,
+      "name": "Tests",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42909388548"
+    },
+    {
+      "id": 42909388546,
+      "name": "Lint",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42909388546"
+    },
+    {
+      "id": 42909388566,
+      "name": "Config Validation",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/42909388566"
+    }
+  ],
+  "scope": "Unreleased WIP checkpoint; no release/merge. CI statuses are observations, not passing qualification."
+}

@@ -1,0 +1,31 @@
+{
+  "status": "NAMED BUILTIN READ SOURCE CONDITION DISCHARGED; INTEGRATED EXECUTABLE EQUALITY OWED",
+  "source_checkpoint": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+  "reports": [
+    {
+      "report": "T18e-GRID-READ-PURITY.md",
+      "sha256": "811fc7523b41306fe22e44bebd42848fef5aabe6644cf2c3b4478c3b8ac62c9c",
+      "whole_sources": 5,
+      "source_lines": 1970,
+      "verdict": "Named builtin read paths source-pure at fixed supported state; no sixth helper boundary"
+    },
+    {
+      "report": "T18e-CONTINUOUS-READ-PURITY.md",
+      "sha256": "0ee0569f80646b84bd03620c6819ae5ccf1e2028c1c1e3245528781f32b5e854",
+      "whole_sources": 5,
+      "source_lines": 1843,
+      "verdict": "Named builtin read paths source-pure at fixed supported state; no sixth helper boundary"
+    },
+    {
+      "report": "T18e-ITEM-REGISTRY-READ-PURITY.md",
+      "sha256": "779cece2ba19da3fb25fb7968d4f53f79a44ebaa8283398116883a1c463cb04d",
+      "whole_sources": 5,
+      "source_lines": 4232,
+      "verdict": "Named builtin read paths source-pure at fixed supported state; no sixth helper boundary"
+    }
+  ],
+  "scope": "Three independently bounded source contexts, not a claim one agent inspected their union. Supported actual factory builtins under fixed config/storage and nonmutating runtime/composer callbacks; no arbitrary injected subclass guarantee.",
+  "decision": "Retain one existing owned successor/context and existing RWC phase. No extra successor field, deferred composer or phase state machine is justified by refuted retirement/hour/scheduler hypothesis.",
+  "acceptance_owed": "Genuine positive-capacity spatial/aspatial/temporal/terminal/effect/cancellation/Icm/RND/replay equality and source ownership regression checks under original finite T18e requirements; no tests executed by these source reports.",
+  "cadence": "Do not add exhaustive Cartesian proposed recipes as automatic new programme scope. Select discriminating actual configuration witnesses for each supported relation, retain existing unit coverage and all mandatory original acceptance."
+}

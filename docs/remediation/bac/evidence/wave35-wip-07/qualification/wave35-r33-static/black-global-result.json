@@ -1,0 +1,22 @@
+{
+  "name": "black-global",
+  "exit_code": 0,
+  "seconds": 47.53621530532837,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src",
+    "tests",
+    "scripts",
+    "--workers",
+    "1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r33-static/black-global.log",
+  "sha256": "6aa09e752a9b68ec8828043a62fd422783ca01775665f1a6817badba61f31a71",
+  "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "de60e23c79813b8235d3579bfc55f32bbbcc68ff6ae521bf25b0a37ccf4bda90",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

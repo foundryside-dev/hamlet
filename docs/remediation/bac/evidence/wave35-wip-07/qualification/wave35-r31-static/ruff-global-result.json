@@ -1,0 +1,18 @@
+{
+  "name": "ruff-global",
+  "exit_code": 0,
+  "seconds": 0.0916447639465332,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "."
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r31-static/ruff-global.log",
+  "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "candidate_tree": "3db908c4915c0b3f6666064bdc74a80dfbadb8a6",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "2f2d761209d9b0c3356685cce1a87eafaef2850df31d409c05f488880fcedc42",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,46 @@
+"""Qualification-only CLI process startup identity; no production edits."""
+import os
+if os.environ.get("BAC_COMPILER_PROCESS_CUSTODY") == "1":
+    import fcntl
+    import hashlib
+    import json
+    from pathlib import Path
+    import subprocess
+    import sys
+    import traceback
+    out = Path(os.environ["BAC_QUAL_OUTPUT"]) / "compiler-processes"
+    out.mkdir(parents=True, exist_ok=True)
+    try:
+        root = Path(os.environ["BAC_QUAL_ROOT"]).resolve()
+        manifest_path = Path(os.environ["BAC_QUAL_MANIFEST"])
+        manifest = json.loads(manifest_path.read_text())
+        sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+        actual_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+        assert actual_head == manifest["base_commit"]
+        with (root / ".superpowers/bac-qualification-index.lock").open("a") as lock:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            tree = subprocess.check_output(["git", "write-tree"], cwd=root, text=True).strip()
+        assert tree == manifest["candidate_tree"]
+        assert subprocess.run(["git", "diff", "--quiet"], cwd=root).returncode == 0
+        for group in ("source_files", "configs", "artifacts"):
+            for name, expected in manifest[group].items():
+                assert sha(root / name) == expected, name
+        import townlet
+        import torch
+        torch.set_num_threads(1)
+        module = str(Path(townlet.__file__).resolve())
+        assert module == str(root / "src/townlet/__init__.py")
+        assert sys.version_info[:2] == (3, 13)
+        assert torch.get_num_threads() == 1
+        record = {"status": "PASS", "pid": os.getpid(), "ppid": os.getppid(), "argv": sys.argv,
+                  "python": sys.version, "executable": sys.executable, "module": module,
+                  "torch": torch.__version__, "threads": torch.get_num_threads(),
+                  "interop_threads": torch.get_num_interop_threads(), "sha": actual_head,
+                  "candidate_tree": tree, "manifest_sha256": sha(manifest_path),
+                  "source_hashes": manifest["source_files"], "configs": len(manifest["configs"]),
+                  "artifacts": len(manifest["artifacts"])}
+        (out / (str(os.getpid()) + ".json")).write_text(json.dumps(record, indent=2) + "\n")
+    except BaseException:
+        (out / ("FAIL-" + str(os.getpid()) + ".txt")).write_text(traceback.format_exc())
+        traceback.print_exc()
+        os._exit(97)

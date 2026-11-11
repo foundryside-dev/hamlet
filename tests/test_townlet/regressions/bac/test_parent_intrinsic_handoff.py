@@ -80,7 +80,7 @@ class ParentFixture:
         self.env.validate_episode_reservation(reservation)
         pop.bind_episode_worlds(world_ids=IDS, world_episode_seqs=reservation.world_episode_seqs)
         pop.begin_batch_episode(batch, planned_horizon=20)
-        self.record, activation = pop.reset(reservation=reservation)
+        self.record, activation = pop.reset(reservation=reservation, retired_world_ids=())
         assert activation.owner is pop
         curiosity = self.runtime.begin_episode(accepted=self.record.accepted)
         self.env.activate_episode(
@@ -96,13 +96,18 @@ class ParentFixture:
         for lane in range(len(IDS)):
             pop.flush_episode(lane, reason="budget")
         outcomes, key = pop.completed_outcomes, accepted.batch_episode
+        participants = tuple(world for world in accepted.world_ids if any(event.world_id == world for event in outcomes))
         content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, outcomes))
         curriculum = pop.curriculum.prepare_episode_outcomes(outcomes)
         bank = self.runtime.prepare_completion(
-            accepted=accepted, boundary_key=key, completion_content=content, outcomes=outcomes, participated_world_ids=IDS
+            accepted=accepted, boundary_key=key, completion_content=content, outcomes=outcomes, participated_world_ids=participants
         )
         closing = self.env.prepare_episode_close(
-            accepted=accepted, boundary_key=key, completion_content=content, participated_world_ids=IDS, dispositions=bank.prepared_receipt
+            accepted=accepted,
+            boundary_key=key,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=bank.prepared_receipt,
         )
         self.env.freeze_episode_close(closing)
         pop.curriculum.commit_prepared_episode_outcomes(curriculum)
@@ -534,6 +539,15 @@ def test_partial_failure_records_reached_cut_and_refuses_reexecution(
         rig.population.step_population(rig.env)
     assert len(physical_calls) == 1
     assert_failed(rig, stage, advanced)
+    if seam == "pace":
+        diagnostic = copy.deepcopy(rig.population.get_checkpoint_state())
+        equal(diagnostic["vector_step_progress"], rig.population.vector_step_progress)
+        assert diagnostic["vector_step_progress"]["status"] == "failed"
+        receiver = make_parent(compiled, "rnd")
+        with pytest.raises(ValueError, match="Failed or in-progress"):
+            receiver.population.prepare_checkpoint_state(
+                diagnostic, mode="completed_boundary", parent_restore=None, validate_parent_restore=None, initialization=None
+            )
 
 
 def test_current_initial_transport_has_complete_exact_ledger(compiled: Any) -> None:
@@ -699,7 +713,7 @@ def test_post_env_reset_failure_never_issues_reusable_activation(compiled: Any, 
 
     monkeypatch.setattr(rig.env, "reset", observe_reset)
     monkeypatch.setattr(WorldReceiptIssuer, "issue", observe_issue)
-    monkeypatch.setattr(rig.population, "sync_exploration_metrics", refuse_telemetry)
+    monkeypatch.setattr(rig.population, "_publish_exploration_metrics", refuse_telemetry)
     with pytest.raises(RuntimeError, match="post-ENV-reset"):
         rig.enter()
     assert len(resets) == 1
@@ -707,7 +721,7 @@ def test_post_env_reset_failure_never_issues_reusable_activation(compiled: Any, 
     assert not activations
     assert rig.env.world_phase == "quarantined"
     with pytest.raises(RuntimeError):
-        rig.population.reset(reservation=resets[0][0])
+        rig.population.reset(reservation=resets[0][0], retired_world_ids=())
     assert len(resets) == 1
     assert rig.population.total_steps == rig.population.clock_ledger.vector_ticks == 0
 

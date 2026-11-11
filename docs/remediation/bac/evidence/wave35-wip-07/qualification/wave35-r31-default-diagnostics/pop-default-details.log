@@ -1,0 +1,24 @@
+Scanning 1 Python file(s)...
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+
+=== Whitelisted Violations (not counted as errors) ===
+src/townlet/population/vectorized.py:975:16: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_begin_selection::owned
+src/townlet/population/vectorized.py:2118:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_same_device::a_idx
+src/townlet/population/vectorized.py:2119:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_same_device::b_idx
+src/townlet/population/vectorized.py:2324:29: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_execute_population_step::last_rnd_loss
+src/townlet/population/vectorized.py:2347:39: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_execute_population_step::reason
+src/townlet/population/vectorized.py:192:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::__init__
+src/townlet/population/vectorized.py:2383:4: DEF001: Function 'build_telemetry_snapshot' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::build_telemetry_snapshot
+src/townlet/population/vectorized.py:2563:4: DEF001: Function '_validate_optimizer_checkpoint_state' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_validate_optimizer_checkpoint_state
+No defaults detected. Clean.
+(8 violation(s) whitelisted)

@@ -1,0 +1,27 @@
+{
+  "name": "positive-core",
+  "exit_code": 0,
+  "seconds": 11.992615461349487,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_reset_seals_retirement_before_population_activation",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution[pace-advanced-1]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r33-positive-core"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r33-first-core/positive-core.log",
+  "sha256": "3ee196439addd41e693732b34ba59577fb1cee5d3bc707e28ce9672943f9f937",
+  "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "de60e23c79813b8235d3579bfc55f32bbbcc68ff6ae521bf25b0a37ccf4bda90",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

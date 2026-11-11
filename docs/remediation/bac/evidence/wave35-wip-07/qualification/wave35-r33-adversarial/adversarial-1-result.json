@@ -1,0 +1,25 @@
+{
+  "name": "adversarial-1",
+  "exit_code": 0,
+  "seconds": 11.337010622024536,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_mutating_foreign_mask_callback_stops_selection_after_its_real_q_effects[True-greedy]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r33-adversarial-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r33-adversarial/adversarial-1.log",
+  "sha256": "7fc65aa68a05bb0cde56b43c5b67c344e88e0bbf618fa54b0ef90467c395e6ca",
+  "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "de60e23c79813b8235d3579bfc55f32bbbcc68ff6ae521bf25b0a37ccf4bda90",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

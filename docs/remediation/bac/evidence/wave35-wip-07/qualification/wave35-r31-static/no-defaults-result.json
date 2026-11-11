@@ -1,0 +1,21 @@
+{
+  "name": "no-defaults",
+  "exit_code": 1,
+  "seconds": 1.1960859298706055,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/no_defaults_lint.py",
+    "src/townlet/",
+    "--whitelist",
+    ".defaults-whitelist.txt",
+    "--ratchet",
+    ".defaults-ratchet",
+    "--quiet"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r31-static/no-defaults.log",
+  "sha256": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+  "candidate_tree": "3db908c4915c0b3f6666064bdc74a80dfbadb8a6",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "2f2d761209d9b0c3356685cce1a87eafaef2850df31d409c05f488880fcedc42",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

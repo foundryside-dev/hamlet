@@ -1,0 +1,57 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r31-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r31-static",
+  "workers": 3,
+  "jobs": [
+    {
+      "name": "ruff-global",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ]
+    },
+    {
+      "name": "black-global",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "scripts",
+        "--workers",
+        "1"
+      ]
+    },
+    {
+      "name": "mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    },
+    {
+      "name": "no-defaults",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--quiet"
+      ]
+    },
+    {
+      "name": "expression-doc",
+      "args": [
+        "scripts/gen_expression_functions_doc.py",
+        "--check"
+      ]
+    }
+  ]
+}

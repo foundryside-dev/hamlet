@@ -1,0 +1,25 @@
+{
+  "name": "first-fixture",
+  "exit_code": 0,
+  "seconds": 10.886719703674316,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r34-first-fixture"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-first-fixture/first-fixture.log",
+  "sha256": "d7313f4f3ae8f26e4ccd03a8f1cf6a30fe23f86938b27f16625b592261d5b192",
+  "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "5aae25a8a873775ee0bc941fbf894097f140e51c971df6ed990b0be2d30cfa7c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

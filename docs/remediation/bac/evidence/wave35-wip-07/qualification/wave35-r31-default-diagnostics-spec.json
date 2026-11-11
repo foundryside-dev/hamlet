@@ -1,0 +1,20 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r31-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r31-default-diagnostics",
+  "workers": 1,
+  "scope": "ONEFILE DIAGNOSTICS ONLY; no global ratchet gate/pass claim",
+  "jobs": [
+    {
+      "name": "pop-default-details",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/population/vectorized.py",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--show-whitelisted",
+        "--show-context"
+      ]
+    }
+  ]
+}

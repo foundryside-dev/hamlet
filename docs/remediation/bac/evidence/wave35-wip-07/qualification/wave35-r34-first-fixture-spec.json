@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r34-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-first-fixture",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "first-fixture",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r34-first-fixture"
+      ]
+    }
+  ]
+}

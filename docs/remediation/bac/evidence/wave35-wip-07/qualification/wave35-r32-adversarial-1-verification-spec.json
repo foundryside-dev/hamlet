@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r32-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r32-adversarial-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "adversarial-1",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_mutating_foreign_mask_callback_stops_selection_after_its_real_q_effects[True-greedy]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r32-adversarial-1"
+      ]
+    }
+  ]
+}

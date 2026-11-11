@@ -1,0 +1,43 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_initial_participation_population.py F
+
+=================================== FAILURES ===================================
+_ test_finalization_read_cannot_publish_activation_after_mutating_pop_state[status] _
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa163747100>
+damage = 'status'
+
+    @pytest.mark.parametrize("damage", ("observation", "status"))
+    def test_finalization_read_cannot_publish_activation_after_mutating_pop_state(compiled: Any, monkeypatch: Any, damage: str) -> None:
+        rig = make_parent(compiled)
+        reservation = reserve(rig)
+        reading, visits = rig.env.validate_initial_participation_reading, []
+    
+        def mutate(**kwargs: Any) -> Any:
+            result = reading(**kwargs)
+            visits.append(None)
+            if damage == "observation":
+                rig.population.current_obs.add_(1)
+            else:
+                rig.population.episode_completed[1] = False
+            return result
+    
+        monkeypatch.setattr(rig.env, "validate_initial_participation_reading", mutate)
+>       with pytest.raises(REFUSAL):
+             ^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'RuntimeError'>)
+
+tests/test_townlet/regressions/bac/test_initial_participation_population.py:600: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_finalization_read_cannot_publish_activation_after_mutating_pop_state[status]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 12.81s ==============================

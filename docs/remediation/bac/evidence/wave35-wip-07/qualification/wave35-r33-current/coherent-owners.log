@@ -1,0 +1,94 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 373 items
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py .... [  1%]
+...........................................                              [ 12%]
+tests/test_townlet/regressions/bac/test_initial_participation_env.py ... [ 13%]
+........................................................................ [ 32%]
+.....                                                                    [ 34%]
+tests/test_townlet/regressions/bac/test_intrinsic_composition.py F
+
+=================================== FAILURES ===================================
+____ test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared] ____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fbc5758a820>
+scope = 'shared', scale = 0.5, base = 0.25, intrinsic = 0.5, total = 1.6
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize(
+        "scale,base,intrinsic,total", ((0.5, 0.25, 0.5, 1.6), (0.0, 0.25, 0.0, 1.1), (1.0, 0.25, 1.0, 2.1), (0.5, 0.5, 1.0, 2.1))
+    )
+    def test_real_composer_applies_runtime_scale_once(
+        compiled: Any, monkeypatch: Any, scope: str, scale: float, base: float, intrinsic: float, total: float
+    ) -> None:
+        rig = make_parent(compiled, "icm", scope, selected_policy=controlled_policy(compiled, scope, scale))
+        install_raw_two(rig.runtime, scope)
+        rig.enter()
+        real_composer(rig.env, base)
+        rig.env.meters[:, rig.env.meter_name_to_index["energy"]] = 0.8
+        # Real test setup changes predecessor state; keep actual parent observation synchronized.
+        rig.population.current_obs = rig.env._get_observations()
+        wait_control(monkeypatch, rig)
+        calls = observe_runtime(monkeypatch, rig)
+>       state = rig.population.step_population(rig.env)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_intrinsic_composition.py:122: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:2090: in step_population
+    self._validate_owned_training()
+src/townlet/population/vectorized.py:944: in _validate_owned_training
+    prior = self._check_owned_state()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7fbc2f9fcb90>
+
+    def _check_owned_state(self) -> _PopulationReading:
+        decision, prior = self._initial_decision, self._prior_reading
+        if (
+            decision is None
+            or prior is None
+            or self._accepted is not decision.accepted
+            or self._reset_record is not decision.reset
+            or prior.accepted is not decision.accepted
+            or prior.vector_tick != self.total_steps
+            or prior.action_masks is None
+        ):
+            missing = RuntimeError("Owned episode lacks its genuine sealed population reading")
+            self._quarantine_participation(missing)
+            raise missing
+        retired_rows = torch.nonzero(decision.retired, as_tuple=False).flatten().tolist()
+        healthy = (
+            self._parent_reading_matches(prior)
+            and self._same_reading(self.env.dones, prior.env_dones)
+            and self._same_reading(self.env.step_counts, prior.env_counts)
+            and all(
+                bool(self.episode_completed[row])
+                and int(self.episode_step_counts[row]) == 0
+                and self.episode_completions[row] is None
+                and row not in self._episode_participants
+                and not bool(self._episode_entropy_present[row])
+                and not bool(self._episode_reward_totals[row].any())
+                and (not self.is_recurrent or not self.current_episodes[row]["observations"])
+                for row in retired_rows
+            )
+        )
+        if not healthy:
+            error = ValueError("Population state changed outside its owned transition boundary")
+            self._quarantine_participation(error)
+>           raise error
+E           ValueError: Population state changed outside its owned transition boundary
+
+src/townlet/population/vectorized.py:940: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+=================== 1 failed, 127 passed in 88.86s (0:01:28) ===================

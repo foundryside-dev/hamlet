@@ -1,0 +1,25 @@
+{
+  "name": "independent-component",
+  "exit_code": 0,
+  "seconds": 25.623462438583374,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r34-independent-component"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-independent-component/independent-component.log",
+  "sha256": "6268254e1d7c738892e79a498e5696ff6566d3a453fdd2d33aa10ca8badd201f",
+  "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "5aae25a8a873775ee0bc941fbf894097f140e51c971df6ed990b0be2d30cfa7c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

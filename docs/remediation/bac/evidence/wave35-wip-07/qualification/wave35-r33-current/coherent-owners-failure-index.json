@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: Population state changed outside its owned transition boundary",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_intrinsic_composition.py::test_real_composer_applies_runtime_scale_once[0.5-0.25-0.5-1.6-shared]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

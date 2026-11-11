@@ -1,0 +1,19 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+  "source_guards": 804,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "compiler-cli",
+      "exit_code": 0,
+      "seconds": 139.7197232246399,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-compiler-cli/compiler-cli.log",
+      "sha256": "92f644e2e705c65f3eb785032ea7d28402065b0a44f998619ec86deeccfccdf9"
+    }
+  ],
+  "all_passed": true,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

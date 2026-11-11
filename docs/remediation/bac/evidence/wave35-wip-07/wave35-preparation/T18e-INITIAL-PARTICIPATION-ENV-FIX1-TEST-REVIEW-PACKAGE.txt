@@ -1,0 +1,129 @@
+diff --git a/tests/test_townlet/regressions/bac/test_initial_participation_env.py b/tests/test_townlet/regressions/bac/test_initial_participation_env.py
+index a29188a3..38a24874 100644
+--- a/tests/test_townlet/regressions/bac/test_initial_participation_env.py
++++ b/tests/test_townlet/regressions/bac/test_initial_participation_env.py
+@@ -244,17 +244,18 @@ class ComponentPopulation:
+             curiosity = self.runtime.begin_episode(accepted=self.accepted)
+             return self.env.activate_episode(accepted=self.accepted, population_receipt=self.activation, curiosity_receipt=curiosity)
+         except BaseException:
+             self.activation = None
+             self.env.abandon_episode(accepted=self.accepted, reason="runtime_failure")
+             raise
+ 
+     def prepare_step(self, actions: torch.Tensor) -> Any:
+-        self.env.validate_initial_participation(accepted=self.accepted, participation=self.participation, predecessor=self.current_obs)
++        if self.participation is not None:
++            self.env.validate_initial_participation(accepted=self.accepted, participation=self.participation, predecessor=self.current_obs)
+         candidate = {
+             "accepted": self.accepted,
+             "world_ids": IDS,
+             "predecessor": self.current_obs.clone(),
+             "actions": actions.clone(),
+             "active_on_entry": ~self.completed.clone(),
+         }
+         equal(candidate["active_on_entry"], ~self.env.dones)
+@@ -805,8 +806,104 @@ def test_prepared_capability_cannot_cross_receiver_or_restore_phase(compiled: An
+ 
+ 
+ def test_constructed_step_is_not_an_authority_after_retirement(compiled: Any) -> None:
+     rig = activated(compiled)
+     before = witness(rig)
+     with pytest.raises(ValueError):
+         rig.env.step(torch.zeros(len(IDS), dtype=torch.long), vector_step=PreparedVectorStep())
+     assert_unchanged(rig, before)
++
++
++@pytest.mark.parametrize("with_participation", [True, False])
++def test_claim_cleanup_cannot_resume_physics(compiled: Any, monkeypatch: Any, with_participation: bool) -> None:
++    """A real once-claim followed by public cleanup must stop before ENV's write cut."""
++    claim = ComponentPopulation.claim_vector_step
++    abandonments: list[Any] = []
++
++    def claim_then_abandon(owner: ComponentPopulation, *, prepared: Any, **candidate: Any) -> int:
++        tick = claim(owner, prepared=prepared, **candidate)
++        abandonments.append(owner.env.abandon_episode(accepted=owner.accepted, reason="runtime_failure"))
++        return tick
++
++    # Construction binds this real owner callback once; no late ENV callback rebinding.
++    monkeypatch.setattr(ComponentPopulation, "claim_vector_step", claim_then_abandon)
++    rig = ComponentPopulation(compiled)
++    if with_participation:
++        rig.publish(prepare(rig))
++    rig.activate()
++    calls: list[str] = []
++    reset_tick = rig.env.vfs_registry.reset_tick_scoped
++    execute = rig.env._action_executor._execute_actions
++    reward, service = rig.runtime.reward, rig.runtime.admit_and_service
++
++    def observed_reset() -> Any:
++        calls.append("registry")
++        return reset_tick()
++
++    def observed_execute(actions: Any) -> Any:
++        calls.append("physics")
++        return execute(actions)
++
++    def observed_reward(**kwargs: Any) -> Any:
++        calls.append("reward")
++        return reward(**kwargs)
++
++    def observed_service(**kwargs: Any) -> Any:
++        calls.append("service")
++        return service(**kwargs)
++
++    monkeypatch.setattr(rig.env.vfs_registry, "reset_tick_scoped", observed_reset)
++    monkeypatch.setattr(rig.env._action_executor, "_execute_actions", observed_execute)
++    monkeypatch.setattr(rig.runtime, "reward", observed_reward)
++    monkeypatch.setattr(rig.runtime, "admit_and_service", observed_service)
++    actions = torch.full((len(IDS),), rig.env.action_ids["WAIT"], dtype=torch.long)
++    prepared = rig.prepare_step(actions)
++    before, revision = witness(rig), rig.env._world_revision
++    with pytest.raises(ValueError):
++        rig.env.step(actions, vector_step=prepared)
++    assert rig.step_registry[id(prepared)]["claimed"] and rig.step_started
++    assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
++    assert rig.env.world_phase == "quarantined"
++    assert rig.env._world_revision == revision
++    assert calls == []
++    assert_unchanged(rig, before)
++
++
++def test_observation_cleanup_cannot_return_healthy_validation(compiled: Any, monkeypatch: Any) -> None:
++    """Unchanged genuine encoding cannot bless lifecycle custody abandoned in that read."""
++    rig = activated(compiled)
++    encode = rig.env._encode_observations
++    abandonments: list[Any] = []
++
++    def encode_then_abandon() -> Any:
++        observation = encode()
++        abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
++        return observation
++
++    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
++    before, revision = witness(rig), rig.env._world_revision
++    with pytest.raises(ValueError):
++        rig.env.validate_initial_participation(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
++    assert len(abandonments) == 1 and abandonments[0].reason == "runtime_failure"
++    assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
++    assert_unchanged(rig, before)
++
++
++def test_observation_cleanup_cannot_activate_quarantined_episode(compiled: Any, monkeypatch: Any) -> None:
++    rig = ComponentPopulation(compiled)
++    rig.publish(prepare(rig))
++    encode = rig.env._encode_observations
++    abandonments: list[Any] = []
++
++    def encode_then_abandon() -> Any:
++        observation = encode()
++        abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
++        return observation
++
++    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
++    before, revision = witness(rig), rig.env._world_revision
++    with pytest.raises(ValueError):
++        rig.activate()
++    assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
++    assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
++    assert rig.activation is None
++    assert_unchanged(rig, before)

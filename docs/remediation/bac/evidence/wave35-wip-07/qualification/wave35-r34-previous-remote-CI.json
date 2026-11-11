@@ -1,0 +1,65 @@
+{
+  "head": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "observed_UTC": "2026-11-11 06:01:40 UTC",
+  "workflow_runs": [
+    {
+      "name": "Lint",
+      "id": 42958525018,
+      "head_sha": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "status": "completed",
+      "conclusion": "failure",
+      "updated_at": "2026-11-11T04:21:07Z"
+    },
+    {
+      "name": "Tests",
+      "id": 42958524949,
+      "head_sha": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "status": "completed",
+      "conclusion": "failure",
+      "updated_at": "2026-11-11T05:05:21Z"
+    },
+    {
+      "name": "Config Validation",
+      "id": 42958524922,
+      "head_sha": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "status": "completed",
+      "conclusion": "success",
+      "updated_at": "2026-11-11T04:22:44Z"
+    }
+  ],
+  "jobs": [
+    {
+      "run_id": 42958525018,
+      "jobs": [
+        {
+          "name": "lint",
+          "id": 130319284590,
+          "conclusion": "failure",
+          "failed_steps": [
+            {
+              "name": "Mypy (type check) - Enforce zero type errors",
+              "number": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": 42958524949,
+      "jobs": [
+        {
+          "name": "unit",
+          "id": 130319284160,
+          "conclusion": "failure",
+          "failed_steps": [
+            {
+              "name": "Run fast test suite",
+              "number": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scope": "Historical exact WIP6 remote gate observation; failed Mypy and fast-test steps confirmed. Detailed failing nodes/counts not inferred; not current R34 remote evidence."
+}

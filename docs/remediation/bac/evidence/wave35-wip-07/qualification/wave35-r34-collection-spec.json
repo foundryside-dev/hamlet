@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r34-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+        "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q"
+      ]
+    }
+  ]
+}

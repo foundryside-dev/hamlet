@@ -1,0 +1,20 @@
+{
+  "name": "pop-default-details",
+  "exit_code": 0,
+  "seconds": 0.132796049118042,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/no_defaults_lint.py",
+    "src/townlet/population/vectorized.py",
+    "--whitelist",
+    ".defaults-whitelist.txt",
+    "--show-whitelisted",
+    "--show-context"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r31-default-diagnostics/pop-default-details.log",
+  "sha256": "154abd939ea88a873f7308b40b57dc64f65f39623a78e8dbabaf930d1aeff648",
+  "candidate_tree": "3db908c4915c0b3f6666064bdc74a80dfbadb8a6",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "2f2d761209d9b0c3356685cce1a87eafaef2850df31d409c05f488880fcedc42",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

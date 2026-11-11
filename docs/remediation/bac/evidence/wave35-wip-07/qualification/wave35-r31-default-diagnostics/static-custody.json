@@ -1,0 +1,19 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "candidate_tree": "3db908c4915c0b3f6666064bdc74a80dfbadb8a6",
+  "source_guards": 804,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "pop-default-details",
+      "exit_code": 0,
+      "seconds": 0.132796049118042,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r31-default-diagnostics/pop-default-details.log",
+      "sha256": "154abd939ea88a873f7308b40b57dc64f65f39623a78e8dbabaf930d1aeff648"
+    }
+  ],
+  "all_passed": true,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

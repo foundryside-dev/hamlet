@@ -1,0 +1,29 @@
+{
+  "name": "coherent-owners",
+  "exit_code": 1,
+  "seconds": 97.0229606628418,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+    "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r33-coherent-owners",
+    "-x"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r33-current/coherent-owners.log",
+  "sha256": "b12b4211f7dac2740d9e652dcfaa2ef58a8cc12668b163ed4bca11b571def42c",
+  "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "manifest_sha256": "de60e23c79813b8235d3579bfc55f32bbbcc68ff6ae521bf25b0a37ccf4bda90",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

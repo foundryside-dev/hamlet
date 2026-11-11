@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "candidate_tree": "86fae3c974e87e1ccbfa4d6f15fe695c851c767d",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'RuntimeError'>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_finalization_read_cannot_publish_activation_after_mutating_pop_state[status]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

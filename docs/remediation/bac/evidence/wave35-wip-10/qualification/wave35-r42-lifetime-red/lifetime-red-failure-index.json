@@ -1,0 +1,55 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "candidate_tree": "afcbaab03a58e350957a2224e7c6cc11ee36fabc",
+  "unique_node_phase_failures": 5,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f41424d8380>)",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[standalone]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[raw_private]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f4136d47e00>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[private]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f4136835ae0> = <weakref at 0x7f4136b1cf40; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f4136835ae0>()",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_active_operation_pins_real_owner_and_forbids_early_retirement",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f414294d2f0>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[shared]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

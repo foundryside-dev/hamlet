@@ -1,0 +1,27 @@
+{
+  "name": "finite-positive",
+  "exit_code": 0,
+  "seconds": 20.308456420898438,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py",
+    "-k",
+    "not shared_peer_nested_work_stales_across_lease_boundaries and not two_shared_resets_under_held_lease_match_real_sequential_reference and not real_registration_and_native_objects_are_reclaimed_after_drop and not active_operation_pins_real_owner_and_forbids_early_retirement",
+    "-x",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r42-finite-positive"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r42-finite-positive/finite-positive.log",
+  "sha256": "93e440faadf2f9ada4fd67ac47665afd0c50c10e0445712a16cb21169e491b86",
+  "candidate_tree": "afcbaab03a58e350957a2224e7c6cc11ee36fabc",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "8e892beed830150286ed4ff02afcfbf46371a7cfc512ed4b8e144c1f181840a2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

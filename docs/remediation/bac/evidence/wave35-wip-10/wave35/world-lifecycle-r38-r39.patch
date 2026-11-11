@@ -1,0 +1,470 @@
+diff --git a/tests/test_townlet/regressions/bac/test_world_episode_identity.py b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+index 58a713b6..f1b68755 100644
+--- a/tests/test_townlet/regressions/bac/test_world_episode_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+@@ -17,6 +17,15 @@ import torch
+ 
+ IDS = ("orchard-west", "river-house")
+ SEED = 479
++CLOCK_UNITS = (
++    "vector_ticks",
++    "eligible_transitions",
++    "optimizer_updates",
++    "completed_batch_episodes",
++    "predictor_admitted_rows",
++    "predictor_consumed_minibatches",
++    "predictor_dropped_rows",
++)
+ 
+ 
+ @pytest.fixture(scope="module")
+@@ -171,6 +180,7 @@ class _Run:
+         self.reports = []
+         self.completion_request = None
+         self.committed_batches = {}
++        self.component_commitment = None
+         self.runtime = build_exploration(
+             policy=self.policy,
+             descriptor=descriptor,
+@@ -246,10 +256,66 @@ class _Run:
+         self.env.validate_accepted_episode(accepted=request[0])
+ 
+     def validate_parent_cadence(self, *, cadence, mode, accepted, parent_restore):
++        from townlet.training.clock_ledger import ClockLedger
++
+         context = self.restore_context
+         if context is None or parent_restore is not context["prepared"] or accepted is not None or mode != context["mode"]:
+             raise ValueError("component runtime restore requires its genuine retained ENV preparation")
+-        _same(cadence, context["runtime"]["cadence"])
++        component = context["component"]
++        if type(component) is not dict or set(component) != {"schema", "last_committed", "ledger"}:
++            raise ValueError("component continuation requires its exact portable record")
++        if component["schema"] != "world-component-continuation-v1":
++            raise ValueError("unknown component continuation schema")
++        units = component["ledger"]
++        if type(units) is not dict or set(units) != set(CLOCK_UNITS):
++            raise ValueError("component continuation requires all seven clock units")
++        earned_ledger = ClockLedger(**units)
++        if type(context["ledger"]) is not ClockLedger or context["ledger"] != earned_ledger:
++            raise ValueError("supplied ledger differs from recorded component work")
++        last = component["last_committed"]
++        state = parent_restore.state
++        if mode == "initial":
++            if state["kind"] != "INITIAL" or last is not None or earned_ledger != ClockLedger():
++                raise ValueError("INITIAL continuation requires genuine zero component history")
++            expected = None
++        else:
++            if (
++                state["kind"] != "COMPLETED"
++                or type(last) is not dict
++                or set(last) != {"batch_episode", "completion_content", "epsilon_before", "epsilon_after"}
++            ):
++                raise ValueError("COMPLETED continuation requires its earned canonical commitment")
++            closed = state["last_closed_episode"]
++            if type(last["batch_episode"]) is not int or last["batch_episode"] != state["completed_boundary_key"]:
++                raise ValueError("component commitment differs from prepared parent boundary")
++            content = last["completion_content"]
++            if (
++                type(content) is not list
++                or not content
++                or any(
++                    type(pair) is not list or len(pair) != 2 or any(type(value) is not str or not value for value in pair)
++                    for pair in content
++                )
++            ):
++                raise ValueError("component commitment requires full ordered canonical content")
++            canonical = tuple(tuple(pair) for pair in content)
++            if last["batch_episode"] != closed["batch_episode"] or canonical != tuple(map(tuple, closed["completion_content"])):
++                raise ValueError("component commitment differs from actual prepared closure")
++            if earned_ledger.completed_batch_episodes == 0 or any(
++                type(last[name]) not in (int, float) for name in ("epsilon_before", "epsilon_after")
++            ):
++                raise ValueError("component commitment has no earned completion or schedule")
++            expected = {**last, "completion_content": canonical}
++        if cadence != {"schema": "parent-global-epsilon-cadence-v1", "last_committed": expected}:
++            raise ValueError("runtime cadence differs from earned component commitment")
++
++    def component_state(self):
++        """Portable source journal, earned independently of runtime checkpoint input."""
++        return {
++            "schema": "world-component-continuation-v1",
++            "last_committed": deepcopy(self.component_commitment),
++            "ledger": {unit: getattr(self.ledger, unit) for unit in CLOCK_UNITS},
++        }
+ 
+     def validate_parent_restore(self, *, prepared, curiosity_state):
+         context = self.restore_context
+@@ -574,6 +640,12 @@ class _Run:
+             _same(self.current_epsilons, torch.full((self.env.num_agents,), after, dtype=torch.float32, device=self.env.device))
+             self.committed_batches[batch] = self.events[batch]
+             self.ledger = self.ledger.advance(completed_batch_episodes=1)
++            self.component_commitment = {
++                "batch_episode": batch,
++                "completion_content": [list(pair) for pair in context["request"][2]],
++                "epsilon_before": before,
++                "epsilon_after": after,
++            }
+             context["committed"] = True
+         receipt = context["dispositions"]
+         closure = self.env.close_episode(prepared, dispositions=receipt)
+@@ -652,7 +724,7 @@ class _Run:
+         )
+ 
+ 
+-def _restore(compiled, state, order, *, runtime_state, component_ledger):
++def _restore(compiled, state, order, *, runtime_state, component_ledger, component_state):
+     run = _Run(_env(compiled, order), bootstrap=False)
+     prepared = run.env.prepare_world_restore(
+         kind=state["kind"],
+@@ -665,12 +737,21 @@ def _restore(compiled, state, order, *, runtime_state, component_ledger):
+     # continued. Q/replay/curriculum remain newly initialized: no full D/T26 claim.
+     boundary = run.boundary.receipt("restored_boundary", kind=state["kind"], state=deepcopy(state), prepared=prepared)
+     mode = "initial" if state["kind"] == "INITIAL" else "completed_boundary"
+-    run.restore_context = {"prepared": prepared, "boundary": boundary, "mode": mode, "runtime": deepcopy(runtime_state), "release": None}
++    run.restore_context = {
++        "prepared": prepared,
++        "boundary": boundary,
++        "mode": mode,
++        "runtime": deepcopy(runtime_state),
++        "component": deepcopy(component_state),
++        "ledger": component_ledger,
++        "release": None,
++    }
+     child = run.runtime.prepare_restore(
+         state=runtime_state, mode=mode, accepted=None, parent_restore=prepared, validate_parent_restore=run.validate_parent_restore
+     )
+     run.runtime.install_restore(prepared=child)
+     run.ledger = component_ledger
++    run.component_commitment = run.restore_context["component"]["last_committed"]
+     run.current_epsilons = run.runtime.epsilon_tensor(batch_size=run.env.num_agents, device=run.env.device)
+     release = run.restore_context["release"]
+     assert release is not None
+@@ -924,7 +1005,14 @@ def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
+     assert state["last_closed_episode"] is None and state["completed_boundary_key"] is None
+     assert state["saved_lane_binding"] is None
+     assert state["accepted_episode_seqs"] == dict.fromkeys(IDS, 0)
+-    restored = _restore(compiled, state, tuple(reversed(IDS)), runtime_state=run.runtime.checkpoint_state(), component_ledger=run.ledger)
++    restored = _restore(
++        compiled,
++        state,
++        tuple(reversed(IDS)),
++        runtime_state=run.runtime.checkpoint_state(),
++        component_ledger=run.ledger,
++        component_state=run.component_state(),
++    )
+     assert restored.env.world_phase == "bootstrap-ready"
+     assert restored.reset(1, retired_world_ids=())[1].accepted.world_episode_seqs == (1, 1)
+     with pytest.raises(ValueError):
+@@ -997,7 +1085,14 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
+     first.release_closed(1, closure, dispositions)
+     saved1 = first.completed((1,))
+     old_outcomes = deepcopy(first.outcomes[1])
+-    second = _restore(compiled, saved1, tuple(reversed(IDS)), runtime_state=first.runtime.checkpoint_state(), component_ledger=first.ledger)
++    second = _restore(
++        compiled,
++        saved1,
++        tuple(reversed(IDS)),
++        runtime_state=first.runtime.checkpoint_state(),
++        component_ledger=first.ledger,
++        component_state=first.component_state(),
++    )
+     assert dict(second.env.accepted_episode_seqs) == dict.fromkeys(IDS, 1)
+     assert second.reset(2, retired_world_ids=(IDS[1],))[1].accepted.world_ids == tuple(reversed(IDS))
+     second.step()
+@@ -1011,7 +1106,14 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
+         {"batch_episode": 1, "world_ids": list(IDS), "world_episode_seqs": [1, 1]},
+         {"batch_episode": 2, "world_ids": list(reversed(IDS)), "world_episode_seqs": [2, 2]},
+     ]
+-    third = _restore(compiled, saved2, IDS, runtime_state=second.runtime.checkpoint_state(), component_ledger=second.ledger)
++    third = _restore(
++        compiled,
++        saved2,
++        IDS,
++        runtime_state=second.runtime.checkpoint_state(),
++        component_ledger=second.ledger,
++        component_state=second.component_state(),
++    )
+     restored_bindings = third.completed((1, 2))["accepted_bindings"]
+     _same(saved2["accepted_bindings"], restored_bindings)
+     by_batch = {binding["batch_episode"]: binding for binding in restored_bindings}
+@@ -1401,6 +1503,7 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
+     source = _Run(_env(compiled))
+     initial = source.initial()
+     initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
++    initial_component = source.component_state()
+     captures = []
+     for batch, retired in ((1, (IDS[1],)), (2, ())):
+         source.reset(batch, retired_world_ids=retired)
+@@ -1408,16 +1511,31 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
+         participants = tuple(wid for wid in IDS if wid not in retired)
+         _, closure, dispositions = source.close(batch, participants)
+         source.release_closed(batch, closure, dispositions)
+-        captures.append((source.completed(tuple(range(1, batch + 1))), deepcopy(source.runtime.checkpoint_state()), source.ledger))
++        captures.append(
++            (
++                source.completed(tuple(range(1, batch + 1))),
++                deepcopy(source.runtime.checkpoint_state()),
++                source.ledger,
++                source.component_state(),
++            )
++        )
+     earlier, latest = captures
+     assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+     assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+     assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+     _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+-    state, runtime_state, ledger = (initial, initial_runtime, zero_ledger) if damage == "initial_nonzero_ledger" else latest
++    state, runtime_state, ledger, component = (
++        (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
++    )
++    # A real JSON transport proves this record does not depend on source objects.
++    import json
++
++    component = json.loads(json.dumps(component))
+     # Earn the healthy native prepare/install and next-reset route before the
+     # negative. Only separately supplied cadence/selector or ledger will change.
+-    healthy = _restore(compiled, state, tuple(reversed(IDS)), runtime_state=runtime_state, component_ledger=ledger)
++    healthy = _restore(
++        compiled, state, tuple(reversed(IDS)), runtime_state=runtime_state, component_ledger=ledger, component_state=component
++    )
+     continued = healthy.runtime.checkpoint_state()
+     for field in ("selector", "cadence"):
+         _same(continued[field], runtime_state[field])
+@@ -1480,7 +1598,7 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
+     monkeypatch.setattr(_Run, "__init__", observed_init)
+     try:
+         with pytest.raises(ValueError):
+-            _restore(compiled, state, tuple(reversed(IDS)), runtime_state=candidate, component_ledger=ledger)
++            _restore(compiled, state, tuple(reversed(IDS)), runtime_state=candidate, component_ledger=ledger, component_state=component)
+     finally:
+         assert len(targets) == len(preparations) == 1, "negative must reach genuine ENV restore preparation"
+         assert installations == [], "mismatched continuation must refuse before runtime/BANK or world installation"
+diff --git a/tests/test_townlet/regressions/bac/test_world_vfs_identity.py b/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
+index c40cf789..8c7cf412 100644
+--- a/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
+@@ -22,6 +22,15 @@ from townlet.universe.compiler import UniverseCompiler
+ 
+ DOMAIN = "townlet.simulator.vfs.world-draw.v1"
+ ROLES = ("population", "curiosity", "curriculum", "exploration", "network", "optimizer", "scheduler", "replay", "selection")
++CLOCK_UNITS = (
++    "vector_ticks",
++    "eligible_transitions",
++    "optimizer_updates",
++    "completed_batch_episodes",
++    "predictor_admitted_rows",
++    "predictor_consumed_minibatches",
++    "predictor_dropped_rows",
++)
+ 
+ 
+ def assert_nested_equal(actual, expected):
+@@ -91,6 +100,7 @@ class LocalProducerOwners:
+         self.bank = self.bank_issuer = None
+         self.reports, self.committed = [], {}
+         self.commit_request = None
++        self.component_commitment = None
+         self.runtime = build_exploration(
+             policy=self.policy,
+             descriptor=descriptor,
+@@ -143,10 +153,66 @@ class LocalProducerOwners:
+         self.env.validate_accepted_episode(accepted=request[0])
+ 
+     def validate_parent_cadence(self, *, cadence, mode, accepted, parent_restore):
++        from townlet.training.clock_ledger import ClockLedger
++
+         context = self.restore_context
+         if context is None or mode != context["mode"] or accepted is not None or parent_restore is not context["prepared"]:
+             raise ValueError("VFS runtime continuation requires actual retained ENV preparation")
+-        assert_nested_equal(cadence, context["runtime"]["cadence"])
++        component = context["component"]
++        if type(component) is not dict or set(component) != {"schema", "last_committed", "ledger"}:
++            raise ValueError("VFS continuation requires its exact portable record")
++        if component["schema"] != "world-component-continuation-v1":
++            raise ValueError("unknown VFS component continuation schema")
++        units = component["ledger"]
++        if type(units) is not dict or set(units) != set(CLOCK_UNITS):
++            raise ValueError("VFS continuation requires all seven clock units")
++        earned_ledger = ClockLedger(**units)
++        if type(context["ledger"]) is not ClockLedger or context["ledger"] != earned_ledger:
++            raise ValueError("supplied ledger differs from recorded VFS component work")
++        last = component["last_committed"]
++        state = parent_restore.state
++        if mode == "initial":
++            if state["kind"] != "INITIAL" or last is not None or earned_ledger != ClockLedger():
++                raise ValueError("INITIAL VFS continuation requires genuine zero component history")
++            expected = None
++        else:
++            if (
++                state["kind"] != "COMPLETED"
++                or type(last) is not dict
++                or set(last) != {"batch_episode", "completion_content", "epsilon_before", "epsilon_after"}
++            ):
++                raise ValueError("COMPLETED VFS continuation requires its earned canonical commitment")
++            closed = state["last_closed_episode"]
++            if type(last["batch_episode"]) is not int or last["batch_episode"] != state["completed_boundary_key"]:
++                raise ValueError("VFS commitment differs from prepared parent boundary")
++            content = last["completion_content"]
++            if (
++                type(content) is not list
++                or not content
++                or any(
++                    type(pair) is not list or len(pair) != 2 or any(type(value) is not str or not value for value in pair)
++                    for pair in content
++                )
++            ):
++                raise ValueError("VFS commitment requires full ordered canonical content")
++            canonical = tuple(tuple(pair) for pair in content)
++            if last["batch_episode"] != closed["batch_episode"] or canonical != tuple(map(tuple, closed["completion_content"])):
++                raise ValueError("VFS commitment differs from actual prepared closure")
++            if earned_ledger.completed_batch_episodes == 0 or any(
++                type(last[name]) not in (int, float) for name in ("epsilon_before", "epsilon_after")
++            ):
++                raise ValueError("VFS commitment has no earned completion or schedule")
++            expected = {**last, "completion_content": canonical}
++        if cadence != {"schema": "parent-global-epsilon-cadence-v1", "last_committed": expected}:
++            raise ValueError("runtime cadence differs from earned VFS component commitment")
++
++    def component_state(self):
++        """Separate portable journal from genuine source commits and clock work."""
++        return {
++            "schema": "world-component-continuation-v1",
++            "last_committed": copy.deepcopy(self.component_commitment),
++            "ledger": {unit: getattr(self.ledger, unit) for unit in CLOCK_UNITS},
++        }
+ 
+     def validate_parent_restore(self, *, prepared, curiosity_state):
+         context = self.restore_context
+@@ -718,6 +784,7 @@ def initial_snapshot(owners, release):
+     )
+     owners.saved_runtime = copy.deepcopy(states["exploration"])
+     owners.saved_ledger = owners.ledger
++    owners.saved_component = owners.component_state()
+     return owners.env.checkpoint_world_state(kind="INITIAL", release=release, retained_binding_batches=(), initial=initial)
+ 
+ 
+@@ -793,6 +860,12 @@ def completed_snapshot(owners, accepted):
+     assert torch.equal(owners.current_epsilons, torch.full((env.num_agents,), after, dtype=torch.float32, device=env.device))
+     owners.committed[accepted.batch_episode] = content
+     owners.ledger = owners.ledger.advance(completed_batch_episodes=1)
++    owners.component_commitment = {
++        "batch_episode": accepted.batch_episode,
++        "completion_content": [list(pair) for pair in request[2]],
++        "epsilon_before": before,
++        "epsilon_after": after,
++    }
+     closure = env.close_episode(prepared, dispositions=committed)
+     child_payload = {"accepted": accepted, "boundary_key": accepted.batch_episode, "completion_content": content}
+     child_roles = {
+@@ -816,11 +889,12 @@ def completed_snapshot(owners, accepted):
+     env.install_boundary_release(release)
+     owners.saved_runtime = copy.deepcopy(published)
+     owners.saved_ledger = owners.ledger
++    owners.saved_component = owners.component_state()
+     owners.release = release
+     return env.checkpoint_world_state(kind="COMPLETED", release=release, retained_binding_batches=tuple(owners.committed), initial=None)
+ 
+ 
+-def prepare_restore(owners, state, *, runtime_state, component_ledger):
++def prepare_restore(owners, state, *, runtime_state, component_ledger, component_state):
+     prepared = owners.env.prepare_world_restore(
+         kind=state["kind"],
+         state=state,
+@@ -833,6 +907,7 @@ def prepare_restore(owners, state, *, runtime_state, component_ledger):
+         "mode": "initial" if state["kind"] == "INITIAL" else "completed_boundary",
+         "runtime": copy.deepcopy(runtime_state),
+         "ledger": component_ledger,
++        "component": copy.deepcopy(component_state),
+         "release": None,
+     }
+     return prepared
+@@ -857,6 +932,7 @@ def install_restore(owners, prepared):
+     )
+     owners.runtime.install_restore(prepared=child)
+     owners.ledger = context["ledger"]
++    owners.component_commitment = context["component"]["last_committed"]
+     owners.current_epsilons = owners.runtime.epsilon_tensor(batch_size=owners.env.num_agents, device=owners.env.device)
+     release = context["release"]
+     assert release is not None
+@@ -880,7 +956,13 @@ def test_native_roundtrip_projects_destination_and_preserves_history(compiled, k
+     assert state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
+     destination = bound(compiled, ("a", "b"), ("b", "a"))
+     before = destination.env.vfs_random_state()
+-    prepared = prepare_restore(destination, state, runtime_state=source.saved_runtime, component_ledger=source.saved_ledger)
++    prepared = prepare_restore(
++        destination,
++        state,
++        runtime_state=source.saved_runtime,
++        component_ledger=source.saved_ledger,
++        component_state=json.loads(json.dumps(source.saved_component)),
++    )
+     assert destination.env.vfs_random_state() == before
+     # Prepared restore data must remain portable, not embed a producer/dataclass/capability.
+     json.dumps(prepared.payload)
+@@ -905,7 +987,13 @@ def test_native_roundtrip_projects_destination_and_preserves_history(compiled, k
+         second = bound(compiled, ("a", "b"), ("a", "b"))
+         install_restore(
+             second,
+-            prepare_restore(second, again, runtime_state=destination.runtime.checkpoint_state(), component_ledger=destination.ledger),
++            prepare_restore(
++                second,
++                again,
++                runtime_state=destination.runtime.checkpoint_state(),
++                component_ledger=destination.ledger,
++                component_state=json.loads(json.dumps(destination.component_state())),
++            ),
+         )
+         assert second.env.vfs_random_state()["world_ids"] == ["a", "b"]
+     _, result = accept(destination, installed, retired_world_ids=())
+@@ -938,7 +1026,13 @@ def test_native_deep_child_refusal_is_pure_including_initial(compiled, kind, fie
+     before = (env.world_phase, dict(env.accepted_episode_seqs), env.vfs_random_state(), env.global_tick)
+     rng = torch.get_rng_state().clone()
+     with pytest.raises((ValueError, TypeError)):
+-        prepare_restore(destination, state, runtime_state=source.saved_runtime, component_ledger=source.saved_ledger)
++        prepare_restore(
++            destination,
++            state,
++            runtime_state=source.saved_runtime,
++            component_ledger=source.saved_ledger,
++            component_state=source.saved_component,
++        )
+     assert (env.world_phase, dict(env.accepted_episode_seqs), env.vfs_random_state(), env.global_tick) == before
+     assert torch.equal(torch.get_rng_state(), rng)
+ 
+@@ -991,20 +1085,24 @@ def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(co
+     release = bootstrap(source)
+     initial = initial_snapshot(source, release)
+     initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
++    initial_component = copy.deepcopy(source.saved_component)
+     captures = []
+     for retired in (("b",), ()):
+         _, result = accept(source, release, retired_world_ids=retired)
+         state = completed_snapshot(source, result.accepted)
+-        captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger))
++        captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+         release = source.release
+     earlier, latest = captures
+     assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+     assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+     assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+     assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+-    state, runtime_state, ledger = (initial, initial_runtime, zero_ledger) if damage == "initial_nonzero_ledger" else latest
++    state, runtime_state, ledger, component = (
++        (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
++    )
++    component = json.loads(json.dumps(component))
+     healthy = bound(compiled, ("a", "b"), ("b", "a"))
+-    prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger)
++    prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+     json.dumps(prepared.payload)
+     installed = install_restore(healthy, prepared)
+     continued = healthy.runtime.checkpoint_state()
+@@ -1069,7 +1167,7 @@ def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(co
+     monkeypatch.setattr(env, "install_world_restore", observed_world)
+     try:
+         with pytest.raises(ValueError):
+-            prepared = prepare_restore(destination, state, runtime_state=candidate, component_ledger=ledger)
++            prepared = prepare_restore(destination, state, runtime_state=candidate, component_ledger=ledger, component_state=component)
+             json.dumps(prepared.payload)
+             install_restore(destination, prepared)
+     finally:

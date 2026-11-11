@@ -1,0 +1,598 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 8 items
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py FFFFFFFF    [100%]
+
+=================================== FAILURES ===================================
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[install-True-before_release] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78e8f774d0>, factory=<func...g_broken': False, 'owner_token': 140157321816912, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78e94506e0>, <function shared_rnd.<locals>.factory at 0x7f78ddea7a60>)
+schedule = 'before_release', draws = True, entrypoint = 'install'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78e8e32650>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>           must_refuse(prepared, None)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78de575c40>
+lineage = None
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[install-True-next_lease] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78dddc60d0>, factory=<func...g_broken': False, 'owner_token': 140157283531856, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78dddc6490>, <function shared_rnd.<locals>.factory at 0x7f78dde902c0>)
+schedule = 'next_lease', draws = True, entrypoint = 'install'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78ddcd68d0>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+            must_refuse(prepared, None)
+        else:
+            prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=None)
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>               must_refuse(prepared, operation)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78ddef5520>
+lineage = <townlet.exploration.rng_custody.RNGOperation object at 0x7f78ddd73fb0>
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[install-False-before_release] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78dddc65d0>, factory=<func...g_broken': False, 'owner_token': 140157091071072, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78dddee060>, <function shared_rnd.<locals>.factory at 0x7f78ddcb47c0>)
+schedule = 'before_release', draws = False, entrypoint = 'install'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78ddf9bdf0>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>           must_refuse(prepared, None)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78e9d5b1d0>
+lineage = None
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[install-False-next_lease] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78e9341cd0>, factory=<func...g_broken': False, 'owner_token': 140157321817264, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78ddccdd00>, <function shared_rnd.<locals>.factory at 0x7f78e93d1620>)
+schedule = 'next_lease', draws = False, entrypoint = 'install'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78e911cc50>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+            must_refuse(prepared, None)
+        else:
+            prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=None)
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>               must_refuse(prepared, operation)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78ddd367e0>
+lineage = <townlet.exploration.rng_custody.RNGOperation object at 0x7f78dde83fb0>
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-True-before_release] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78e93415b0>, factory=<func...g_broken': False, 'owner_token': 140157321816768, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78e93b7850>, <function shared_rnd.<locals>.factory at 0x7f78e93d1760>)
+schedule = 'before_release', draws = True, entrypoint = 'validate_prepared'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78e93e3200>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>           must_refuse(prepared, None)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78dd993830>
+lineage = None
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-True-next_lease] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78dda25c70>, factory=<func...g_broken': False, 'owner_token': 140157321817008, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78dda118b0>, <function shared_rnd.<locals>.factory at 0x7f78e93d2f20>)
+schedule = 'next_lease', draws = True, entrypoint = 'validate_prepared'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78dd99fcb0>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+            must_refuse(prepared, None)
+        else:
+            prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=None)
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>               must_refuse(prepared, operation)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78dd9c2f60>
+lineage = <townlet.exploration.rng_custody.RNGOperation object at 0x7f78dd941430>
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-False-before_release] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78dd9548d0>, factory=<func...g_broken': False, 'owner_token': 140157285101040, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78dd8cd0f0>, <function shared_rnd.<locals>.factory at 0x7f78dd8780e0>)
+schedule = 'before_release', draws = False, entrypoint = 'validate_prepared'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78dddb6990>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>           must_refuse(prepared, None)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78dd993e00>
+lineage = None
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+_ test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-False-next_lease] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f78ddccf680>, factory=<func...g_broken': False, 'owner_token': 140157321816896, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f78e94cbee0>, <function shared_rnd.<locals>.factory at 0x7f78e93d2480>)
+schedule = 'next_lease', draws = False, entrypoint = 'validate_prepared'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f78dd9f0e10>
+
+    @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+    @pytest.mark.parametrize("draws", [True, False])
+    @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+    def test_shared_peer_nested_work_stales_across_lease_boundaries(
+        private_rnd: PrivateRND,
+        shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
+        schedule: str,
+        draws: bool,
+        entrypoint: str,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        owner, factory = shared_rnd
+        peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for current in (owner, peer):
+            _train_shared(current, private_rnd.width)
+        domain = process_rng_domain()
+    
+        def peer_work(backend: RNDExploration) -> None:
+            backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
+            if draws:
+                random.random()
+                np.random.normal(size=3)
+                torch.rand(3)
+    
+        def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+            live = (_shared_live(owner), _shared_live(peer))
+            ambient = _ambient()
+            method = owner.install if entrypoint == "install" else owner.validate_prepared
+            with _observe_shared_publication(monkeypatch, owner) as effects:
+                with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                    method(prepared, lineage=lineage)
+            assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+            _equal(live, (_shared_live(owner), _shared_live(peer)))
+            _equal(ambient, _ambient())
+            _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+    
+        if schedule == "before_release":
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+            must_refuse(prepared, None)
+        else:
+            prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=None)
+            with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
+                before_peer = _ambient()
+                peer.call(peer_work, lineage=operation)
+                if not draws:
+                    _equal(before_peer, _ambient())
+>               must_refuse(prepared, operation)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+prepared = <townlet.exploration.world_curiosity_state.PreparedWorldBackend object at 0x7f78de073bf0>
+lineage = <townlet.exploration.rng_custody.RNGOperation object at 0x7f78dd9d97c0>
+
+    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
+        live = (_shared_live(owner), _shared_live(peer))
+        ambient = _ambient()
+        method = owner.install if entrypoint == "install" else owner.validate_prepared
+        with _observe_shared_publication(monkeypatch, owner) as effects:
+>           with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1138: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[install-True-before_release]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[install-True-next_lease]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[install-False-before_release]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[install-False-next_lease]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-True-before_release]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-True-next_lease]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-False-before_release]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries[validate_prepared-False-next_lease]
+============================== 8 failed in 4.81s ===============================

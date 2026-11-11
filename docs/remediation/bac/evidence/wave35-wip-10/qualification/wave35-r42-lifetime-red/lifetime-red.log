@@ -1,0 +1,243 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 5 items
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py FFFFF       [100%]
+
+=================================== FAILURES ===================================
+_ test_real_registration_and_native_objects_are_reclaimed_after_drop[standalone] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f414202b4d0>, factory=<func...g_broken': False, 'owner_token': 139918294772560, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f41422646e0>, <function shared_rnd.<locals>.factory at 0x7f4136aafce0>)
+kind = 'standalone'
+
+    @pytest.mark.parametrize("kind", ["standalone", "private", "raw_private", "shared"])
+    def test_real_registration_and_native_objects_are_reclaimed_after_drop(
+        private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], kind: str
+    ) -> None:
+        domain = process_rng_domain()
+        for _ in range(2):
+            if kind == "shared":
+                owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
+                _train_shared(owner, private_rnd.width)
+            else:
+                rng = WorldRNGState.from_snapshot(
+                    private_rnd.owner._rng.snapshot(), descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=()
+                )
+                input_reference = weakref.ref(rng)
+                if kind == "standalone":
+                    owner = rng
+                else:
+                    if kind == "raw_private":
+                        with rng.activate("model_init"):
+                            native = private_rnd.factory(rng)
+                        owner = OwnedWorldBackend(native, rng)
+                        del native
+                    else:
+                        owner = OwnedWorldBackend.construct(rng=rng, factory=private_rnd.factory)
+                    owner.call(lambda backend, sources: _service(backend, sources, _rows(3, private_rnd.width, 1), 3), lineage=None)
+                del rng
+            participant = owner.rng_participant
+            references = [weakref.ref(owner)]
+            if kind != "shared":
+                references.append(input_reference)
+            if kind != "standalone":
+                references.extend(weakref.ref(item) for item in (owner._backend, owner._backend.predictor_network, owner._backend.optimizer))
+                if kind in {"private", "raw_private"}:
+                    references.append(weakref.ref(owner._rng))
+            generation = domain.status()[0]
+            del owner
+            gc.collect()
+>           assert all(reference() is None for reference in references), "the process registration retained discarded real owner/native state"
+E           AssertionError: the process registration retained discarded real owner/native state
+E           assert False
+E            +  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f41424d8380>)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1200: AssertionError
+_ test_real_registration_and_native_objects_are_reclaimed_after_drop[private] __
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f4136bcd590>, factory=<func...g_broken': False, 'owner_token': 139918294772544, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f4136bcda90>, <function shared_rnd.<locals>.factory at 0x7f4136c9e200>)
+kind = 'private'
+
+    @pytest.mark.parametrize("kind", ["standalone", "private", "raw_private", "shared"])
+    def test_real_registration_and_native_objects_are_reclaimed_after_drop(
+        private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], kind: str
+    ) -> None:
+        domain = process_rng_domain()
+        for _ in range(2):
+            if kind == "shared":
+                owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
+                _train_shared(owner, private_rnd.width)
+            else:
+                rng = WorldRNGState.from_snapshot(
+                    private_rnd.owner._rng.snapshot(), descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=()
+                )
+                input_reference = weakref.ref(rng)
+                if kind == "standalone":
+                    owner = rng
+                else:
+                    if kind == "raw_private":
+                        with rng.activate("model_init"):
+                            native = private_rnd.factory(rng)
+                        owner = OwnedWorldBackend(native, rng)
+                        del native
+                    else:
+                        owner = OwnedWorldBackend.construct(rng=rng, factory=private_rnd.factory)
+                    owner.call(lambda backend, sources: _service(backend, sources, _rows(3, private_rnd.width, 1), 3), lineage=None)
+                del rng
+            participant = owner.rng_participant
+            references = [weakref.ref(owner)]
+            if kind != "shared":
+                references.append(input_reference)
+            if kind != "standalone":
+                references.extend(weakref.ref(item) for item in (owner._backend, owner._backend.predictor_network, owner._backend.optimizer))
+                if kind in {"private", "raw_private"}:
+                    references.append(weakref.ref(owner._rng))
+            generation = domain.status()[0]
+            del owner
+            gc.collect()
+>           assert all(reference() is None for reference in references), "the process registration retained discarded real owner/native state"
+E           AssertionError: the process registration retained discarded real owner/native state
+E           assert False
+E            +  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f4136d47e00>)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1200: AssertionError
+_ test_real_registration_and_native_objects_are_reclaimed_after_drop[raw_private] _
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f4142148fc0>, factory=<func...g_broken': False, 'owner_token': 139918294773392, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f4136bce5d0>, <function shared_rnd.<locals>.factory at 0x7f4136c9d080>)
+kind = 'raw_private'
+
+    @pytest.mark.parametrize("kind", ["standalone", "private", "raw_private", "shared"])
+    def test_real_registration_and_native_objects_are_reclaimed_after_drop(
+        private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], kind: str
+    ) -> None:
+        domain = process_rng_domain()
+        for _ in range(2):
+            if kind == "shared":
+                owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
+                _train_shared(owner, private_rnd.width)
+            else:
+                rng = WorldRNGState.from_snapshot(
+                    private_rnd.owner._rng.snapshot(), descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=()
+                )
+                input_reference = weakref.ref(rng)
+                if kind == "standalone":
+                    owner = rng
+                else:
+                    if kind == "raw_private":
+                        with rng.activate("model_init"):
+                            native = private_rnd.factory(rng)
+                        owner = OwnedWorldBackend(native, rng)
+                        del native
+                    else:
+                        owner = OwnedWorldBackend.construct(rng=rng, factory=private_rnd.factory)
+                    owner.call(lambda backend, sources: _service(backend, sources, _rows(3, private_rnd.width, 1), 3), lineage=None)
+                del rng
+            participant = owner.rng_participant
+            references = [weakref.ref(owner)]
+            if kind != "shared":
+                references.append(input_reference)
+            if kind != "standalone":
+                references.extend(weakref.ref(item) for item in (owner._backend, owner._backend.predictor_network, owner._backend.optimizer))
+                if kind in {"private", "raw_private"}:
+                    references.append(weakref.ref(owner._rng))
+            generation = domain.status()[0]
+            del owner
+            gc.collect()
+>           assert all(reference() is None for reference in references), "the process registration retained discarded real owner/native state"
+E           AssertionError: the process registration retained discarded real owner/native state
+E           assert False
+E            +  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f41424d8380>)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1200: AssertionError
+__ test_real_registration_and_native_objects_are_reclaimed_after_drop[shared] __
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f4142251b50>, factory=<func...g_broken': False, 'owner_token': 139918294773104, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f414214ac40>, <function shared_rnd.<locals>.factory at 0x7f4136c9cd60>)
+kind = 'shared'
+
+    @pytest.mark.parametrize("kind", ["standalone", "private", "raw_private", "shared"])
+    def test_real_registration_and_native_objects_are_reclaimed_after_drop(
+        private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], kind: str
+    ) -> None:
+        domain = process_rng_domain()
+        for _ in range(2):
+            if kind == "shared":
+                owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
+                _train_shared(owner, private_rnd.width)
+            else:
+                rng = WorldRNGState.from_snapshot(
+                    private_rnd.owner._rng.snapshot(), descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=()
+                )
+                input_reference = weakref.ref(rng)
+                if kind == "standalone":
+                    owner = rng
+                else:
+                    if kind == "raw_private":
+                        with rng.activate("model_init"):
+                            native = private_rnd.factory(rng)
+                        owner = OwnedWorldBackend(native, rng)
+                        del native
+                    else:
+                        owner = OwnedWorldBackend.construct(rng=rng, factory=private_rnd.factory)
+                    owner.call(lambda backend, sources: _service(backend, sources, _rows(3, private_rnd.width, 1), 3), lineage=None)
+                del rng
+            participant = owner.rng_participant
+            references = [weakref.ref(owner)]
+            if kind != "shared":
+                references.append(input_reference)
+            if kind != "standalone":
+                references.extend(weakref.ref(item) for item in (owner._backend, owner._backend.predictor_network, owner._backend.optimizer))
+                if kind in {"private", "raw_private"}:
+                    references.append(weakref.ref(owner._rng))
+            generation = domain.status()[0]
+            del owner
+            gc.collect()
+>           assert all(reference() is None for reference in references), "the process registration retained discarded real owner/native state"
+E           AssertionError: the process registration retained discarded real owner/native state
+E           assert False
+E            +  where False = all(<generator object test_real_registration_and_native_objects_are_reclaimed_after_drop.<locals>.<genexpr> at 0x7f414294d2f0>)
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1200: AssertionError
+______ test_active_operation_pins_real_owner_and_forbids_early_retirement ______
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f4136835590>, factory=<func...g_broken': False, 'owner_token': 139918294772416, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f414196d370>, <function shared_rnd.<locals>.factory at 0x7f4136c9c4a0>)
+
+    def test_active_operation_pins_real_owner_and_forbids_early_retirement(
+        private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]]
+    ) -> None:
+        owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
+        participant, reference = owner.rng_participant, weakref.ref(owner)
+        domain = process_rng_domain()
+        with domain.operation(participant=participant, operation_kind="call", lineage=None) as operation:
+            del owner
+            gc.collect()
+            assert reference() is not None
+            with pytest.raises(RuntimeError, match="idle"):
+                domain.unregister(participant=participant)
+            result = reference().call(
+                lambda backend: backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 5), update_stats=False), lineage=operation
+            )
+            assert result.shape == (1,)
+        del result
+        gc.collect()
+>       assert reference() is None
+E       AssertionError: assert <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f4136835ae0> is None
+E        +  where <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f4136835ae0> = <weakref at 0x7f4136b1cf40; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f4136835ae0>()
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1225: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[standalone]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[private]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[raw_private]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop[shared]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_active_operation_pins_real_owner_and_forbids_early_retirement
+============================== 5 failed in 5.58s ===============================

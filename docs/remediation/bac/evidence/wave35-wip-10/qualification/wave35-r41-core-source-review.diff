@@ -1,0 +1,1612 @@
+diff --git a/src/townlet/exploration/rng_custody.py b/src/townlet/exploration/rng_custody.py
+new file mode 100644
+index 00000000..0e9ef7c8
+--- /dev/null
++++ b/src/townlet/exploration/rng_custody.py
+@@ -0,0 +1,238 @@
++"""One process admission domain for cooperating ambient RNG consumers.
++
++This coordinates supported enrolled entrypoints, not arbitrary raw library calls.
++Same-object mutation exclusion and real parent boundary authority remain separate.
++"""
++
++from __future__ import annotations
++
++import os
++import threading
++import weakref
++from collections.abc import Iterator
++from contextlib import contextmanager
++from dataclasses import dataclass, field
++from typing import Any
++
++
++class _Opaque:
++    __slots__ = ("__weakref__",)
++
++    def __new__(cls) -> Any:
++        raise TypeError("RNG capabilities are issued by their process domain")
++
++    def __reduce__(self) -> Any:
++        raise TypeError("RNG capabilities are nonportable")
++
++    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
++        raise TypeError("RNG capabilities cannot be copied")
++
++
++class RNGParticipant(_Opaque):
++    """Identity-bound process membership, never serialized authority."""
++
++    __slots__ = ()
++
++
++class RNGOperation(_Opaque):
++    """Synchronous issuing-thread operation lineage."""
++
++    __slots__ = ()
++
++
++class RNGCurrentToken(_Opaque):
++    """Producer-issued generation/revision evidence for a prepared candidate."""
++
++    __slots__ = ()
++
++
++@dataclass(frozen=True)
++class _Member:
++    owner: object
++    cuda_devices: tuple[int, ...]
++    entrypoints: frozenset[str]
++
++
++@dataclass
++class _Operation:
++    thread: int
++    generation: int
++    revision: int
++    participants: set[RNGParticipant] = field(default_factory=set)
++    sequence: int = 0
++    kinds: list[str] = field(default_factory=list)
++
++
++@dataclass(frozen=True)
++class _Current:
++    participant: RNGParticipant
++    operation: RNGOperation
++    generation: int
++    revision: int
++    sequence: int
++
++
++_CONSTRUCTION = object()
++
++
++class AmbientRNGDomain:
++    """Actual common exclusion, membership, operation identity and poison owner.
++
++    Use process_rng_domain(); independently usable domain instances are refused.
++    No operation or installed private stream may be held across await/yield.
++    """
++
++    def __init__(self, authority: object):
++        if authority is not _CONSTRUCTION:
++            raise TypeError("Use the sole process_rng_domain")
++        self._lock = threading.RLock()
++        self._local = threading.local()
++        self._members: dict[RNGParticipant, _Member] = {}
++        self._tokens: weakref.WeakKeyDictionary[RNGCurrentToken, _Current] = weakref.WeakKeyDictionary()
++        self._operations: dict[RNGOperation, _Operation] = {}
++        self._generation = 0
++        self._revision = 0
++        self._poison: BaseException | None = None
++        self._pid = os.getpid()
++
++    def _usable(self) -> None:
++        if self._pid != os.getpid():
++            raise RuntimeError("RNG custody cannot be inherited by another process")
++        if self._poison is not None:
++            raise RuntimeError("Ambient RNG domain is poisoned after failed restoration") from self._poison
++
++    def _active(self) -> RNGOperation | None:
++        return getattr(self._local, "operation", None)
++
++    def _member(self, participant: RNGParticipant) -> _Member:
++        if type(participant) is not RNGParticipant or participant not in self._members:
++            raise ValueError("RNG participant is foreign or no longer registered")
++        return self._members[participant]
++
++    def register(self, *, owner: object, cuda_devices: tuple[int, ...], entrypoints: frozenset[str]) -> RNGParticipant:
++        with self._lock:
++            self._usable()
++            if self._active() is not None:
++                raise RuntimeError("RNG membership requires exclusive idle custody")
++            if (
++                type(cuda_devices) is not tuple
++                or any(type(index) is not int or index < 0 for index in cuda_devices)
++                or tuple(sorted(set(cuda_devices))) != cuda_devices
++            ):
++                raise ValueError("RNG CUDA inventory must be explicit, sorted and unique")
++            if type(entrypoints) is not frozenset or not entrypoints or any(type(name) is not str or not name for name in entrypoints):
++                raise ValueError("RNG registration requires explicit nonempty entrypoints")
++            if any(member.owner is owner for member in self._members.values()):
++                raise ValueError("RNG owner already has a registration")
++            participant = object.__new__(RNGParticipant)
++            self._members[participant] = _Member(owner, cuda_devices, entrypoints)
++            self._generation += 1
++            return participant
++
++    def unregister(self, *, participant: RNGParticipant) -> None:
++        with self._lock:
++            self._usable()
++            if self._active() is not None:
++                raise RuntimeError("RNG membership requires exclusive idle custody")
++            self._member(participant)
++            del self._members[participant]
++            self._generation += 1
++
++    def _authenticate(self, operation: RNGOperation) -> _Operation:
++        if type(operation) is not RNGOperation or operation is not self._active() or operation not in self._operations:
++            raise ValueError("RNG operation lineage is foreign or expired")
++        record = self._operations[operation]
++        if record.thread != threading.get_ident() or record.generation != self._generation:
++            raise ValueError("RNG operation lineage belongs to another thread or membership")
++        return record
++
++    @contextmanager
++    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
++        # Another thread waits at this actual lock before any enrolled work.
++        with self._lock:
++            self._usable()
++            member = self._member(participant)
++            if operation_kind not in member.entrypoints:
++                raise ValueError("RNG entrypoint is not registered for this owner")
++            active = self._active()
++            if active is not None:
++                if lineage is None:
++                    raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
++                record = self._authenticate(lineage)
++                record.participants.add(participant)
++                # Offside preparation, validation and child publication compose
++                # within one held parent lease. Actual nested ordinary work still
++                # invalidates candidates, even when it consumes no RNG bytes.
++                ordinary = operation_kind not in {"prepare", "validate", "install"} and not any(
++                    kind not in {"validate", "install"} for kind in record.kinds[1:]
++                )
++                record.kinds.append(operation_kind)
++                try:
++                    yield lineage
++                finally:
++                    if ordinary:
++                        record.sequence += 1
++                    record.kinds.pop()
++                return
++            if lineage is not None:
++                raise ValueError("RNG operation lineage is foreign or expired")
++            operation = object.__new__(RNGOperation)
++            self._operations[operation] = _Operation(threading.get_ident(), self._generation, self._revision, {participant})
++            self._operations[operation].kinds.append(operation_kind)
++            self._local.operation = operation
++            try:
++                yield operation
++            finally:
++                # Even unchanged bytes or an exception invalidate released work.
++                self._revision += 1
++                del self._operations[operation]
++                self._local.operation = None
++
++    def current_token(self, *, participant: RNGParticipant, operation: RNGOperation) -> RNGCurrentToken:
++        with self._lock:
++            self._usable()
++            self._member(participant)
++            record = self._authenticate(operation)
++            if participant not in record.participants:
++                raise ValueError("RNG owner did not enter this operation")
++            token = object.__new__(RNGCurrentToken)
++            self._tokens[token] = _Current(participant, operation, self._generation, self._revision, record.sequence)
++            return token
++
++    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
++        with self._lock:
++            self._usable()
++            record = self._authenticate(operation)
++            if type(token) is not RNGCurrentToken or token not in self._tokens:
++                raise ValueError("RNG current token is foreign or consumed")
++            expected = self._tokens[token]
++            self._member(expected.participant)
++            if expected.participant not in record.participants or expected.generation != self._generation:
++                raise ValueError("RNG preparation membership changed")
++            revision = expected.revision if expected.operation is operation else expected.revision + 1
++            if self._revision != revision:
++                raise ValueError("RNG preparation is stale after an intervening operation")
++            if expected.operation is operation:
++                if record.sequence != expected.sequence:
++                    raise ValueError("RNG preparation is stale after intervening nested work")
++
++    def _consume_token(self, token: RNGCurrentToken) -> None:
++        self._tokens.pop(token)
++
++    def poison(self, *, operation: RNGOperation, error: BaseException) -> None:
++        with self._lock:
++            self._authenticate(operation)
++            if self._poison is None:
++                self._poison = error
++
++    def status(self) -> tuple[int, int, bool]:
++        """Pure diagnostics; these values never grant publication authority."""
++        with self._lock:
++            return self._generation, self._revision, self._poison is not None
++
++
++_PROCESS_DOMAIN = AmbientRNGDomain(_CONSTRUCTION)
++
++
++def process_rng_domain() -> AmbientRNGDomain:
++    return _PROCESS_DOMAIN
+diff --git a/src/townlet/exploration/world_curiosity_state.py b/src/townlet/exploration/world_curiosity_state.py
+index d278bdec..e998e285 100644
+--- a/src/townlet/exploration/world_curiosity_state.py
++++ b/src/townlet/exploration/world_curiosity_state.py
+@@ -11,9 +11,10 @@ import json
+ import math
+ import random
+ import threading
++import weakref
+ from collections import OrderedDict
+ from collections.abc import Callable, Iterator, Mapping
+-from contextlib import contextmanager
++from contextlib import AbstractContextManager, contextmanager
+ from copy import copy, deepcopy
+ from dataclasses import dataclass, fields, is_dataclass
+ from types import MappingProxyType
+@@ -23,6 +24,7 @@ import numpy as np
+ import torch
+ 
+ from townlet.config.exploration_policy import STRATEGIES, ResolvedExplorationPolicy, Strategy
++from townlet.exploration.rng_custody import RNGCurrentToken, RNGOperation, RNGParticipant, process_rng_domain
+ 
+ WORLD_SEED_COMPONENTS = ("model_init", "target", "predictor", "service")
+ 
+@@ -345,11 +347,10 @@ class WorldCuriosityDescriptor:
+         return result
+ 
+ 
+-# A runtime owner must also exclude unrelated shared RNG users. This lock only
+-# coordinates participating lifecycle operations, not arbitrary process code.
+-_rng_guard = threading.RLock()
++# Shared consumers and private swaps use this same actual process admission.
++# Supported direct producers still need enrollment; raw library calls bypass it.
++_rng_domain = process_rng_domain()
+ _rng_local = threading.local()
+-_rng_unusable: BaseException | None = None
+ 
+ 
+ def _owned(value: Any) -> Any:
+@@ -407,8 +408,7 @@ def _stack() -> list[_Activation]:
+ 
+ 
+ def _usable() -> None:
+-    if _rng_unusable is not None:
+-        raise RuntimeError("Private RNG coordinator is unusable after restoration failure") from _rng_unusable
++    _rng_domain._usable()
+ 
+ 
+ def _quiescent() -> None:
+@@ -494,6 +494,32 @@ def _raise_failures(failures: list[BaseException]) -> None:
+         raise BaseExceptionGroup("Private RNG operation and cleanup failed", failures)
+ 
+ 
++def _restore_checked(state: dict[str, Any], operation: RNGOperation) -> list[BaseException]:
++    failures = _restore_globals(state)
++    try:
++        expected = {name: state[name] for name in ("torch_cpu", "cuda", "python", "numpy_legacy")}
++        if not _same(expected, _globals(tuple(state["cuda"]))):
++            raise RuntimeError("Ambient RNG restoration did not retain the selected continuation")
++    except BaseException as error:
++        failures.append(error)
++    if failures:
++        _rng_domain.poison(operation=operation, error=BaseExceptionGroup("Ambient RNG restoration failed", failures))
++    return failures
++
++
++@contextmanager
++def _preserve_ambient(devices: tuple[int, ...], operation: RNGOperation) -> Iterator[dict[str, Any]]:
++    entry = _globals(devices)
++    failures: list[BaseException] = []
++    try:
++        yield entry
++    except BaseException as error:
++        failures.append(error)
++    finally:
++        failures.extend(_restore_checked(entry, operation))
++    _raise_failures(failures)
++
++
+ class PythonRandomSource:
+     """Activation-bound facade over the installed module-global Python stream."""
+ 
+@@ -519,10 +545,13 @@ class WorldRandomSources:
+ 
+ 
+ class _Activation:
+-    def __init__(self, owner: WorldRNGState, component: str, generator: np.random.Generator, ambient: dict[str, Any]):
++    def __init__(
++        self, owner: WorldRNGState, component: str, generator: np.random.Generator, ambient: dict[str, Any], operation: RNGOperation
++    ):
+         self.owner, self.component = owner, component
+         self.sources = WorldRandomSources(PythonRandomSource(self), generator)
+         self.ambient = ambient
++        self.operation = operation
+ 
+ 
+ class WorldRNGState:
+@@ -537,10 +566,51 @@ class WorldRNGState:
+         self._descriptor, self._world_id, self._cuda_devices = descriptor, world_id, cuda_devices
+         self._components = _owned(components)
+         self._broken = False
++        self._participant = _rng_domain.register(owner=self, cuda_devices=cuda_devices, entrypoints=frozenset({"rng"}))
++
++    @property
++    def rng_participant(self) -> RNGParticipant:
++        return self._participant
++
++    def _operation(self) -> AbstractContextManager[RNGOperation]:
++        return _rng_domain.operation(participant=self._participant, operation_kind="rng", lineage=None)
++
++    @contextmanager
++    def _initializing(self) -> Iterator[RNGOperation]:
++        try:
++            with self._operation() as operation:
++                yield operation
++        except BaseException:
++            if not _rng_domain.status()[2]:
++                _rng_domain.unregister(participant=self._participant)
++            raise
++
++    def _fork(self) -> WorldRNGState:
++        """Internal current copy while its producer already owns domain custody."""
++        _quiescent()
++        if self._broken:
++            raise RuntimeError("Private RNG state failed to capture and cannot resume")
++        result = object.__new__(WorldRNGState)
++        result._descriptor, result._world_id, result._cuda_devices = self._descriptor, self._world_id, self._cuda_devices
++        result._components = _owned(self._components)
++        result._broken = False
++        result._participant = self._participant
++        return result
++
++    def _restore(self, payload: Any) -> WorldRNGState:
++        result = object.__new__(WorldRNGState)
++        result._descriptor, result._world_id, result._cuda_devices = self._descriptor, self._world_id, self._cuda_devices
++        result._components = self._decode_snapshot(
++            payload, descriptor=self._descriptor, world_id=self._world_id, cuda_devices=self._cuda_devices
++        )
++        result._broken = False
++        result._participant = self._participant
++        return result
+ 
+     @classmethod
+     def create(cls, *, descriptor: WorldCuriosityDescriptor, world_id: str, cuda_devices: tuple[int, ...]) -> WorldRNGState:
+-        with _rng_guard:
++        result = cls(descriptor, world_id, cuda_devices, {})
++        with result._initializing():
+             _quiescent()
+             _domain_arguments(descriptor, world_id, cuda_devices)
+             components = {}
+@@ -566,7 +636,8 @@ class WorldRNGState:
+                     "numpy_pcg64": np.random.PCG64(seed("numpy-pcg64")).state,
+                     "numpy_legacy": np.random.RandomState(seed("numpy-legacy") % 2**32).get_state(),
+                 }
+-            return cls(descriptor, world_id, cuda_devices, components)
++            result._components = _owned(components)
++            return result
+ 
+     @staticmethod
+     def _torch_state(value: Any, device: str) -> None:
+@@ -581,78 +652,89 @@ class WorldRNGState:
+     def from_snapshot(
+         cls, payload: Any, *, descriptor: WorldCuriosityDescriptor, world_id: str, cuda_devices: tuple[int, ...]
+     ) -> WorldRNGState:
+-        with _rng_guard:
+-            _quiescent()
+-            _domain_arguments(descriptor, world_id, cuda_devices)
+-            state = _owned(payload)
+-            _keys(state, {"schema", "descriptor", "world_id", "cuda_devices", "components"}, "RNG snapshot")
+-            if (
+-                type(state["schema"]) is not str
+-                or state["schema"] != "world-curiosity-rng-v1"
+-                or not _same(state["descriptor"], _identity(descriptor))
+-            ):
+-                raise ValueError("RNG snapshot schema/descriptor identity disagrees")
+-            if state["world_id"] != world_id or not _same(state["cuda_devices"], cuda_devices):
+-                raise ValueError("RNG snapshot world/device inventory disagrees")
+-            _keys(state["components"], set(WORLD_SEED_COMPONENTS), "RNG components")
+-            try:
+-                for component, entry in state["components"].items():
+-                    _keys(entry, {"seed", "torch_cpu", "cuda", "python", "numpy_pcg64", "numpy_legacy"}, "RNG component")
+-                    if type(entry["seed"]) is not int or entry["seed"] != descriptor.seed_for(world_id, component):
+-                        raise ValueError("RNG component seed disagrees with the versioned KDF")
+-                    cls._torch_state(entry["torch_cpu"], "cpu")
+-                    cuda = entry["cuda"]
+-                    if not isinstance(cuda, dict) or any(type(index) is not int for index in cuda) or set(cuda) != set(cuda_devices):
+-                        raise ValueError("RNG component CUDA inventory disagrees")
+-                    for index, value in cuda.items():
+-                        cls._torch_state(value, f"cuda:{index}")
+-                    python = random.Random(0)
+-                    python.setstate(entry["python"])
+-                    if not _same(entry["python"], python.getstate()):
+-                        raise ValueError("Python RNG snapshot must use canonical current state")
+-                    gaussian = entry["python"][2]
+-                    if gaussian is not None and (type(gaussian) is not float or not math.isfinite(gaussian)):
+-                        raise ValueError("Python RNG Gaussian cache must be finite")
+-                    pcg = entry["numpy_pcg64"]
+-                    _keys(pcg, {"bit_generator", "state", "has_uint32", "uinteger"}, "PCG64 state")
+-                    _keys(pcg["state"], {"state", "inc"}, "PCG64 internal state")
+-                    if pcg["bit_generator"] != "PCG64":
+-                        raise ValueError("Private NumPy generator must be PCG64")
+-                    for key, maximum in (("has_uint32", 1), ("uinteger", 2**32 - 1)):
+-                        if type(pcg[key]) is not int or not 0 <= pcg[key] <= maximum:
+-                            raise ValueError("PCG64 cache is malformed")
+-                    for value in pcg["state"].values():
+-                        if type(value) is not int or not 0 <= value < 2**128:
+-                            raise ValueError("PCG64 state must contain unsigned 128-bit integers")
+-                    if pcg["state"]["inc"] % 2 != 1:
+-                        raise ValueError("PCG64 increment must be odd")
+-                    generator = np.random.PCG64(0)
+-                    generator.state = pcg
+-                    legacy = np.random.RandomState(0)
+-                    legacy.set_state(entry["numpy_legacy"])
+-                    if not _same(entry["numpy_legacy"], legacy.get_state()) or not math.isfinite(legacy.get_state()[4]):
+-                        raise ValueError("Legacy NumPy RNG state must be canonical and finite")
+-            except (TypeError, KeyError, IndexError, RuntimeError, OverflowError) as error:
+-                raise ValueError("Malformed private RNG continuation state") from error
+-            return cls(descriptor, world_id, cuda_devices, state["components"])
++        result = cls(descriptor, world_id, cuda_devices, {})
++        with result._initializing():
++            result._components = cls._decode_snapshot(payload, descriptor=descriptor, world_id=world_id, cuda_devices=cuda_devices)
++            return result
++
++    @classmethod
++    def _decode_snapshot(
++        cls, payload: Any, *, descriptor: WorldCuriosityDescriptor, world_id: str, cuda_devices: tuple[int, ...]
++    ) -> dict[str, Any]:
++        _quiescent()
++        _domain_arguments(descriptor, world_id, cuda_devices)
++        state = _owned(payload)
++        _keys(state, {"schema", "descriptor", "world_id", "cuda_devices", "components"}, "RNG snapshot")
++        if (
++            type(state["schema"]) is not str
++            or state["schema"] != "world-curiosity-rng-v1"
++            or not _same(state["descriptor"], _identity(descriptor))
++        ):
++            raise ValueError("RNG snapshot schema/descriptor identity disagrees")
++        if state["world_id"] != world_id or not _same(state["cuda_devices"], cuda_devices):
++            raise ValueError("RNG snapshot world/device inventory disagrees")
++        _keys(state["components"], set(WORLD_SEED_COMPONENTS), "RNG components")
++        try:
++            for component, entry in state["components"].items():
++                _keys(entry, {"seed", "torch_cpu", "cuda", "python", "numpy_pcg64", "numpy_legacy"}, "RNG component")
++                if type(entry["seed"]) is not int or entry["seed"] != descriptor.seed_for(world_id, component):
++                    raise ValueError("RNG component seed disagrees with the versioned KDF")
++                cls._torch_state(entry["torch_cpu"], "cpu")
++                cuda = entry["cuda"]
++                if not isinstance(cuda, dict) or any(type(index) is not int for index in cuda) or set(cuda) != set(cuda_devices):
++                    raise ValueError("RNG component CUDA inventory disagrees")
++                for index, value in cuda.items():
++                    cls._torch_state(value, f"cuda:{index}")
++                python = random.Random(0)
++                python.setstate(entry["python"])
++                if not _same(entry["python"], python.getstate()):
++                    raise ValueError("Python RNG snapshot must use canonical current state")
++                gaussian = entry["python"][2]
++                if gaussian is not None and (type(gaussian) is not float or not math.isfinite(gaussian)):
++                    raise ValueError("Python RNG Gaussian cache must be finite")
++                pcg = entry["numpy_pcg64"]
++                _keys(pcg, {"bit_generator", "state", "has_uint32", "uinteger"}, "PCG64 state")
++                _keys(pcg["state"], {"state", "inc"}, "PCG64 internal state")
++                if pcg["bit_generator"] != "PCG64":
++                    raise ValueError("Private NumPy generator must be PCG64")
++                for key, maximum in (("has_uint32", 1), ("uinteger", 2**32 - 1)):
++                    if type(pcg[key]) is not int or not 0 <= pcg[key] <= maximum:
++                        raise ValueError("PCG64 cache is malformed")
++                for value in pcg["state"].values():
++                    if type(value) is not int or not 0 <= value < 2**128:
++                        raise ValueError("PCG64 state must contain unsigned 128-bit integers")
++                if pcg["state"]["inc"] % 2 != 1:
++                    raise ValueError("PCG64 increment must be odd")
++                generator = np.random.PCG64(0)
++                generator.state = pcg
++                legacy = np.random.RandomState(0)
++                legacy.set_state(entry["numpy_legacy"])
++                if not _same(entry["numpy_legacy"], legacy.get_state()) or not math.isfinite(legacy.get_state()[4]):
++                    raise ValueError("Legacy NumPy RNG state must be canonical and finite")
++        except (TypeError, KeyError, IndexError, RuntimeError, OverflowError) as error:
++            raise ValueError("Malformed private RNG continuation state") from error
++        return cast(dict[str, Any], state["components"])
+ 
+     def snapshot(self) -> dict[str, Any]:
+-        with _rng_guard:
+-            _quiescent()
+-            if self._broken:
+-                raise RuntimeError("Private RNG state failed to capture and cannot resume")
+-            return cast(
+-                dict[str, Any],
+-                _owned(
+-                    {
+-                        "schema": "world-curiosity-rng-v1",
+-                        "descriptor": _identity(self._descriptor),
+-                        "world_id": self._world_id,
+-                        "cuda_devices": self._cuda_devices,
+-                        "components": self._components,
+-                    }
+-                ),
+-            )
++        with self._operation():
++            return self._snapshot()
++
++    def _snapshot(self) -> dict[str, Any]:
++        _quiescent()
++        if self._broken:
++            raise RuntimeError("Private RNG state failed to capture and cannot resume")
++        return cast(
++            dict[str, Any],
++            _owned(
++                {
++                    "schema": "world-curiosity-rng-v1",
++                    "descriptor": _identity(self._descriptor),
++                    "world_id": self._world_id,
++                    "cuda_devices": self._cuda_devices,
++                    "components": self._components,
++                }
++            ),
++        )
+ 
+     def validate_binding(self, *, descriptor: WorldCuriosityDescriptor, world_id: str, cuda_devices: tuple[int, ...]) -> None:
+         """Check actual ownership without draws, including inside this owner's callback.
+@@ -660,7 +742,9 @@ class WorldRNGState:
+         Roster order and spectators are not stream identity. Snapshot and restore
+         remain quiescent lifecycle operations; this read never captures streams.
+         """
+-        with _rng_guard:
++        stack = _stack()
++        lineage = stack[-1].operation if stack and stack[-1].owner is self else None
++        with _rng_domain.operation(participant=self._participant, operation_kind="rng", lineage=lineage):
+             _usable()
+             if self._broken:
+                 raise RuntimeError("Private RNG state is unusable after failed capture")
+@@ -680,8 +764,14 @@ class WorldRNGState:
+ 
+     @contextmanager
+     def activate(self, component: str) -> Iterator[WorldRandomSources]:
+-        global _rng_unusable
+-        with _rng_guard:
++        stack = _stack()
++        lineage = stack[-1].operation if stack and stack[-1].owner is self else None
++        with self._activate(component, lineage) as sources:
++            yield sources
++
++    @contextmanager
++    def _activate(self, component: str, lineage: RNGOperation | None) -> Iterator[WorldRandomSources]:
++        with _rng_domain.operation(participant=self._participant, operation_kind="rng", lineage=lineage) as operation:
+             _usable()
+             if self._broken:
+                 raise RuntimeError("Private RNG state is unusable after failed capture")
+@@ -698,7 +788,7 @@ class WorldRNGState:
+             if frame is None:
+                 generator = np.random.Generator(np.random.PCG64(0))
+                 generator.bit_generator.state = deepcopy(entry["numpy_pcg64"])
+-                frame = _Activation(self, component, generator, _owned(entry))
++                frame = _Activation(self, component, generator, _owned(entry), operation)
+             try:
+                 saved = _globals(self._cuda_devices)
+             except BaseException:
+@@ -730,36 +820,96 @@ class WorldRNGState:
+                         stack.pop()
+                 # A -> B -> A nesting resumes the advanced suspended A frame,
+                 # not the older ambient copy originally saved by B.
+-                restoration = _restore_globals(stack[-1].ambient if stack else saved)
++                restoration = _restore_checked(stack[-1].ambient if stack else saved, operation)
+                 if restoration:
+                     self._broken = True
+-                    _rng_unusable = BaseExceptionGroup("Private RNG global restoration failed", restoration)
+                     failures.extend(restoration)
+             _raise_failures(failures)
+ 
+ 
+ class PreparedWorldBackend:
+-    """Opaque destination-bound single-use transfer; provider work precedes install."""
++    """Opaque nonportable identity; all candidate material stays with its issuer."""
+ 
+-    def __init__(self, destination: object, revision: int, backend: Any, rng: WorldRNGState):
+-        self._destination, self._revision = destination, revision
+-        self._backend = backend
+-        self._rng: WorldRNGState | None = rng
+-        self._used = False
++    __slots__ = ("__weakref__",)
+ 
++    def __new__(cls) -> PreparedWorldBackend:
++        raise TypeError("Prepared backends are issued by their destination owner")
+ 
+-class OwnedWorldBackend:
+-    """Serialized private lifecycle; failed live callbacks quarantine, never retry.
++    def __reduce__(self) -> Any:
++        raise TypeError("Prepared backends are nonportable")
+ 
+-    Provider owners must supply complete pure validation. PW02 owns the envelope,
+-    copies and off-side installation, not backend-specific semantic qualification.
+-    """
++    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
++        raise TypeError("Prepared backends cannot be copied")
+ 
+-    def __init__(self, backend: Any, rng: WorldRNGState):
+-        self._backend, self._rng = backend, rng
++
++@dataclass
++class _PreparedBackend:
++    revision: int
++    current: RNGCurrentToken
++    backend: Any
++    rng: WorldRNGState | None
++    ambient: dict[str, Any] | None
++
++
++class _BackendOwner:
++    """Common admission-before-owner exclusion and opaque candidate issuance."""
++
++    def __init__(self, backend: Any, cuda_devices: tuple[int, ...]):
++        self._backend = backend
+         self._token = object()
+         self._revision = 0
+         self._failed = False
++        self._lock = threading.RLock()
++        self._active = False
++        self._prepared: weakref.WeakKeyDictionary[PreparedWorldBackend, _PreparedBackend] = weakref.WeakKeyDictionary()
++        self._participant = _rng_domain.register(
++            owner=self,
++            cuda_devices=cuda_devices,
++            entrypoints=frozenset({"rng", "call", "snapshot", "prepare", "install", "validate"}),
++        )
++
++    @property
++    def rng_participant(self) -> RNGParticipant:
++        return self._participant
++
++    @contextmanager
++    def _scope(self, kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
++        # Admission always precedes mutable-owner exclusion.
++        with _rng_domain.operation(participant=self._participant, operation_kind=kind, lineage=lineage) as operation:
++            with self._lock:
++                _quiescent()
++                if self._active:
++                    raise RuntimeError("Reentrant backend lifecycle mutation is forbidden")
++                self._active = True
++                try:
++                    yield operation
++                finally:
++                    self._active = False
++
++    def _issue(
++        self, backend: Any, rng: WorldRNGState | None, ambient: dict[str, Any] | None, operation: RNGOperation
++    ) -> PreparedWorldBackend:
++        handle = object.__new__(PreparedWorldBackend)
++        self._prepared[handle] = _PreparedBackend(
++            self._revision, _rng_domain.current_token(participant=self._participant, operation=operation), backend, rng, ambient
++        )
++        return handle
++
++    def _validate_prepared(self, prepared: PreparedWorldBackend, operation: RNGOperation) -> _PreparedBackend:
++        if type(prepared) is not PreparedWorldBackend or prepared not in self._prepared:
++            raise ValueError("Prepared backend is foreign, fabricated or already consumed")
++        state = self._prepared[prepared]
++        if state.revision != self._revision:
++            raise ValueError("Prepared backend destination changed")
++        _rng_domain.validate_current(token=state.current, operation=operation)
++        return state
++
++    def validate_prepared(self, prepared: PreparedWorldBackend, *, lineage: RNGOperation | None = None) -> None:
++        with self._scope("validate", lineage) as operation:
++            state = self._validate_prepared(prepared, operation)
++            replacement = _rng_domain.current_token(participant=self._participant, operation=operation)
++            _rng_domain._consume_token(state.current)
++            state.current = replacement
+ 
+     @staticmethod
+     def _backend_contract(backend: Any) -> None:
+@@ -776,32 +926,40 @@ class OwnedWorldBackend:
+             memo[id(policy)] = type(policy).from_dict(deepcopy(policy.to_dict()))
+         return deepcopy(backend, memo)
+ 
++
++class OwnedWorldBackend(_BackendOwner):
++    """Serialized private lifecycle; failed live callbacks quarantine.
++
++    Provider adapters own semantic qualification. Raw retained references preserve
++    their caller-owned quiescence obligation; the domain does not intercept them.
++    """
++
++    def __init__(self, backend: Any, rng: WorldRNGState):
++        super().__init__(backend, rng._cuda_devices)
++        self._rng = rng
++        rng._participant = self._participant
++
+     @classmethod
+     def construct(cls, *, rng: WorldRNGState, factory: Callable[[WorldRNGState], Any]) -> OwnedWorldBackend:
+-        with _rng_guard:
++        if not isinstance(rng, WorldRNGState) or not callable(factory):
++            raise ValueError("Owned construction requires an RNG owner and factory")
++        with rng._operation() as operation:
+             _quiescent()
+-            if not isinstance(rng, WorldRNGState) or not callable(factory):
+-                raise ValueError("Owned construction requires an RNG owner and factory")
+-            candidate_rng = WorldRNGState.from_snapshot(
+-                rng.snapshot(),
+-                descriptor=rng._descriptor,
+-                world_id=rng._world_id,
+-                cuda_devices=rng._cuda_devices,
+-            )
+-            with candidate_rng.activate("model_init"):
++            candidate_rng = rng._fork()
++            with candidate_rng._activate("model_init", operation):
+                 backend = cls._clone_backend(factory(candidate_rng))
+                 cls._backend_contract(backend)
+-            return cls(backend, candidate_rng)
++        return cls(backend, candidate_rng)
+ 
+-    def call(self, operation: Callable[[Any, WorldRandomSources], Any]) -> Any:
+-        with _rng_guard:
+-            _quiescent()
++    def call(self, operation: Callable[[Any, WorldRandomSources], Any], *, lineage: RNGOperation | None = None) -> Any:
++        """Managed mutation; retained raw aliases still require caller quiescence."""
++        with self._scope("call", lineage) as custody:
+             if self._failed:
+                 raise RuntimeError("Owned backend is quarantined after a failed callback; prepare an explicit restore")
+             if not callable(operation):
+                 raise ValueError("Owned operation must be callable")
+             try:
+-                with self._rng.activate("service") as sources:
++                with self._rng._activate("service", custody) as sources:
+                     return _owned(operation(self._backend, sources))
+             except BaseException:
+                 self._failed = True
+@@ -809,17 +967,16 @@ class OwnedWorldBackend:
+             finally:
+                 self._revision += 1
+ 
+-    def snapshot(self) -> dict[str, Any]:
+-        with _rng_guard:
+-            _quiescent()
++    def snapshot(self, *, lineage: RNGOperation | None = None) -> dict[str, Any]:
++        with self._scope("snapshot", lineage) as operation:
+             try:
+-                with self._rng.activate("service"):
++                with self._rng._activate("service", operation):
+                     backend_state = _owned(self._backend.checkpoint_state())
+                 return {
+                     "schema": "owned-world-backend-v1",
+                     "healthy": not self._failed,
+                     "backend": backend_state,
+-                    "rng": self._rng.snapshot(),
++                    "rng": self._rng._snapshot(),
+                 }
+             except BaseException:
+                 self._failed = True
+@@ -828,56 +985,229 @@ class OwnedWorldBackend:
+                 self._revision += 1
+ 
+     def prepare_restore(
+-        self, payload: Any, *, factory: Callable[[WorldRNGState], Any], validate_backend: Callable[[Any, Any], object]
++        self,
++        payload: Any,
++        *,
++        factory: Callable[[WorldRNGState], Any],
++        validate_backend: Callable[[Any, Any], object],
++        lineage: RNGOperation | None = None,
+     ) -> PreparedWorldBackend:
+-        with _rng_guard:
+-            _quiescent()
++        with self._scope("prepare", lineage) as operation:
+             if not callable(factory) or not callable(validate_backend):
+                 raise ValueError("Prepared restore requires factory and pure backend validation")
+             state = _owned(payload)
+             _keys(state, {"schema", "healthy", "backend", "rng"}, "Owned backend snapshot")
+             if state["schema"] != "owned-world-backend-v1" or state["healthy"] is not True:
+                 raise ValueError("Only a healthy owned backend snapshot can be restored")
+-            saved_rng = WorldRNGState.from_snapshot(
+-                state["rng"],
+-                descriptor=self._rng._descriptor,
+-                world_id=self._rng._world_id,
+-                cuda_devices=self._rng._cuda_devices,
+-            )
+-            work_rng = WorldRNGState.from_snapshot(
+-                state["rng"],
+-                descriptor=self._rng._descriptor,
+-                world_id=self._rng._world_id,
+-                cuda_devices=self._rng._cuda_devices,
+-            )
+-            with work_rng.activate("model_init"):
+-                candidate = self._clone_backend(factory(work_rng))
++            with _preserve_ambient(self._rng._cuda_devices, operation):
++                saved_rng = self._rng._restore(state["rng"])
++                work_rng = saved_rng._fork()
++                with work_rng._activate("model_init", operation):
++                    candidate = self._clone_backend(factory(work_rng))
++                    self._backend_contract(candidate)
++                with work_rng._activate("service", operation):
++                    before = _owned(candidate.checkpoint_state())
++                    transported = _owned(state["backend"])
++                    if validate_backend(candidate, transported) is not None:
++                        raise ValueError("Backend validator must raise on invalid data and return None on success")
++                    if not _same(before, _owned(candidate.checkpoint_state())) or not _same(state["backend"], transported):
++                        raise ValueError("Backend validation mutated candidate or transported state")
++                    candidate.load_state(_owned(state["backend"]))
++                    if not _same(state["backend"], _owned(candidate.checkpoint_state())):
++                        raise ValueError("Loaded backend does not exactly retain transported state")
++                    candidate = self._clone_backend(candidate)
++            return self._issue(candidate, saved_rng, None, operation)
++
++    def prepare_learning_reset(
++        self,
++        *,
++        factory: Callable[[WorldRNGState], Any],
++        prepare_native: Callable[[Any, Any], None],
++        lineage: RNGOperation | None = None,
++    ) -> PreparedWorldBackend:
++        """Pure current fork; candidate-only native work cannot mutate the live owner."""
++        with self._scope("prepare", lineage) as operation:
++            if self._failed:
++                raise RuntimeError("Learning reset requires a healthy owned backend")
++            if not callable(factory) or not callable(prepare_native):
++                raise ValueError("Learning reset requires real factory and candidate-only native adapter")
++            with _preserve_ambient(self._rng._cuda_devices, operation):
++                candidate = self._clone_backend(self._backend)
++                candidate_rng = self._rng._fork()
++                with candidate_rng._activate("model_init", operation):
++                    fresh = self._clone_backend(factory(candidate_rng))
++                    self._backend_contract(fresh)
++                # Validation/reconstruction draws are disposable, unlike actual
++                # selected fresh construction. Preserve the entire candidate fork.
++                work_rng = candidate_rng._fork()
++                with work_rng._activate("service", operation):
++                    if prepare_native(candidate, fresh) is not None:
++                        raise ValueError("Native reset adapter must install candidate work and return None")
++                    self._backend_contract(candidate)
++                    candidate = self._clone_backend(candidate)
++            return self._issue(candidate, candidate_rng, None, operation)
++
++    def install(self, prepared: PreparedWorldBackend, *, lineage: RNGOperation | None = None) -> None:
++        with self._scope("install", lineage) as operation:
++            state = self._validate_prepared(prepared, operation)
++            if state.rng is None:
++                raise ValueError("Prepared backend has no owned RNG state")
++            try:
++                self._backend, self._rng = state.backend, state.rng
++                self._failed = False
++                self._revision += 1
++                del self._prepared[prepared]
++                _rng_domain._consume_token(state.current)
++            except BaseException:
++                self._failed = True
++                raise
++
++
++def _stage_ambient(state: dict[str, Any], entry: dict[str, Any], operation: RNGOperation) -> None:
++    failures: list[BaseException] = []
++    try:
++        _install_globals(state)
++        if not _same(state, _globals(tuple(state["cuda"]))):
++            raise RuntimeError("Candidate ambient RNG installation did not verify")
++    except BaseException as error:
++        failures.append(error)
++        failures.extend(_restore_checked(entry, operation))
++    _raise_failures(failures)
++
++
++class SharedWorldBackend(_BackendOwner):
++    """Admitted real shared native lifecycle using the existing ambient stream.
++
++    Shared callbacks receive the actual native backend. A returned value is copied;
++    references retained through side effects remain caller-quiescent raw aliases.
++    No parent boundary or all-child publication authority is created here.
++    """
++
++    def __init__(self, backend: Any, cuda_devices: tuple[int, ...]):
++        super().__init__(backend, cuda_devices)
++        self._cuda_devices = cuda_devices
++
++    @classmethod
++    def construct(cls, *, factory: Callable[[], Any], cuda_devices: tuple[int, ...]) -> SharedWorldBackend:
++        if not callable(factory):
++            raise ValueError("Shared construction requires an actual factory")
++        owner = cls(None, cuda_devices)
++        try:
++            with owner._scope("prepare", None) as operation:
++                if cuda_devices and (not torch.cuda.is_initialized() or any(index >= torch.cuda.device_count() for index in cuda_devices)):
++                    raise ValueError("Initialize explicitly declared shared CUDA devices before construction")
++                with _preserve_ambient(cuda_devices, operation) as entry:
++                    backend = factory()
++                    continuation = _globals(cuda_devices)
++                    candidate = cls._clone_backend(backend)
++                    cls._backend_contract(candidate)
++                _stage_ambient(continuation, entry, operation)
++                owner._backend = candidate
++            return owner
++        except BaseException:
++            if not _rng_domain.status()[2]:
++                _rng_domain.unregister(participant=owner._participant)
++            raise
++
++    def call(self, operation: Callable[[Any], Any], *, lineage: RNGOperation | None = None) -> Any:
++        with self._scope("call", lineage):
++            if self._failed:
++                raise RuntimeError("Shared backend is quarantined; prepare an explicit restore")
++            if not callable(operation):
++                raise ValueError("Shared operation must be callable")
++            try:
++                return _owned(operation(self._backend))
++            except BaseException:
++                self._failed = True
++                raise
++            finally:
++                self._revision += 1
++
++    def snapshot(self, *, lineage: RNGOperation | None = None) -> dict[str, Any]:
++        with self._scope("snapshot", lineage):
++            try:
++                return {
++                    "schema": "shared-world-backend-v1",
++                    "healthy": not self._failed,
++                    "backend": _owned(self._backend.checkpoint_state()),
++                }
++            except BaseException:
++                self._failed = True
++                raise
++            finally:
++                self._revision += 1
++
++    def prepare_restore(
++        self,
++        payload: Any,
++        *,
++        factory: Callable[[], Any],
++        validate_backend: Callable[[Any, Any], object],
++        lineage: RNGOperation | None = None,
++    ) -> PreparedWorldBackend:
++        with self._scope("prepare", lineage) as operation:
++            if not callable(factory) or not callable(validate_backend):
++                raise ValueError("Shared restore requires factory and complete pure native validator")
++            state = _owned(payload)
++            _keys(state, {"schema", "healthy", "backend"}, "Shared backend snapshot")
++            if state["schema"] != "shared-world-backend-v1" or state["healthy"] is not True:
++                raise ValueError("Only a healthy shared backend snapshot can be restored")
++            with _preserve_ambient(self._cuda_devices, operation):
++                candidate = self._clone_backend(factory())
+                 self._backend_contract(candidate)
+-            with work_rng.activate("service"):
+                 before = _owned(candidate.checkpoint_state())
+                 transported = _owned(state["backend"])
+                 if validate_backend(candidate, transported) is not None:
+-                    raise ValueError("Backend validator must raise on invalid data and return None on success")
+-                if not _same(before, _owned(candidate.checkpoint_state())) or not _same(state["backend"], transported):
+-                    raise ValueError("Backend validation mutated candidate or transported state")
++                    raise ValueError("Native validator must return None on success")
++                if not _same(before, candidate.checkpoint_state()) or not _same(state["backend"], transported):
++                    raise ValueError("Shared native validator mutated candidate or transport")
+                 candidate.load_state(_owned(state["backend"]))
+-                if not _same(state["backend"], _owned(candidate.checkpoint_state())):
+-                    raise ValueError("Loaded backend does not exactly retain transported state")
++                if not _same(state["backend"], candidate.checkpoint_state()):
++                    raise ValueError("Shared native restore did not retain exact transport")
+                 candidate = self._clone_backend(candidate)
+-            return PreparedWorldBackend(self._token, self._revision, candidate, saved_rng)
++            # Ordinary restore has no saved process RNG field and never rewinds a peer.
++            return self._issue(candidate, None, None, operation)
+ 
+-    def install(self, prepared: PreparedWorldBackend) -> None:
+-        with _rng_guard:
+-            _quiescent()
+-            if not isinstance(prepared, PreparedWorldBackend) or prepared._destination is not self._token:
+-                raise ValueError("Prepared backend belongs to a different destination")
+-            if prepared._used or prepared._revision != self._revision:
+-                raise ValueError("Prepared backend is already installed or its destination changed")
+-            if prepared._rng is None:
+-                raise ValueError("Prepared backend has no owned RNG state")
+-            self._backend, self._rng = prepared._backend, prepared._rng
+-            self._failed = False
+-            self._revision += 1
+-            prepared._used = True
+-            prepared._backend = None
+-            prepared._rng = None
++    def prepare_learning_reset(
++        self,
++        *,
++        factory: Callable[[], Any],
++        prepare_native: Callable[[Any, Any], None],
++        lineage: RNGOperation | None = None,
++    ) -> PreparedWorldBackend:
++        with self._scope("prepare", lineage) as operation:
++            if self._failed:
++                raise RuntimeError("Learning reset requires a healthy shared backend")
++            if not callable(factory) or not callable(prepare_native):
++                raise ValueError("Shared reset requires real factory and candidate-only native adapter")
++            with _preserve_ambient(self._cuda_devices, operation):
++                candidate = self._clone_backend(self._backend)
++                fresh = factory()
++                continuation = _globals(self._cuda_devices)
++                fresh = self._clone_backend(fresh)
++                self._backend_contract(fresh)
++                if prepare_native(candidate, fresh) is not None:
++                    raise ValueError("Native reset adapter must install candidate work and return None")
++                self._backend_contract(candidate)
++                candidate = self._clone_backend(candidate)
++            return self._issue(candidate, None, continuation, operation)
++
++    def install(self, prepared: PreparedWorldBackend, *, lineage: RNGOperation | None = None) -> None:
++        with self._scope("install", lineage) as operation:
++            state = self._validate_prepared(prepared, operation)
++            if state.rng is not None:
++                raise ValueError("A shared backend cannot install private RNG ownership")
++            if state.ambient is not None:
++                entry = _globals(self._cuda_devices)
++                _stage_ambient(state.ambient, entry, operation)
++            # Fallible RNG staging precedes the first child assignment. Actual
++            # later joint publication failures require the parent's quarantine.
++            try:
++                self._backend = state.backend
++                self._failed = False
++                self._revision += 1
++                del self._prepared[prepared]
++                _rng_domain._consume_token(state.current)
++            except BaseException:
++                self._failed = True
++                raise
+diff --git a/tests/test_townlet/regressions/bac/test_world_rng_custody.py b/tests/test_townlet/regressions/bac/test_world_rng_custody.py
+index 4bfc5770..f584aeb9 100644
+--- a/tests/test_townlet/regressions/bac/test_world_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_world_rng_custody.py
+@@ -1,13 +1,15 @@
+-"""R0 core: genuine private learning precedes the new pure reset seam.
++"""R0 core owner controls; actual downstream stochastic enrollment remains owed.
+ 
+-Phase A deliberately imports no prospective rng_custody module. The current-owner
+-control must pass before the missing prepare_learning_reset call is qualified RED.
+-Admission, shared reset, poison and direct-caller enrollment remain later controls.
++R40 qualified the existing genuine-learning control and missing-reset-API RED.
++These source-owned cases exercise actual private/shared owners, not a test gate.
+ """
+ 
+ from __future__ import annotations
+ 
++import multiprocessing
++import pickle
+ import random
++import threading
+ from collections import OrderedDict
+ from collections.abc import Callable, Iterator, Mapping
+ from contextlib import contextmanager
+@@ -24,12 +26,16 @@ from townlet.config.bac_options import BaCOptions
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+ from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
+ from townlet.config.training_v2_config import TrainingV2Config
++from townlet.exploration import world_curiosity_state as world_state
+ from townlet.exploration.provider_factory import make_backend
+ from townlet.exploration.rnd import RNDExploration
++from townlet.exploration.rng_custody import RNGOperation, RNGParticipant, process_rng_domain
+ from townlet.exploration.world_curiosity_state import (
+     WORLD_SEED_COMPONENTS,
+     OwnedWorldBackend,
++    PreparedWorldBackend,
+     ServiceClock,
++    SharedWorldBackend,
+     WorldCuriosityDescriptor,
+     WorldRandomSources,
+     WorldRNGState,
+@@ -188,7 +194,7 @@ def compiled() -> Any:
+     return UniverseCompiler().compile(Path("configs/test/token_set_smoke"), primary_level="L0_test", use_cache=False)
+ 
+ 
+-def _resolved_rnd(selected: Any) -> ResolvedExplorationPolicy:
++def _resolved_rnd(selected: Any, scope: str) -> ResolvedExplorationPolicy:
+     """Assemble genuine DTOs from the published current resolver recipe."""
+     drive_data = selected.drive.intrinsic.model_dump()
+     drive_data["strategy"] = "rnd"
+@@ -204,7 +210,7 @@ def _resolved_rnd(selected: Any) -> ResolvedExplorationPolicy:
+     training_data["training_loop"]["max_steps_per_episode"] = 20
+     options = BaCOptions.model_validate(
+         {
+-            "curiosity_scope": {"scope": "per_world", "seed_policy": "world_id_derived_v1"},
++            "curiosity_scope": {"scope": scope, "seed_policy": "world_id_derived_v1" if scope == "per_world" else "legacy_shared_v1"},
+             "provider_parameter_source": "training",
+             "rnd": {"service_mode": "paced_fifo", "max_updates_per_tick": 1, "max_pending_rows": 4, "overflow_policy": "drop_oldest"},
+             "providers": {
+@@ -232,7 +238,7 @@ def private_rnd(compiled: Any) -> PrivateRND:
+     width = selected.token_spec.total_dims
+     actions = selected.action_metadata.total_actions
+     assert width > 0 and actions > 0
+-    resolved = _resolved_rnd(selected)
++    resolved = _resolved_rnd(selected, "per_world")
+     assert resolved.predictor_batch_size == 2
+     descriptor = WorldCuriosityDescriptor.from_policy(
+         resolved, world_ids=("R0-current",), observation_dim=width, action_dim=actions, training_seed=701
+@@ -358,8 +364,8 @@ def test_private_learning_reset_prepares_current_streams_without_live_effects(
+     next_before = _ambient_next(ambient_before)
+ 
+     with _forbid_live_preparation_work(monkeypatch, owner):
+-        # Intended first new API call. At the sealed current source this must fail
+-        # here with AttributeError, after the real learned fixture has succeeded.
++        # R40 observed the genuine missing-API RED here after the learned fixture;
++        # the production implementation must now satisfy the complete witness.
+         prepared = owner.prepare_learning_reset(factory=rig.factory, prepare_native=_reset_rnd)
+ 
+     _equal(before, _live_evidence(owner))
+@@ -411,3 +417,472 @@ def test_private_learning_reset_prepares_current_streams_without_live_effects(
+     assert service["optimizer_epoch_origin"] == 1
+     assert all(state["step"].item() == 1 for state in resumed["native"]["optimizer"]["state"].values())
+     _equal(ambient_before, _ambient())
++
++
++@pytest.fixture
++def shared_rnd(compiled: Any) -> tuple[SharedWorldBackend, Callable[[], RNDExploration]]:
++    selected = compiled.get_level(compiled.metadata.primary_level)
++    resolved = _resolved_rnd(selected, "shared")
++
++    def factory() -> RNDExploration:
++        backend = make_backend(
++            resolved,
++            world_id=None,
++            obs_dim=selected.token_spec.total_dims,
++            action_dim=selected.action_metadata.total_actions,
++            device="cpu",
++            rng=None,
++            descriptor=None,
++        )
++        assert type(backend) is RNDExploration
++        return backend
++
++    return SharedWorldBackend.construct(factory=factory, cuda_devices=()), factory
++
++
++class _ObservedLock:
++    """Observe contention at the real production RLock; supply no second lock."""
++
++    def __init__(self, actual: Any, contended: threading.Event):
++        self.actual, self.contended = actual, contended
++
++    def __enter__(self) -> _ObservedLock:
++        if threading.current_thread().name == "r0-contender":
++            if not self.actual.acquire(blocking=False):
++                self.contended.set()
++                self.actual.acquire()
++        else:
++            self.actual.acquire()
++        return self
++
++    def __exit__(self, *errors: Any) -> None:
++        self.actual.release()
++
++
++@pytest.mark.parametrize("route", ["shared_call", "shared_constructor", "private_call", "shared_reset"])
++def test_actual_shared_private_entrypoints_wait_at_common_domain(
++    private_rnd: PrivateRND,
++    shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
++    monkeypatch: pytest.MonkeyPatch,
++    route: str,
++) -> None:
++    shared, factory = shared_rnd
++    contended, entered = threading.Event(), threading.Event()
++    errors: list[BaseException] = []
++    domain = process_rng_domain()
++    monkeypatch.setattr(domain, "_lock", _ObservedLock(domain._lock, contended))
++
++    def actual_factory() -> RNDExploration:
++        entered.set()
++        return factory()
++
++    def consuming(backend: RNDExploration) -> torch.Tensor:
++        # A real supported module hook consumes ambient RNG during actual forward.
++        def prehook(module: Any, arguments: Any) -> None:
++            entered.set()
++            torch.rand(1)
++
++        handle = backend.predictor_network.register_forward_pre_hook(prehook)
++        try:
++            return backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 11), update_stats=False)
++        finally:
++            handle.remove()
++
++    def contender() -> None:
++        try:
++            if route == "shared_constructor":
++                SharedWorldBackend.construct(factory=actual_factory, cuda_devices=())
++            elif route == "shared_call":
++                shared.call(consuming)
++            else:
++                private_rnd.owner.call(lambda backend, sources: consuming(backend))
++        except BaseException as error:
++            errors.append(error)
++
++    thread = threading.Thread(target=contender, name="r0-contender")
++
++    def holding(*args: Any) -> None:
++        before = _ambient()
++        thread.start()
++        assert contended.wait(10), "the actual consuming route never reached the real admission lock"
++        assert not entered.is_set()
++        _equal(before, _ambient())
++
++    try:
++        if route == "private_call":
++            shared.call(holding)
++        elif route == "shared_reset":
++
++            def reset_factory() -> RNDExploration:
++                holding()
++                return factory()
++
++            with domain.operation(participant=shared.rng_participant, operation_kind="prepare", lineage=None) as operation:
++                prepared = shared.prepare_learning_reset(factory=reset_factory, prepare_native=_reset_rnd, lineage=operation)
++                assert not entered.is_set()
++                shared.install(prepared, lineage=operation)
++                assert not entered.is_set()
++        else:
++            private_rnd.owner.call(holding)
++    finally:
++        if thread.ident is not None:
++            thread.join(30)
++    assert not thread.is_alive()
++    assert not errors
++    assert entered.is_set()
++
++
++def test_domain_opaque_lineage_and_named_nesting(private_rnd: PrivateRND) -> None:
++    domain = process_rng_domain()
++    owner = private_rnd.owner
++    participant = owner.rng_participant
++    before = _ambient()
++    with pytest.raises(TypeError):
++        RNGParticipant()
++    with pytest.raises(TypeError):
++        deepcopy(participant)
++    with pytest.raises(TypeError):
++        pickle.dumps(participant)
++    with domain.operation(participant=participant, operation_kind="call", lineage=None) as operation:
++        token = domain.current_token(participant=participant, operation=operation)
++        with pytest.raises(RuntimeError, match="reentry"):
++            owner.call(lambda backend, sources: torch.rand(1))
++        with pytest.raises(ValueError):
++            owner.call(lambda backend, sources: torch.rand(1), lineage=object.__new__(RNGOperation))
++        # Exact lineage permits genuine nested managed work.
++        owner.call(lambda backend, sources: backend.predictor_service_counters(), lineage=operation)
++        with pytest.raises(ValueError, match="nested"):
++            domain.validate_current(token=token, operation=operation)
++    with pytest.raises(ValueError):
++        owner.call(lambda backend, sources: torch.rand(1), lineage=operation)
++    _equal(before, _ambient())
++    snapshot = owner._rng.snapshot()
++    reference = WorldRNGState.from_snapshot(snapshot, descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=())
++
++    def nested(rng: WorldRNGState) -> list[dict[str, Any]]:
++        with rng.activate("target") as a:
++            first = _draw_sources(a)
++            with rng.activate("predictor") as b:
++                second = _draw_sources(b)
++                with rng.activate("target") as resumed:
++                    third = _draw_sources(resumed)
++            fourth = _draw_sources(a)
++        return [first, second, third, fourth]
++
++    _equal(nested(reference), nested(owner._rng))
++    _equal(reference._components, owner._rng._components)
++    _equal(before, _ambient())
++
++
++@pytest.mark.parametrize("mutation", ["service", "manual", "replacement", "ambient", "membership", "fabricated", "foreign", "used"])
++def test_prepared_identity_freshness_and_one_use(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], mutation: str
++) -> None:
++    owner = private_rnd.owner
++    shared, _ = shared_rnd
++    prepared = owner.prepare_learning_reset(factory=private_rnd.factory, prepare_native=_reset_rnd)
++    if mutation == "service":
++        owner.call(lambda backend, sources: _service(backend, sources, _rows(1, private_rnd.width, 61), 4))
++    elif mutation == "manual":
++        owner.call(lambda backend, sources: backend.optimizer.step())  # genuine retained backward gradients
++    elif mutation == "replacement":
++
++        def replace(backend: RNDExploration, sources: WorldRandomSources) -> None:
++            backend.optimizer = torch.optim.Adam(backend.predictor_network.parameters(), lr=0.001)
++
++        owner.call(replace)
++    elif mutation == "ambient":
++        shared.call(lambda backend: None)  # unchanged RNG bytes still invalidate domain freshness
++    elif mutation == "membership":
++        member = process_rng_domain().register(owner=object(), cuda_devices=(), entrypoints=frozenset({"probe"}))
++        process_rng_domain().unregister(participant=member)
++    elif mutation == "fabricated":
++        prepared = object.__new__(PreparedWorldBackend)
++    elif mutation == "foreign":
++        with pytest.raises(ValueError):
++            shared.install(prepared)
++    elif mutation == "used":
++        owner.validate_prepared(prepared)
++        owner.install(prepared)
++    after_mutation = _live_evidence(owner)
++    ambient = _ambient()
++    with pytest.raises(ValueError):
++        owner.install(prepared)
++    _equal(after_mutation, _live_evidence(owner))
++    _equal(ambient, _ambient())
++
++
++def test_successive_current_resets_and_exact_private_restore(private_rnd: PrivateRND) -> None:
++    rig, owner = private_rnd, private_rnd.owner
++    saved = owner.snapshot()
++    position = 3
++    for count in (1, 2):
++        current = owner._rng.snapshot()
++        reference = WorldRNGState.from_snapshot(current, descriptor=rig.descriptor, world_id="R0-current", cuda_devices=())
++        with reference.activate("model_init"):
++            rig.factory(reference)
++        prepared = owner.prepare_learning_reset(factory=rig.factory, prepare_native=_reset_rnd)
++        owner.install(prepared)
++        _equal(reference._components, owner._rng._components)
++        position += count
++        owner.call(lambda backend, sources: _service(backend, sources, _rows(count, rig.width, position * 7), position))
++    ambient = _ambient()
++    prepared = owner.prepare_restore(saved, factory=rig.factory, validate_backend=lambda backend, state: backend.validate_state(state))
++    owner.install(prepared)
++    restored = _live_evidence(owner)
++    _equal(saved["backend"], restored["native"])
++    _equal(saved["rng"]["components"], restored["rng_components"])
++    _equal(ambient, _ambient())
++
++
++def test_shared_reset_retains_factory_draws_restore_preserves_peer_current(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]]
++) -> None:
++    shared, factory = shared_rnd
++    shared.call(lambda backend: backend.admit_and_service(_rows(3, private_rnd.width, 1), vector_tick=0))
++    saved = shared.snapshot()
++    before_native = _native_evidence(shared._backend)
++    entry = _ambient()
++    fresh = factory()  # independent sole-thread reference; this direct route remains unenrolled
++    expected_rng = _ambient()
++    fresh_native = fresh.checkpoint_state()
++    _restore_ambient(entry)
++    domain = process_rng_domain()
++    with domain.operation(participant=shared.rng_participant, operation_kind="prepare", lineage=None) as operation:
++        private_prepared = private_rnd.owner.prepare_learning_reset(
++            factory=private_rnd.factory, prepare_native=_reset_rnd, lineage=operation
++        )
++        prepared = shared.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
++        _equal(entry, _ambient())
++        _equal(before_native, _native_evidence(shared._backend))
++        private_rnd.owner.install(private_prepared, lineage=operation)
++        shared.install(prepared, lineage=operation)
++    _equal(expected_rng, _ambient())
++    reset = shared._backend.checkpoint_state()
++    _equal(fresh_native["predictor_network"], reset["predictor_network"])
++    _equal(saved["backend"]["predictor_service"]["pending_observations"], reset["predictor_service"]["pending_observations"])
++    assert reset["predictor_service"]["optimizer_epoch_origin"] == 1
++    shared.call(lambda backend: (random.random(), np.random.random(), torch.rand(3)))
++    peer_current = _ambient()
++    prepared = shared.prepare_restore(saved, factory=factory, validate_backend=lambda backend, state: backend.validate_state(state))
++    shared.install(prepared)
++    _equal(peer_current, _ambient())
++    _equal(_ambient_next(peer_current), _ambient_next(_ambient()))
++    _equal(saved["backend"], shared._backend.checkpoint_state())
++
++
++@pytest.mark.parametrize("boundary", ["factory", "native", "capture", "stage"])
++def test_shared_prepublication_refusal_preserves_live_owner(
++    shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], monkeypatch: pytest.MonkeyPatch, boundary: str
++) -> None:
++    shared, factory = shared_rnd
++    before, ambient, revision = _native_evidence(shared._backend), _ambient(), shared._revision
++
++    def refuse(*args: Any) -> Any:
++        raise RuntimeError("injected owned boundary refusal")
++
++    with monkeypatch.context() as patch:
++        if boundary == "capture":
++            patch.setattr(world_state, "_globals", refuse)
++        with pytest.raises(RuntimeError, match="injected"):
++            prepared = shared.prepare_learning_reset(
++                factory=refuse if boundary == "factory" else factory, prepare_native=refuse if boundary == "native" else _reset_rnd
++            )
++            if boundary == "stage":
++                patch.setattr(world_state, "_install_globals", refuse)
++                shared.install(prepared)
++    _equal(before, _native_evidence(shared._backend))
++    _equal(ambient, _ambient())
++    assert shared._revision == revision and shared._failed is False
++    assert process_rng_domain().status()[2] is False
++
++
++def test_independent_real_cpu_adam_step_completes_during_private_activation(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]]
++) -> None:
++    independent, _ = shared_rnd
++    independent.call(lambda backend: backend.admit_and_service(_rows(2, private_rnd.width, 5), vector_tick=0))
++    backend = independent._backend  # caller quiescence for this separately owned raw reference
++    before = backend.checkpoint_state()
++    errors: list[BaseException] = []
++
++    def step() -> None:
++        try:
++            backend.optimizer.step()  # no global gate: exact already-qualified CPU profile
++        except BaseException as error:
++            errors.append(error)
++
++    def holding(native: RNDExploration, sources: WorldRandomSources) -> None:
++        ambient = _ambient()
++        worker = threading.Thread(target=step)
++        worker.start()
++        worker.join(20)
++        assert not worker.is_alive(), "qualified independent Adam core was incorrectly globally gated"
++        assert not errors
++        _equal(ambient, _ambient())
++
++    private_rnd.owner.call(holding)
++    after = backend.checkpoint_state()
++    assert all(state["step"].item() == 2 for state in after["optimizer"]["state"].values())
++    assert any(not torch.equal(value, after["predictor_network"][name]) for name, value in before["predictor_network"].items())
++    assert after["predictor_service"]["optimizer_updates"] == 1
++    assert after["predictor_service"]["optimizer_step_offset"] == 1
++
++
++def _poison_worker(policy: dict[str, Any], descriptor: dict[str, Any], rng: dict[str, Any], width: int, actions: int, output: Any) -> None:
++    try:
++        resolved = ResolvedExplorationPolicy.from_dict(policy)
++
++        def factory() -> RNDExploration:
++            return make_backend(resolved, world_id=None, obs_dim=width, action_dim=actions, device="cpu", rng=None, descriptor=None)
++
++        shared = SharedWorldBackend.construct(factory=factory, cuda_devices=())
++        prepared = shared.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd)
++
++        def failed_install(state: Any) -> None:
++            raise RuntimeError("candidate staging failed")
++
++        with pytest.MonkeyPatch.context() as patch:
++            patch.setattr(world_state, "_install_globals", failed_install)
++            patch.setattr(world_state, "_restore_globals", lambda state: [RuntimeError("entry cleanup failed")])
++            with pytest.raises(BaseExceptionGroup):
++                shared.install(prepared)
++        assert process_rng_domain().status()[2] is True
++        with pytest.raises(RuntimeError, match="poisoned"):
++            shared.call(lambda backend: torch.rand(1))
++        with pytest.raises(RuntimeError, match="poisoned"):
++            WorldRNGState.from_snapshot(
++                rng, descriptor=WorldCuriosityDescriptor.from_dict(descriptor), world_id="R0-current", cuda_devices=()
++            )
++        output.put("poisoned shared/private fail closed")
++    except BaseException as error:
++        output.put(repr(error))
++        raise
++
++
++def test_cleanup_poison_isolated_in_fresh_process(private_rnd: PrivateRND, compiled: Any) -> None:
++    selected = compiled.get_level(compiled.metadata.primary_level)
++    context = multiprocessing.get_context("spawn")
++    output = context.Queue()
++    process = context.Process(
++        target=_poison_worker,
++        args=(
++            _resolved_rnd(selected, "shared").to_dict(),
++            private_rnd.descriptor.to_dict(),
++            private_rnd.owner._rng.snapshot(),
++            private_rnd.width,
++            selected.action_metadata.total_actions,
++            output,
++        ),
++    )
++    process.start()
++    try:
++        process.join(90)
++        assert not process.is_alive(), "fresh poison control did not finish"
++        assert process.exitcode == 0
++        assert output.get(timeout=5) == "poisoned shared/private fail closed"
++    finally:
++        if process.is_alive():
++            process.terminate()
++            process.join(10)
++        output.close()
++        output.join_thread()
++    assert process_rng_domain().status()[2] is False
++
++
++def test_same_owner_real_manual_mutation_waits_for_reset_copy_then_stales_preparation(
++    private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner = private_rnd.owner
++    contended, mutated = threading.Event(), threading.Event()
++    domain = process_rng_domain()
++    monkeypatch.setattr(domain, "_lock", _ObservedLock(domain._lock, contended))
++    errors: list[BaseException] = []
++
++    def mutate() -> None:
++        try:
++            owner.call(lambda backend, sources: backend.optimizer.step())
++            mutated.set()
++        except BaseException as error:
++            errors.append(error)
++
++    worker = threading.Thread(target=mutate, name="r0-contender")
++
++    def prepare(current: RNDExploration, fresh: RNDExploration) -> None:
++        worker.start()
++        assert contended.wait(10)
++        assert not mutated.is_set()
++        _reset_rnd(current, fresh)
++
++    try:
++        prepared = owner.prepare_learning_reset(factory=private_rnd.factory, prepare_native=prepare)
++    finally:
++        if worker.ident is not None:
++            worker.join(30)
++    assert not worker.is_alive() and not errors and mutated.is_set()
++    changed = _live_evidence(owner)
++    assert changed["native"]["predictor_service"]["optimizer_step_offset"] == 1
++    with pytest.raises(ValueError):
++        owner.install(prepared)
++    _equal(changed, _live_evidence(owner))
++
++
++@pytest.mark.parametrize("boundary", ["factory", "native"])
++def test_private_candidate_refusal_is_pure(private_rnd: PrivateRND, boundary: str) -> None:
++    owner = private_rnd.owner
++    before, ambient = _live_evidence(owner), _ambient()
++
++    def refuse(*args: Any) -> Any:
++        raise RuntimeError("private candidate refused")
++
++    with pytest.raises(RuntimeError, match="private candidate"):
++        owner.prepare_learning_reset(
++            factory=refuse if boundary == "factory" else private_rnd.factory,
++            prepare_native=refuse if boundary == "native" else _reset_rnd,
++        )
++    _equal(before, _live_evidence(owner))
++    _equal(ambient, _ambient())
++
++
++@pytest.mark.parametrize("binding", ["world_id", "descriptor", "cuda_devices"])
++def test_private_restore_refuses_foreign_binding_without_live_effects(private_rnd: PrivateRND, binding: str) -> None:
++    owner = private_rnd.owner
++    saved = owner.snapshot()
++    if binding == "world_id":
++        saved["rng"][binding] = "foreign-world"
++    elif binding == "descriptor":
++        saved["rng"][binding]["training_seed"] += 1
++    else:
++        saved["rng"][binding] = (0,)
++    before, ambient = _live_evidence(owner), _ambient()
++    with pytest.raises(ValueError):
++        owner.prepare_restore(saved, factory=private_rnd.factory, validate_backend=lambda backend, state: backend.validate_state(state))
++    _equal(before, _live_evidence(owner))
++    _equal(ambient, _ambient())
++
++
++@pytest.mark.parametrize("kind", ["private", "shared"])
++def test_failed_live_callback_quarantines_until_explicit_restore(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], kind: str
++) -> None:
++    owner, factory = (private_rnd.owner, private_rnd.factory) if kind == "private" else shared_rnd
++    saved, ambient = owner.snapshot(), _ambient()
++
++    def fail(*args: Any) -> None:
++        args[0].decay_epsilon()
++        torch.rand(3)
++        raise RuntimeError("failed actual live callback")
++
++    with pytest.raises(RuntimeError, match="actual live"):
++        owner.call(fail)
++    assert owner._failed is True
++    current_ambient = _ambient()
++    if kind == "private":
++        _equal(ambient, current_ambient)
++    with pytest.raises(RuntimeError, match="quarantined"):
++        owner.call(lambda *args: None)
++    prepared = owner.prepare_restore(saved, factory=factory, validate_backend=lambda backend, state: backend.validate_state(state))
++    owner.install(prepared)
++    assert owner._failed is False
++    _equal(saved["backend"], owner._backend.checkpoint_state())
++    _equal(current_ambient, _ambient())

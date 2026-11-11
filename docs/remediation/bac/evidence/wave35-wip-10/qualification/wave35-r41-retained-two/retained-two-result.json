@@ -1,0 +1,26 @@
+{
+  "name": "retained-two",
+  "exit_code": 0,
+  "seconds": 9.371222972869873,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_current_private_owner_has_genuine_learned_continuation",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_private_learning_reset_prepares_current_streams_without_live_effects",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r41-retained-two"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r41-retained-two/retained-two.log",
+  "sha256": "561ff6ca08c8609cbec9fdc6f72faeab420ed3696627c20e47438b33f02f676a",
+  "candidate_tree": "f520cf023ddb96a755141dcafec91dbf13ea841b",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "332874a226393ca260bff047dc858a0be5ba7ebf97c423f336a18fc5c08ac7b4",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

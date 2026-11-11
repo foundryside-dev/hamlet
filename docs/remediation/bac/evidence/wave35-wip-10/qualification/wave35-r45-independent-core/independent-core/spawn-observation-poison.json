@@ -1,0 +1,8 @@
+{
+  "exitcode": 0,
+  "manifest_sha256": "2e26d33982077bcf6e1f09a525fbcdeca31ecf6f25648e83ba2307294b900926",
+  "message": "poisoned shared/private fail closed",
+  "process_pid": 191339,
+  "qualified": true,
+  "queued_pid": 191339
+}

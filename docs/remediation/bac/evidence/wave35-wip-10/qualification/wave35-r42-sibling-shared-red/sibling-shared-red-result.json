@@ -1,0 +1,24 @@
+{
+  "name": "sibling-shared-red",
+  "exit_code": 1,
+  "seconds": 10.128034353256226,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_two_shared_resets_under_held_lease_match_real_sequential_reference",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r42-sibling-shared-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r42-sibling-shared-red/sibling-shared-red.log",
+  "sha256": "6cc559daabf14724e8ad3efca4b4127c734e041f70461adcc138a0689bf098fa",
+  "candidate_tree": "afcbaab03a58e350957a2224e7c6cc11ee36fabc",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "8e892beed830150286ed4ff02afcfbf46371a7cfc512ed4b8e144c1f181840a2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

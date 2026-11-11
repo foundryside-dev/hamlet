@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "candidate_tree": "f520cf023ddb96a755141dcafec91dbf13ea841b",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_rng_binding.py"
+  ],
+  "signatures": [
+    {
+      "error": "Input: 'Unrelated same-thread RNG reentry is forbidden'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_rng_binding.py::test_binding_fixture_prerequisite",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

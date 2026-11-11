@@ -1,0 +1,70 @@
+diff --git a/src/townlet/exploration/rng_custody.py b/src/townlet/exploration/rng_custody.py
+index ee7dafb4..69e71a2a 100644
+--- a/src/townlet/exploration/rng_custody.py
++++ b/src/townlet/exploration/rng_custody.py
+@@ -339,7 +339,10 @@ class AmbientRNGDomain:
+             self._member(expected.participant)
+             if expected.participant not in record.participants or expected.generation != self._generation:
+                 raise ValueError("RNG preparation membership changed")
+-            revision = expected.revision if expected.operation is operation else expected.revision + 1
++            if expected.operation is operation:
++                revision = expected.revision
++            else:
++                revision = expected.revision + 1
+             if self._revision != revision:
+                 raise ValueError("RNG preparation is stale after an intervening operation")
+             if self._currency != expected.currency:
+diff --git a/src/townlet/exploration/world_curiosity_state.py b/src/townlet/exploration/world_curiosity_state.py
+index 871877bd..5d03474b 100644
+--- a/src/townlet/exploration/world_curiosity_state.py
++++ b/src/townlet/exploration/world_curiosity_state.py
+@@ -596,7 +596,10 @@ class WorldRNGState:
+         result._components = _owned(self._components)
+         result._broken = False
+         result._participant = self._participant
+-        result._lifetime_owner = self._lifetime_owner if self._lifetime_owner is not None else self
++        if self._lifetime_owner is not None:
++            result._lifetime_owner = self._lifetime_owner
++        else:
++            result._lifetime_owner = self
+         return result
+ 
+     def _restore(self, payload: Any) -> WorldRNGState:
+@@ -607,7 +610,10 @@ class WorldRNGState:
+         )
+         result._broken = False
+         result._participant = self._participant
+-        result._lifetime_owner = self._lifetime_owner if self._lifetime_owner is not None else self
++        if self._lifetime_owner is not None:
++            result._lifetime_owner = self._lifetime_owner
++        else:
++            result._lifetime_owner = self
+         return result
+ 
+     @classmethod
+@@ -746,7 +752,11 @@ class WorldRNGState:
+         remain quiescent lifecycle operations; this read never captures streams.
+         """
+         stack = _stack()
+-        lineage = stack[-1].operation if stack and stack[-1].owner is self else None
++        lineage: RNGOperation | None
++        if stack and stack[-1].owner is self:
++            lineage = stack[-1].operation
++        else:
++            lineage = None
+         with _rng_domain.operation(participant=self._participant, operation_kind="rng", lineage=lineage):
+             _usable()
+             if self._broken:
+@@ -768,7 +778,11 @@ class WorldRNGState:
+     @contextmanager
+     def activate(self, component: str) -> Iterator[WorldRandomSources]:
+         stack = _stack()
+-        lineage = stack[-1].operation if stack and stack[-1].owner is self else None
++        lineage: RNGOperation | None
++        if stack and stack[-1].owner is self:
++            lineage = stack[-1].operation
++        else:
++            lineage = None
+         with self._activate(component, lineage) as sources:
+             yield sources
+ 

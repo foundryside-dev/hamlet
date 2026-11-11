@@ -1,0 +1,24 @@
+{
+  "name": "cross-lease-red",
+  "exit_code": 1,
+  "seconds": 9.457422971725464,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r43-cross-lease-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r43-cross-lease-red/cross-lease-red.log",
+  "sha256": "ebe3d2b2f2955cf7c6b2212cc52ff4b420c863b8e011be5e2d469afad5e0a055",
+  "candidate_tree": "8a5486c0d40378869156ad7cb1a8f88b7e500f4c",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "b1590415b41f96eb6cd91b9189cc2eaca463ad1e0ce1f2c021e67ab0a5708da5",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

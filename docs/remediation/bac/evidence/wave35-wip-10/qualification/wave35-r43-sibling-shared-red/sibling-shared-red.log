@@ -1,0 +1,91 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py F           [100%]
+
+=================================== FAILURES ===================================
+___ test_two_shared_resets_under_held_lease_match_real_sequential_reference ____
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7f27775374d0>, factory=<func...g_broken': False, 'owner_token': 139807518960464, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+shared_rnd = (<townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f27776506e0>, <function shared_rnd.<locals>.factory at 0x7f276c0a3a60>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f277702e650>
+
+    def test_two_shared_resets_under_held_lease_match_real_sequential_reference(
+        private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        first, factory = shared_rnd
+        second = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+        for owner in (first, second):
+            _train_shared(owner, private_rnd.width)
+        references = [deepcopy(first._backend), deepcopy(second._backend)]
+        entry = _ambient()
+        try:
+            for reference in references:
+                _reset_rnd(reference, factory())  # second real construction starts after the first's actual draws
+            expected_ambient = _ambient()
+            expected_native = [reference.checkpoint_state() for reference in references]
+        finally:
+            _restore_ambient(entry)
+        assert any(
+            not torch.equal(value, expected_native[1]["predictor_network"][name])
+            for name, value in expected_native[0]["predictor_network"].items()
+        )
+        domain = process_rng_domain()
+        with domain.operation(participant=first.rng_participant, operation_kind="prepare", lineage=None) as operation:
+            prepared_first = first.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+            prepared_second = second.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+            first.install(prepared_first, lineage=operation)
+            committed = _ambient()
+            second_before = _shared_live(second)
+            dependency_refused = False
+            with _observe_shared_publication(monkeypatch, second) as effects:
+                try:
+                    second.install(prepared_second, lineage=operation)
+                except ValueError as error:
+                    assert any(word in str(error).lower() for word in ("stale", "dependency", "predecessor", "continuation"))
+                    assert effects == [], "dependency refusal occurred after ambient staging/setters or actual backend publication"
+                    _equal(committed, _ambient())
+                    _equal(second_before, _shared_live(second))
+                    dependency_refused = True
+            if dependency_refused:
+                prepared_second = second.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+                second.install(prepared_second, lineage=operation)
+>       _equal(expected_native, [first._backend.checkpoint_state(), second._backend.checkpoint_state()])
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:1203: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:75: in _equal
+    _equal(item, reference)
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:71: in _equal
+    _equal(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:71: in _equal
+    _equal(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([[-0.0837, -0.0672, -0.0010,  ..., -0.0723,  0.0696,  0.0769],
+        [ 0.0356, -0.0667,  0.0139,  ...,  0.050...0147, -0.0373,  ..., -0.0175, -0.0283, -0.0587],
+        [-0.0151, -0.0721,  0.0693,  ..., -0.0529, -0.0619, -0.0780]])
+right = tensor([[ 0.0651,  0.0695, -0.0565,  ..., -0.0506,  0.0207, -0.0160],
+        [-0.0067,  0.0007,  0.0071,  ...,  0.033...0765, -0.0039,  ..., -0.0577,  0.0421,  0.0267],
+        [ 0.0067,  0.0702, -0.0531,  ...,  0.0725, -0.0350,  0.0677]])
+
+    def _equal(left: Any, right: Any) -> None:
+        """Independent exact evidence comparison, including complete RNG payloads."""
+        assert type(left) is type(right)
+        if isinstance(left, torch.Tensor):
+            assert (left.layout, left.dtype, left.device, left.shape) == (right.layout, right.dtype, right.device, right.shape)
+>           assert torch.equal(left, right)
+E           assert False
+E            +  where False = <built-in method equal of type object at 0x7f27aebf1000>(tensor([[-0.0837, -0.0672, -0.0010,  ..., -0.0723,  0.0696,  0.0769],\n        [ 0.0356, -0.0667,  0.0139,  ...,  0.050...0147, -0.0373,  ..., -0.0175, -0.0283, -0.0587],\n        [-0.0151, -0.0721,  0.0693,  ..., -0.0529, -0.0619, -0.0780]]), tensor([[ 0.0651,  0.0695, -0.0565,  ..., -0.0506,  0.0207, -0.0160],\n        [-0.0067,  0.0007,  0.0071,  ...,  0.033...0765, -0.0039,  ..., -0.0577,  0.0421,  0.0267],\n        [ 0.0067,  0.0702, -0.0531,  ...,  0.0725, -0.0350,  0.0677]]))
+E            +    where <built-in method equal of type object at 0x7f27aebf1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:59: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_two_shared_resets_under_held_lease_match_real_sequential_reference
+============================== 1 failed in 7.12s ===============================

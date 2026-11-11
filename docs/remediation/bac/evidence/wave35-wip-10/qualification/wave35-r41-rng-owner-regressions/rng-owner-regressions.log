@@ -1,0 +1,98 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 84 items
+
+tests/test_townlet/regressions/bac/test_pw_rng_binding.py F
+
+=================================== FAILURES ===================================
+______________________ test_binding_fixture_prerequisite _______________________
+
+candidate = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7f2adc8c6850>
+
+    def factory(candidate: WorldRNGState) -> EpsilonGreedyExploration:
+        assert candidate is not rng
+        candidates.append(candidate)
+        with pytest.raises(RuntimeError, match="quiescent"):
+>           candidate.snapshot()
+
+tests/test_townlet/regressions/bac/test_pw_rng_binding.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:719: in snapshot
+    with self._operation():
+         ^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f2adcbe63c0>
+
+    @contextmanager
+    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        # Another thread waits at this actual lock before any enrolled work.
+        with self._lock:
+            self._usable()
+            member = self._member(participant)
+            if operation_kind not in member.entrypoints:
+                raise ValueError("RNG entrypoint is not registered for this owner")
+            active = self._active()
+            if active is not None:
+                if lineage is None:
+>                   raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E                   RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:160: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+binding = (ResolvedExplorationPolicy(strategy='none', epsilon_start=1.0, epsilon_end=0.01, epsilon_decay=0.995, rnd_feature_dim=...service': 5588445213149269971})})), <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7f2adc977380>)
+
+    def test_binding_fixture_prerequisite(binding: tuple[Any, ...]) -> None:
+        """All real fixtures and lifecycle succeed independently of the new method."""
+        policy, descriptor, rng = binding
+        assert policy.strategy == "none" and policy.curiosity_scope == "per_world"
+        assert WorldCuriosityDescriptor.from_dict(descriptor.to_dict()) == descriptor
+        before = rng.snapshot()
+        ambient = _ambient(())
+        candidates = []
+    
+        def factory(candidate: WorldRNGState) -> EpsilonGreedyExploration:
+            assert candidate is not rng
+            candidates.append(candidate)
+            with pytest.raises(RuntimeError, match="quiescent"):
+                candidate.snapshot()
+            with pytest.raises(RuntimeError, match="quiescent"):
+                WorldRNGState.from_snapshot(before, descriptor=descriptor, world_id="world-A", cuda_devices=())
+            return _backend(policy)
+    
+>       owner = OwnedWorldBackend.construct(rng=rng, factory=factory)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_rng_binding.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/world_curiosity_state.py:950: in construct
+    backend = cls._clone_backend(factory(candidate_rng))
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+candidate = <townlet.exploration.world_curiosity_state.WorldRNGState object at 0x7f2adc8c6850>
+
+    def factory(candidate: WorldRNGState) -> EpsilonGreedyExploration:
+        assert candidate is not rng
+        candidates.append(candidate)
+>       with pytest.raises(RuntimeError, match="quiescent"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'quiescent'
+E        Input: 'Unrelated same-thread RNG reentry is forbidden'
+
+tests/test_townlet/regressions/bac/test_pw_rng_binding.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_rng_binding.py::test_binding_fixture_prerequisite
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 0.15s ===============================

@@ -1,0 +1,23 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r43-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r43-cross-lease-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cross-lease-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r43-cross-lease-red"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "observed_at": "2026-11-11T10:38:37.180464+00:00",
+  "head_sha": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "runs": [
+    {
+      "name": "Lint",
+      "id": 42986937539,
+      "conclusion": "failure",
+      "updated_at": "2026-11-11T08:27:01Z",
+      "cause": "Decoded actual job log:6knownoraclecaller mypyerrors; RuffBlackpassed"
+    },
+    {
+      "name": "Config Validation",
+      "id": 42986937566,
+      "conclusion": "success",
+      "updated_at": "2026-11-11T08:27:44Z"
+    },
+    {
+      "name": "Tests",
+      "id": 42986937521,
+      "conclusion": "failure",
+      "updated_at": "2026-11-11T09:50:49Z",
+      "job": 130410234272,
+      "failed_step": "Run fast test suite",
+      "started_at": "2026-11-11T08:25:39Z",
+      "completed_at": "2026-11-11T09:50:49Z",
+      "cause": "UNVERIFIED: two dedicated decoded-log fetch attempts returned Transport closed; genericcheckrun route unsupported400; no cause inferred"
+    }
+  ],
+  "qualification": "No green CI claim; finalexactcandidateCI remainsrequired. No CI rerun/cancellation/newaccess or sourcechange."
+}

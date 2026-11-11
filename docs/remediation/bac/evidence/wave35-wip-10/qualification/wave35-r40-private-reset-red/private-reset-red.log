@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py F
+
+=================================== FAILURES ===================================
+__ test_private_learning_reset_prepares_current_streams_without_live_effects ___
+
+private_rnd = PrivateRND(owner=<townlet.exploration.world_curiosity_state.OwnedWorldBackend object at 0x7fde3c714050>, factory=<func...g_broken': False, 'owner_token': 140592510268112, 'owner_revision': 2, 'owner_failed': False}, batch_size=2, width=141)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fde3137d220>
+
+    def test_private_learning_reset_prepares_current_streams_without_live_effects(
+        private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Catch reseeding, live-capture preparation, dropped factory draws and wrong next service."""
+        rig = private_rnd
+        owner = rig.owner
+        current_rng = owner._rng.snapshot()
+        reference_rng = WorldRNGState.from_snapshot(current_rng, descriptor=rig.descriptor, world_id="R0-current", cuda_devices=())
+        with reference_rng.activate("model_init"):
+            fresh = rig.factory(reference_rng)
+        fresh_native = fresh.checkpoint_state()
+        expected_components = deepcopy(reference_rng._components)
+        reference_native = deepcopy(owner._backend)
+        _reset_rnd(reference_native, fresh)
+        before = _live_evidence(owner)
+        ambient_before = _ambient()
+        next_before = _ambient_next(ambient_before)
+    
+        with _forbid_live_preparation_work(monkeypatch, owner):
+            # Intended first new API call. At the sealed current source this must fail
+            # here with AttributeError, after the real learned fixture has succeeded.
+>           prepared = owner.prepare_learning_reset(factory=rig.factory, prepare_native=_reset_rnd)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'OwnedWorldBackend' object has no attribute 'prepare_learning_reset'
+
+tests/test_townlet/regressions/bac/test_world_rng_custody.py:363: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_private_learning_reset_prepares_current_streams_without_live_effects
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 3.73s ===============================

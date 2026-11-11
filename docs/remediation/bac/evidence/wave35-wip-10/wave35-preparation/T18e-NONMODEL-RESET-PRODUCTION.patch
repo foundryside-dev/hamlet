@@ -1,0 +1,190 @@
+diff --git a/src/townlet/exploration/count_based.py b/src/townlet/exploration/count_based.py
+index 5ae33b20..23c24a16 100644
+--- a/src/townlet/exploration/count_based.py
++++ b/src/townlet/exploration/count_based.py
+@@ -10,6 +10,8 @@ from __future__ import annotations
+ import math
+ from collections import OrderedDict
+ from collections.abc import Mapping
++from copy import deepcopy
++from dataclasses import dataclass
+ from typing import Any
+ 
+ import torch
+@@ -62,6 +64,18 @@ def _key(value: Any) -> tuple[int, ...]:
+     return value
+ 
+ 
++@dataclass(slots=True)
++class _PreparedCount:
++    owner: CountExploration
++    policy: ResolvedExplorationPolicy
++    epsilon: float
++    decay: float
++    minimum: float
++    counts: OrderedDict[tuple[int, ...], int]
++    evictions: int
++    used: bool
++
++
+ class CountExploration(EpsilonGreedyExploration):
+     """Bounded LRU counts with pure no-stat queries and no neural training."""
+ 
+@@ -161,11 +175,15 @@ class CountExploration(EpsilonGreedyExploration):
+         }
+ 
+     def load_state(self, state: dict[str, Any]) -> None:
+-        """Validate the complete candidate before changing any owned state."""
++        """Validate and install complete count state through the owned seam."""
++        self.install_state(self.prepare_state(state))
++
++    def prepare_state(self, state: dict[str, Any]) -> _PreparedCount:
++        """Validate the complete candidate and detach its mutable owned data."""
+         if not isinstance(state, Mapping) or set(state) != _STATE_FIELDS or state["schema_version"] != "count-state-v1":
+             raise ValueError("count checkpoint requires the complete count-state-v1 schema")
+         try:
+-            restored_policy = ResolvedExplorationPolicy.from_dict(state["policy"])
++            restored_policy = ResolvedExplorationPolicy.from_dict(deepcopy(state["policy"]))
+         except (TypeError, ValueError, KeyError, AttributeError, OverflowError) as error:
+             raise ValueError("invalid count checkpoint policy") from error
+         identity = restored_policy.policy_identity
+@@ -201,6 +219,45 @@ class CountExploration(EpsilonGreedyExploration):
+         if len(lru) != len(counts) or len(set(lru)) != len(lru) or set(lru) != set(counts):
+             raise ValueError("count checkpoint LRU must contain every admitted key exactly once")
+         prepared_counts = OrderedDict((key, counts[key]) for key in lru)
+-        self.policy = restored_policy
+-        self.epsilon, self.epsilon_decay, self.epsilon_min = epsilon, decay, minimum
+-        self._counts, self._eviction_count = prepared_counts, evictions
++        return _PreparedCount(self, restored_policy, epsilon, decay, minimum, prepared_counts, evictions, used=False)
++
++    def install_state(self, prepared: _PreparedCount) -> None:
++        """Swap only prevalidated owned state; reject before consuming foreign work."""
++        if type(prepared) is not _PreparedCount or prepared.owner is not self or prepared.used:
++            raise ValueError("count preparation is foreign, invalid or already consumed")
++        self.policy = prepared.policy
++        self.epsilon = prepared.epsilon
++        self.epsilon_decay = prepared.decay
++        self.epsilon_min = prepared.minimum
++        self._counts = prepared.counts
++        self._eviction_count = prepared.evictions
++        prepared.used = True
++
++    def prepare_learning_reset(self, *, fresh: CountExploration) -> _PreparedCount:
++        """Combine genuine fresh count learning with retained current diagnostics.
++
++        The outer owner authenticates factory construction, boundary and revisions.
++        This native operation neither constructs a backend nor touches any RNG.
++        """
++        if type(self) is not CountExploration or type(fresh) is not CountExploration or fresh is self:
++            raise ValueError("count reset requires distinct exact count family owners")
++        current_state, fresh_state = self.checkpoint_state(), fresh.checkpoint_state()
++        # Both complete actual snapshots must validate even though old counts are cleared.
++        self.prepare_state(current_state)
++        fresh.prepare_state(fresh_state)
++        if self.device != fresh.device or any(
++            current_state[name] != fresh_state[name] for name in ("policy_identity", "quantization_width", "max_entries")
++        ):
++            raise ValueError("count reset requires matching selected policy and device")
++        for provider in (self, fresh):
++            if provider._quantization_width.as_integer_ratio() != (provider._width_numerator, provider._width_denominator):
++                raise ValueError("count reset quantization state disagrees with the selected width")
++        if fresh_state["counts"] or fresh_state["lru"] or fresh_state["eviction_count"] != 0:
++            raise ValueError("count reset requires genuine fresh empty count learning")
++        if fresh_state["epsilon"] != fresh.policy.epsilon_start:
++            raise ValueError("count reset requires the selected constructor's initial diagnostics")
++        # Retain the current validated policy transport, including inactive provenance.
++        # Active identity/configuration matched above; only actual fresh learning moves.
++        for name in ("counts", "lru", "eviction_count"):
++            current_state[name] = fresh_state[name]
++        return self.prepare_state(current_state)
+diff --git a/src/townlet/exploration/epsilon_greedy.py b/src/townlet/exploration/epsilon_greedy.py
+index 9d39f978..2d315733 100644
+--- a/src/townlet/exploration/epsilon_greedy.py
++++ b/src/townlet/exploration/epsilon_greedy.py
+@@ -5,6 +5,11 @@ Simple baseline: epsilon probability of random action, 1-epsilon probability
+ of greedy action. No intrinsic motivation.
+ """
+ 
++from __future__ import annotations
++
++import math
++from collections.abc import Mapping
++from dataclasses import dataclass
+ from typing import Any
+ 
+ import torch
+@@ -14,6 +19,34 @@ from townlet.exploration.base import ExplorationStrategy
+ from townlet.training.state import BatchedAgentState
+ 
+ 
++@dataclass(slots=True)
++class _PreparedEpsilon:
++    owner: EpsilonGreedyExploration
++    epsilon: float
++    decay: float
++    minimum: float
++    used: bool
++
++
++def _diagnostics(state: dict[str, Any]) -> tuple[float, float, float]:
++    if not isinstance(state, Mapping) or set(state) != {"epsilon", "epsilon_decay", "epsilon_min"}:
++        raise ValueError("epsilon checkpoint requires exactly its three diagnostic fields")
++    values = []
++    for name in ("epsilon", "epsilon_decay", "epsilon_min"):
++        value = state[name]
++        if isinstance(value, bool) or not isinstance(value, (int, float)):
++            raise ValueError(f"{name} requires a finite number")
++        try:
++            finite = math.isfinite(value)
++        except OverflowError as error:
++            raise ValueError(f"{name} requires a finite number") from error
++        if not finite:
++            raise ValueError(f"{name} requires a finite number")
++        values.append(value)
++    # Preserve ordinary finite numeric transport; reset has separate policy bounds.
++    return values[0], values[1], values[2]
++
++
+ class EpsilonGreedyExploration(ExplorationStrategy):
+     """
+     Vectorized epsilon-greedy exploration.
+@@ -107,12 +140,30 @@ class EpsilonGreedyExploration(ExplorationStrategy):
+         }
+ 
+     def load_state(self, state: dict[str, Any]) -> None:
+-        """
+-        Restore from checkpoint.
+-
+-        Args:
+-            state: Dict from checkpoint_state()
+-        """
+-        self.epsilon = state["epsilon"]
+-        self.epsilon_decay = state["epsilon_decay"]
+-        self.epsilon_min = state["epsilon_min"]
++        """Restore the diagnostic triple, including explicit base-class callers."""
++        prepared = EpsilonGreedyExploration.prepare_state(self, state)
++        EpsilonGreedyExploration.install_state(self, prepared)
++
++    def prepare_state(self, state: dict[str, Any]) -> _PreparedEpsilon:
++        """Validate finite diagnostic transport off-side, without policy bounds."""
++        epsilon, decay, minimum = _diagnostics(state)
++        return _PreparedEpsilon(self, epsilon, decay, minimum, used=False)
++
++    def install_state(self, prepared: _PreparedEpsilon) -> None:
++        """Publish an already-qualified, destination-bound diagnostic candidate."""
++        if type(prepared) is not _PreparedEpsilon or prepared.owner is not self or prepared.used:
++            raise ValueError("epsilon preparation is foreign, invalid or already consumed")
++        self.epsilon = prepared.epsilon
++        self.epsilon_decay = prepared.decay
++        self.epsilon_min = prepared.minimum
++        prepared.used = True
++
++    def prepare_learning_reset(self, *, fresh: EpsilonGreedyExploration) -> _PreparedEpsilon:
++        """Retain diagnostics for genuine none; the outer owner qualifies freshness."""
++        if type(self) is not EpsilonGreedyExploration or type(fresh) is not EpsilonGreedyExploration or fresh is self:
++            raise ValueError("none reset requires distinct exact epsilon-greedy family owners")
++        epsilon, decay, minimum = _diagnostics(self.checkpoint_state())
++        start, fresh_decay, fresh_minimum = _diagnostics(fresh.checkpoint_state())
++        if decay != fresh_decay or minimum != fresh_minimum or not minimum <= epsilon <= start:
++            raise ValueError("none reset diagnostics disagree with the selected fresh constructor")
++        return _PreparedEpsilon(self, epsilon, decay, minimum, used=False)

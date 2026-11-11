@@ -1,0 +1,87 @@
+diff --git a/src/townlet/population/vectorized.py b/src/townlet/population/vectorized.py
+index a5301073..92988308 100644
+--- a/src/townlet/population/vectorized.py
++++ b/src/townlet/population/vectorized.py
+@@ -1100,49 +1100,57 @@ class VectorizedPopulation(PopulationManager):
+         if (
+             self._step_active
+             or self._failed_step
+             or self._preparing_checkpoint is not None
+             or self._batch_commit_active
+             or self._vector_steps
+         ):
+             raise RuntimeError("Cannot commit outcomes during running, pending or failed population work")
+         incoming = tuple(outcomes)
+         prepared: dict[tuple[int, int], str] = {}
++        request_values: dict[tuple[int, int], bytes] = {}
+         for event in incoming:
+             if not isinstance(event, LaneOutcome):
+                 raise ValueError("Only owned LaneOutcome events may be committed")
+             identity = event.batch_episode, event.outcome.agent_idx
+             fingerprint = self._outcome_fingerprint(event)
+             expected = self._published_outcome_fingerprints.get(identity)
+             if expected is None or fingerprint != expected or (identity in prepared and prepared[identity] != fingerprint):
+                 raise ValueError("Outcome was not published or its owned content changed")
++            canonical = freeze_lane_outcome(event).payload
++            if canonical != freeze_lane_outcome(self._published_events[identity]).payload:
++                raise ValueError("Outcome canonical content differs from its actual publication")
++            request_values[identity] = canonical
+             prepared[identity] = fingerprint
+         batches = {identity[0] for identity in prepared}
+-        if self._pending_batch_commit is not None and batches != {self._pending_batch_commit["batch"]}:
++        request = tuple(sorted(request_values.items()))
++        if self._pending_batch_commit is not None and request != self._pending_batch_commit["request"]:
+             raise RuntimeError("Resolve the retained batch commitment before unrelated parent work")
+         self._committed_outcomes.update(prepared)
+         self._retain_participant_roster()
+-        for batch in sorted(batches):
++        pending_batch = self._pending_batch_commit["batch"] if self._pending_batch_commit is not None else None
++        for batch in sorted(batches, key=lambda batch: (batch != pending_batch, batch)):
+             participants = self._batch_participants.get(batch)
+             if (
+                 batch in self._committed_batches
+                 or not participants
+                 or not all((batch, lane) in self._committed_outcomes for lane in participants)
+             ):
+                 continue
+             if self._pending_batch_commit is None:
+                 events = tuple(self._published_events[(batch, lane)] for lane in participants)
+                 content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, events))
+                 self._pending_batch_commit = dict(
+                     batch=batch,
+                     events=events,
+                     content=content,
++                    request=request,
+                     before=self.exploration.epsilon,
+                     ledger=self._clock_ledger.advance(completed_batch_episodes=1),
+                     batches=self._committed_batches | {batch},
+                     revision=self._checkpoint_revision + 1,
+                 )
+             pending = self._pending_batch_commit
+             self._batch_commit_progress = dict(batch_episode=batch, status="pending", last_reached_stage="runtime_in_progress")
+             self._batch_commit_active = True
+             try:
+                 self.exploration.commit_batch_episode(batch_episode=batch, outcomes=pending["events"])
+@@ -2545,20 +2553,22 @@ class VectorizedPopulation(PopulationManager):
+             ledger,
+             progress,
+             correlation,
+             cadence,
+         )
+         return handle
+ 
+     def install_checkpoint_state(self, *, prepared: PreparedPopulationRestore) -> None:
+         if type(prepared) is not PreparedPopulationRestore or prepared not in self._population_restores or self._step_active:
+             raise ValueError("Foreign, consumed or reentrant population restore")
++        if self.env.world_phase != "fresh-unbound":
++            raise ValueError("Bound component replacement requires the genuine outer stable-owner installation protocol")
+         revision, runtime, q, target, optimizer, scheduler, replay, ledger, progress, correlation, cadence = self._population_restores[
+             prepared
+         ]
+         if revision != self._checkpoint_revision:
+             raise ValueError("Stale population restore")
+         # Preallocate all post-child publication state before the final runtime/BANK check.
+         empty_steps: dict[PreparedVectorStep, _VectorStep] = {}
+         empty_restores: dict[PreparedPopulationRestore, Any] = {}
+         next_revision = revision + 1
+         self._preparing_checkpoint, self._step_active = correlation, True

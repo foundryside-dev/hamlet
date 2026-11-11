@@ -1,0 +1,41 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/exploration/scoped_curiosity.py:357: error: Missing named argument "lineage" for "call" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:357: note: "call" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:883: error: Missing named argument "lineage" for "snapshot" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:883: note: "snapshot" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:976: error: Missing named argument "lineage" for "call" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:976: note: "call" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:979: error: Missing named argument "lineage" for "snapshot" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:979: note: "snapshot" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1106: error: Missing named argument "lineage" for "snapshot" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1106: note: "snapshot" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1107: error: Missing named argument "lineage" for "call" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1107: note: "call" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1113: error: Missing named argument "lineage" for "prepare_restore" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1113: note: "prepare_restore" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1114: error: Missing named argument "lineage" for "install" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1114: note: "install" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1115: error: Missing named argument "lineage" for "call" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1115: note: "call" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1116: error: Missing named argument "lineage" for "snapshot" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1116: note: "snapshot" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1210: error: Missing named argument "lineage" for "call" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1210: note: "call" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1215: error: Missing named argument "lineage" for "prepare_restore" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1215: note: "prepare_restore" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1216: error: Missing named argument "lineage" for "install" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1216: note: "install" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/exploration/scoped_curiosity.py:1217: error: Missing named argument "lineage" for "call" of "OwnedWorldBackend"  [call-arg]
+src/townlet/exploration/scoped_curiosity.py:1217: note: "call" defined in "townlet.exploration.world_curiosity_state"
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Missing named argument "vector_step" for "step" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:128: note: "step" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 20 errors in 2 files (checked 198 source files)

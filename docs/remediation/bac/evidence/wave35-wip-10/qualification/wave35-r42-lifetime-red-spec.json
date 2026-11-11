@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r42-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r42-lifetime-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "lifetime-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop",
+        "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_active_operation_pins_real_owner_and_forbids_early_retirement",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r42-lifetime-red"
+      ]
+    }
+  ]
+}

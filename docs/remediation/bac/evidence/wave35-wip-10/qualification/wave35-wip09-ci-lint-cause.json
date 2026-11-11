@@ -1,0 +1,44 @@
+{
+  "observed_at": "2026-11-11T09:17:43.048408+00:00",
+  "head_sha": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "workflow_run": 42986937539,
+  "job": 130410234134,
+  "source": "GitHub connector decoded workflow job log",
+  "steps": {
+    "Ruff": "success",
+    "Black": "success",
+    "Mypy": "failure",
+    "No-Defaults": "skipped"
+  },
+  "mypy": {
+    "file": "src/townlet/oracle/driver.py",
+    "checked_source_files": 197,
+    "errors": [
+      {
+        "line": 98,
+        "message": "Missing named argument world_roster for VectorizedHamletEnv"
+      },
+      {
+        "line": 98,
+        "message": "Missing named argument training_seed for VectorizedHamletEnv"
+      },
+      {
+        "line": 98,
+        "message": "Missing named argument lane_world_ids for VectorizedHamletEnv"
+      },
+      {
+        "line": 115,
+        "message": "Missing named argument reservation for reset of VectorizedHamletEnv"
+      },
+      {
+        "line": 128,
+        "message": "Missing named argument vector_step for step of VectorizedHamletEnv"
+      },
+      {
+        "line": 128,
+        "message": "Incompatible types in assignment: expression Tensor, variable WorldRecord"
+      }
+    ]
+  },
+  "disposition": "Same six required oracle external-action caller repairs already tracked; not a passing lint gate and not a current unsealed R0 result. No CI rerun or source change."
+}

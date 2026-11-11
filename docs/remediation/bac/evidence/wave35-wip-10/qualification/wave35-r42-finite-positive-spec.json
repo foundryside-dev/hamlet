@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r42-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r42-finite-positive",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "finite-positive",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_rng_custody.py",
+        "-k",
+        "not shared_peer_nested_work_stales_across_lease_boundaries and not two_shared_resets_under_held_lease_match_real_sequential_reference and not real_registration_and_native_objects_are_reclaimed_after_drop and not active_operation_pins_real_owner_and_forbids_early_retirement",
+        "-x",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r42-finite-positive"
+      ]
+    }
+  ]
+}

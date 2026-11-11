@@ -1,0 +1,133 @@
+"""Publish the fixed-source RNG core checkpoint without claiming BAC release."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave35/r45-candidate.json').read_text())
+receipt = json.loads((W / 'wave35/r45-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit'] == '017d909432f6ba57450cb9bba21a5b2d7e339a92'
+assert git('branch', '--show-current') == 'project-recovery-bac-2026-11-01'
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['status'] == 'UNRELEASED WIP; no package or repository release'
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+for key in ('root_core', 'independent_overlap'):
+    proof = receipt[key]
+    assert proof['exit_code'] == 0 and proof['counts']['passed'] == 53
+    assert proof['counts']['skipped'] == proof['counts']['warnings'] == 0
+    assert proof['source_index_import_threads_fixture_custody'] == 'PASS'
+for proof in receipt['spawn_custody'].values():
+    assert proof['candidate_tree'] == m['candidate_tree'] and proof['source_guards'] == 808
+    assert proof['debug'] is True and proof['threads'] == 1 and proof['interop_threads'] == 5
+assert receipt['compiler_cli']['packs'] == 34 and receipt['compiler_cli']['process_identities'] == 35
+assert receipt['fix_round']['open_material'] == 0
+assert receipt['static']['all_passed'] is False
+assert receipt['global_types'] == {
+    'core_errors': 0, 'required_BANK_lineage_callers': 14, 'prior_oracle_errors': 6,
+    'total_errors': 20, 'checked_files': 198, 'not_waived': True,
+}
+assert sha(W / receipt['status_draft']['path']) == receipt['status_draft']['sha256']
+assert (W / receipt['status_draft']['path']).read_text().startswith('\n\n## ')
+for row in receipt['documents'].values():
+    assert sha(W / row['draft']) == row['sha256'], row['draft']
+    assert row['prior_sha256'] is None and not (R / row['target']).exists(), row['target']
+for path, digest in receipt['review_sha256'].items():
+    assert sha(W / path) == digest, path
+assert sha(W / receipt['author_report']) == receipt['author_report_sha256']
+assert sha(W / receipt['current_API']['path']) == receipt['current_API']['sha256']
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p)
+             for p in ('src', 'tests', 'configs', 'scripts', '.defaults-ratchet')}
+out = D / 'evidence/wave35-wip-10'
+mp = D / 'evidence/wave35-wip-10.json'
+assert not out.exists() and not mp.exists()
+out.mkdir()
+artifacts = {}
+
+
+def copy(source, target):
+    assert source.is_file() and not target.exists(), str(target)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+    assert sha(source) == sha(target)
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': sha(target), 'original': str(source)}
+
+
+for p in sorted(Q.glob('wave35-r*')):
+    match = re.match(r'wave35-r([0-9]+)(?:-|$)', p.name)
+    if match is None or not 40 <= int(match.group(1)) <= 45:
+        continue
+    if p.is_dir():
+        for f in sorted(p.rglob('*')):
+            if f.is_file() and f.suffix in ('.json', '.log'):
+                copy(f, out / 'qualification' / p.name / f.relative_to(p))
+    elif p.suffix in ('.json', '.diff'):
+        copy(p, out / 'qualification' / p.name)
+for p in sorted(Q.glob('wave35-wip09-ci-*.json')):
+    copy(p, out / 'qualification' / p.name)
+for folder in ('wave35', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'verify_bac_failed_run.py',
+             'verify_bac_static_run.py', 'verify_bac_spawn_identity.py',
+             'run_bac_packet_checks_locked.py', 'bac_source_identity.py',
+             'exec_identity_compiler_cli.py', 'verify_bac_compiler_cli_run.py', 'publish_wave35_wip10.py'):
+    copy(Q / name, out / (name + '.txt'))
+copy(Q / 'compiler_identity_startup/sitecustomize.py', out / 'compiler_identity_startup/sitecustomize.py.txt')
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+for row in receipt['documents'].values():
+    source, target = W / row['draft'], R / row['target']
+    target.write_bytes(source.read_bytes())
+    assert sha(target) == row['sha256']
+    artifacts[row['target']] = {'sha256': sha(target), 'original': str(source), 'prior_sha256': None}
+status = D / 'STATUS.md'
+before_status = status.read_text()
+assert before_status.startswith('# BAC implementation status\n')
+current = (W / receipt['status_draft']['path']).read_text()
+status.write_text('# BAC implementation status' + current + before_status[len('# BAC implementation status'):])
+manifest = {
+    'status': receipt['status'], 'packet': receipt['packet'],
+    'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+    'execution_subtrees': execution, 'inventories': m['inventories'], 'source_files': m['source_files'],
+    'config_changes': m['config_changes'], 'receipt': receipt, 'artifacts': artifacts,
+    'qualified_progress': '28 original packages qualified,38 remaining,66 total unchanged. Standalone CPU core is bounded component evidence.',
+    'publication': 'Existing authorized remote branch only. No new branch, worktree, checkout, PR, merge or deletion; private history bundle excluded.',
+    'next': receipt['required_next'],
+}
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+subprocess.run(['git', 'add', '-f', '--', *artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md'], cwd=R, check=True)
+tree = git('write-tree')
+for path, digest in execution.items():
+    assert git('rev-parse', tree + ':' + path) == digest, path
+for path, digest in m['source_files'].items():
+    if path != 'docs/remediation/bac/STATUS.md':
+        assert sha(R / path) == digest, path
+for path, row in artifacts.items():
+    assert sha(R / path) == row['sha256'], path
+staged = git('diff', '--cached', '--name-only').splitlines()
+assert set(staged) == set(m['changed_paths']) | set(artifacts) | {mp.relative_to(R).as_posix(), 'docs/remediation/bac/STATUS.md'}
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave35-wip-10/**'], cwd=R, check=True)
+report = {
+    'status': manifest['status'], 'evidence_tree': m['candidate_tree'], 'publication_tree': tree,
+    'source_equivalence': 'PASS exact R45 src/tests/configs/scripts/ratchet. Only approved STATUS/public contract/evidence added; core source changed relative017d and remains bounded, not global qualification.',
+    'artifact_count': len(artifacts), 'staged_paths': staged,
+}
+destination = Q / 'wave35-wip-10-assembly.json'
+assert not destination.exists()
+destination.write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

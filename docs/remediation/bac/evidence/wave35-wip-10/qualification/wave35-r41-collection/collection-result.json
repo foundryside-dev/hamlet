@@ -1,0 +1,26 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 6.291083574295044,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py",
+    "tests/test_townlet/regressions/bac/test_pw_rng_binding.py",
+    "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r41-collection/collection.log",
+  "sha256": "938f756dc06d9690dc39f7c655d34240d0c8e0bb605f68fc3dc3d594896582db",
+  "candidate_tree": "f520cf023ddb96a755141dcafec91dbf13ea841b",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "332874a226393ca260bff047dc858a0be5ba7ebf97c423f336a18fc5c08ac7b4",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

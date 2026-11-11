@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r40-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r40-existing-learning-control",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "existing-learning-control",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_current_private_owner_has_genuine_learned_continuation",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r40-existing-learning-control"
+      ]
+    }
+  ]
+}

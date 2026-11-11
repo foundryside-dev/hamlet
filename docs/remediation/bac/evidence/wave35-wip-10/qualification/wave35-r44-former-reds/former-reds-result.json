@@ -1,0 +1,28 @@
+{
+  "name": "former-reds",
+  "exit_code": 0,
+  "seconds": 13.414283275604248,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_shared_peer_nested_work_stales_across_lease_boundaries",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_two_shared_resets_under_held_lease_match_real_sequential_reference",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_real_registration_and_native_objects_are_reclaimed_after_drop",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py::test_active_operation_pins_real_owner_and_forbids_early_retirement",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r44-former-reds"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r44-former-reds/former-reds.log",
+  "sha256": "ac9ac853beb86aa844866fa06b9452c90f179bd571601dfe3fac1d63b757fdea",
+  "candidate_tree": "2866fea0a1f853ee13c8208b7cee4a701d2f075d",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "bbaa355ec24ba12e66187bcae32739abc7614bd138001c3077b506c4d7fd843d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

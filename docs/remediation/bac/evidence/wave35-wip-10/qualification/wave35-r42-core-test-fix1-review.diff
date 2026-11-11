@@ -1,0 +1,617 @@
+diff --git a/tests/test_townlet/regressions/bac/test_world_rng_custody.py b/tests/test_townlet/regressions/bac/test_world_rng_custody.py
+index f584aeb9..4c131ee9 100644
+--- a/tests/test_townlet/regressions/bac/test_world_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_world_rng_custody.py
+@@ -6,16 +6,22 @@ These source-owned cases exercise actual private/shared owners, not a test gate.
+ 
+ from __future__ import annotations
+ 
++import gc
++import hashlib
++import json
+ import multiprocessing
++import os
+ import pickle
+ import random
+ import threading
++import weakref
+ from collections import OrderedDict
+ from collections.abc import Callable, Iterator, Mapping
+ from contextlib import contextmanager
+ from copy import deepcopy
+ from dataclasses import dataclass
+ from pathlib import Path
++from types import SimpleNamespace
+ from typing import Any
+ 
+ import numpy as np
+@@ -26,6 +32,8 @@ from townlet.config.bac_options import BaCOptions
+ from townlet.config.drive_as_code import IntrinsicStrategyConfig
+ from townlet.config.exploration_policy import ResolvedExplorationPolicy, resolve_exploration_policy
+ from townlet.config.training_v2_config import TrainingV2Config
++from townlet.exploration import rnd as rnd_module
++from townlet.exploration import rng_custody as custody_module
+ from townlet.exploration import world_curiosity_state as world_state
+ from townlet.exploration.provider_factory import make_backend
+ from townlet.exploration.rnd import RNDExploration
+@@ -557,7 +565,16 @@ def test_domain_opaque_lineage_and_named_nesting(private_rnd: PrivateRND) -> Non
+         owner.call(lambda backend, sources: torch.rand(1), lineage=operation)
+     _equal(before, _ambient())
+     snapshot = owner._rng.snapshot()
+-    reference = WorldRNGState.from_snapshot(snapshot, descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=())
++    reference_a = WorldRNGState.from_snapshot(snapshot, descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=())
++    reference_b = WorldRNGState.from_snapshot(snapshot, descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=())
++    # Independent nonnested streams: B cannot influence A's resumed position.
++    with reference_a.activate("target") as sources:
++        first, third, fourth = (_draw_sources(sources) for _ in range(3))
++    with reference_b.activate("predictor") as sources:
++        second = _draw_sources(sources)
++    expected_components = deepcopy(snapshot["components"])
++    expected_components["target"] = deepcopy(reference_a._components["target"])
++    expected_components["predictor"] = deepcopy(reference_b._components["predictor"])
+ 
+     def nested(rng: WorldRNGState) -> list[dict[str, Any]]:
+         with rng.activate("target") as a:
+@@ -569,8 +586,8 @@ def test_domain_opaque_lineage_and_named_nesting(private_rnd: PrivateRND) -> Non
+             fourth = _draw_sources(a)
+         return [first, second, third, fourth]
+ 
+-    _equal(nested(reference), nested(owner._rng))
+-    _equal(reference._components, owner._rng._components)
++    _equal([first, second, third, fourth], nested(owner._rng))
++    _equal(expected_components, owner._rng._components)
+     _equal(before, _ambient())
+ 
+ 
+@@ -671,7 +688,7 @@ def test_shared_reset_retains_factory_draws_restore_preserves_peer_current(
+     _equal(saved["backend"], shared._backend.checkpoint_state())
+ 
+ 
+-@pytest.mark.parametrize("boundary", ["factory", "native", "capture", "stage"])
++@pytest.mark.parametrize("boundary", ["factory", "native", "capture", "stage", "post_constructor_capture", "partial_stage", "verify"])
+ def test_shared_prepublication_refusal_preserves_live_owner(
+     shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], monkeypatch: pytest.MonkeyPatch, boundary: str
+ ) -> None:
+@@ -681,16 +698,62 @@ def test_shared_prepublication_refusal_preserves_live_owner(
+     def refuse(*args: Any) -> Any:
+         raise RuntimeError("injected owned boundary refusal")
+ 
++    original_globals, original_install = world_state._globals, world_state._install_globals
++    constructed: list[RNDExploration] = []
++    injected: list[str] = []
++
++    def actual_factory() -> RNDExploration:
++        result = factory()
++        constructed.append(result)
++        return result
++
++    def capture(devices: tuple[int, ...]) -> dict[str, Any]:
++        state = original_globals(devices)
++        if constructed and not injected:
++            injected.append(boundary)
++            raise RuntimeError("injected post-constructor capture refusal")
++        return state
++
++    def partial_install(state: dict[str, Any]) -> None:
++        torch.set_rng_state(state["torch_cpu"])
++        random.setstate(state["python"])
++        assert not torch.equal(ambient["torch_cpu"], torch.get_rng_state())
++        injected.append(boundary)
++        raise RuntimeError("injected partial setter refusal")
++
++    def installed(state: dict[str, Any]) -> None:
++        original_install(state)
++        injected.append("installed")
++
++    def verify(devices: tuple[int, ...]) -> dict[str, Any]:
++        state = original_globals(devices)
++        if injected == ["installed"]:
++            injected.append("verification")
++            state["python"] = random.Random(991).getstate()
++        return state
++
+     with monkeypatch.context() as patch:
+         if boundary == "capture":
+             patch.setattr(world_state, "_globals", refuse)
+-        with pytest.raises(RuntimeError, match="injected"):
++        elif boundary == "post_constructor_capture":
++            patch.setattr(world_state, "_globals", capture)
++        with pytest.raises(RuntimeError, match="verify" if boundary == "verify" else "injected"):
+             prepared = shared.prepare_learning_reset(
+-                factory=refuse if boundary == "factory" else factory, prepare_native=refuse if boundary == "native" else _reset_rnd
++                factory=refuse if boundary == "factory" else actual_factory,
++                prepare_native=refuse if boundary == "native" else _reset_rnd,
++                lineage=None,
+             )
+             if boundary == "stage":
+                 patch.setattr(world_state, "_install_globals", refuse)
+-                shared.install(prepared)
++            elif boundary == "partial_stage":
++                patch.setattr(world_state, "_install_globals", partial_install)
++            elif boundary == "verify":
++                patch.setattr(world_state, "_install_globals", installed)
++                patch.setattr(world_state, "_globals", verify)
++            if boundary in {"stage", "partial_stage", "verify"}:
++                shared.install(prepared, lineage=None)
++    if boundary in {"post_constructor_capture", "partial_stage", "verify"}:
++        assert len(constructed) == 1 and injected
+     _equal(before, _native_evidence(shared._backend))
+     _equal(ambient, _ambient())
+     assert shared._revision == revision and shared._failed is False
+@@ -729,14 +792,68 @@ def test_independent_real_cpu_adam_step_completes_during_private_activation(
+     assert after["predictor_service"]["optimizer_step_offset"] == 1
+ 
+ 
+-def _poison_worker(policy: dict[str, Any], descriptor: dict[str, Any], rng: dict[str, Any], width: int, actions: int, output: Any) -> None:
++def _record_spawn_identity() -> bool:
++    names = ("BAC_QUAL_ROOT", "BAC_QUAL_SHA", "BAC_QUAL_TREE", "BAC_QUAL_MANIFEST", "BAC_QUAL_OUTPUT")
++    if not any(name in os.environ for name in names):
++        return False
++    assert all(name in os.environ for name in names)
++    from bac_source_identity import pytest_configure
++
++    pytest_configure(SimpleNamespace(workerinput={"workerid": "poison"}))
++    receipt = Path(os.environ["BAC_QUAL_OUTPUT"]) / "identity-poison.json"
++    destination = receipt.with_name("spawn-identity-poison.json")
++    if destination.exists():
++        raise FileExistsError(destination)
++    identity = json.loads(receipt.read_text())
++    identity.update(
++        pid=os.getpid(),
++        manifest_sha256=hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++        debug=__debug__,
++        interop_threads=torch.get_num_interop_threads(),
++        imports={
++            name: str(Path(module.__file__).resolve())
++            for name, module in {"world_curiosity_state": world_state, "rng_custody": custody_module, "rnd": rnd_module}.items()
++        },
++    )
++    receipt.write_text(json.dumps(identity, sort_keys=True, indent=2) + "\n")
++    receipt.rename(destination)
++    return True
++
++
++def _poison_worker(
++    policy: dict[str, Any],
++    private_policy: dict[str, Any],
++    descriptor: dict[str, Any],
++    rng: dict[str, Any],
++    width: int,
++    actions: int,
++    output: Any,
++) -> None:
+     try:
++        qualified = _record_spawn_identity()
+         resolved = ResolvedExplorationPolicy.from_dict(policy)
++        private_resolved = ResolvedExplorationPolicy.from_dict(private_policy)
++        private_descriptor = WorldCuriosityDescriptor.from_dict(descriptor)
+ 
+         def factory() -> RNDExploration:
+             return make_backend(resolved, world_id=None, obs_dim=width, action_dim=actions, device="cpu", rng=None, descriptor=None)
+ 
+         shared = SharedWorldBackend.construct(factory=factory, cuda_devices=())
++        private_rng = WorldRNGState.from_snapshot(rng, descriptor=private_descriptor, world_id="R0-current", cuda_devices=())
++
++        def private_factory(candidate: WorldRNGState) -> Any:
++            return make_backend(
++                private_resolved,
++                world_id="R0-current",
++                obs_dim=width,
++                action_dim=actions,
++                device="cpu",
++                rng=candidate,
++                descriptor=private_descriptor,
++            )
++
++        private = OwnedWorldBackend.construct(rng=private_rng, factory=private_factory)
++        private.call(lambda backend, sources: _service(backend, sources, _rows(3, width, 1), 3), lineage=None)
+         prepared = shared.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd)
+ 
+         def failed_install(state: Any) -> None:
+@@ -750,11 +867,16 @@ def _poison_worker(policy: dict[str, Any], descriptor: dict[str, Any], rng: dict
+         assert process_rng_domain().status()[2] is True
+         with pytest.raises(RuntimeError, match="poisoned"):
+             shared.call(lambda backend: torch.rand(1))
++        with pytest.raises(RuntimeError, match="poisoned"):
++            private.call(lambda backend, sources: _service(backend, sources, _rows(1, width, 11), 4), lineage=None)
++        with pytest.raises(RuntimeError, match="poisoned"):
++            with private._rng.activate("service"):
++                torch.rand(1)
+         with pytest.raises(RuntimeError, match="poisoned"):
+             WorldRNGState.from_snapshot(
+                 rng, descriptor=WorldCuriosityDescriptor.from_dict(descriptor), world_id="R0-current", cuda_devices=()
+             )
+-        output.put("poisoned shared/private fail closed")
++        output.put(("poisoned shared/private fail closed", os.getpid(), qualified))
+     except BaseException as error:
+         output.put(repr(error))
+         raise
+@@ -768,6 +890,7 @@ def test_cleanup_poison_isolated_in_fresh_process(private_rnd: PrivateRND, compi
+         target=_poison_worker,
+         args=(
+             _resolved_rnd(selected, "shared").to_dict(),
++            _resolved_rnd(selected, "per_world").to_dict(),
+             private_rnd.descriptor.to_dict(),
+             private_rnd.owner._rng.snapshot(),
+             private_rnd.width,
+@@ -780,7 +903,30 @@ def test_cleanup_poison_isolated_in_fresh_process(private_rnd: PrivateRND, compi
+         process.join(90)
+         assert not process.is_alive(), "fresh poison control did not finish"
+         assert process.exitcode == 0
+-        assert output.get(timeout=5) == "poisoned shared/private fail closed"
++        receipt = output.get(timeout=5)
++        assert receipt[:2] == ("poisoned shared/private fail closed", process.pid)
++        assert receipt[2] is ("BAC_QUAL_ROOT" in os.environ)
++        assert process.pid is not None and process.pid > 0 and receipt[1] > 0
++        if "BAC_QUAL_ROOT" in os.environ:
++            assert receipt[2] is True
++            observation = Path(os.environ["BAC_QUAL_OUTPUT"]) / "spawn-observation-poison.json"
++            if observation.exists():
++                raise FileExistsError(observation)
++            observation.write_text(
++                json.dumps(
++                    {
++                        "process_pid": process.pid,
++                        "queued_pid": receipt[1],
++                        "exitcode": process.exitcode,
++                        "qualified": receipt[2],
++                        "message": receipt[0],
++                        "manifest_sha256": hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++                    },
++                    sort_keys=True,
++                    indent=2,
++                )
++                + "\n"
++            )
+     finally:
+         if process.is_alive():
+             process.terminate()
+@@ -790,9 +936,7 @@ def test_cleanup_poison_isolated_in_fresh_process(private_rnd: PrivateRND, compi
+     assert process_rng_domain().status()[2] is False
+ 
+ 
+-def test_same_owner_real_manual_mutation_waits_for_reset_copy_then_stales_preparation(
+-    private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch
+-) -> None:
++def _same_owner_exclusion(private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch, mutation: str) -> None:
+     owner = private_rnd.owner
+     contended, mutated = threading.Event(), threading.Event()
+     domain = process_rng_domain()
+@@ -801,7 +945,16 @@ def test_same_owner_real_manual_mutation_waits_for_reset_copy_then_stales_prepar
+ 
+     def mutate() -> None:
+         try:
+-            owner.call(lambda backend, sources: backend.optimizer.step())
++            if mutation == "manual":
++                owner.call(lambda backend, sources: backend.optimizer.step())
++            elif mutation == "service":
++                owner.call(lambda backend, sources: _service(backend, sources, _rows(1, private_rnd.width, 13), 4))
++            else:
++
++                def replace(backend: RNDExploration, sources: WorldRandomSources) -> None:
++                    backend.optimizer = torch.optim.Adam(backend.predictor_network.parameters(), lr=0.001)
++
++                owner.call(replace)
+             mutated.set()
+         except BaseException as error:
+             errors.append(error)
+@@ -821,7 +974,13 @@ def test_same_owner_real_manual_mutation_waits_for_reset_copy_then_stales_prepar
+             worker.join(30)
+     assert not worker.is_alive() and not errors and mutated.is_set()
+     changed = _live_evidence(owner)
+-    assert changed["native"]["predictor_service"]["optimizer_step_offset"] == 1
++    if mutation == "manual":
++        assert changed["native"]["predictor_service"]["optimizer_step_offset"] == 1
++    elif mutation == "service":
++        assert changed["native"]["predictor_service"]["optimizer_updates"] == 2
++    else:
++        assert changed["identity"]["optimizer"] != private_rnd.learned["identity"]["optimizer"]
++        assert changed["native"]["predictor_service"]["optimizer_step_offset"] == -1
+     with pytest.raises(ValueError):
+         owner.install(prepared)
+     _equal(changed, _live_evidence(owner))
+@@ -886,3 +1045,304 @@ def test_failed_live_callback_quarantines_until_explicit_restore(
+     assert owner._failed is False
+     _equal(saved["backend"], owner._backend.checkpoint_state())
+     _equal(current_ambient, _ambient())
++
++
++def test_same_owner_real_manual_mutation_waits_for_reset_copy_then_stales_preparation(
++    private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    _same_owner_exclusion(private_rnd, monkeypatch, "manual")
++
++
++@pytest.mark.parametrize("mutation", ["service", "replacement"])
++def test_same_owner_service_and_replacement_wait_for_reset_copy(
++    private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch, mutation: str
++) -> None:
++    _same_owner_exclusion(private_rnd, monkeypatch, mutation)
++
++
++def _train_shared(owner: SharedWorldBackend, width: int) -> None:
++    receipt = owner.call(lambda backend: backend.admit_and_service(_rows(3, width, 3), vector_tick=0), lineage=None)
++    assert receipt.optimizer_updates == 1 and receipt.pending_rows == 1
++
++
++def _shared_live(owner: SharedWorldBackend) -> dict[str, Any]:
++    return {**_native_evidence(owner._backend), "revision": owner._revision, "failed": owner._failed, "token": id(owner._token)}
++
++
++@pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
++@pytest.mark.parametrize("draws", [True, False])
++@pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
++def test_shared_peer_nested_work_stales_across_lease_boundaries(
++    private_rnd: PrivateRND,
++    shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]],
++    schedule: str,
++    draws: bool,
++    entrypoint: str,
++) -> None:
++    owner, factory = shared_rnd
++    peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
++    for current in (owner, peer):
++        _train_shared(current, private_rnd.width)
++    domain = process_rng_domain()
++
++    def peer_work(backend: RNDExploration) -> None:
++        backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 17), update_stats=False)
++        if draws:
++            random.random()
++            np.random.normal(size=3)
++            torch.rand(3)
++
++    def must_refuse(prepared: PreparedWorldBackend, lineage: RNGOperation | None) -> None:
++        live = (_shared_live(owner), _shared_live(peer))
++        ambient = _ambient()
++        method = owner.install if entrypoint == "install" else owner.validate_prepared
++        with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
++            method(prepared, lineage=lineage)
++        _equal(live, (_shared_live(owner), _shared_live(peer)))
++        _equal(ambient, _ambient())
++        _equal(_ambient_next(ambient), _ambient_next(_ambient()))
++
++    if schedule == "before_release":
++        with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
++            prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
++            before_peer = _ambient()
++            peer.call(peer_work, lineage=operation)
++            if not draws:
++                _equal(before_peer, _ambient())
++        must_refuse(prepared, None)
++    else:
++        prepared = owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=None)
++        with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as operation:
++            before_peer = _ambient()
++            peer.call(peer_work, lineage=operation)
++            if not draws:
++                _equal(before_peer, _ambient())
++            must_refuse(prepared, operation)
++
++
++def test_two_shared_resets_under_held_lease_match_real_sequential_reference(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]]
++) -> None:
++    first, factory = shared_rnd
++    second = SharedWorldBackend.construct(factory=factory, cuda_devices=())
++    for owner in (first, second):
++        _train_shared(owner, private_rnd.width)
++    references = [deepcopy(first._backend), deepcopy(second._backend)]
++    entry = _ambient()
++    try:
++        for reference in references:
++            _reset_rnd(reference, factory())  # second real construction starts after the first's actual draws
++        expected_ambient = _ambient()
++        expected_native = [reference.checkpoint_state() for reference in references]
++    finally:
++        _restore_ambient(entry)
++    assert any(
++        not torch.equal(value, expected_native[1]["predictor_network"][name])
++        for name, value in expected_native[0]["predictor_network"].items()
++    )
++    domain = process_rng_domain()
++    with domain.operation(participant=first.rng_participant, operation_kind="prepare", lineage=None) as operation:
++        prepared_first = first.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
++        prepared_second = second.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
++        first.install(prepared_first, lineage=operation)
++        committed = _ambient()
++        second_before = _shared_live(second)
++        try:
++            second.install(prepared_second, lineage=operation)
++        except ValueError as error:
++            assert any(word in str(error).lower() for word in ("stale", "dependency", "predecessor", "continuation"))
++            _equal(committed, _ambient())
++            _equal(second_before, _shared_live(second))
++            prepared_second = second.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
++            second.install(prepared_second, lineage=operation)
++    _equal(expected_native, [first._backend.checkpoint_state(), second._backend.checkpoint_state()])
++    _equal(expected_ambient, _ambient())
++    _equal(_ambient_next(expected_ambient), _ambient_next(_ambient()))
++
++
++@pytest.mark.parametrize("kind", ["standalone", "private", "raw_private", "shared"])
++def test_real_registration_and_native_objects_are_reclaimed_after_drop(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], kind: str
++) -> None:
++    domain = process_rng_domain()
++    for _ in range(2):
++        if kind == "shared":
++            owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
++            _train_shared(owner, private_rnd.width)
++        else:
++            rng = WorldRNGState.from_snapshot(
++                private_rnd.owner._rng.snapshot(), descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=()
++            )
++            input_reference = weakref.ref(rng)
++            if kind == "standalone":
++                owner = rng
++            else:
++                if kind == "raw_private":
++                    with rng.activate("model_init"):
++                        native = private_rnd.factory(rng)
++                    owner = OwnedWorldBackend(native, rng)
++                    del native
++                else:
++                    owner = OwnedWorldBackend.construct(rng=rng, factory=private_rnd.factory)
++                owner.call(lambda backend, sources: _service(backend, sources, _rows(3, private_rnd.width, 1), 3), lineage=None)
++            del rng
++        participant = owner.rng_participant
++        references = [weakref.ref(owner)]
++        if kind != "shared":
++            references.append(input_reference)
++        if kind != "standalone":
++            references.extend(weakref.ref(item) for item in (owner._backend, owner._backend.predictor_network, owner._backend.optimizer))
++            if kind in {"private", "raw_private"}:
++                references.append(weakref.ref(owner._rng))
++        generation = domain.status()[0]
++        del owner
++        gc.collect()
++        assert all(reference() is None for reference in references), "the process registration retained discarded real owner/native state"
++        with pytest.raises(ValueError):
++            with domain.operation(participant=participant, operation_kind="rng" if kind == "standalone" else "call", lineage=None):
++                pytest.fail("discarded owner membership remained usable")
++        assert domain.status()[0] > generation
++
++
++def test_active_operation_pins_real_owner_and_forbids_early_retirement(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]]
++) -> None:
++    owner = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
++    participant, reference = owner.rng_participant, weakref.ref(owner)
++    domain = process_rng_domain()
++    with domain.operation(participant=participant, operation_kind="call", lineage=None) as operation:
++        del owner
++        gc.collect()
++        assert reference() is not None
++        with pytest.raises(RuntimeError, match="idle"):
++            domain.unregister(participant=participant)
++        result = reference().call(
++            lambda backend: backend.compute_intrinsic_rewards(_rows(1, private_rnd.width, 5), update_stats=False), lineage=operation
++        )
++        assert result.shape == (1,)
++    del result
++    gc.collect()
++    assert reference() is None
++
++
++def test_real_shared_constructor_blocks_private_service_and_preserves_serialized_continuation(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], monkeypatch: pytest.MonkeyPatch
++) -> None:
++    factory = shared_rnd[1]
++    reference_native = deepcopy(private_rnd.owner._backend)
++    reference_rng = WorldRNGState.from_snapshot(
++        private_rnd.owner._rng.snapshot(), descriptor=private_rnd.descriptor, world_id="R0-current", cuda_devices=()
++    )
++    entry = _ambient()
++    try:
++        expected_shared = factory().checkpoint_state()
++        expected_ambient = _ambient()
++        with reference_rng.activate("service") as sources:
++            expected_service = _service(reference_native, sources, _rows(1, private_rnd.width, 41), 4)
++    finally:
++        _restore_ambient(entry)
++    contended, serviced = threading.Event(), threading.Event()
++    actual_service: list[dict[str, Any]] = []
++    errors: list[BaseException] = []
++    domain = process_rng_domain()
++    monkeypatch.setattr(domain, "_lock", _ObservedLock(domain._lock, contended))
++
++    def private_work() -> None:
++        try:
++            actual_service.append(
++                private_rnd.owner.call(
++                    lambda backend, sources: _service(backend, sources, _rows(1, private_rnd.width, 41), 4), lineage=None
++                )
++            )
++            serviced.set()
++        except BaseException as error:
++            errors.append(error)
++
++    worker = threading.Thread(target=private_work, name="r0-contender")
++
++    def held_factory() -> RNDExploration:
++        actual = factory()  # real constructor consumption precedes the contention witness
++        worker.start()
++        assert contended.wait(10)
++        assert not serviced.is_set()
++        _equal(expected_ambient, _ambient())
++        return actual
++
++    try:
++        actual_shared = SharedWorldBackend.construct(factory=held_factory, cuda_devices=())
++    finally:
++        if worker.ident is not None:
++            worker.join(30)
++    assert not worker.is_alive() and not errors and serviced.is_set()
++    _equal(expected_shared, actual_shared._backend.checkpoint_state())
++    _equal(expected_service, actual_service[0])
++    _equal(reference_native.checkpoint_state(), private_rnd.owner._backend.checkpoint_state())
++    _equal(reference_rng._components, private_rnd.owner._rng._components)
++    _equal(expected_ambient, _ambient())
++    _equal(_ambient_next(expected_ambient), _ambient_next(_ambient()))
++
++
++def test_cpu_core_does_not_query_cuda_while_library_health_check_remains_available(
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], monkeypatch: pytest.MonkeyPatch
++) -> None:
++    class NoProjectCUDA:
++        def __getattr__(self, name: str) -> Any:
++            raise AssertionError(f"CPU project core accessed CUDA.{name}")
++
++    class ProjectTorch:
++        cuda = NoProjectCUDA()
++
++        def __getattr__(self, name: str) -> Any:
++            return getattr(torch, name)
++
++    # Replace only WS's module binding. Installed Torch keeps its real CUDA object,
++    # so the pinned public Adam health check is neither removed nor misattributed.
++    monkeypatch.setattr(world_state, "torch", ProjectTorch())
++    rig = private_rnd
++    rng = WorldRNGState.from_snapshot(rig.owner._rng.snapshot(), descriptor=rig.descriptor, world_id="R0-current", cuda_devices=())
++    owner = OwnedWorldBackend.construct(rng=rng, factory=rig.factory)
++    owner.call(lambda backend, sources: _service(backend, sources, _rows(3, rig.width, 9), 3), lineage=None)
++    prepared = owner.prepare_learning_reset(factory=rig.factory, prepare_native=_reset_rnd, lineage=None)
++    owner.install(prepared, lineage=None)
++    saved = owner.snapshot(lineage=None)
++    prepared = owner.prepare_restore(
++        saved, factory=rig.factory, validate_backend=lambda backend, state: backend.validate_state(state), lineage=None
++    )
++    owner.install(prepared, lineage=None)
++    shared = SharedWorldBackend.construct(factory=shared_rnd[1], cuda_devices=())
++    _train_shared(shared, rig.width)
++    saved_shared = shared.snapshot(lineage=None)
++    prepared = shared.prepare_learning_reset(factory=shared_rnd[1], prepare_native=_reset_rnd, lineage=None)
++    shared.install(prepared, lineage=None)
++    prepared = shared.prepare_restore(
++        saved_shared, factory=shared_rnd[1], validate_backend=lambda backend, state: backend.validate_state(state), lineage=None
++    )
++    shared.install(prepared, lineage=None)
++
++
++def test_private_post_factory_capture_refusal_keeps_current_owner_healthy(private_rnd: PrivateRND, monkeypatch: pytest.MonkeyPatch) -> None:
++    owner = private_rnd.owner
++    before, ambient = _live_evidence(owner), _ambient()
++    original = world_state._globals
++    constructed: list[RNDExploration] = []
++    captures: list[str] = []
++
++    def factory(candidate: WorldRNGState) -> RNDExploration:
++        backend = private_rnd.factory(candidate)
++        constructed.append(backend)
++        return backend
++
++    def capture(devices: tuple[int, ...]) -> dict[str, Any]:
++        if constructed and not captures:
++            captures.append("after genuine private factory")
++            raise RuntimeError("injected private candidate capture refusal")
++        return original(devices)
++
++    with monkeypatch.context() as patch:
++        patch.setattr(world_state, "_globals", capture)
++        with pytest.raises(RuntimeError, match="private candidate capture"):
++            owner.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=None)
++    assert len(constructed) == 1 and captures == ["after genuine private factory"]
++    _equal(before, _live_evidence(owner))
++    _equal(ambient, _ambient())
++    assert process_rng_domain().status()[2] is False

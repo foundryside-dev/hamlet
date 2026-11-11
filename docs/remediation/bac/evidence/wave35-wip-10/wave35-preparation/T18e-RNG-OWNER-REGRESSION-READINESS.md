@@ -1,0 +1,113 @@
+# R0 existing RNG owner regressions: read-only migration readiness
+
+This is a prerequisite report, not a source-writing grant or R41 semantic approval. Root owns integration, runtime, index custody and the eventual reslice. The separate core-test author alone owns test_world_rng_custody.py; that body was not opened here. Only this ignored prose report was written. No source/test/config edit, formatting, import, compiler, runtime, pytest, probe, Git/index operation, reflection, delegation, branch/worktree/checkout, source copy or deletion occurred.
+
+AGENTS.md was read. Its zero-backwards-compatibility rule requires replacing obsolete callers directly: no aliases, fallbacks, old public prepared fields, compatibility adapters or dual protocol. The owner requirement independently forbids capability removal, degradation or consolidation without approval. Updating test dependencies must preserve each original behavioral assertion and real control. Managed owner exclusion/currentness is distinct from caller quiescence for raw mutable aliases. The CPU ungated bare-Adam/manual/replacement/signed-offset capabilities remain requirements.
+
+## Immutable read baseline and budget
+
+Metadata was obtained before the four complete bodies were read. All source statements below concern this R41 baseline only; changing production must not be reopened without root handoff.
+
+| Complete authorized body | Lines | SHA256 |
+|---|---:|---|
+| tests/test_townlet/regressions/bac/test_pw_rng_binding.py | 419 | 07503ca5c5e9e92ea94a4403d688f6b0528f96012a2aa0ad025c9e2df6aeea06 |
+| tests/test_townlet/regressions/bac/test_pw_rng_domains.py | 945 | 7bc3f942badf058967fa1f96bd981b48c38c59c3a28f73e299af81a2bf2c1990 |
+| src/townlet/exploration/world_curiosity_state.py | 1213 | e07264e828dca5107742ed778e783618ae2642b6237a99ad9b53b49f991c8210 |
+| src/townlet/exploration/rng_custody.py | 238 | 538505cb1d965b98e2049422a478cf41ba77157f9732063d9d2a9b64f2ac15e3 |
+
+Exactly four whole source/test/helper/probe bodies, 2815 lines. The embedded child script is inside the already-counted domains body; it was read, never executed. No fifth native/RND/CP/BANK/Torch/helper body, raw diff or raw-Markdown source package was opened. Repeated bounded reads only recovered transport-truncated portions of these same bodies.
+
+Public Phase B prose only was read from T18e-R0-CORE-REPORT.md (130 lines; fbae505a6e4d6239ce5805129435f1857522f95f1214c5544eb43c79d5e8a0fa) and T18e-R0-CORE-INDEPENDENT-REVIEW.md (187 lines; c1b0f31d1782a753ae8dcb50439a751885709a5dcabe735d428c11daf47a0e9d). Their raw diff was not read. Prose describing unopened bodies is attributed evidence, not this author's inspection of those bodies.
+
+Proposed later four-body caps are WS1600/domain650/binding500/domains1100 = 3850, below hard 5000 and at most five bodies. These caps are inventory only, not authorization to write production or to add a fifth body. Root must reseal final production and approve any changed scope before an author resumes.
+
+## Evidence and classification boundary
+
+Root reports R41 collection115 (core31 plus these84) succeeded. The existing84 selection stopped at its first node with 0PASS/1FAIL in3.694003s: binding prerequisite line105 expected RuntimeError matching quiescent; actual refusal was Unrelated same-thread RNG reentry is forbidden. This is a confirmed obsolete wording dependency after a correct refusal. Remaining83 were not executed; no pass, failure, skip or semantic verdict is inferred for them.
+
+Root's core31PASS does not close the independent source findings. The Phase B reviewer identifies two P1s (released/nested currentness history; sibling shared constructor continuation composition), registration lifetime, missing meaningful controls, declared-device completion, new mypy errors, defaults616 against unchanged600, and poison-child custody gaps. Those are separate production/core-test work. This report neither fixes nor approves them. Removing defaults and coherent explicit lineage adoption are forthcoming; their final signatures are not yet qualified.
+
+## Complete existing topology and preserved assertions
+
+Binding contains 12 functions expanding to52 nodes. Domains contains 15 functions expanding to32 nodes. Names below omit only the common test_ prefix. Parameter products are explicit; no node may disappear, merge, acquire an avoidance skip, or lose an oracle during migration.
+
+| Binding function | Nodes | Assertion/control to preserve |
+|---|---:|---|
+| binding_fixture_prerequisite | 1 | Genuine compiled none/per_world policy and descriptor roundtrip; distinct construction candidate; active snapshot/from_snapshot refusal; exactly one factory call; original/owned RNG and complete ambient equality. |
+| binding_inside_actual_owned_constructor | 1 | Public binding on the real candidate during real construction; no draw or installed/global-state change; original RNG untouched. |
+| binding_read_preserves_every_stream | 4, each WORLD_SEED_COMPONENTS member | Binding before and inside each named activation; PCG64 and installed/ambient preservation; active snapshot refusal; exact final snapshot. |
+| binding_preserves_actual_candidate_domain_draws | 1 | Actual Torch/Python facade/PCG64/legacy NumPy draws in all four candidate components; owned continuation equals candidate; each Torch component advances; original and ambient unchanged. |
+| binding_ignores_spectator_roster_and_order | 3 | Reordered roster, spectator replacement, and sole owned ID are all accepted before/inside activation without stream change. |
+| binding_rejects_other_owner_inside_activation | 1 | Valid current-owner binding control; other-owner binding and activation both refuse before ambient effects; other snapshot untouched. |
+| binding_refuses_mismatch_before_draws | 36 = 18 probes × idle/active | ValueError for id, empty-id, typed-id, missing-id, provider, config, observation, action, seed, scope, malformed-descriptor, malformed-seeds, malformed-clock, device-list, device-bool, device-negative, device-duplicate, device-order; complete installed/ambient and owned-state preservation for each. Valid same-schema provider/seed controls and frozen-dataclass bypass probes remain meaningful. |
+| binding_refuses_broken_owner | 1 | Healthy binding first; injected real entry-capture failure reaches the intended boundary; callback never runs; broken owner refuses binding afterward; ambient preserved. |
+| binding_cpu_never_queries_cuda | 1 | CPU binding succeeds with explicit CUDA-query traps. |
+| binding_cuda_domain | 1, hardware conditional | Explicit initialized device inventory; valid active binding and construction; CPU/device mismatch and unavailable index refuse; owned/original/ambient equality. Existing hardware condition must remain honest. |
+| binding_validates_actual_owned_descriptor | 1 | Directly constructed malformed actual owner descriptor refuses despite a valid expected descriptor, without owned/ambient mutation. |
+| binding_refuses_quarantined_coordinator | 1 | Real restoration failure poisons common custody; precreated unrelated owner binding refuses before stream effects; isolation must not heal production poison. |
+
+Binding count: 1+1+4+1+3+1+36+1+1+1+1+1 =52.
+
+| Domains function | Nodes | Assertion/control to preserve |
+|---|---:|---|
+| private_rng_restores_global_streams | 3 kinds | Actual native shared learning first; private constructor advances only expected Torch components (ICM model_init/predictor, other kinds target/predictor), preserving other fields; original RNG and cached Python/NumPy ambient unchanged; one-row pending then real Adam update; exact saved continuation restore/replay and second learning update. |
+| world1_rng_independent_of_world0_calls | 3 kinds | Solo versus spectator/reordered/interleaved world1 models, streams, rewards and checkpoints agree across three genuine updates; other world learns and is restored each iteration; other state really changes; ambient preserved. |
+| native_global_rng_counterexample_and_private_continuation | 1 | Genuine shared constructors consume global RNG and differ; private first/next draws differ; saved restore reproduces next draws exactly. |
+| constructor_compute_failure_restoration_and_quarantine | 6 = kinds × before/after-update | Real factory plus draws then KeyboardInterrupt restores ambient; live callback failure before/after genuine learning quarantines only that owner; diagnostic snapshot retains advanced streams and actual model/Adam changes; unhealthy restore refuses; explicit healthy restore recovers real learning. |
+| owned_snapshot_restore_aliases_and_late_load_failure | 3 kinds | Returned checkpoint and snapshot mutations cannot alter live model/optimizer/queues/history; foreign/consumed handles refuse; valid install succeeds; second owner independently restores; exact transport remains unchanged; malformed envelope refuses purely; actual load occurs before late injected failure, preserving both live owners and ambient. |
+| named_substream_recipe_and_activation_bound_python_facade | 1 | Independent canonical KDF expected Torch/Python/PCG64/legacy draws match; ambient restored; escaped Python facade refuses. |
+| snapshot_callback_failure_restores_and_quarantines | 1 | Actual snapshot callback draws then raises; ambient restored; service quarantines; explicit healthy restore permits genuine next learning. |
+| invalid_rng_snapshot_is_pure_and_nested_components_resume | 1 | Each malformed extra/world/components/device envelope refuses purely; A→A and A→B resume; cross-owner activation refuses; independent nonnested saved control matches all three A draws and ambient. |
+| thread_ownership_serializes_and_releases_after_error | 1 | Real domain activation Events prove other thread waits; exceptional release permits second entry and real draws; bounded joins, exact order, no hidden worker errors, ambient equality. |
+| used_cuda_domain_restoration_when_hardware_available | 1, hardware conditional | Actual declared-device random draw then callback exception restores full CPU/Python/NumPy/CUDA ambient; explicit cleanup; no invented GPU pass. |
+| restoration_failure_poisoning_isolated_from_pytest | 1 | Fresh real child, exact source/head/runtime/thread identity, qualified manifest/tree/import/source receipts when enabled, injected restoration failure retained through cause/group, remaining Python/NumPy restoration attempted, precreated second RNG refuses without setters; real child success marker and bounded exit. |
+| object_array_result_does_not_alias_live_adaptive_history | 2 plain/structured | Genuine learned adaptive history copied recursively through object array; exported list mutation changes export but leaves actual history identical. |
+| learned_adam_mapping_keys_and_values_are_owned | 6 = kinds × native/tuple keys | Matched independently trained controls; changed model and nonzero Adam moments/step; copied tensor keys and values mutate independently; owner revision unchanged by exported mutation; detached/no-grad leaves; complete snapshot/global preservation; genuine second update matches control including state. |
+| true_a_b_a_nested_activation_preserves_both_streams | 1 | True A→B→A versus independent nonnested snapshot controls, all A/B values and final component snapshots/global continuation equal. Keep this independent oracle. |
+| stale_prepared_restore_refuses_after_real_owner_update | 1 | Real learned update after issuance, two actual Adam updates, ValueError destination-changed refusal, updated native/model/Adam and complete owned/global state unchanged. |
+
+Domains total3+3+1+6+3+1+1+1+1+1+1+2+6+1+1 =32; combined52+32 =84. Three kinds always mean rnd, icm, adaptive_rnd. Equality helpers preserve exact Python types, tensor dtype/device/shape/value, NumPy dtypes, recursive mappings/sequences, and OrderedDict entry order/metadata. Learning controls preserve model changes, fixed targets, RMS growth, nonzero first/second Adam moments, exact steps, admitted/consumed/dropped/pending accounting, typed clocks, service positions, budget and zero offset. No dummy backend, fake learning counter or RNG-only equality can replace them.
+
+## Finite required migrations, with discriminators
+
+1. Replace obsolete active-lifecycle error assertions with the exact final public refusal contract. R41 candidate.snapshot reaches same-thread reentry refusal before old quiescent checking; candidate-time public from_snapshot attempts idle-only registration and reaches membership refusal. These are distinct controls and must remain distinct RuntimeError assertions with precise public categories/messages. The real root failure confirms only the first. The four active named-stream snapshot cases have the same statically obsolete quiescent dependency. Do not broaden to arbitrary exceptions.
+
+2. Cross-owner binding and activation currently attempt unrelated reentry without valid lineage; domain admission refuses before the later Cross-owner message. Update both exact RuntimeError contracts to the producer-qualified boundary, preserving the healthy same-owner control, callback nonentry, no draws, and complete other-owner/ambient equality. This is a static dependency prediction, not an additional observed failure.
+
+3. The quarantine-binding fixture patches removed world_state._rng_unusable. That module attribute is absent at this baseline; default monkeypatch raising would fail before meaningful restoration work. Replace this obsolete fixture with fresh-process isolation through root's published child custody protocol. Precreate both genuine owners; inject the intended real restoration failure; prove actual post-poison binding refusal and no setters/draws before refusal. Domain poison is process-owned and has no public reset. Restoring raw globals is cleanup, not permission to reset domain poison. Do not create a compatibility attribute or patch private poison healthy. Use the producer-qualified poison RuntimeError contract, not obsolete unusable wording.
+
+4. Every owner lifecycle caller must adopt the exact final explicit-lineage signatures once supplied, including helpers, factory-adjacent paths and child script where applicable. Current defaults on call/snapshot/prepare_restore/install/validate_prepared are temporary; this report intentionally provides no guessed final calls. Preserve genuine standalone admission and same-RNG named nesting. Do not pass fabricated lineage, introduce a catch-and-retry fallback, or register lazily under a held lease. Constructor/create/from_snapshot/activation signature changes must be listed explicitly by the producer, not inferred from lifecycle methods.
+
+5. Separate handle-refusal tests from accidental global currency invalidation in owned_snapshot_restore_aliases_and_late_load_failure. R41 foreign second.install refuses authentically but also completes a standalone domain operation; it therefore stales the original handle before the intended successful owner.install. Preserve foreign refusal, successful correct-owner install, and consumed-handle refusal using freshly issued independent handles or a producer-approved coherent held composition. Mere reordering without checking generation/currentness is insufficient. Membership changes, refused operations and diagnostic snapshots may invalidate released preparations; observe baselines before issuance or after the intended refusal, never smuggle intervening public reads into a positive prepare→install witness. _restore currently issues and installs immediately; keep that meaningful positive path.
+
+6. Preserve the real destination-update discriminator in stale_prepared_restore_refuses_after_real_owner_update. Its owner.call really learns before the expected destination-changed refusal. Do not substitute no-op revision changes or accept an unrelated domain error as success. Snapshots afterward are acceptable only when they do not become the sole cause; retain the observed learned-state evidence. Likewise maintain revision nonchange on exported Adam mutation; if private _revision ceases to be contractual, obtain a public nonmutating diagnostic capsule rather than weakening the assertion or inspecting opaque handles.
+
+7. Existing child poisoning custody seals WS but the new domain is a separate source body. Under qualification the manifest/import loop must include every actual imported source, including rng_custody; root must provide the canonical receipt protocol. Preserve per-process source/head/tree/thread/import identity before and after actual poison execution, the original failure cause, surviving setters and no-effects refusal. Do not claim parent custody certifies the child. This is a proposed caller/harness interface migration; no harness body was opened.
+
+Other semantic assertions remain unchanged unless a concrete final API change requires a narrowly equivalent fixture rewrite. Neither quarantine diagnostics nor failure-after-update may become blanket rollback assertions: failed live callbacks deliberately retain diagnostic mutation and quarantine until explicit restore. Restore must retain saved streams while disposable reconstruction draws disappear. Pure binding must never become a snapshot-based validator.
+
+## Questions requiring an exact producer/root capsule before authoring
+
+- What are final named public signatures for domain operation, owner construction/bootstrap/lifetime, RNG creation/restore/binding/activation/snapshot and every owner lifecycle method after defaults removal? Identify mandatory explicit arguments and permitted standalone versus held composition without aliases.
+- What exact typed errors and stable message/category discriminate active snapshot, active registration/from_snapshot, cross-owner binding/activation, broken capture, domain poison, foreign/used/stale handles and destination mutation? Confirm refusal precedes effects; do not collapse these into a broad regex.
+- How are authentic children enrolled before held construction, participant transfer from RNG to owner handled, and successful owner registrations reclaimed? Does the adopted lifecycle require explicit close? Supply public prose only and root-approved fixture obligations.
+- After currentness repairs, do failed foreign install, snapshots, no-draw calls, validation and membership changes stale released handles? Which genuinely pure diagnostics remain safe between issuance and installation? How is validation's own bookkeeping excluded without erasing nested work history?
+- What producer-owned staged dependency composes two shared candidate continuations under one held operation? Existing private-owner84 migration must not accidentally bless the unresolved shared-sibling P1 through a positive private-only control.
+- What is the exact trusted child custody API and receipt schema for restoration poisoning, including the new domain source and actual imported modules? Root owns qualification identity and any runtime/index interactions.
+- What public replacement, if needed, preserves the existing no-owner-revision-change assertion on detached exported Adam keys/moments? What declared-device completion contract will be qualified separately from CPU behavior?
+
+## First healthy prerequisites and meaningful execution order
+
+No runtime action is authorized here. Before a later root run: close all changing-source work; repair required source/static/core controls; publish exact API/error/lifecycle/child capsules; reseal the actual four-body source/test snapshot and custody manifest; approve the bounded author/reviewer slice. Unchanged600 defaults guard must pass without waiver; fix new mypy errors without dropping adapter return validation. R41 cannot be relabeled as the new source.
+
+First collect all84 unchanged node identities (plus whatever root separately selects for core). Then run the genuine binding prerequisite through construction, descriptor roundtrip and no-draw equality; binding-inside-constructor and each stream's active validation; native learned control and one genuine private learning/restore continuation. A setup/import/membership/signature error is a migration failure, not evidence about the intended semantic boundary. Record each first failure accurately.
+
+Then run all three provider kinds through pending→Adam learning, interworld independence and saved replay; all36 mismatch products; owner callback failure before/after update; aliases with independent positive and foreign/consumed controls; late real load failure; independent A→B→A and A→A controls; actual thread wait/error release; detached Adam key/value mutation followed by real matched learning. Poison cases run in fresh fully attributed children. CUDA cases retain hardware qualification boundaries; CPU tests stay ungated. Root should account for all84 outcomes rather than count collection as execution.
+
+Production/core discriminators remain separate prerequisites: both cross-operation/nested ordinary-work schedules must stale authentic handles even for no-draw peer work; two real shared factories must match an independently sequential constructor/ambient-next reference; genuine owner lifetime cleanup must release registrations/models; real constructor contention, post-consumption capture/partial-stage/verify failures and existing-owner poison entry must be exercised. Existing84 cannot substitute for those finite omitted cases. Same-owner managed service/manual/replacement exclusion and independent bare CPU Adam freedom must both survive.
+
+## Proposed bounded author/reviewer grant
+
+Future author writes only the two existing owner regression files in place, under root's fresh four-body reslice, keeping production read-only. Retain all84 node identities and each listed control; add only finite assertions necessary for public contract adoption and isolated poisoning custody. No new helper/source body, fifth core-test read, source duplication, test consolidation or behavioral capability removal. Binding500/domains1100 are proposed maxima, not permission to compress away witnesses. A cap overrun goes to root for reslice before growth.
+
+Independent reviewer reads exactly the same final four complete bodies and public capsules, compares every topology row with the authored diff under root custody, checks exact errors/opaque identities and each meaningful positive control, and returns finite source conclusions without inventing runtime outcomes. Root alone performs capture, static gates, collection, targeted/full84 execution and verifies every process receipt. Record new test hashes and final source hashes after that grant. This report's baseline is immutable; no production reread or source-writing baton is requested now.

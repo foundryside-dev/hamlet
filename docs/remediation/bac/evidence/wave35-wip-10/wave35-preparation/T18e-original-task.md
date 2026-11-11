@@ -1,0 +1,10 @@
+### T18e: Bind selected raw novelty and runtime scale into the existing composer
+
+**Interfaces:** ENV captures an owned `IntrinsicTransitionContext` before/after the accepted physics step; RWC preserves `_calculate_shaped_rewards(*, active_on_entry, intrinsic_context=...)` and its current successor-phase provider invocation, now via ExplorationRuntime for all five choices. DAC accepts explicit `runtime_intrinsic_scale` and applies P5a's formula once. Old direct callers lacking new context retain their documented observation-only path for old providers; ICM requires its new complete context API.
+
+- [ ] Add `test_real_composer_applies_runtime_scale_once`, `test_provider_phase_and_transition_identity`: with captured raw2/runtime.5/drive base.25/authored modifier2, effective intrinsic is.5; with extrinsic1/shaping.1 total is1.6 before any separate retirement bonus. Runtime scale0 yields intrinsic0 for real RND/adaptive/count/ICM; terminal mask follows existing semantics. Record the actual bound provider invocation and reward components through the real ENV→RWC→DAC path, using model/config controls rather than replacing the composer.
+- [ ] Run `test_intrinsic_composition.py` red against the pinned always-Adaptive/unused runtime-scale path. Distinguishable predecessor/successor observations prove observation providers preserve post-physics reward phase; ICM gets the true s,a,s' while RND predictor admission remains predecessor-phase. Each eligible reward row updates stats once.
+- [ ] Implement context/phase delivery and single scaling at DAC; keep drive base/modifier execution and existing retirement handling. Population's diagnostic novelty cannot replace/recompose canonical returned rewards or update normalization again.
+- [ ] Run green; captured replay/sink total and components equal ENV's actual canonical outputs; changing initial/adaptive scale or drive base independently changes only its own factor.
+- [ ] Review and commit `fix(exploration): apply resolved intrinsic scale in canonical rewards`.
+

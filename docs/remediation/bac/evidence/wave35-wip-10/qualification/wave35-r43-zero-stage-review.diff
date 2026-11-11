@@ -1,0 +1,102 @@
+diff --git a/tests/test_townlet/regressions/bac/test_world_rng_custody.py b/tests/test_townlet/regressions/bac/test_world_rng_custody.py
+index 4c131ee9..ffee6c5c 100644
+--- a/tests/test_townlet/regressions/bac/test_world_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_world_rng_custody.py
+@@ -1069,6 +1069,43 @@ def _shared_live(owner: SharedWorldBackend) -> dict[str, Any]:
+     return {**_native_evidence(owner._backend), "revision": owner._revision, "failed": owner._failed, "token": id(owner._token)}
+ 
+ 
++@contextmanager
++def _observe_shared_publication(monkeypatch: pytest.MonkeyPatch, owner: SharedWorldBackend) -> Iterator[list[str]]:
++    """Observe only the attempted owner's call window; delegate all real work.
++
++    Ambient state is process-wide, so every staging/setter in this otherwise idle
++    window matters. Native publication is additionally scoped by owner identity.
++    """
++    events: list[str] = []
++    original_stage, original_install = world_state._stage_ambient, world_state._install_globals
++    original_restore = world_state._restore_globals
++    original_setattr = SharedWorldBackend.__setattr__
++
++    def stage(state: dict[str, Any], entry: dict[str, Any], operation: RNGOperation) -> None:
++        events.append("ambient stage")
++        original_stage(state, entry, operation)
++
++    def install(state: dict[str, Any]) -> None:
++        events.append("ambient setter")
++        original_install(state)
++
++    def restore(state: dict[str, Any]) -> list[BaseException]:
++        events.append("ambient restoration setter")
++        return original_restore(state)
++
++    def publish(destination: SharedWorldBackend, name: str, value: Any) -> None:
++        if destination is owner and name == "_backend":
++            events.append("actual destination backend assignment")
++        original_setattr(destination, name, value)
++
++    with monkeypatch.context() as patch:
++        patch.setattr(world_state, "_stage_ambient", stage)
++        patch.setattr(world_state, "_install_globals", install)
++        patch.setattr(world_state, "_restore_globals", restore)
++        patch.setattr(SharedWorldBackend, "__setattr__", publish)
++        yield events
++
++
+ @pytest.mark.parametrize("schedule", ["before_release", "next_lease"])
+ @pytest.mark.parametrize("draws", [True, False])
+ @pytest.mark.parametrize("entrypoint", ["install", "validate_prepared"])
+@@ -1078,6 +1115,7 @@ def test_shared_peer_nested_work_stales_across_lease_boundaries(
+     schedule: str,
+     draws: bool,
+     entrypoint: str,
++    monkeypatch: pytest.MonkeyPatch,
+ ) -> None:
+     owner, factory = shared_rnd
+     peer = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+@@ -1096,8 +1134,10 @@ def test_shared_peer_nested_work_stales_across_lease_boundaries(
+         live = (_shared_live(owner), _shared_live(peer))
+         ambient = _ambient()
+         method = owner.install if entrypoint == "install" else owner.validate_prepared
+-        with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
+-            method(prepared, lineage=lineage)
++        with _observe_shared_publication(monkeypatch, owner) as effects:
++            with pytest.raises(ValueError, match="stale|changed|intervening|current|continuation"):
++                method(prepared, lineage=lineage)
++        assert effects == [], "a stale handle reached ambient staging/setters or actual backend publication before refusal"
+         _equal(live, (_shared_live(owner), _shared_live(peer)))
+         _equal(ambient, _ambient())
+         _equal(_ambient_next(ambient), _ambient_next(_ambient()))
+@@ -1121,7 +1161,7 @@ def test_shared_peer_nested_work_stales_across_lease_boundaries(
+ 
+ 
+ def test_two_shared_resets_under_held_lease_match_real_sequential_reference(
+-    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]]
++    private_rnd: PrivateRND, shared_rnd: tuple[SharedWorldBackend, Callable[[], RNDExploration]], monkeypatch: pytest.MonkeyPatch
+ ) -> None:
+     first, factory = shared_rnd
+     second = SharedWorldBackend.construct(factory=factory, cuda_devices=())
+@@ -1147,12 +1187,17 @@ def test_two_shared_resets_under_held_lease_match_real_sequential_reference(
+         first.install(prepared_first, lineage=operation)
+         committed = _ambient()
+         second_before = _shared_live(second)
+-        try:
+-            second.install(prepared_second, lineage=operation)
+-        except ValueError as error:
+-            assert any(word in str(error).lower() for word in ("stale", "dependency", "predecessor", "continuation"))
+-            _equal(committed, _ambient())
+-            _equal(second_before, _shared_live(second))
++        dependency_refused = False
++        with _observe_shared_publication(monkeypatch, second) as effects:
++            try:
++                second.install(prepared_second, lineage=operation)
++            except ValueError as error:
++                assert any(word in str(error).lower() for word in ("stale", "dependency", "predecessor", "continuation"))
++                assert effects == [], "dependency refusal occurred after ambient staging/setters or actual backend publication"
++                _equal(committed, _ambient())
++                _equal(second_before, _shared_live(second))
++                dependency_refused = True
++        if dependency_refused:
+             prepared_second = second.prepare_learning_reset(factory=factory, prepare_native=_reset_rnd, lineage=operation)
+             second.install(prepared_second, lineage=operation)
+     _equal(expected_native, [first._backend.checkpoint_state(), second._backend.checkpoint_state()])

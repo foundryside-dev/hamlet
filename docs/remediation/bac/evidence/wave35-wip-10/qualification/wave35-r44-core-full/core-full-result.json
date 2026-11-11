@@ -1,0 +1,25 @@
+{
+  "name": "core-full",
+  "exit_code": 0,
+  "seconds": 21.157655954360962,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r44-core-full"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r44-core-full/core-full.log",
+  "sha256": "8b2a9901b63002b99c12d59e00d7bb64de7b7cc452d8853556b9a92d4d69fe84",
+  "candidate_tree": "2866fea0a1f853ee13c8208b7cee4a701d2f075d",
+  "base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+  "manifest_sha256": "bbaa355ec24ba12e66187bcae32739abc7614bd138001c3077b506c4d7fd843d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

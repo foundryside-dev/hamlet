@@ -1,0 +1,23 @@
+{
+  "name": "red-next-update",
+  "exit_code": 1,
+  "seconds": 13.458712577819824,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_next_update_cannot_use_misassociated_moments",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r48-red-next-update/red-next-update.log",
+  "sha256": "2e35c33b72bd83ec9e77023760e07b5b94ef7e9036889a2793358f925ab9fa62",
+  "candidate_tree": "d93793ffedc4f35b2b85fd9916b33690cc8687fa",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "manifest_sha256": "7b62a91549645a6a49b994c63b62709d497e218a1b627b02b0557d7acddb59e6",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

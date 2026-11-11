@@ -1,0 +1,27 @@
+{
+  "name": "container-red",
+  "exit_code": 1,
+  "seconds": 13.454941034317017,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-k",
+    "not parameter_lr"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r51-container-red/container-red.log",
+  "sha256": "074d233e29a37a49239cb9878b61eafce12b5b9032e5bbb5efa68917b0e13c01",
+  "candidate_tree": "ba192ab57b66688e09dd307ffa495ad3993c1abd",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "manifest_sha256": "8916e397bdab9cbb55866f1ac3305f6db724a206cb0ff77f4e013f2809930ab2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

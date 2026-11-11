@@ -1,0 +1,151 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py F [ 50%]
+F                                                                        [100%]
+
+=================================== FAILURES ===================================
+__ test_existing_decoder_next_update_cannot_use_misassociated_moments[shared] __
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_existing_decoder_next_update_cannot_use_misassociated_moments(compiled_native_level: Any, scope: str) -> None:
+        """Execute the v3 silent-load failure through a real next native update.
+    
+        The strict loader can refuse the inconsistent candidate.  If it accepts, this
+        witness executes service before asserting by-name moments and weights, so RED
+        reports the actual numerical consequence rather than only a missing refusal.
+        """
+        source, receiver = [_factory(compiled_native_level, "rnd", scope) for _ in range(2)]
+        _replace_optimizer(source.backend, topology="one")
+        _manual_step(source.backend)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        before = _observe(receiver.backend)
+        try:
+            receiver.backend.load_state(state)
+        except ValueError:
+            _equal(_observe(receiver.backend), before)
+            return
+        before_source_moments, before_receiver_moments = _moments(source.backend), _moments(receiver.backend)
+        _service(source, count=2, offset=0.375)
+        _service(receiver, count=2, offset=0.375)
+>       _equal(_moments(source.backend), _moments(receiver.backend))
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:451: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:110: in _equal
+    _equal(left[key], right[key])
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:110: in _equal
+    _equal(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([0.0035, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,
+        0.0037, 0.0037, 0.0037, 0.0036....0036, 0.0036,
+        0.0035, 0.0035, 0.0036, 0.0038, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,
+        0.0036, 0.0036])
+right = tensor([0.0053, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,
+        0.0055, 0.0055, 0.0055, 0.0054....0054, 0.0054,
+        0.0053, 0.0053, 0.0054, 0.0056, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,
+        0.0054, 0.0054])
+
+    def _equal(left: Any, right: Any) -> None:
+        """Exact owned-tree oracle, including option scalar/container types."""
+        assert type(left) is type(right), (type(left), type(right))
+        if isinstance(left, torch.Tensor):
+            assert left.shape == right.shape
+            assert left.dtype == right.dtype
+            assert left.device == right.device
+>           assert torch.all((left == right) | (torch.isnan(left) & torch.isnan(right))).item()
+E           assert False
+E            +  where False = <built-in method item of Tensor object at 0x7f9da8363fc0>()
+E            +    where <built-in method item of Tensor object at 0x7f9da8363fc0> = tensor(False).item
+E            +      where tensor(False) = <built-in method all of type object at 0x7f9ddfbf1000>((tensor([0.003...0036, 0.0036]) == tensor([0.005...0054, 0.0054])
+E            +        where <built-in method all of type object at 0x7f9ddfbf1000> = torch.all
+E                    & tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False]))))
+E                   Use -v to get more diff | (tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False])
+E            +        and   tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False]) = <built-in method isnan of type object at 0x7f9ddfbf1000>(tensor([0.0035, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,\n        0.0037, 0.0037, 0.0037, 0.0036....0036, 0.0036,\n        0.0035, 0.0035, 0.0036, 0.0038, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,\n        0.0036, 0.0036]))
+E            +          where <built-in method isnan of type object at 0x7f9ddfbf1000> = torch.isnan
+E            +        and   tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False]) = <built-in method isnan of type object at 0x7f9ddfbf1000>(tensor([0.0053, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,\n        0.0055, 0.0055, 0.0055, 0.0054....0054, 0.0054,\n        0.0053, 0.0053, 0.0054, 0.0056, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,\n        0.0054, 0.0054]))
+E            +          where <built-in method isnan of type object at 0x7f9ddfbf1000> = torch.isnan
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:106: AssertionError
+_ test_existing_decoder_next_update_cannot_use_misassociated_moments[per_world] _
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_existing_decoder_next_update_cannot_use_misassociated_moments(compiled_native_level: Any, scope: str) -> None:
+        """Execute the v3 silent-load failure through a real next native update.
+    
+        The strict loader can refuse the inconsistent candidate.  If it accepts, this
+        witness executes service before asserting by-name moments and weights, so RED
+        reports the actual numerical consequence rather than only a missing refusal.
+        """
+        source, receiver = [_factory(compiled_native_level, "rnd", scope) for _ in range(2)]
+        _replace_optimizer(source.backend, topology="one")
+        _manual_step(source.backend)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        before = _observe(receiver.backend)
+        try:
+            receiver.backend.load_state(state)
+        except ValueError:
+            _equal(_observe(receiver.backend), before)
+            return
+        before_source_moments, before_receiver_moments = _moments(source.backend), _moments(receiver.backend)
+        _service(source, count=2, offset=0.375)
+        _service(receiver, count=2, offset=0.375)
+>       _equal(_moments(source.backend), _moments(receiver.backend))
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:451: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:110: in _equal
+    _equal(left[key], right[key])
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:110: in _equal
+    _equal(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([0.0036, 0.0038, 0.0039, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,
+        0.0036, 0.0036, 0.0037, 0.0037....0036, 0.0036,
+        0.0036, 0.0036, 0.0036, 0.0035, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,
+        0.0036, 0.0036])
+right = tensor([0.0054, 0.0056, 0.0057, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,
+        0.0054, 0.0054, 0.0055, 0.0055....0054, 0.0054,
+        0.0054, 0.0054, 0.0054, 0.0053, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,
+        0.0054, 0.0054])
+
+    def _equal(left: Any, right: Any) -> None:
+        """Exact owned-tree oracle, including option scalar/container types."""
+        assert type(left) is type(right), (type(left), type(right))
+        if isinstance(left, torch.Tensor):
+            assert left.shape == right.shape
+            assert left.dtype == right.dtype
+            assert left.device == right.device
+>           assert torch.all((left == right) | (torch.isnan(left) & torch.isnan(right))).item()
+E           assert False
+E            +  where False = <built-in method item of Tensor object at 0x7f9d9d012940>()
+E            +    where <built-in method item of Tensor object at 0x7f9d9d012940> = tensor(False).item
+E            +      where tensor(False) = <built-in method all of type object at 0x7f9ddfbf1000>((tensor([0.003...0036, 0.0036]) == tensor([0.005...0054, 0.0054])
+E            +        where <built-in method all of type object at 0x7f9ddfbf1000> = torch.all
+E                    & tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False]))))
+E                   Use -v to get more diff | (tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False])
+E            +        and   tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False]) = <built-in method isnan of type object at 0x7f9ddfbf1000>(tensor([0.0036, 0.0038, 0.0039, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,\n        0.0036, 0.0036, 0.0037, 0.0037....0036, 0.0036,\n        0.0036, 0.0036, 0.0036, 0.0035, 0.0036, 0.0036, 0.0036, 0.0036, 0.0036,\n        0.0036, 0.0036]))
+E            +          where <built-in method isnan of type object at 0x7f9ddfbf1000> = torch.isnan
+E            +        and   tensor([False, False, False, False, False, False, False, False, False, False,\n        False, False, False, False, Fals...alse, False, False, False, False, False, False, False,\n        False, False, False, False, False, False, False, False]) = <built-in method isnan of type object at 0x7f9ddfbf1000>(tensor([0.0054, 0.0056, 0.0057, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,\n        0.0054, 0.0054, 0.0055, 0.0055....0054, 0.0054,\n        0.0054, 0.0054, 0.0054, 0.0053, 0.0054, 0.0054, 0.0054, 0.0054, 0.0054,\n        0.0054, 0.0054]))
+E            +          where <built-in method isnan of type object at 0x7f9ddfbf1000> = torch.isnan
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:106: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_next_update_cannot_use_misassociated_moments[shared]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_next_update_cannot_use_misassociated_moments[per_world]
+============================== 2 failed in 7.67s ===============================

@@ -1,0 +1,16 @@
+--- a/src/townlet/population/vectorized.py
++++ b/src/townlet/population/vectorized.py
+@@ -1127,8 +1127,11 @@
+             raise RuntimeError("Resolve the retained batch commitment before unrelated parent work")
+         self._committed_outcomes.update(prepared)
+         self._retain_participant_roster()
+-        pending_batch = self._pending_batch_commit["batch"] if self._pending_batch_commit is not None else None
+-        for batch in sorted(batches, key=lambda batch: (batch != pending_batch, batch)):
++        ordered_batches = sorted(batches)
++        if self._pending_batch_commit is not None:
++            pending_batch = self._pending_batch_commit["batch"]
++            ordered_batches.sort(key=lambda batch: batch != pending_batch)
++        for batch in ordered_batches:
+             participants = self._batch_participants.get(batch)
+             if (
+                 batch in self._committed_batches

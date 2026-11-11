@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "kind = 'rnd'\n\n    @pytest.mark.parametrize(\"kind\", PROVIDERS)\n    def test_owned_malformed_backend_refuses_before_rng_or_live_install(kind: str) -> None:\n        owner = _owned(kind)\n>       owner.call(lambda backend, sources: _warm(backend))\nE       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'\n\ntests/test_townlet/regressions/bac/test_pw_local_service.py:1128: TypeError",
+  "candidate_tree": "70b6d777bbd0a29d1088d9a53d586046a9c2a817"
+}

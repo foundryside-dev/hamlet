@@ -1,0 +1,21 @@
+# Native fixture ABI facts from existing RNG owner context
+
+This handoff uses only the already-owned binding/domains/WS/domain context. No new body, source edit, runtime, probe, Git/index action or delegation occurred. The final four source seals remain unchanged according to root. No function body is reproduced here.
+
+**Compiler ABI boundary:** neither existing binding nor domains test imports UniverseCompiler or calls a universe compile/load method. Neither fixture produces a compiled universe or calls compiled.get_level. Therefore this context cannot qualify an imported UniverseCompiler location, constructor, compile/load signature or actual compiled-universe builder callsite. Do not infer one from the paths below; root must obtain that separate public fact from an owner who already has the actual compiler callsite.
+
+## Exact binding fixture facts
+
+The actual callsite is tests/test_townlet/regressions/bac/test_pw_rng_binding.py, helper _policy. Its repository root is Path(__file__).resolve().parents[4]. It reads configs/test/token_set_smoke/levels/L0_test/training.yaml and drive.yaml with yaml.safe_load, selecting training from the first and drive.intrinsic from the second. It sets the selected intrinsic strategy to none.
+
+Actual imports are BaCOptions from townlet.config.bac_options; IntrinsicStrategyConfig from townlet.config.drive_as_code; ResolvedExplorationPolicy and resolve_exploration_policy from townlet.config.exploration_policy; and TrainingV2Config from townlet.config.training_v2_config. The actual resolver call passes IntrinsicStrategyConfig.model_validate(drive_intrinsic), TrainingV2Config.model_validate(training), and BaCOptions.model_validate(options), positionally in that order. The authored options contain curiosity_scope.scope=per_world and curiosity_scope.seed_policy=world_id_derived_v1. This demonstrates a policy resolver recipe, not universe compilation or selected RND policy.
+
+Binding helper _descriptor calls WorldCuriosityDescriptor.from_policy with that policy, world_ids supplied explicitly, observation_dim=3, action_dim=2 and training_seed=173. Its fixture uses world IDs world-A/world-B. The genuine binding backend is EpsilonGreedyExploration with epsilon=policy.epsilon_start, epsilon_decay=policy.epsilon_decay and epsilon_min=policy.epsilon_end. The geometry3/2 is explicitly authored test geometry; it was not read from compiled.get_level.
+
+## Exact domains fixture facts
+
+The actual callsite is tests/test_townlet/regressions/bac/test_pw_rng_domains.py. Its RND factory directly constructs RNDExploration with obs_dim=3, embed_dim=4, training_batch_size=2, learning_rate=0.01, the supplied candidate RNG and explicit service_clock_unit. It configures RNDOptions with service_mode=paced_fifo, max_updates_per_tick=1, max_pending_rows=4 and overflow_policy=service_before_admit. It does not resolve RND from a compiled level or call the selected provider factory. Its authored descriptor has observation_dim=3/action_dim=2/training_seed=29, and hashes those direct provider parameters.
+
+Domains helper _icm_policy separately reads tests/test_townlet/fixtures/bac_curiosity_pre_scope/manifest.json at artifacts[0].effective_run. It takes training and exploration.authored_parameters.drive_intrinsic from that data, then resolves ICM through the same configuration classes/resolver. Its authored overrides include population.size=3, replay batch_size/min_size=2 and capacity=64, intrinsic.rnd.feature_dim=4; providers.icm feature_dim=2/hidden_dim=5/learning_rate=0.03/inverse_weight=0.7/forward_weight=0.3/training_batch_size=2/max_pending_transitions=6; the paced_fifo service options; and explicit private scope/seed policy. The drive selection is strategy=icm with authored icm_config feature_dim=9/hidden_dim=11/learning_rate=0.001. Actual ICM construction uses resolved policy.provider_parameters, obs_dim=3/action_dim=2 and device=cpu. This is an ICM data/resolver recipe, not an L0 compiled-universe builder.
+
+A fresh native test requiring genuine compiled L0 geometry needs a separately owned public compiler-builder capsule before implementation. These direct fixture dimensions must not be relabeled as compiler-derived or offered as a fallback for that requirement.

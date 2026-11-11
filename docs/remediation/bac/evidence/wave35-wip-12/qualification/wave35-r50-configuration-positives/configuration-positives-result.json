@@ -1,0 +1,26 @@
+{
+  "name": "configuration-positives",
+  "exit_code": 0,
+  "seconds": 13.679247617721558,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_rnd_two_group_restore_configuration",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_adaptive_two_group_restore_configuration",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_changed_lr_restore_configuration",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r50-configuration-positives/configuration-positives.log",
+  "sha256": "fc4448da061cc5b3f483e63b4b525c91e4d0a10c715032460e486b627276cea1",
+  "candidate_tree": "b9a14a4f2969bea4881487cb6222b2b13fcbb722",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "manifest_sha256": "6b6ec914af07846b2b610a94f348dde10b9901f7d5e57a397f7d2ee78d328eb5",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

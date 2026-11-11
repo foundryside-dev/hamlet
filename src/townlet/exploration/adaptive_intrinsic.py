@@ -259,7 +259,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
         """Current native snapshot with independent nested tensors and history."""
         return deepcopy(
             {
-                "schema": "adaptive-intrinsic-state-v3",
+                "schema": "adaptive-intrinsic-state-v4",
                 "rnd_state": self.rnd.checkpoint_state(),
                 **self._config(),
                 "current_intrinsic_weight": self.current_intrinsic_weight,
@@ -271,6 +271,23 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
     def validate_state(self, state: dict[str, Any]) -> None:
         self.prepare_state(state)
 
+    def with_restore_configuration(self, state: dict[str, Any]) -> AdaptiveIntrinsicExploration:
+        """Configure independently owned nested Adam without installing learning."""
+        try:
+            owned = deepcopy(state)
+            if (
+                type(owned) is not dict
+                or owned.keys() != self.checkpoint_state().keys()
+                or owned["schema"] != "adaptive-intrinsic-state-v4"
+            ):
+                raise ValueError("Adaptive restore configuration requires complete current native state")
+            candidate = deepcopy(self)
+            candidate.rnd = self.rnd.with_restore_configuration(owned["rnd_state"])
+            candidate.validate_state(owned)
+            return candidate
+        except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+            raise ValueError("Adaptive restore configuration is malformed") from error
+
     def prepare_state(self, state: dict[str, Any]) -> _PreparedAdaptive:
         """Validate all outer semantics before preparing nested learned state."""
         try:
@@ -278,7 +295,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
             if (
                 not isinstance(state, dict)
                 or state.keys() != self.checkpoint_state().keys()
-                or state["schema"] != "adaptive-intrinsic-state-v3"
+                or state["schema"] != "adaptive-intrinsic-state-v4"
             ):
                 raise ValueError("Adaptive requires complete current native state")
             config = {name: state[name] for name in self._config()}

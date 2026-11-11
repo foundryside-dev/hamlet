@@ -1,0 +1,127 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "candidate_tree": "70b6d777bbd0a29d1088d9a53d586046a9c2a817",
+  "unique_node_phase_failures": 24,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_owned_native_metadata.py",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'",
+      "count": 15,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_callback_numeric_recursive_metadata_is_independently_owned[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[adaptive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_callback_numeric_recursive_metadata_is_independently_owned[adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[adaptive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_snapshot_preserves_native_metadata_order_and_tail[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[adaptive]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_snapshot_preserves_native_metadata_order_and_tail[adaptive_rnd]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'",
+      "count": 8,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_prepare_install_real_native_resume_learning_and_rng[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-transport_order]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-transport_order]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-candidate_metadata]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_observation_revision_stales_prepared_handle_without_changing_state[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-candidate_metadata]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_prepare_install_real_native_resume_learning_and_rng[adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_observation_revision_stales_prepared_handle_without_changing_state[adaptive_rnd]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

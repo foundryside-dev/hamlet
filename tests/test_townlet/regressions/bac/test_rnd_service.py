@@ -189,7 +189,7 @@ def test_direct_minibatch_and_current_native_state_refuse_diagnostic_import():
                 operation(diagnostic)
             equal(before, current.checkpoint_state())
     native = rnd.checkpoint_state()
-    assert native["schema"] == "rnd-state-v3"
+    assert native["schema"] == "rnd-state-v4"
     assert native["predictor_service"]["version"] == 3
     assert native["predictor_service"]["optimizer_epoch_origin"] == 0
     assert native["predictor_service"]["service_clock_unit"] == "vector_tick"

@@ -550,9 +550,9 @@ def test_current_native_warm_adam_tail_and_next_update(kind: str, unit: str) -> 
     saved = _native(source)
     inner = _inner(saved)
     service = _service_state(saved)
-    assert inner["schema"] == ("icm-state-v2" if kind == "icm" else "rnd-state-v2")
+    assert inner["schema"] == ("icm-state-v4" if kind == "icm" else "rnd-state-v4")
     if kind == "adaptive":
-        assert saved["schema"] == "adaptive-intrinsic-state-v2"
+        assert saved["schema"] == "adaptive-intrinsic-state-v4"
     assert service["service_clock_unit"] == unit
     assert "vector_tick" not in service and "service_tick" not in service
     pending = inner["pending"] if kind == "icm" else service["pending_observations"]
@@ -586,43 +586,43 @@ def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
         sources.numpy.random(4)
 
     ambient = _ambient()
-    source.call(warm_and_draw)
+    source.call(warm_and_draw, lineage=None)
     _equal(ambient, _ambient())
-    saved = source.snapshot()
+    saved = source.snapshot(lineage=None)
     destination = _owned(kind)
-    before = destination.snapshot()
 
     def factory(rng: Any) -> Any:
         return _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng)
 
     prepared = destination.prepare_restore(
-        saved,
-        factory=factory,
-        validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        saved, factory=factory, validate_backend=lambda candidate, payload: candidate.validate_state(payload), lineage=None
     )
-    _equal(before, destination.snapshot())
-    _equal(ambient, _ambient())
-    # Observing the live destination advances its revision. The earlier token
-    # must refuse, preserving the checked state; prepare again after observation.
-    with pytest.raises(ValueError, match="already installed or its destination changed"):
-        destination.install(prepared)
-    _equal(before, destination.snapshot())
-    _equal(ambient, _ambient())
-    prepared = destination.prepare_restore(
-        saved,
-        factory=factory,
-        validate_backend=lambda candidate, payload: candidate.validate_state(payload),
-    )
-    destination.install(prepared)
-    _equal(saved, destination.snapshot())
+    destination.install(prepared, lineage=None)
+    _equal(saved, destination.snapshot(lineage=None))
 
     def next_work(backend: Any, sources: Any) -> Any:
         draws = (torch.rand(3), random.random(), np.random.random(2), sources.numpy.random(3))
         receipt, trace = _traced(backend, _rows(3, 140))
         return draws, receipt, trace, _native(backend)
 
-    _equal(source.call(next_work), destination.call(next_work))
-    _equal(source.snapshot(), destination.snapshot())
+    _equal(source.call(next_work, lineage=None), destination.call(next_work, lineage=None))
+    _equal(source.snapshot(lineage=None), destination.snapshot(lineage=None))
+    _equal(ambient, _ambient())
+
+    before = destination.snapshot(lineage=None)
+    prepared = destination.prepare_restore(
+        saved,
+        factory=factory,
+        validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        lineage=None,
+    )
+    _equal(before, destination.snapshot(lineage=None))
+    _equal(ambient, _ambient())
+    # After successful restore and next learning, independently show that an
+    # observation stales a new handle without changing the destination's state.
+    with pytest.raises(ValueError, match="destination changed"):
+        destination.install(prepared, lineage=None)
+    _equal(before, destination.snapshot(lineage=None))
     _equal(ambient, _ambient())
 
 
@@ -1125,8 +1125,8 @@ def test_shared_constructor_preserves_original_ambient_draw_order(kind: str) -> 
 @pytest.mark.parametrize("kind", PROVIDERS)
 def test_owned_malformed_backend_refuses_before_rng_or_live_install(kind: str) -> None:
     owner = _owned(kind)
-    owner.call(lambda backend, sources: _warm(backend))
-    saved = owner.snapshot()
+    owner.call(lambda backend, sources: _warm(backend), lineage=None)
+    saved = owner.snapshot(lineage=None)
     damaged = deepcopy(saved)
     _corrupt(damaged["backend"], "moment_nan")
     if kind == "adaptive":
@@ -1137,28 +1137,30 @@ def test_owned_malformed_backend_refuses_before_rng_or_live_install(kind: str) -
             damaged,
             factory=lambda rng: _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng),
             validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+            lineage=None,
         )
-    _equal(saved, owner.snapshot())
+    _equal(saved, owner.snapshot(lineage=None))
     _equal(ambient, _ambient())
 
 
 @pytest.mark.parametrize("kind", PROVIDERS)
 def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str) -> None:
     world1 = _owned(kind)
-    world1.call(lambda backend, sources: _warm(backend))
-    saved = world1.snapshot()
+    world1.call(lambda backend, sources: _warm(backend), lineage=None)
+    saved = world1.snapshot(lineage=None)
     replay = _owned(kind)
     prepared = replay.prepare_restore(
         saved,
         factory=lambda rng: _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng),
         validate_backend=lambda candidate, payload: candidate.validate_state(payload),
+        lineage=None,
     )
-    replay.install(prepared)
+    replay.install(prepared, lineage=None)
     world0 = OwnedWorldBackend.construct(
         rng=_rng(kind, "world-b"),
         factory=lambda rng: _build(kind, "service_before_admit", PRIVATE, service_clock_unit=PRIVATE, rng=rng),
     )
-    before0 = world0.snapshot()
+    before0 = world0.snapshot(lineage=None)
     ambient = _ambient()
 
     def work(backend: Any, sources: Any) -> Any:
@@ -1167,13 +1169,13 @@ def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str
         receipt, trace = _traced(backend, _rows(3, 370))
         return draws, receipt, trace, _native(backend)
 
-    expected = world1.call(work)
+    expected = world1.call(work, lineage=None)
     for _ in range(4):
-        world0.call(work)
-    actual = replay.call(work)
+        world0.call(work, lineage=None)
+    actual = replay.call(work, lineage=None)
     _equal(expected, actual)
-    _equal(world1.snapshot(), replay.snapshot())
-    _learned(before0["backend"], world0.snapshot()["backend"])
+    _equal(world1.snapshot(lineage=None), replay.snapshot(lineage=None))
+    _learned(before0["backend"], world0.snapshot(lineage=None)["backend"])
     _equal(ambient, _ambient())
 
 

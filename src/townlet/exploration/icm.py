@@ -15,6 +15,15 @@ from torch.nn import functional
 
 from townlet.config.exploration_policy import ExplorationServiceReceipt, IntrinsicTransitionContext, ResolvedExplorationPolicy
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.exploration.rnd import (
+    AdamRestoreRecipe,
+    _adam_from_recipe,
+    _adam_value_equal,
+    _capture_adam_recipe,
+    _named_adam_parameters,
+    _validate_adam_candidate,
+    _validate_adam_recipe,
+)
 from townlet.exploration.world_curiosity_state import ServiceClock, WorldRNGState
 
 _COUNTERS = ("admitted_rows", "consumed_rows", "dropped_rows", "optimizer_updates", "mandatory_service_updates")
@@ -141,6 +150,11 @@ class ICMExploration(EpsilonGreedyExploration):
 
     def _parameters(self) -> list[nn.Parameter]:
         return [parameter for module in (self.encoder, self.inverse_model, self.forward_model) for parameter in module.parameters()]
+
+    def _named_model_parameters(self) -> dict[str, nn.Parameter]:
+        return _named_adam_parameters(
+            (("encoder", self.encoder), ("inverse_model", self.inverse_model), ("forward_model", self.forward_model))
+        )
 
     def _context(self, context: IntrinsicTransitionContext) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         if not isinstance(context, IntrinsicTransitionContext):
@@ -290,11 +304,13 @@ class ICMExploration(EpsilonGreedyExploration):
         }
 
     def checkpoint_state(self) -> dict[str, Any]:
-        return cast(
+        if len(self.optimizer.param_groups) != 1:
+            raise ValueError("ICM restore requires one actual Adam group")
+        state = cast(
             dict[str, Any],
             _owned(
                 {
-                    "schema": "icm-state-v3",
+                    "schema": "icm-state-v4",
                     "policy": self.policy.to_dict(),
                     "policy_identity": self.policy.policy_identity,
                     "config": self._config(),
@@ -315,6 +331,8 @@ class ICMExploration(EpsilonGreedyExploration):
                 }
             ),
         )
+        state["adam_restore_recipe"] = _owned(_capture_adam_recipe(self._named_model_parameters(), self.optimizer, state["optimizer"]))
+        return state
 
     def _model_state(self, module: nn.Sequential, payload: Any) -> nn.Sequential:
         expected = module.state_dict()
@@ -332,18 +350,20 @@ class ICMExploration(EpsilonGreedyExploration):
         candidate.load_state_dict(payload, strict=True)
         return candidate
 
-    def _optimizer_state(self, modules: tuple[nn.Module, ...], payload: Any, updates: int) -> torch.optim.Adam:
-        parameters = [parameter for module in modules for parameter in module.parameters()]
+    def _optimizer_state(self, modules: tuple[nn.Module, ...], payload: Any, updates: int, recipe: AdamRestoreRecipe) -> torch.optim.Adam:
+        named = _named_adam_parameters((("encoder", modules[0]), ("inverse_model", modules[1]), ("forward_model", modules[2])))
+        _validate_adam_recipe(named, recipe, payload)
         expected = self.optimizer.state_dict()["param_groups"]
-        if not isinstance(payload, dict) or set(payload) != {"state", "param_groups"} or payload["param_groups"] != expected:
+        if len(expected) != 1 or not _adam_value_equal(payload["param_groups"], expected):
             raise ValueError("ICM optimizer parameter groups disagree with selected configuration")
+        parameters = [named[name] for name in recipe["groups"][0]["parameter_names"]]
         for group, reference in zip(payload["param_groups"], expected, strict=True):
             if any(type(group[key]) is not type(value) for key, value in reference.items()):
                 raise ValueError("ICM optimizer group field types disagree with selected configuration")
             if any(type(value) is not int for value in group["params"]) or any(type(value) is not float for value in group["betas"]):
                 raise ValueError("ICM optimizer parameter IDs/betas require exact native types")
         states = payload["state"]
-        identifiers = expected[0]["params"]
+        identifiers = payload["param_groups"][0]["params"]
         required: set[int] = set()
         if updates:
             required = set(identifiers)
@@ -375,19 +395,40 @@ class ICMExploration(EpsilonGreedyExploration):
                     raise ValueError("ICM optimizer moment has invalid geometry/dtype/value")
                 if name == "exp_avg_sq" and (value < 0).any():
                     raise ValueError("ICM optimizer variance must be nonnegative")
-        optimizer = torch.optim.Adam(parameters, lr=self.learning_rate)
+        optimizer = _adam_from_recipe(named, recipe, payload)
         optimizer.load_state_dict(_owned(payload))
         return optimizer
 
     def validate_state(self, state: dict[str, Any]) -> None:
         self.prepare_state(state)
 
+    def with_restore_configuration(self, state: dict[str, Any]) -> ICMExploration:
+        """Return an owned selected model graph with checked single-group Adam."""
+        try:
+            _validate_adam_recipe(self._named_model_parameters(), state["adam_restore_recipe"], state["optimizer"])
+            owned = _owned(state)
+            if type(owned) is not dict or owned.keys() != self.checkpoint_state().keys() or owned["schema"] != "icm-state-v4":
+                raise ValueError("ICM restore configuration requires complete icm-state-v4")
+            candidate = deepcopy(self)
+            candidate.optimizer = _adam_from_recipe(candidate._named_model_parameters(), owned["adam_restore_recipe"], owned["optimizer"])
+            for module in (candidate.encoder, candidate.inverse_model, candidate.forward_model):
+                for parameter in module.parameters():
+                    parameter.grad = None
+            candidate.validate_state(owned)
+            return candidate
+        except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+            raise ValueError("ICM restore configuration is malformed") from error
+
     def prepare_state(self, state: dict[str, Any]) -> _PreparedICM:
         """Validate and own every transported field before any live installation."""
         try:
+            _validate_adam_recipe(self._named_model_parameters(), state["adam_restore_recipe"], state["optimizer"])
             state = _owned(state)
-            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v3":
-                raise ValueError("ICM requires complete icm-state-v3 checkpoint")
+            if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v4":
+                raise ValueError("ICM requires complete icm-state-v4 checkpoint")
+            recipe = _validate_adam_candidate(
+                self._named_model_parameters(), self.optimizer, state["adam_restore_recipe"], state["optimizer"], exact_options=True
+            )
             if not isinstance(state["policy"], dict) or state["policy"].keys() != self.policy.to_dict().keys():
                 raise ValueError("ICM checkpoint requires current complete policy fields")
             policy = ResolvedExplorationPolicy.from_dict(state["policy"])
@@ -466,7 +507,7 @@ class ICMExploration(EpsilonGreedyExploration):
             encoder = self._model_state(self.encoder, state["encoder"])
             inverse = self._model_state(self.inverse_model, state["inverse_model"])
             forward = self._model_state(self.forward_model, state["forward_model"])
-            optimizer = self._optimizer_state((encoder, inverse, forward), state["optimizer"], epoch_updates)
+            optimizer = self._optimizer_state((encoder, inverse, forward), state["optimizer"], epoch_updates, recipe)
             owned_pending = deque(_owned(pending))
         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
             raise ValueError("ICM checkpoint is malformed") from error
@@ -521,7 +562,7 @@ class ICMExploration(EpsilonGreedyExploration):
             or any(parameter.grad is not None for parameter in fresh._parameters())
         ):
             raise ValueError("ICM reset candidate must have genuine fresh learning and no service work")
-        for key in ("encoder", "inverse_model", "forward_model", "optimizer"):
+        for key in ("encoder", "inverse_model", "forward_model", "optimizer", "adam_restore_recipe"):
             current[key] = fresh_state[key]
         current["optimizer_epoch_origin"] = self._counters["optimizer_updates"]
         current["last_loss"] = 0.0

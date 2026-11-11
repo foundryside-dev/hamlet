@@ -1,0 +1,301 @@
+{
+  "status": "UNRELEASED WIP; no package or repository release",
+  "packet": "Native v4 named Adam restore configuration and current owner fixtures",
+  "manifest": "wave35/r54-candidate.json",
+  "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+  "final_round_number": 54,
+  "created_at": "2026-11-11T14:31:32.477497+00:00",
+  "root_components": {
+    "job": "owned",
+    "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+    "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+    "exit_code": 0,
+    "counts": {
+      "passed": 996,
+      "skipped": 2,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 101.23722243309021,
+    "source_guards": 811,
+    "process_identities": 3,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_owner23": {
+    "job": "independent-owner23",
+    "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+    "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+    "exit_code": 0,
+    "counts": {
+      "passed": 23,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 15.216585636138916,
+    "source_guards": 811,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_native_R52_same_fixed_producer": {
+    "job": "independent-native",
+    "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+    "candidate_tree": "8c401cbc0c4f0b8875d49ba1aaf1e715b1c1bbac",
+    "exit_code": 0,
+    "counts": {
+      "passed": 378,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 85.37928676605225,
+    "source_guards": 810,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "compiler_cli": {
+    "status": "PASS required compiler CLI and all actual process identities",
+    "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+    "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+    "packs": 34,
+    "process_identities": 35,
+    "source_guards_per_process": 811,
+    "configs_per_process": 573,
+    "artifacts_per_process": 13,
+    "wall_seconds": 242.55378580093384,
+    "log_sha256": "0904d9654d7a8754124e7a239520859cee2b5d5db4a1ffaf4a3ecbea09428f8a",
+    "profile_hashes": {
+      "compiler-cli/compiler-processes/209307.json": "5dad0c9b349e357bab96d3b9b5cb1b1104bf762f63e9f4111ab100470634ea4a",
+      "compiler-cli/compiler-processes/209360.json": "10a6b18d9f91508224f3c08eecd258070170af3c43afe4ddc6d5fe9ea084734e",
+      "compiler-cli/compiler-processes/209433.json": "6491601d4aaa349f469b7ccf257bdbafe07add0229aad4b0a52169090bf7c2bf",
+      "compiler-cli/compiler-processes/209488.json": "06d988741aa43103ef1d79cc9b2eca7dae2c0adf53425345535cff698591fb25",
+      "compiler-cli/compiler-processes/209513.json": "0be9e77276487d0dd5c7ea009ca426f52207d1771ece532e00c00754ef413fbc",
+      "compiler-cli/compiler-processes/209540.json": "a14e32863fbe5cc1f3c4a3ae64e41f45689d2a1458a7c3179df4cffc8a254bd2",
+      "compiler-cli/compiler-processes/209574.json": "10787e730f4bae37640bb899ecc9fd2bf2da7aa2cb76bbf2d9d012c451bef391",
+      "compiler-cli/compiler-processes/209607.json": "6b6c9df8230e2589062928c1ee2ad8e0ea87d4283e5b9169102509db8ab0d977",
+      "compiler-cli/compiler-processes/209632.json": "0898f7de26ca07d21393c6e3e8c1319d2c7ce0f1708fce233571e060ab106abe",
+      "compiler-cli/compiler-processes/209657.json": "fa46317d5a6f6015439df067d4bf8c1b7cf9e707517f2901765292ed9db13968",
+      "compiler-cli/compiler-processes/209691.json": "cad7c7150b933d1fe912e051990a400f243eb24d1fa741d60aab55e8e54bdf40",
+      "compiler-cli/compiler-processes/209719.json": "15b9616f442f5c6aabeda179dd789cccff5cdc7427bb064001a431e1c5639109",
+      "compiler-cli/compiler-processes/209767.json": "44cbe59ac1770173ac175820694c55b71d74b07b3ded2dd62fddc432f587d386",
+      "compiler-cli/compiler-processes/209792.json": "dd6cca473dfdf055ac4c5088b61d0ebc735b20946b588b7c40bc753e1533bfb3",
+      "compiler-cli/compiler-processes/209817.json": "1b16691cf2e1e8526e3b0358962c8577f51884baf9d133ffe59a9dadf26b1c96",
+      "compiler-cli/compiler-processes/209921.json": "3d6bbcd778e42591e519b598135d42400bd7e8cbe103c87b222d1785c82e2d73",
+      "compiler-cli/compiler-processes/210024.json": "a6e4b5b86969c10ac18a7306f22395eb2257b54f1b9295541393d576ac0e1a65",
+      "compiler-cli/compiler-processes/210083.json": "ec7c06dde3eaaf1cb31b309940eef133df5dbbb6e57e2f77c2a213392bfef010",
+      "compiler-cli/compiler-processes/210108.json": "a63c040006cb28c4543d51249640e74dea678cd390de084293b199c9e090e842",
+      "compiler-cli/compiler-processes/210160.json": "e0e7a70a4ba6767a15fff511475c1197b9ff7eefec150fc7730baf1ac73d4e61",
+      "compiler-cli/compiler-processes/210192.json": "1ebb89cced33bd1ebf5a4537bfe2a4cf3958d5d99be2ee3749fe671ed23faad2",
+      "compiler-cli/compiler-processes/210252.json": "44abcda0fdfabbdb08bb4a11a8f9dd4b8f939176099cd9e1b288df78e6246a3f",
+      "compiler-cli/compiler-processes/210326.json": "0f2240fedf8407e604ccaf5f15084cab6976eecd49f3c3d9e1a290a0881fe232",
+      "compiler-cli/compiler-processes/210358.json": "82bf559e85f0c5dd993e32b5aa6d1af69cf0cbf8b086b18eca3e65d35b00e286",
+      "compiler-cli/compiler-processes/210406.json": "a49f3d4864215a5b0cfdf395cb3eb127e48de7b3698c70861ff4451bab5c80f3",
+      "compiler-cli/compiler-processes/210500.json": "24d44e1669dbe1eb09e56cac1667af1e4d8f45fd63cd13131fb7f9c4a8a861b5",
+      "compiler-cli/compiler-processes/210546.json": "b30c8f11735d311e70168d8c9a2c828130992d6ba6cdcd5a7418d7fdad5d71fc",
+      "compiler-cli/compiler-processes/210602.json": "b6253e9069a16f8e2f1281f9c39f65a4809fed5ff1e73780952df56d7cb8eb13",
+      "compiler-cli/compiler-processes/210627.json": "4b33d8ae28bf0a883d1fd9650ca9627929a072bece27c5abd28f2e51bceec2c6",
+      "compiler-cli/compiler-processes/210652.json": "26e21dcbfc115a0092fa6eac081a7e5f40ddf7aeef455fd4c78608b6d82c33a2",
+      "compiler-cli/compiler-processes/210676.json": "62845c19f531459ea22b37c79d3b2b0976f97b86e47e7cedb1b9d88995d089ab",
+      "compiler-cli/compiler-processes/210701.json": "859940d0c434d51fe88cb2d6dfdb9be25cde4d728362c1b833c89d31c9fffd4c",
+      "compiler-cli/compiler-processes/210725.json": "eb4d273398e9d64ac36fdca7f00e5efcc3c396bcbe9f18795ebdf78cb11dbc8d",
+      "compiler-cli/compiler-processes/210749.json": "5fc6486603c9a1593d4402b102d3c3bbe63f9a29dacab2ecde2bc47fd1cdf981",
+      "compiler-cli/compiler-processes/210842.json": "6d85b6bb3c5556de87666fc56a0139984ee1a8df0483a1c18b7d309c0535103e"
+    },
+    "scope": "Compiler fleet only; not repository or whole-BAC qualification."
+  },
+  "global_static": {
+    "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+    "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+    "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+    "source_guards": 811,
+    "configs": 573,
+    "artifacts": 13,
+    "results": [
+      {
+        "name": "ruff-global",
+        "exit_code": 0,
+        "seconds": 0.07437992095947266,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r54-static/ruff-global.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      {
+        "name": "black-global",
+        "exit_code": 0,
+        "seconds": 58.053149938583374,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r54-static/black-global.log",
+        "sha256": "fddbfb7f05a21993823630a496ee19f66cc36e978463230a1ed7d0e2dc944f73"
+      },
+      {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 0.5004785060882568,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r54-static/mypy.log",
+        "sha256": "09a4470c106204eae65ae41d2b333cdb4c5e05d7ba037f6abacbadabee14c35e"
+      },
+      {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 0.9853625297546387,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r54-static/no-defaults.log",
+        "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+      },
+      {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.8535172939300537,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r54-static/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      }
+    ],
+    "all_passed": false,
+    "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+  },
+  "current_documents": {
+    "CURRENT-NATIVE-RESTORE-CONFIGURATION-CONTRACT.md": {
+      "path": "docs/remediation/bac/CURRENT-NATIVE-RESTORE-CONFIGURATION-CONTRACT.md",
+      "sha256": "8f966181a3b38b9bd66a27992a987988f10e016ad0044883f36ee806afd2bbb0"
+    },
+    "CURRENT-NATIVE-LEARNING-RESET-CONTRACT.md": {
+      "path": "docs/remediation/bac/CURRENT-NATIVE-LEARNING-RESET-CONTRACT.md",
+      "sha256": "e432f88d423d47c5aaba59af99561072585a37215fcc7297636cdfb8d2af0a44"
+    },
+    "CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md": {
+      "path": "docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md",
+      "sha256": "c84d76287cbe497ee4ba82c4937951ee3b039a27ae623f1b46b7c283676a02ec"
+    },
+    "CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md": {
+      "path": "docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+      "sha256": "9edd156dc0966e78d5c360d06a7c14db5e7bb45077f17622856ccd9c4c67ca92"
+    },
+    "CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "sha256": "9cfbe171931882fa3983cc0a999cc14709525910df75cf6444a030fa26a90013"
+    }
+  },
+  "review_sha256": {
+    "wave35-preparation/T18e-NATIVE-RESTORE-CONFIGURATION-INDEPENDENT-REVIEW.md": "96fa2bef1fabc4cc8d33fbfcecca8ebd4e0d34a02969f10f00f036cffe288800",
+    "wave35-preparation/T18e-NATIVE-V4-CONSUMER-INDEPENDENT-REVIEW.md": "8b7b857585ddaf0b6ee25c370aed49a95ea1f46003a4c2f386b1965cda8633de",
+    "wave35-preparation/T18e-NATIVE-OWNER-CALLER-ALIGNMENT-INDEPENDENT-REVIEW.md": "e548bb95386afeb9fda0fb6c731c06d42f91d2d2f0b4ccd3bc2b2ce84fc0b8fd",
+    "wave35-preparation/T18e-NATIVE-V4-DOCUMENTATION-INDEPENDENT-REVIEW.md": "42e4546e67d7363754c6374d4533801f46df488fabecb36ffadd468deb9e682a",
+    "wave35-preparation/T18e-PURE-BOOTSTRAP-ASTRA-DESIGN-REVIEW.md": "9ccd0c41385827dac20d41d9630e53b61979d4ff16eae5a91ea6787d7b516c2d"
+  },
+  "open_native_producer_material_findings": 0,
+  "required_runner_gap": {
+    "status": "OPEN; not waived",
+    "node": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+    "actual_failure": "DemoRunner omits ENV world_roster/training_seed/lane_world_ids; R53 failed before native assertions",
+    "selection": "Deselect only from bounded R54 component qualification; remains required before programme closure"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "status_draft": {
+    "path": "wave35-preparation/T18e-NATIVE-RESTORE-STATUS-DRAFT.md",
+    "sha256": "03de8b42db91f001e475552b15f5f9cc273384d85761cfbe8787a408526064a0"
+  },
+  "global_types": {
+    "BANK_lineage": 14,
+    "oracle": 6,
+    "total": 20,
+    "checked_files": 198,
+    "not_waived": true
+  },
+  "hardware": "Two CUDA-unavailable cases skipped; GPU unexecuted/unqualified",
+  "overlap": "Independent378 and23 repeat root cases already in996 PASS, not additional unique cases",
+  "spawn_custody": {
+    "spawn-custody.json": {
+      "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+      "job": "owned",
+      "parent_job_exit_code": 0,
+      "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+      "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+      "manifest_sha256": "8097951b7cdd4adb1352cc544374220493c92b1be1a1dab5e2a08799efba1579",
+      "child_pid": 210450,
+      "torch": "2.11.0+cu130",
+      "threads": 1,
+      "interop_threads": 5,
+      "debug": true,
+      "source_guards": 811,
+      "configs": 573,
+      "artifacts": 13,
+      "child_receipt_sha256": "4105fa24afc8bb16d732bb9d3f708dbeed8d30f36c6f75ca41bd0369e7cb37a3",
+      "parent_observation_sha256": "7be1f226d7cb4f3ff93314b9fe159e438508d6183e6cde831531eda86c986296",
+      "verifier_sha256": "3f68e4af47eed338dee711879da8f82d51da06f25a4750200c49d673aa6e19f7",
+      "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+    },
+    "spawn-custody-binding_poison.json": {
+      "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+      "job": "owned",
+      "case": "binding_poison",
+      "expected_message": "binding poison fail closed",
+      "parent_job_exit_code": 0,
+      "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+      "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+      "manifest_sha256": "8097951b7cdd4adb1352cc544374220493c92b1be1a1dab5e2a08799efba1579",
+      "child_pid": 210133,
+      "torch": "2.11.0+cu130",
+      "threads": 1,
+      "interop_threads": 5,
+      "debug": true,
+      "source_guards": 811,
+      "configs": 573,
+      "artifacts": 13,
+      "child_receipt_sha256": "bf88cfe12b000871449c3311e093019a5cb2022825de474430f58aff6ab0f5a7",
+      "parent_observation_sha256": "f0136975427433567be844bdb915aac3ae63ebec17adda9066931661dacc65e5",
+      "verifier_sha256": "8d352dcf20b79d07269b414a4ec9504588623c5440d492779f08e68b0442df63",
+      "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+    },
+    "spawn-custody-domains_poison.json": {
+      "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+      "job": "owned",
+      "case": "domains_poison",
+      "expected_message": "domains poison fail closed",
+      "parent_job_exit_code": 0,
+      "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+      "candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+      "manifest_sha256": "8097951b7cdd4adb1352cc544374220493c92b1be1a1dab5e2a08799efba1579",
+      "child_pid": 210187,
+      "torch": "2.11.0+cu130",
+      "threads": 1,
+      "interop_threads": 5,
+      "debug": true,
+      "source_guards": 811,
+      "configs": 573,
+      "artifacts": 13,
+      "child_receipt_sha256": "696335bab91de11d79bb8ce6305bd1821c560a08a26d6596b0587a0de347ceac",
+      "parent_observation_sha256": "bba14ea323a91c8eb8625bf5fcae6d472cb0c2f7d97e86be694248f0ef7c9ea2",
+      "verifier_sha256": "8d352dcf20b79d07269b414a4ec9504588623c5440d492779f08e68b0442df63",
+      "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+    }
+  },
+  "required_next": [
+    "Approved finite three-interface core bootstrap/explicit-lineage extension tests-first, actual BANK/CP domain-beforelock/native gradients/currentness/recovery/archive/finalpublication",
+    "Actual direct consumers/ordinary runner/serving and stable-role/all-child/fullD/T26",
+    "All54 acceptance requirements/22 final reviews, full/default coverage>=70/slow/applicable hardware, finite learning qualification and exact-final-remote CI"
+  ],
+  "status_truth_review": {
+    "verdict": "APPROVE with mechanical root811 versus independent native810 attribution correction; correction applied; reviewer explicitly no further gate",
+    "review": "wave35-preparation/T18e-NATIVE-V4-DOCUMENTATION-INDEPENDENT-REVIEW.md",
+    "review_sha256": "42e4546e67d7363754c6374d4533801f46df488fabecb36ffadd468deb9e682a"
+  }
+}

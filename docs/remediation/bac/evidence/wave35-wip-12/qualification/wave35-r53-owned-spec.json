@@ -1,0 +1,36 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r53-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r53-owned",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owned",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_restore_configuration.py",
+        "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+        "tests/test_townlet/regressions/bac/test_owned_native_metadata.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py",
+        "tests/test_townlet/regressions/bac/test_icm_provider.py",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+        "tests/test_townlet/regressions/bac/test_pw_rng_binding.py",
+        "tests/test_townlet/regressions/bac/test_pw_rng_domains.py",
+        "tests/test_townlet/unit/exploration/test_exploration_strategies.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "3",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+diff --git a/src/townlet/exploration/icm.py b/src/townlet/exploration/icm.py
+index 95551a5a..89906330 100644
+--- a/src/townlet/exploration/icm.py
++++ b/src/townlet/exploration/icm.py
+@@ -398,36 +398,38 @@ class ICMExploration(EpsilonGreedyExploration):
+         optimizer = _adam_from_recipe(named, recipe, payload)
+         optimizer.load_state_dict(_owned(payload))
+         return optimizer
+ 
+     def validate_state(self, state: dict[str, Any]) -> None:
+         self.prepare_state(state)
+ 
+     def with_restore_configuration(self, state: dict[str, Any]) -> ICMExploration:
+         """Return an owned selected model graph with checked single-group Adam."""
+         try:
++            _validate_adam_recipe(self._named_model_parameters(), state["adam_restore_recipe"], state["optimizer"])
+             owned = _owned(state)
+             if type(owned) is not dict or owned.keys() != self.checkpoint_state().keys() or owned["schema"] != "icm-state-v4":
+                 raise ValueError("ICM restore configuration requires complete icm-state-v4")
+             candidate = deepcopy(self)
+             candidate.optimizer = _adam_from_recipe(candidate._named_model_parameters(), owned["adam_restore_recipe"], owned["optimizer"])
+             for module in (candidate.encoder, candidate.inverse_model, candidate.forward_model):
+                 for parameter in module.parameters():
+                     parameter.grad = None
+             candidate.validate_state(owned)
+             return candidate
+         except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+             raise ValueError("ICM restore configuration is malformed") from error
+ 
+     def prepare_state(self, state: dict[str, Any]) -> _PreparedICM:
+         """Validate and own every transported field before any live installation."""
+         try:
++            _validate_adam_recipe(self._named_model_parameters(), state["adam_restore_recipe"], state["optimizer"])
+             state = _owned(state)
+             if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "icm-state-v4":
+                 raise ValueError("ICM requires complete icm-state-v4 checkpoint")
+             recipe = _validate_adam_candidate(
+                 self._named_model_parameters(), self.optimizer, state["adam_restore_recipe"], state["optimizer"], exact_options=True
+             )
+             if not isinstance(state["policy"], dict) or state["policy"].keys() != self.policy.to_dict().keys():
+                 raise ValueError("ICM checkpoint requires current complete policy fields")
+             policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+             if policy.policy_identity != state["policy_identity"] or policy.policy_identity != self.policy.policy_identity:

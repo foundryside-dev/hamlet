@@ -1,0 +1,71 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py F [ 50%]
+F                                                                        [100%]
+
+=================================== FAILURES ===================================
+____ test_existing_decoder_refuses_same_shape_association_mismatch[shared] _____
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_existing_decoder_refuses_same_shape_association_mismatch(compiled_native_level: Any, scope: str) -> None:
+        """Causal RED on existing API: v3 silently accepts swapped bias moments.
+    
+        No new method or schema assertion precedes the discriminator.  Both graphs
+        have one group, identical serialized IDs/options and equal-shaped swapped
+        biases, while dense real gradients give each bias a distinct moment history.
+        """
+        source, receiver = [_factory(compiled_native_level, "rnd", scope) for _ in range(2)]
+        _replace_optimizer(source.backend, topology="one")
+        _manual_step(source.backend)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        assert _association(source.backend) != _association(receiver.backend)
+        assert state["optimizer"]["param_groups"] == receiver.backend.checkpoint_state()["optimizer"]["param_groups"]
+        # Correct direct load must refuse before touching a differently paired graph.
+        before = _observe(receiver.backend)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:424: Failed
+___ test_existing_decoder_refuses_same_shape_association_mismatch[per_world] ___
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_existing_decoder_refuses_same_shape_association_mismatch(compiled_native_level: Any, scope: str) -> None:
+        """Causal RED on existing API: v3 silently accepts swapped bias moments.
+    
+        No new method or schema assertion precedes the discriminator.  Both graphs
+        have one group, identical serialized IDs/options and equal-shaped swapped
+        biases, while dense real gradients give each bias a distinct moment history.
+        """
+        source, receiver = [_factory(compiled_native_level, "rnd", scope) for _ in range(2)]
+        _replace_optimizer(source.backend, topology="one")
+        _manual_step(source.backend)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        assert _association(source.backend) != _association(receiver.backend)
+        assert state["optimizer"]["param_groups"] == receiver.backend.checkpoint_state()["optimizer"]["param_groups"]
+        # Correct direct load must refuse before touching a differently paired graph.
+        before = _observe(receiver.backend)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:424: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_refuses_same_shape_association_mismatch[shared]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_refuses_same_shape_association_mismatch[per_world]
+============================== 2 failed in 6.11s ===============================

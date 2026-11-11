@@ -1,0 +1,36 @@
+{
+  "observed_at": "2026-11-11T12:17:02.509954+00:00",
+  "branch": "project-recovery-bac-2026-11-01",
+  "sha": "b8be82465c06257798247debd08cd7ec3b176699",
+  "tree": "3117ffbd120e0adaa41aa924eabdf1613f33b796",
+  "pushed": true,
+  "remote_exact_sha_tree_verified": "PASS independent GitHub Primary branch REST",
+  "local_clean": true,
+  "qualification_candidate": "8828819d905559e02f1865c768609c0acd66b139",
+  "source_equivalence": "PASS exact R47 src/tests/configs/scripts/.defaults-ratchet;2testfileschanged since11ec, productionunchanged;approveddocappend/evidenceonly",
+  "artifact_count": 171,
+  "changed_paths": 175,
+  "ci": {
+    "observation": "2026-11-11T12:14UTC",
+    "lint": {
+      "run": 43018425638,
+      "status": "completed",
+      "conclusion": "failure",
+      "updated_at": "2026-11-11T12:14:20Z"
+    },
+    "tests": {
+      "run": 43018425725,
+      "status": "in_progress",
+      "updated_at": "2026-11-11T12:13:10Z"
+    },
+    "config": {
+      "run": 43018425722,
+      "status": "in_progress",
+      "updated_at": "2026-11-11T12:13:10Z"
+    },
+    "detailed_lint_cause": "notyetfetched; no infer fromstatus",
+    "green_claim": false
+  },
+  "authority": "Existing authorized remote branch; no newbranch/worktree/checkout/PR/merge/deletion, privatebundleexcluded",
+  "scope": "Durable UNRELEASED WIP,28qualified38remaining66 unchanged; allglobalgatesremainrequired"
+}

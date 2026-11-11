@@ -1,0 +1,96 @@
+"""Verify one explicitly named real child and parent PID correlation."""
+
+import fcntl
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+spec = json.loads(Path(sys.argv[1]).read_text())
+assert len(sys.argv) == 5, "SPEC JOB_INDEX CASE EXPECTED_MESSAGE required"
+job = spec["jobs"][int(sys.argv[2])]
+case = sys.argv[3]
+expected_message = sys.argv[4]
+assert case in {"binding_poison", "domains_poison"}
+root = Path(spec["root"]).resolve()
+manifest_path = Path(spec["manifest"])
+manifest_bytes = manifest_path.read_bytes()
+manifest_hash = hashlib.sha256(manifest_bytes).hexdigest()
+manifest = json.loads(manifest_bytes)
+output = Path(spec["output"])
+job_dir = output / job["name"]
+result = json.loads((output / (job["name"] + "-result.json")).read_text())
+assert result["manifest_sha256"] == manifest_hash
+assert result["candidate_tree"] == manifest["candidate_tree"]
+assert result["base_commit"] == manifest["base_commit"]
+
+controller = json.loads((job_dir / "identity-controller.json").read_text())
+child_path = job_dir / f"spawn-identity-{case}.json"
+observation_path = job_dir / f"spawn-observation-{case}.json"
+child = json.loads(child_path.read_text())
+observed = json.loads(observation_path.read_text())
+assert set(observed) == {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256"}
+assert type(child["pid"]) is int and child["pid"] > 0
+assert observed["process_pid"] == observed["queued_pid"] == child["pid"]
+assert observed["exitcode"] == 0 and observed["qualified"] is True
+assert observed["message"] == expected_message
+assert observed["manifest_sha256"] == child["manifest_sha256"] == manifest_hash
+assert child["worker"] == case and controller["worker"] == "controller"
+for identity in (controller, child):
+    assert identity["sha"] == manifest["base_commit"]
+    assert identity["candidate_tree"] == manifest["candidate_tree"]
+    assert Path(identity["module"]).resolve() == root / "src/townlet/__init__.py"
+    assert identity["threads"] == 1
+assert child["torch"] == controller["torch"]
+assert child["debug"] is True
+assert type(child["interop_threads"]) is int and child["interop_threads"] == 5
+expected_imports = {
+    name: str(root / "src/townlet/exploration" / (name + ".py"))
+    for name in ("world_curiosity_state", "rng_custody", "rnd")
+}
+assert child["imports"] == expected_imports
+
+assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == manifest["base_commit"]
+with (root / ".superpowers/bac-qualification-index.lock").open("a") as lock:
+    fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+    try:
+        assert subprocess.check_output(["git", "write-tree"], cwd=root, text=True).strip() == manifest["candidate_tree"]
+    finally:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+assert subprocess.run(["git", "diff", "--quiet"], cwd=root).returncode == 0
+for relative, expected_hash in manifest["source_files"].items():
+    assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected_hash, relative
+for relative, expected_hash in manifest["configs"].items():
+    assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected_hash, relative
+for relative, expected_hash in manifest["artifacts"].items():
+    assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected_hash, relative
+assert subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=root, text=True) == manifest["worktree_registry"]
+
+receipt = {
+    "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+    "job": job["name"],
+    "case": case,
+    "expected_message": expected_message,
+    "parent_job_exit_code": result["exit_code"],
+    "base_commit": manifest["base_commit"],
+    "candidate_tree": manifest["candidate_tree"],
+    "manifest_sha256": manifest_hash,
+    "child_pid": child["pid"],
+    "torch": child["torch"],
+    "threads": child["threads"],
+    "interop_threads": child["interop_threads"],
+    "debug": child["debug"],
+    "source_guards": len(manifest["source_files"]),
+    "configs": len(manifest["configs"]),
+    "artifacts": len(manifest["artifacts"]),
+    "child_receipt_sha256": hashlib.sha256(child_path.read_bytes()).hexdigest(),
+    "parent_observation_sha256": hashlib.sha256(observation_path.read_bytes()).hexdigest(),
+    "verifier_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts.",
+}
+destination = job_dir / f"spawn-custody-{case}.json"
+assert not destination.exists(), destination
+destination.write_text(json.dumps(receipt, indent=2) + "\n")
+print(json.dumps(receipt, indent=2))

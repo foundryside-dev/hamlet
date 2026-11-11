@@ -1,0 +1,25 @@
+{
+  "name": "tensor-lr-baseline",
+  "exit_code": 0,
+  "seconds": 12.396213054656982,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_plain_tensor_lr_restore_configuration",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r51-tensor-lr-baseline/tensor-lr-baseline.log",
+  "sha256": "94c92e855f0908c530a9f833e50b2b042c083a8f0eae7ea46795cd9d7e92fa7a",
+  "candidate_tree": "ba192ab57b66688e09dd307ffa495ad3993c1abd",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "manifest_sha256": "8916e397bdab9cbb55866f1ac3305f6db724a206cb0ff77f4e013f2809930ab2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

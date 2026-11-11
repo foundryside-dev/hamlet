@@ -1,0 +1,452 @@
+diff --git a/tests/test_townlet/regressions/bac/test_native_restore_configuration.py b/tests/test_townlet/regressions/bac/test_native_restore_configuration.py
+index 193cccb7..c4e81657 100644
+--- a/tests/test_townlet/regressions/bac/test_native_restore_configuration.py
++++ b/tests/test_townlet/regressions/bac/test_native_restore_configuration.py
+@@ -43,20 +43,27 @@ def compiled_native_level() -> Any:
+ @dataclass
+ class NativeRig:
+     backend: Any
+     policy: Any
+     obs_dim: int
+     action_dim: int
+     rng: Any
+     descriptor: Any
+ 
+ 
++@dataclass(eq=False)
++class IdentityObservation:
++    """Pin original objects; compare with ``is`` only within one live graph."""
++
++    references: dict[str, object]
++
++
+ def _factory(level: Any, family: str, scope: str, *, feature_dim: int = 128) -> NativeRig:
+     drive_data = level.drive.intrinsic.model_dump()
+     drive_data["strategy"] = family
+     drive = IntrinsicStrategyConfig.model_validate(drive_data)
+     training_data = deepcopy(level.training.model_dump())
+     training_data["replay_buffer"]["batch_size"] = 2
+     training_data["intrinsic"]["rnd"]["feature_dim"] = feature_dim
+     training_data["intrinsic"]["rnd"]["learning_rate"] = 0.001
+     training_data["intrinsic"]["initial_weight"] = 0.4
+     training_data["intrinsic"]["survival_window"] = 10
+@@ -92,21 +99,25 @@ def _factory(level: Any, family: str, scope: str, *, feature_dim: int = 128) ->
+             policy, world_ids=(world_id,), observation_dim=obs_dim, action_dim=action_dim, training_seed=7301
+         )
+         rng = WorldRNGState.create(descriptor=descriptor, world_id=world_id, cuda_devices=())
+     backend = make_backend(policy, world_id=world_id, obs_dim=obs_dim, action_dim=action_dim, device="cpu", rng=rng, descriptor=descriptor)
+     return NativeRig(backend, policy, obs_dim, action_dim, rng, descriptor)
+ 
+ 
+ def _equal(left: Any, right: Any) -> None:
+     """Exact owned-tree oracle, including option scalar/container types."""
+     assert type(left) is type(right), (type(left), type(right))
+-    if isinstance(left, torch.Tensor):
++    if isinstance(left, IdentityObservation):
++        assert left.references.keys() == right.references.keys()
++        for name, reference in left.references.items():
++            assert reference is right.references[name], f"live identity changed: {name}"
++    elif isinstance(left, torch.Tensor):
+         assert left.shape == right.shape
+         assert left.dtype == right.dtype
+         assert left.device == right.device
+         assert torch.all((left == right) | (torch.isnan(left) & torch.isnan(right))).item()
+     elif isinstance(left, dict):
+         assert left.keys() == right.keys()
+         for key in left:
+             _equal(left[key], right[key])
+     elif isinstance(left, (tuple, list)):
+         assert len(left) == len(right)
+@@ -152,33 +163,179 @@ def _moments(backend: Any) -> dict[str, Any]:
+ 
+ 
+ def _weights(backend: Any) -> dict[str, torch.Tensor]:
+     return {name: parameter.detach().clone() for name, parameter in _named(backend).items()}
+ 
+ 
+ def _gradients(backend: Any) -> dict[str, Any]:
+     return {name: None if parameter.grad is None else parameter.grad.detach().clone() for name, parameter in _named(backend).items()}
+ 
+ 
++def _modules(backend: Any) -> dict[str, torch.nn.Module]:
++    native = _native(backend)
++    if isinstance(native, ICMExploration):
++        return {"encoder": native.encoder, "inverse_model": native.inverse_model, "forward_model": native.forward_model}
++    return {"fixed_network": native.fixed_network, "predictor_network": native.predictor_network}
++
++
++def _identities(backend: Any) -> IdentityObservation:
++    native = _native(backend)
++    optimizer = native.optimizer
++    references = {
++        "backend": backend,
++        "native": native,
++        "optimizer": optimizer,
++        "groups": optimizer.param_groups,
++        "state": optimizer.state,
++        "defaults": optimizer.defaults,
++    }
++    for prefix, module in _modules(backend).items():
++        for index, submodule in enumerate(module.modules()):
++            references[f"{prefix}.module.{index}"] = submodule
++        for name, parameter in module.named_parameters(remove_duplicate=False):
++            references[f"{prefix}.parameter.{name}"] = parameter
++            if parameter.grad is not None:
++                references[f"{prefix}.gradient.{name}"] = parameter.grad
++    for index, group in enumerate(optimizer.param_groups):
++        references[f"group.{index}"] = group
++        references[f"group.{index}.params"] = group["params"]
++        for position, parameter in enumerate(group["params"]):
++            references[f"group.{index}.parameter.{position}"] = parameter
++            if parameter.grad is not None:
++                references[f"group.{index}.gradient.{position}"] = parameter.grad
++    for index, (parameter, moments) in enumerate(optimizer.state.items()):
++        references[f"state.{index}.parameter"] = parameter
++        references[f"state.{index}.moments"] = moments
++    for index, tensor in enumerate(_tensors((optimizer.param_groups, optimizer.state, optimizer.defaults))):
++        references[f"optimizer.tensor.{index}"] = tensor
++    if isinstance(native, ICMExploration):
++        references.update(policy=native.policy, pending=native._pending, counters=native._counters)
++        for index, row in enumerate(native._pending):
++            references[f"pending.row.{index}"] = row
++            for key in ("predecessor", "successor"):
++                references[f"pending.row.{index}.{key}"] = row[key]
++    else:
++        references.update(buffer=native.obs_buffer, reward_rms=native.reward_rms, service_options=native.service_options)
++        for index, row in enumerate(native.obs_buffer):
++            references[f"buffer.row.{index}"] = row
++    if isinstance(backend, AdaptiveIntrinsicExploration):
++        references["survival_history"] = backend.survival_history
++    return IdentityObservation(references)
++
++
++def _direct_observe(backend: Any) -> tuple[Any, ...]:
++    """No native checkpoint: observe even an intentionally invalid live graph."""
++    native = _native(backend)
++    optimizer = native.optimizer
++    values = {
++        "models": {name: module.state_dict() for name, module in _modules(backend).items()},
++        "module_training_flags": {
++            name: [submodule.training for submodule in module.modules()] for name, module in _modules(backend).items()
++        },
++        "model_parameter_flags_gradients": {
++            prefix: [(name, parameter.requires_grad, parameter.grad) for name, parameter in module.named_parameters(remove_duplicate=False)]
++            for prefix, module in _modules(backend).items()
++        },
++        "optimizer_groups": [
++            {key: [id(parameter) for parameter in value] if key == "params" else value for key, value in group.items()}
++            for group in optimizer.param_groups
++        ],
++        "optimizer_state": [(id(parameter), moments) for parameter, moments in optimizer.state.items()],
++        "optimizer_defaults": optimizer.defaults,
++        "optimizer_parameters": [
++            [(id(parameter), parameter.detach(), parameter.requires_grad, parameter.grad) for parameter in group["params"]]
++            for group in optimizer.param_groups
++        ],
++        "common": (
++            native.obs_dim,
++            native.training_batch_size,
++            native.device,
++            native.epsilon,
++            native.epsilon_min,
++            native.epsilon_decay,
++            native._service_clock_unit,
++            native._service_position,
++            native._ordinary_updates_at_position,
++            native._optimizer_epoch_origin,
++        ),
++    }
++    if isinstance(native, ICMExploration):
++        values["icm"] = (
++            native.action_dim,
++            native.feature_dim,
++            native.hidden_dim,
++            native.learning_rate,
++            native.inverse_weight,
++            native.forward_weight,
++            native.max_pending_transitions,
++            native._source_device,
++            native.policy.to_dict(),
++            list(native._pending),
++            native._counters,
++            native._last_loss,
++        )
++    else:
++        values["rnd"] = (
++            native.embed_dim,
++            native.obs_buffer,
++            native.step_counter,
++            None if native.service_options is None else native.service_options.model_dump(),
++            native._admitted_rows,
++            native._consumed_rows,
++            native._dropped_rows,
++            native._optimizer_updates,
++            native.reward_rms.mean,
++            native.reward_rms.var,
++            native.reward_rms.count,
++        )
++    if isinstance(backend, AdaptiveIntrinsicExploration):
++        values["adaptive"] = (
++            backend.initial_intrinsic_weight,
++            backend.current_intrinsic_weight,
++            backend.min_intrinsic_weight,
++            backend.variance_threshold,
++            backend.min_survival_fraction,
++            backend.max_episode_length,
++            backend.min_survival_for_annealing,
++            backend.survival_window,
++            backend.decay_rate,
++            backend.device,
++            backend.survival_history,
++        )
++    return deepcopy(values), _identities(backend)
++
++
+ def _observe(backend: Any) -> tuple[Any, ...]:
+     native = _native(backend)
+-    fixed = None
+     if isinstance(native, RNDExploration):
+-        fixed = [(parameter.requires_grad, parameter.grad) for parameter in native.fixed_network.parameters()]
+-        assert all(not requires_grad and grad is None for requires_grad, grad in fixed)
+-    return deepcopy((backend.checkpoint_state(), _gradients(backend), _association(backend), fixed))
++        assert all(not parameter.requires_grad and parameter.grad is None for parameter in native.fixed_network.parameters())
++    # Observe before invoking the capture under test; checkpoint_state itself
++    # must not be allowed to replace or repair the baseline we intend to retain.
++    return _direct_observe(backend), _association(backend)
++
++
++def _preload_gradients_are_absent(backend: Any) -> None:
++    for module in _modules(backend).values():
++        assert all(parameter.grad is None for parameter in module.parameters())
++    native = _native(backend)
++    if isinstance(native, RNDExploration):
++        assert all(not parameter.requires_grad for parameter in native.fixed_network.parameters())
+ 
+ 
+ def _ambient() -> tuple[Any, ...]:
+     return (torch.random.get_rng_state().clone(), random.getstate(), deepcopy(np.random.get_state()))
+ 
+ 
++def _rng_continuation(rig: NativeRig) -> Any:
++    return None if rig.rng is None else rig.rng.snapshot()
++
++
+ def _rows(rig: NativeRig, count: int = 3, offset: float = 0.0) -> torch.Tensor:
+     return torch.arange(count * rig.obs_dim, dtype=torch.float32).reshape(count, rig.obs_dim).remainder(19).div(19).add(offset)
+ 
+ 
+ def _service(rig: NativeRig, *, count: int = 3, offset: float = 0.0) -> Any:
+     backend = rig.backend
+     state = _record(backend.checkpoint_state())
+     clock_state = state if isinstance(backend, ICMExploration) else state["predictor_service"]
+     previous = clock_state["service_position"]
+     unit = backend.service_clock_unit
+@@ -263,29 +420,31 @@ def _assert_recipe(backend: Any, state: dict[str, Any]) -> None:
+         assert "adam_restore_recipe" not in state
+         assert state["schema"] == "adaptive-intrinsic-state-v4"
+     assert record["schema"] == ("icm-state-v4" if isinstance(backend, ICMExploration) else "rnd-state-v4")
+     if not isinstance(backend, ICMExploration):
+         assert record["predictor_service"]["version"] == 3
+ 
+ 
+ def _restore(source: NativeRig, receiver: NativeRig) -> NativeRig:
+     state = source.backend.checkpoint_state()
+     source.backend.validate_state(state)
+-    before_source, before_receiver, before_rng = _observe(source.backend), _observe(receiver.backend), _ambient()
++    before_source, before_receiver = _observe(source.backend), _observe(receiver.backend)
++    before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+     receiver_weights = _weights(receiver.backend)
+     configured = receiver.backend.with_restore_configuration(state)
+     assert configured is not receiver.backend
+     _equal(_observe(source.backend), before_source)
+     _equal(_observe(receiver.backend), before_receiver)
+-    _equal(_ambient(), before_rng)
++    _equal((_ambient(), _rng_continuation(source), _rng_continuation(receiver)), before_rng)
+     _equal(_weights(configured), receiver_weights)
+     assert not _native(configured).optimizer.state
++    _preload_gradients_are_absent(configured)
+     configured.validate_state(state)
+     configured.load_state(state)
+     _equal(configured.checkpoint_state(), state)
+     _equal(_moments(configured), _moments(source.backend))
+     _equal(_weights(configured), _weights(source.backend))
+     assert _association(configured) == _association(source.backend)
+     _assert_recipe(configured, configured.checkpoint_state())
+     for name, parameter in _named(configured).items():
+         assert parameter is not _named(source.backend)[name]
+         assert parameter is not _named(receiver.backend)[name]
+@@ -638,25 +797,25 @@ def _corrupt(state: dict[str, Any], case: str) -> None:
+         history[first]["exp_avg"] = history[first]["exp_avg"].double()
+     elif case == "negative_variance":
+         history[first]["exp_avg_sq"].fill_(-1)
+     elif case == "nonfinite_moment":
+         history[first]["exp_avg"].fill_(float("nan"))
+     else:
+         raise AssertionError(case)
+ 
+ 
+ def _refuse_purely(receiver: NativeRig, state: dict[str, Any]) -> None:
+-    before, before_rng, owned_state = _observe(receiver.backend), _ambient(), deepcopy(state)
++    before, before_rng, owned_state = _observe(receiver.backend), (_ambient(), _rng_continuation(receiver)), deepcopy(state)
+     with pytest.raises(ValueError):
+         receiver.backend.with_restore_configuration(state)
+     _equal(_observe(receiver.backend), before)
+-    _equal(_ambient(), before_rng)
++    _equal((_ambient(), _rng_continuation(receiver)), before_rng)
+     _equal(state, owned_state)
+ 
+ 
+ @pytest.mark.parametrize("scope", SCOPES)
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("case", MALFORMED)
+ def test_malformed_restore_configuration_refused(compiled_native_level: Any, scope: str, family: str, case: str) -> None:
+     source, receiver = [_factory(compiled_native_level, family, scope) for _ in range(2)]
+     _service(source)
+     source.backend.validate_state(source.backend.checkpoint_state())
+@@ -697,34 +856,29 @@ def test_rnd_invalid_group_configuration_refused(compiled_native_level: Any, sco
+ @pytest.mark.parametrize("case", ("extra_group", "empty_history", "manual_displacement", "amsgrad_history", "policy", "loss_without_epoch"))
+ def test_icm_unsupported_configuration_history_refused(compiled_native_level: Any, scope: str, case: str) -> None:
+     source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+     if case == "amsgrad_history":
+         source.backend.optimizer.param_groups[0]["amsgrad"] = True
+     _service(source)
+     if case == "manual_displacement":
+         _manual_step(source.backend)
+     # A nonportable live history may be refused by capture itself.  Otherwise its
+     # exported record must be refused by configuration, without receiver mutation.
+-    before_weights, before_moments, before_gradients, before_rng = (
+-        _weights(source.backend),
+-        _moments(source.backend),
+-        _gradients(source.backend),
+-        _ambient(),
+-    )
++    before_source, before_receiver = _direct_observe(source.backend), _direct_observe(receiver.backend)
++    before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+     try:
+         state = source.backend.checkpoint_state()
+     except ValueError:
+         assert case in {"manual_displacement", "amsgrad_history"}
+-        _equal(_weights(source.backend), before_weights)
+-        _equal(_moments(source.backend), before_moments)
+-        _equal(_gradients(source.backend), before_gradients)
+-        _equal(_ambient(), before_rng)
++        _equal(_direct_observe(source.backend), before_source)
++        _equal(_direct_observe(receiver.backend), before_receiver)
++        _equal((_ambient(), _rng_continuation(source), _rng_continuation(receiver)), before_rng)
+         return
+     if case == "extra_group":
+         payload = state["optimizer"]["param_groups"]
+         recipe = state["adam_restore_recipe"]["groups"]
+         extra, extra_recipe = deepcopy(payload[0]), deepcopy(recipe[0])
+         extra["params"] = payload[0]["params"][1:]
+         payload[0]["params"] = payload[0]["params"][:1]
+         extra_recipe["parameter_names"] = recipe[0]["parameter_names"][1:]
+         recipe[0]["parameter_names"] = recipe[0]["parameter_names"][:1]
+         payload.append(extra)
+@@ -758,35 +912,41 @@ def _mixed_gradients(backend: Any) -> None:
+ @pytest.mark.parametrize("scope", SCOPES)
+ @pytest.mark.parametrize("family", FAMILIES)
+ def test_capture_and_configuration_are_owned_and_pure(compiled_native_level: Any, scope: str, family: str) -> None:
+     source, receiver = [_factory(compiled_native_level, family, scope) for _ in range(2)]
+     if family != "icm":
+         _native(source.backend).optimizer.param_groups[0]["lr"] = torch.tensor(0.001)
+     _service(source)
+     _service(receiver, offset=0.5)
+     _mixed_gradients(source.backend)
+     _mixed_gradients(receiver.backend)
+-    before_source, before_receiver, before_rng = _observe(source.backend), _observe(receiver.backend), _ambient()
++    before_source, before_receiver = _observe(source.backend), _observe(receiver.backend)
++    before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+     exported = source.backend.checkpoint_state()
+     record = _record(exported)
+     recipe_pointers = {tensor.data_ptr() for tensor in _tensors(record["adam_restore_recipe"]) if tensor.numel()}
+     payload_pointers = {tensor.data_ptr() for tensor in _tensors(record["optimizer"]) if tensor.numel()}
+     assert not recipe_pointers.intersection(payload_pointers)
+     _equal(_observe(source.backend), before_source)
+-    _equal(_ambient(), before_rng)
++    _equal((_ambient(), _rng_continuation(source), _rng_continuation(receiver)), before_rng)
+     configured = receiver.backend.with_restore_configuration(exported)
++    _equal(_observe(source.backend), before_source)
++    _equal(_observe(receiver.backend), before_receiver)
++    _preload_gradients_are_absent(configured)
+     second = receiver.backend.with_restore_configuration(exported)
+     _equal(_observe(source.backend), before_source)
+     _equal(_observe(receiver.backend), before_receiver)
+-    _equal(_ambient(), before_rng)
++    _equal((_ambient(), _rng_continuation(source), _rng_continuation(receiver)), before_rng)
+     _equal(_weights(configured), _weights(receiver.backend))
+     assert not _native(configured).optimizer.state
++    _preload_gradients_are_absent(second)
++    assert not _native(second).optimizer.state
+     configured.load_state(exported)
+     second.load_state(exported)
+     _equal(configured.checkpoint_state(), exported)
+     actual_storages = []
+     for backend in (source.backend, receiver.backend, configured, second):
+         native = _native(backend)
+         tensors = [*_named(backend).values(), *_tensors(native.optimizer.state), *_tensors(native.optimizer.param_groups)]
+         if isinstance(native, RNDExploration):
+             tensors.extend(native.fixed_network.parameters())
+         actual_storages.append({tensor.data_ptr() for tensor in tensors if tensor.numel()})
+@@ -838,46 +998,57 @@ def test_gradients_attach_after_final_copy_to_final_named_parameters(compiled_na
+         assert all(parameter.grad is None for parameter in _native(final).fixed_network.parameters())
+     final_rig = NativeRig(final, restored.policy, restored.obs_dim, restored.action_dim, restored.rng, restored.descriptor)
+     _next_equivalent(source, final_rig)
+ 
+ 
+ @pytest.mark.parametrize("scope", SCOPES)
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("graph", ("foreign", "missing", "duplicate", "alias", "subclass"))
+ def test_capture_refuses_nonportable_parameter_graph(compiled_native_level: Any, scope: str, family: str, graph: str) -> None:
+     rig = _factory(compiled_native_level, family, scope)
++    _service(rig)
++    if isinstance(rig.backend, AdaptiveIntrinsicExploration):
++        rig.backend.update_on_episode_end(8.0)
++    _mixed_gradients(rig.backend)
+     native = _native(rig.backend)
++    original_optimizer = native.optimizer
+     parameters = list(_named(rig.backend).values())
+     if graph == "foreign":
+         foreign = torch.nn.Parameter(torch.zeros_like(parameters[-1]))
+         native.optimizer = torch.optim.Adam([*parameters[:-1], foreign], lr=0.001)
+     elif graph == "missing":
+         native.optimizer = torch.optim.Adam(parameters[:-1], lr=0.001)
+     elif graph == "duplicate":
+         # Alter an actual already-constructed Adam group, avoiding upstream
+         # constructor warnings as the expected failure mechanism.
+         native.optimizer.param_groups[0]["params"].append(parameters[-1])
+     elif graph == "alias":
+         module = native.encoder if isinstance(native, ICMExploration) else native.predictor_network
+         module.register_parameter("duplicate_parameter_alias", parameters[0])
+     else:
+ 
+         class AdamSubclass(torch.optim.Adam):
+             pass
+ 
+         native.optimizer = AdamSubclass(parameters, lr=0.001)
+-    before_weights, before_gradients, before_rng = _weights(rig.backend), _gradients(rig.backend), _ambient()
++    if native.optimizer is not original_optimizer:
++        # Retain actual earned history for surviving Parameters; foreign/missing
++        # coverage remains intentionally invalid. No history or clock is invented.
++        for group in native.optimizer.param_groups:
++            for parameter in group["params"]:
++                if parameter in original_optimizer.state:
++                    native.optimizer.state[parameter] = deepcopy(original_optimizer.state[parameter])
++    before_source, before_rng = _direct_observe(rig.backend), (_ambient(), _rng_continuation(rig))
+     with pytest.raises(ValueError):
+         rig.backend.checkpoint_state()
+-    _equal(_weights(rig.backend), before_weights)
+-    _equal(_gradients(rig.backend), before_gradients)
+-    _equal(_ambient(), before_rng)
++    _equal(_direct_observe(rig.backend), before_source)
++    _equal((_ambient(), _rng_continuation(rig)), before_rng)
+ 
+ 
+ @pytest.mark.parametrize("scope", SCOPES)
+ @pytest.mark.parametrize("family", FAMILIES)
+ def test_direct_validation_requires_exact_paired_name_order(compiled_native_level: Any, scope: str, family: str) -> None:
+     rig = _factory(compiled_native_level, family, scope)
+     _service(rig)
+     rig.backend.validate_state(rig.backend.checkpoint_state())
+     state = rig.backend.checkpoint_state()
+     record = _record(state)

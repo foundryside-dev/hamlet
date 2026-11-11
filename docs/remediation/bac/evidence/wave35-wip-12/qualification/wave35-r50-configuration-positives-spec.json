@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r50-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r50-configuration-positives",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "configuration-positives",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_rnd_two_group_restore_configuration",
+        "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_adaptive_two_group_restore_configuration",
+        "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_changed_lr_restore_configuration",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x"
+      ]
+    }
+  ]
+}

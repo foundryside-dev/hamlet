@@ -219,9 +219,9 @@ def _learning_snapshot(value):
 
 def _assert_learning(before, after, kind, updates, pending):
     old, new = _rnd_state(_learning_snapshot(before), kind), _rnd_state(_learning_snapshot(after), kind)
-    assert new["schema"] == ("icm-state-v3" if kind == "icm" else "rnd-state-v3")
+    assert new["schema"] == ("icm-state-v4" if kind == "icm" else "rnd-state-v4")
     if kind == "adaptive_rnd":
-        assert after["schema"] == "adaptive-intrinsic-state-v3"
+        assert after["schema"] == "adaptive-intrinsic-state-v4"
     model = "encoder" if kind == "icm" else "predictor_network"
     assert any(not torch.equal(old[model][key], value) for key, value in new[model].items())
     moments = new["optimizer"]["state"]

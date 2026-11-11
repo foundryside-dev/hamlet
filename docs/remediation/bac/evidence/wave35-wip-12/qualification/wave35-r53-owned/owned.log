@@ -1,0 +1,484 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 3/3 workers
+3 workers [946 items]
+
+........................................................................ [  7%]
+........................................................................ [ 15%]
+................F..F..F..F..F..F........................................ [ 22%]
+........................................................................ [ 30%]
+........................................................................ [ 38%]
+............s........................................................... [ 45%]
+........................................................................ [ 53%]
+..............................F.F.F..sF.F.FF.FF..FFFF.F................. [ 60%]
+........................................................................ [ 68%]
+........................................................................ [ 76%]
+.................F...................................................... [ 83%]
+.............................................................F.......... [ 91%]
+FF...................................................................... [ 98%]
+..........                                                               [100%]
+=================================== FAILURES ===================================
+_____ test_owned_malformed_backend_refuses_before_rng_or_live_install[rnd] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_malformed_backend_refuses_before_rng_or_live_install(kind: str) -> None:
+        owner = _owned(kind)
+>       owner.call(lambda backend, sources: _warm(backend))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1128: TypeError
+_____ test_owned_malformed_backend_refuses_before_rng_or_live_install[icm] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_malformed_backend_refuses_before_rng_or_live_install(kind: str) -> None:
+        owner = _owned(kind)
+>       owner.call(lambda backend, sources: _warm(backend))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1128: TypeError
+__ test_owned_malformed_backend_refuses_before_rng_or_live_install[adaptive] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_malformed_backend_refuses_before_rng_or_live_install(kind: str) -> None:
+        owner = _owned(kind)
+>       owner.call(lambda backend, sources: _warm(backend))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1128: TypeError
+___ test_private_world_construction_and_owned_pressure_preserve_world1[rnd] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str) -> None:
+        world1 = _owned(kind)
+>       world1.call(lambda backend, sources: _warm(backend))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1148: TypeError
+___ test_private_world_construction_and_owned_pressure_preserve_world1[icm] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str) -> None:
+        world1 = _owned(kind)
+>       world1.call(lambda backend, sources: _warm(backend))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1148: TypeError
+_ test_private_world_construction_and_owned_pressure_preserve_world1[adaptive] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str) -> None:
+        world1 = _owned(kind)
+>       world1.call(lambda backend, sources: _warm(backend))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:1148: TypeError
+___________ test_owned_callback_preserves_actual_native_mapping[rnd] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3dc46c00>, <function setup_native.<locals>.factory at 0x7f9e3dc47560>)
+
+    def test_owned_callback_preserves_actual_native_mapping(setup_native):
+        actual = owner(setup_native)
+        # Primitive evidence is collected before call's result copier runs.
+>       witness = actual.call(
+            lambda backend, sources: tuple(
+                (type(native_rnd(backend.checkpoint_state())[key]).__name__, list(native_rnd(backend.checkpoint_state())[key]._metadata))
+                for key in ("fixed_network", "predictor_network")
+            )
+        )
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:186: TypeError
+______ test_owned_callback_preserves_actual_native_mapping[adaptive_rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b49a0>, <function setup_native.<locals>.factory at 0x7f9e3d8b4540>)
+
+    def test_owned_callback_preserves_actual_native_mapping(setup_native):
+        actual = owner(setup_native)
+        # Primitive evidence is collected before call's result copier runs.
+>       witness = actual.call(
+            lambda backend, sources: tuple(
+                (type(native_rnd(backend.checkpoint_state())[key]).__name__, list(native_rnd(backend.checkpoint_state())[key]._metadata))
+                for key in ("fixed_network", "predictor_network")
+            )
+        )
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:186: TypeError
+______ test_owned_snapshot_preserves_native_metadata_order_and_tail[rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b72e0>, <function setup_native.<locals>.factory at 0x7f9e3d8b45e0>)
+
+    def test_owned_snapshot_preserves_native_metadata_order_and_tail(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        actual = owner(setup_native)
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+>       actual.call(lambda candidate, sources: learn(candidate, family, ROWS, 3))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:206: TypeError
+__ test_owned_snapshot_preserves_native_metadata_order_and_tail[adaptive_rnd] __
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b71a0>, <function setup_native.<locals>.factory at 0x7f9e3d8b40e0>)
+
+    def test_owned_snapshot_preserves_native_metadata_order_and_tail(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        actual = owner(setup_native)
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+>       actual.call(lambda candidate, sources: learn(candidate, family, ROWS, 3))
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:206: TypeError
+________ test_prepare_install_real_native_resume_learning_and_rng[rnd] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b4860>, <function setup_native.<locals>.factory at 0x7f9e3d8b4900>)
+
+    def test_prepare_install_real_native_resume_learning_and_rng(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        _, _, factory = setup_native
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+        destination = owner(setup_native)
+        # Native input comes straight from the real provider, before the owner copier.
+        payload = {"schema": "owned-world-backend-v1", "healthy": True, "backend": backend.checkpoint_state(), "rng": rng.snapshot()}
+        original = deepcopy(payload)
+>       destination_before = destination.snapshot()
+                             ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:225: TypeError
+____ test_prepare_install_real_native_resume_learning_and_rng[adaptive_rnd] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b74c0>, <function setup_native.<locals>.factory at 0x7f9e3d8b7c40>)
+
+    def test_prepare_install_real_native_resume_learning_and_rng(setup_native):
+        family, rng, backend = direct_provider(setup_native)
+        _, _, factory = setup_native
+        with rng.activate("service"):
+            learn(backend, family, ROWS, 3)
+        destination = owner(setup_native)
+        # Native input comes straight from the real provider, before the owner copier.
+        payload = {"schema": "owned-world-backend-v1", "healthy": True, "backend": backend.checkpoint_state(), "rng": rng.snapshot()}
+        original = deepcopy(payload)
+>       destination_before = destination.snapshot()
+                             ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:225: TypeError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-transport_order] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b4400>, <function setup_native.<locals>.factory at 0x7f9e3d8b7920>)
+mutation = 'transport_order'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+>       payload = destination.snapshot()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:259: TypeError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-candidate_metadata] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b5120>, <function setup_native.<locals>.factory at 0x7f9e3d8b4c20>)
+mutation = 'candidate_metadata'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+>       payload = destination.snapshot()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:259: TypeError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-transport_order] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b6a20>, <function setup_native.<locals>.factory at 0x7f9e3d8b6d40>)
+mutation = 'transport_order'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+>       payload = destination.snapshot()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:259: TypeError
+_ test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-candidate_metadata] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b4360>, <function setup_native.<locals>.factory at 0x7f9e3d8b5940>)
+mutation = 'candidate_metadata'
+
+    @pytest.mark.parametrize("mutation", ("transport_order", "candidate_metadata"))
+    def test_real_native_validator_rejects_order_or_metadata_only_mutation(setup_native, mutation):
+        family, _, backend = direct_provider(setup_native)
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+>       payload = destination.snapshot()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:259: TypeError
+_____ test_callback_numeric_recursive_metadata_is_independently_owned[rnd] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b7600>, <function setup_native.<locals>.factory at 0x7f9e3d8b7e20>)
+
+    def test_callback_numeric_recursive_metadata_is_independently_owned(setup_native):
+        actual = owner(setup_native)
+        # This narrow portable nested metadata value tests the generic copier. It
+        # does not assert that arbitrary plugin native schemas can load this value.
+        inner = OrderedDict([("z", torch.tensor([1.5], requires_grad=True)), ("a", np.array([2.5], dtype=np.float64))])
+        inner._metadata = OrderedDict([("inner", {"version": np.int64(3)})])
+        value = OrderedDict([("second", inner), ("first", (np.float32(4.5), [6]))])
+        value._metadata = OrderedDict([("", {"version": 1, "nested": inner})])
+        expected = deepcopy(value)
+>       result = actual.call(lambda backend, sources: value)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:292: TypeError
+_ test_callback_numeric_recursive_metadata_is_independently_owned[adaptive_rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b7c40>, <function setup_native.<locals>.factory at 0x7f9e3d8b7ec0>)
+
+    def test_callback_numeric_recursive_metadata_is_independently_owned(setup_native):
+        actual = owner(setup_native)
+        # This narrow portable nested metadata value tests the generic copier. It
+        # does not assert that arbitrary plugin native schemas can load this value.
+        inner = OrderedDict([("z", torch.tensor([1.5], requires_grad=True)), ("a", np.array([2.5], dtype=np.float64))])
+        inner._metadata = OrderedDict([("inner", {"version": np.int64(3)})])
+        value = OrderedDict([("second", inner), ("first", (np.float32(4.5), [6]))])
+        value._metadata = OrderedDict([("", {"version": 1, "nested": inner})])
+        expected = deepcopy(value)
+>       result = actual.call(lambda backend, sources: value)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:292: TypeError
+_ test_observation_revision_stales_prepared_handle_without_changing_state[rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b4400>, <function setup_native.<locals>.factory at 0x7f9e3d8b49a0>)
+
+    def test_observation_revision_stales_prepared_handle_without_changing_state(setup_native):
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+>       payload = destination.snapshot()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:306: TypeError
+_ test_observation_revision_stales_prepared_handle_without_changing_state[adaptive_rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+setup_native = ('adaptive_rnd', <function setup_native.<locals>.rng at 0x7f9e3d8b71a0>, <function setup_native.<locals>.factory at 0x7f9e3d8b5580>)
+
+    def test_observation_revision_stales_prepared_handle_without_changing_state(setup_native):
+        destination = owner(setup_native)
+        _, _, factory = setup_native
+>       payload = destination.snapshot()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.snapshot() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_owned_native_metadata.py:306: TypeError
+______ test_native_runner_checkpoint_retains_tail_and_rejects_corruption _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-2/popen-gw1/test_native_runner_checkpoint_0')
+
+    def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
+        import hashlib
+        import shutil
+        from pathlib import Path
+    
+        import yaml
+    
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        doc = yaml.safe_load(training_path.read_text())
+        training = doc["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=2, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        training["bac_options"]["rnd"]["max_pending_rows"] = 6
+        training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
+        with DemoRunner(
+            config_dir=pack, db_path=tmp_path / "run.db", checkpoint_dir=tmp_path / "checkpoints", max_episodes=2, level_name="L0_0_minimal"
+        ) as runner:
+>           runner.run()
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:294: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.demo.runner.DemoRunner object at 0x7f9e3dea2f90>
+
+    def run(self):
+        """Run demo training loop."""
+        logger.info(f"Starting demo runner: {self.max_episodes} episodes")
+        logger.info(f"Database: {self.db_path}")
+        logger.info(f"Checkpoints: {self.checkpoint_dir}")
+    
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
+    
+        # Initialize training components
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        # Extract config parameters from DTOs (all required, validated at load time)
+        effective_training = self.effective_run.training
+        loop_cfg = effective_training.training_loop
+        num_agents = effective_training.population.size
+        grid_cells = self.compiled.metadata.grid_cells
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
+    
+        # Create environment from compiled universe
+>       self.env = VectorizedHamletEnv.from_universe(
+            self.compiled,
+            level_name=self.level_name,
+            num_agents=num_agents,
+            device=device,
+        )
+E       TypeError: VectorizedHamletEnv.from_universe() missing 3 required keyword-only arguments: 'world_roster', 'training_seed', and 'lane_world_ids'
+
+src/townlet/demo/runner.py:410: TypeError
+__________ test_owned_native_real_learning_and_rng_continuation[rnd] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'rnd'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
+        source = _owned(kind)
+    
+        def warm_and_draw(backend: Any, sources: Any) -> None:
+            _warm(backend)
+            torch.rand(5)
+            random.random()
+            np.random.random(3)
+            sources.numpy.random(4)
+    
+        ambient = _ambient()
+>       source.call(warm_and_draw)
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:589: TypeError
+__________ test_owned_native_real_learning_and_rng_continuation[icm] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'icm'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
+        source = _owned(kind)
+    
+        def warm_and_draw(backend: Any, sources: Any) -> None:
+            _warm(backend)
+            torch.rand(5)
+            random.random()
+            np.random.random(3)
+            sources.numpy.random(4)
+    
+        ambient = _ambient()
+>       source.call(warm_and_draw)
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:589: TypeError
+________ test_owned_native_real_learning_and_rng_continuation[adaptive] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+kind = 'adaptive'
+
+    @pytest.mark.parametrize("kind", PROVIDERS)
+    def test_owned_native_real_learning_and_rng_continuation(kind: str) -> None:
+        source = _owned(kind)
+    
+        def warm_and_draw(backend: Any, sources: Any) -> None:
+            _warm(backend)
+            torch.rand(5)
+            random.random()
+            np.random.random(3)
+            sources.numpy.random(4)
+    
+        ambient = _ambient()
+>       source.call(warm_and_draw)
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:589: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_malformed_backend_refuses_before_rng_or_live_install[adaptive]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[adaptive]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_snapshot_preserves_native_metadata_order_and_tail[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_snapshot_preserves_native_metadata_order_and_tail[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_prepare_install_real_native_resume_learning_and_rng[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_prepare_install_real_native_resume_learning_and_rng[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-transport_order]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[rnd-candidate_metadata]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-transport_order]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_real_native_validator_rejects_order_or_metadata_only_mutation[adaptive_rnd-candidate_metadata]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_callback_numeric_recursive_metadata_is_independently_owned[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_callback_numeric_recursive_metadata_is_independently_owned[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_observation_revision_stales_prepared_handle_without_changing_state[rnd]
+FAILED tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_observation_revision_stales_prepared_handle_without_changing_state[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_owned_native_real_learning_and_rng_continuation[adaptive]
+============= 24 failed, 920 passed, 2 skipped in 60.24s (0:01:00) =============

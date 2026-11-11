@@ -1,0 +1,374 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 36 items / 30 deselected / 6 selected
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py F [ 16%]
+FFFFF                                                                    [100%]
+
+=================================== FAILURES ===================================
+__ test_icm_raw_restore_wire_types_refused[parameter_lr-configuration-shared] __
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'shared', operation = 'configuration', case = 'parameter_lr'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    @pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
+    @pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
+    def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
+        """Raw types must be rejected before CPU ownership can normalize them."""
+        source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+        for rig in (source, receiver):
+            if case == "parameter_lr":
+                rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
+            else:
+                rig.backend.optimizer.param_groups[0]["lr"] = 0.002
+        _service(source)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        receiver.backend.validate_state(state)
+        operations = {
+            "configuration": receiver.backend.with_restore_configuration,
+            "validate": receiver.backend.validate_state,
+            "load": receiver.backend.load_state,
+        }
+        # Prove this exact operation accepts the genuine compatible baseline before
+        # changing only the raw wire type. A fixture/LR rejection is not the RED.
+        accepted = operations[operation](state)
+        if operation == "configuration":
+            _preload_gradients_are_absent(accepted)
+            assert not accepted.optimizer.state
+            accepted.validate_state(state)
+        elif operation == "load":
+            _equal(receiver.backend.checkpoint_state(), state)
+        group = state["adam_restore_recipe"]["groups"][0]
+        if case == "parameter_lr":
+            payload_lr = state["optimizer"]["param_groups"][0]["lr"]
+            assert type(payload_lr) is torch.Tensor
+            group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
+        elif case == "recipe_dict":
+            state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
+        elif case == "groups_list":
+            state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
+        elif case == "group_dict":
+            state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
+        elif case == "options_dict":
+            group["options"] = OrderedDict(group["options"].items())
+        else:
+            group["options"]["betas"] = _WireTuple(group["options"]["betas"])
+            assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
+        _mixed_gradients(source.backend)
+        _mixed_gradients(receiver.backend)
+        before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
+        before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:1207: Failed
+_ test_icm_raw_restore_wire_types_refused[parameter_lr-configuration-per_world] _
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'per_world', operation = 'configuration', case = 'parameter_lr'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    @pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
+    @pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
+    def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
+        """Raw types must be rejected before CPU ownership can normalize them."""
+        source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+        for rig in (source, receiver):
+            if case == "parameter_lr":
+                rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
+            else:
+                rig.backend.optimizer.param_groups[0]["lr"] = 0.002
+        _service(source)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        receiver.backend.validate_state(state)
+        operations = {
+            "configuration": receiver.backend.with_restore_configuration,
+            "validate": receiver.backend.validate_state,
+            "load": receiver.backend.load_state,
+        }
+        # Prove this exact operation accepts the genuine compatible baseline before
+        # changing only the raw wire type. A fixture/LR rejection is not the RED.
+        accepted = operations[operation](state)
+        if operation == "configuration":
+            _preload_gradients_are_absent(accepted)
+            assert not accepted.optimizer.state
+            accepted.validate_state(state)
+        elif operation == "load":
+            _equal(receiver.backend.checkpoint_state(), state)
+        group = state["adam_restore_recipe"]["groups"][0]
+        if case == "parameter_lr":
+            payload_lr = state["optimizer"]["param_groups"][0]["lr"]
+            assert type(payload_lr) is torch.Tensor
+            group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
+        elif case == "recipe_dict":
+            state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
+        elif case == "groups_list":
+            state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
+        elif case == "group_dict":
+            state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
+        elif case == "options_dict":
+            group["options"] = OrderedDict(group["options"].items())
+        else:
+            group["options"]["betas"] = _WireTuple(group["options"]["betas"])
+            assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
+        _mixed_gradients(source.backend)
+        _mixed_gradients(receiver.backend)
+        before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
+        before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:1207: Failed
+____ test_icm_raw_restore_wire_types_refused[parameter_lr-validate-shared] _____
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'shared', operation = 'validate', case = 'parameter_lr'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    @pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
+    @pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
+    def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
+        """Raw types must be rejected before CPU ownership can normalize them."""
+        source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+        for rig in (source, receiver):
+            if case == "parameter_lr":
+                rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
+            else:
+                rig.backend.optimizer.param_groups[0]["lr"] = 0.002
+        _service(source)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        receiver.backend.validate_state(state)
+        operations = {
+            "configuration": receiver.backend.with_restore_configuration,
+            "validate": receiver.backend.validate_state,
+            "load": receiver.backend.load_state,
+        }
+        # Prove this exact operation accepts the genuine compatible baseline before
+        # changing only the raw wire type. A fixture/LR rejection is not the RED.
+        accepted = operations[operation](state)
+        if operation == "configuration":
+            _preload_gradients_are_absent(accepted)
+            assert not accepted.optimizer.state
+            accepted.validate_state(state)
+        elif operation == "load":
+            _equal(receiver.backend.checkpoint_state(), state)
+        group = state["adam_restore_recipe"]["groups"][0]
+        if case == "parameter_lr":
+            payload_lr = state["optimizer"]["param_groups"][0]["lr"]
+            assert type(payload_lr) is torch.Tensor
+            group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
+        elif case == "recipe_dict":
+            state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
+        elif case == "groups_list":
+            state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
+        elif case == "group_dict":
+            state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
+        elif case == "options_dict":
+            group["options"] = OrderedDict(group["options"].items())
+        else:
+            group["options"]["betas"] = _WireTuple(group["options"]["betas"])
+            assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
+        _mixed_gradients(source.backend)
+        _mixed_gradients(receiver.backend)
+        before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
+        before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:1207: Failed
+___ test_icm_raw_restore_wire_types_refused[parameter_lr-validate-per_world] ___
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'per_world', operation = 'validate', case = 'parameter_lr'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    @pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
+    @pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
+    def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
+        """Raw types must be rejected before CPU ownership can normalize them."""
+        source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+        for rig in (source, receiver):
+            if case == "parameter_lr":
+                rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
+            else:
+                rig.backend.optimizer.param_groups[0]["lr"] = 0.002
+        _service(source)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        receiver.backend.validate_state(state)
+        operations = {
+            "configuration": receiver.backend.with_restore_configuration,
+            "validate": receiver.backend.validate_state,
+            "load": receiver.backend.load_state,
+        }
+        # Prove this exact operation accepts the genuine compatible baseline before
+        # changing only the raw wire type. A fixture/LR rejection is not the RED.
+        accepted = operations[operation](state)
+        if operation == "configuration":
+            _preload_gradients_are_absent(accepted)
+            assert not accepted.optimizer.state
+            accepted.validate_state(state)
+        elif operation == "load":
+            _equal(receiver.backend.checkpoint_state(), state)
+        group = state["adam_restore_recipe"]["groups"][0]
+        if case == "parameter_lr":
+            payload_lr = state["optimizer"]["param_groups"][0]["lr"]
+            assert type(payload_lr) is torch.Tensor
+            group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
+        elif case == "recipe_dict":
+            state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
+        elif case == "groups_list":
+            state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
+        elif case == "group_dict":
+            state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
+        elif case == "options_dict":
+            group["options"] = OrderedDict(group["options"].items())
+        else:
+            group["options"]["betas"] = _WireTuple(group["options"]["betas"])
+            assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
+        _mixed_gradients(source.backend)
+        _mixed_gradients(receiver.backend)
+        before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
+        before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:1207: Failed
+______ test_icm_raw_restore_wire_types_refused[parameter_lr-load-shared] _______
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'shared', operation = 'load', case = 'parameter_lr'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    @pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
+    @pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
+    def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
+        """Raw types must be rejected before CPU ownership can normalize them."""
+        source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+        for rig in (source, receiver):
+            if case == "parameter_lr":
+                rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
+            else:
+                rig.backend.optimizer.param_groups[0]["lr"] = 0.002
+        _service(source)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        receiver.backend.validate_state(state)
+        operations = {
+            "configuration": receiver.backend.with_restore_configuration,
+            "validate": receiver.backend.validate_state,
+            "load": receiver.backend.load_state,
+        }
+        # Prove this exact operation accepts the genuine compatible baseline before
+        # changing only the raw wire type. A fixture/LR rejection is not the RED.
+        accepted = operations[operation](state)
+        if operation == "configuration":
+            _preload_gradients_are_absent(accepted)
+            assert not accepted.optimizer.state
+            accepted.validate_state(state)
+        elif operation == "load":
+            _equal(receiver.backend.checkpoint_state(), state)
+        group = state["adam_restore_recipe"]["groups"][0]
+        if case == "parameter_lr":
+            payload_lr = state["optimizer"]["param_groups"][0]["lr"]
+            assert type(payload_lr) is torch.Tensor
+            group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
+        elif case == "recipe_dict":
+            state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
+        elif case == "groups_list":
+            state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
+        elif case == "group_dict":
+            state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
+        elif case == "options_dict":
+            group["options"] = OrderedDict(group["options"].items())
+        else:
+            group["options"]["betas"] = _WireTuple(group["options"]["betas"])
+            assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
+        _mixed_gradients(source.backend)
+        _mixed_gradients(receiver.backend)
+        before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
+        before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:1207: Failed
+_____ test_icm_raw_restore_wire_types_refused[parameter_lr-load-per_world] _____
+
+compiled_native_level = CompiledUniverse.LevelMetadata(level_name='L0_test', bars=BarsV2Config(version='1.0', meters=[MeterConfig(name='energy...62fb78880ba641578d3479294ac895b5eb496a238c174', items_appearance_hash=None, items_appearance=None, token_advisories=())
+scope = 'per_world', operation = 'load', case = 'parameter_lr'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    @pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
+    @pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
+    def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
+        """Raw types must be rejected before CPU ownership can normalize them."""
+        source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
+        for rig in (source, receiver):
+            if case == "parameter_lr":
+                rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
+            else:
+                rig.backend.optimizer.param_groups[0]["lr"] = 0.002
+        _service(source)
+        state = source.backend.checkpoint_state()
+        source.backend.validate_state(state)
+        receiver.backend.validate_state(state)
+        operations = {
+            "configuration": receiver.backend.with_restore_configuration,
+            "validate": receiver.backend.validate_state,
+            "load": receiver.backend.load_state,
+        }
+        # Prove this exact operation accepts the genuine compatible baseline before
+        # changing only the raw wire type. A fixture/LR rejection is not the RED.
+        accepted = operations[operation](state)
+        if operation == "configuration":
+            _preload_gradients_are_absent(accepted)
+            assert not accepted.optimizer.state
+            accepted.validate_state(state)
+        elif operation == "load":
+            _equal(receiver.backend.checkpoint_state(), state)
+        group = state["adam_restore_recipe"]["groups"][0]
+        if case == "parameter_lr":
+            payload_lr = state["optimizer"]["param_groups"][0]["lr"]
+            assert type(payload_lr) is torch.Tensor
+            group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
+        elif case == "recipe_dict":
+            state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
+        elif case == "groups_list":
+            state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
+        elif case == "group_dict":
+            state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
+        elif case == "options_dict":
+            group["options"] = OrderedDict(group["options"].items())
+        else:
+            group["options"]["betas"] = _WireTuple(group["options"]["betas"])
+            assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
+        _mixed_gradients(source.backend)
+        _mixed_gradients(receiver.backend)
+        before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
+        before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_restore_configuration.py:1207: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[parameter_lr-configuration-shared]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[parameter_lr-configuration-per_world]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[parameter_lr-validate-shared]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[parameter_lr-validate-per_world]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[parameter_lr-load-shared]
+FAILED tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[parameter_lr-load-per_world]
+======================= 6 failed, 30 deselected in 4.87s =======================

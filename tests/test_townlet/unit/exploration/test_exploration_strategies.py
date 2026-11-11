@@ -867,8 +867,8 @@ class TestAdaptiveIntrinsicStatePersistence:
         source.current_intrinsic_weight = 0.3
         source.update({"observations": torch.randn(128, 10)})
         new_state = source.checkpoint_state()
-        assert new_state["schema"] == "adaptive-intrinsic-state-v2"
-        assert new_state["rnd_state"]["schema"] == "rnd-state-v2"
+        assert new_state["schema"] == "adaptive-intrinsic-state-v4"
+        assert new_state["rnd_state"]["schema"] == "rnd-state-v4"
         before = exploration.checkpoint_state()
         for operation in (exploration.validate_state, exploration.prepare_state, exploration.load_state):
             with pytest.raises(ValueError, match="configuration differs from destination"):
@@ -1337,7 +1337,7 @@ class TestCheckpointStrictValidation:
 
         # Current exact-key validation refuses missing optimizer state.
         rnd2 = RNDExploration(rng=None, service_clock_unit="vector_tick", obs_dim=basic_env.observation_dim, device=cpu_device)
-        with pytest.raises(ValueError, match="complete current rnd-state-v2 checkpoint"):
+        with pytest.raises(ValueError, match="complete current rnd-state-v4 checkpoint"):
             rnd2.load_state(state)
 
     def test_adaptive_rejects_missing_survival_history(self, cpu_device, basic_env):

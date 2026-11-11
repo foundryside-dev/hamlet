@@ -1,0 +1,25 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "candidate_tree": "d93793ffedc4f35b2b85fd9916b33690cc8687fa",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py"
+  ],
+  "signatures": [
+    {
+      "error": "+          where <built-in method isnan of type object at 0x7f9ddfbf1000> = torch.isnan",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_next_update_cannot_use_misassociated_moments[shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_next_update_cannot_use_misassociated_moments[per_world]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

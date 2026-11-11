@@ -1,0 +1,137 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "candidate_tree": "ba192ab57b66688e09dd307ffa495ad3993c1abd",
+  "unique_node_phase_failures": 30,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 30,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[betas_tuple-load-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[options_dict-load-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[options_dict-configuration-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[recipe_dict-configuration-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[betas_tuple-load-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[betas_tuple-configuration-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[groups_list-validate-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[options_dict-validate-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[betas_tuple-validate-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[group_dict-load-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[betas_tuple-validate-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[group_dict-load-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[group_dict-configuration-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[groups_list-configuration-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[group_dict-validate-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[betas_tuple-configuration-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[group_dict-configuration-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[recipe_dict-validate-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[recipe_dict-load-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[options_dict-validate-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[groups_list-configuration-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[groups_list-validate-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[groups_list-load-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[recipe_dict-load-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[group_dict-validate-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[groups_list-load-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[recipe_dict-configuration-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[options_dict-load-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[options_dict-configuration-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_icm_raw_restore_wire_types_refused[recipe_dict-validate-per_world]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

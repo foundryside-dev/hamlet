@@ -1,0 +1,179 @@
+diff --git a/tests/test_townlet/regressions/bac/test_native_restore_configuration.py b/tests/test_townlet/regressions/bac/test_native_restore_configuration.py
+index c4e81657..5708d9dd 100644
+--- a/tests/test_townlet/regressions/bac/test_native_restore_configuration.py
++++ b/tests/test_townlet/regressions/bac/test_native_restore_configuration.py
+@@ -1,20 +1,21 @@
+ """Native Adam configuration transport; standalone clocks, not owner authority.
+ 
+ All histories below come from real Adam steps or native service.  The independent
+ oracle keys live optimizer state by model Parameter identity, never archive IDs.
+ Root runs this file under source custody; importing it does not run a compiler.
+ """
+ 
+ from __future__ import annotations
+ 
+ import random
++from collections import OrderedDict
+ from copy import deepcopy
+ from dataclasses import dataclass
+ from pathlib import Path
+ from typing import Any
+ 
+ import numpy as np
+ import pytest
+ import torch
+ 
+ from townlet.config.bac_options import BaCOptions
+@@ -1060,10 +1061,152 @@ def test_direct_validation_requires_exact_paired_name_order(compiled_native_leve
+         _equal(_observe(rig.backend), before)
+ 
+ 
+ @pytest.mark.parametrize("scope", SCOPES)
+ def test_adaptive_authored_outer_configuration_stays_selected(compiled_native_level: Any, scope: str) -> None:
+     source, receiver = [_factory(compiled_native_level, "adaptive_rnd", scope) for _ in range(2)]
+     _service(source)
+     state = source.backend.checkpoint_state()
+     state["initial_intrinsic_weight"] += 0.1
+     _refuse_purely(receiver, state)
++
++
++class _WireList(list[Any]):
++    """Ordinary values with a concrete wire type that must not be erased."""
++
++
++class _WireTuple(tuple[float, ...]):
++    """Beta values remain valid; only the paired container type differs."""
++
++
++def _wire_observe(state: dict[str, Any]) -> tuple[Any, ...]:
++    references: dict[str, object] = {}
++
++    def retain(value: Any, path: str) -> None:
++        references[path] = value
++        if isinstance(value, dict):
++            for index, (key, item) in enumerate(value.items()):
++                references[f"{path}.key.{index}"] = key
++                retain(item, f"{path}.value.{index}")
++        elif isinstance(value, (tuple, list)):
++            for index, item in enumerate(value):
++                retain(item, f"{path}.item.{index}")
++        elif isinstance(value, torch.Tensor) and value.grad is not None:
++            references[f"{path}.gradient"] = value.grad
++
++    retain(state, "input")
++    flags_and_gradients = []
++    for tensor in _tensors(state):
++        gradient = None
++        if tensor.grad is not None:
++            gradient = tensor.grad.detach().clone()
++        flags_and_gradients.append((tensor.requires_grad, gradient))
++    return deepcopy(state), flags_and_gradients, IdentityObservation(references)
++
++
++def _ordered_icm_models(state: dict[str, Any]) -> dict[str, Any]:
++    owned = deepcopy(state)
++    for name in ("encoder", "inverse_model", "forward_model"):
++        owned[name] = OrderedDict(owned[name].items())
++    return owned
++
++
++@pytest.mark.parametrize("scope", SCOPES)
++def test_icm_plain_tensor_lr_restore_configuration(compiled_native_level: Any, scope: str) -> None:
++    """A supported plain Tensor LR must survive raw validation and next work.
++
++    Ordered model mappings are legitimate input, independently of strict recipe
++    containers. The selected policy LR remains separate from mutable Adam LR.
++    """
++    source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
++    for rig in (source, receiver):
++        rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
++    _service(source)
++    state = source.backend.checkpoint_state()
++    assert state["config"]["learning_rate"] == 0.001
++    assert source.policy.provider_parameters["learning_rate"] == 0.001
++    assert type(state["optimizer"]["param_groups"][0]["lr"]) is torch.Tensor
++    assert type(state["adam_restore_recipe"]["groups"][0]["options"]["lr"]) is torch.Tensor
++    ordered = _ordered_icm_models(state)
++    source.backend.validate_state(ordered)
++    receiver.backend.validate_state(ordered)
++    receiver.backend.load_state(ordered)
++    _equal(receiver.backend.checkpoint_state(), state)
++    _equal(_moments(source.backend), _moments(receiver.backend))
++    _next_equivalent(source, receiver)
++
++    state = source.backend.checkpoint_state()
++    ordered = _ordered_icm_models(state)
++    _mixed_gradients(source.backend)
++    _mixed_gradients(receiver.backend)
++    before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(ordered)
++    before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
++    configured = receiver.backend.with_restore_configuration(ordered)
++    _equal(_observe(source.backend), before_source)
++    _equal(_observe(receiver.backend), before_receiver)
++    _equal(_wire_observe(ordered), before_input)
++    _equal((_ambient(), _rng_continuation(source), _rng_continuation(receiver)), before_rng)
++    _preload_gradients_are_absent(configured)
++    assert not configured.optimizer.state
++    configured.validate_state(ordered)
++    configured.load_state(ordered)
++    _equal(configured.checkpoint_state(), state)
++    _equal(_moments(configured), _moments(source.backend))
++    restored = NativeRig(configured, receiver.policy, receiver.obs_dim, receiver.action_dim, receiver.rng, receiver.descriptor)
++    _next_equivalent(source, restored)
++
++
++@pytest.mark.parametrize("scope", SCOPES)
++@pytest.mark.parametrize("operation", ("configuration", "validate", "load"))
++@pytest.mark.parametrize("case", ("parameter_lr", "recipe_dict", "groups_list", "group_dict", "options_dict", "betas_tuple"))
++def test_icm_raw_restore_wire_types_refused(compiled_native_level: Any, scope: str, operation: str, case: str) -> None:
++    """Raw types must be rejected before CPU ownership can normalize them."""
++    source, receiver = [_factory(compiled_native_level, "icm", scope) for _ in range(2)]
++    for rig in (source, receiver):
++        if case == "parameter_lr":
++            rig.backend.optimizer.param_groups[0]["lr"] = torch.tensor(0.002)
++        else:
++            rig.backend.optimizer.param_groups[0]["lr"] = 0.002
++    _service(source)
++    state = source.backend.checkpoint_state()
++    source.backend.validate_state(state)
++    receiver.backend.validate_state(state)
++    operations = {
++        "configuration": receiver.backend.with_restore_configuration,
++        "validate": receiver.backend.validate_state,
++        "load": receiver.backend.load_state,
++    }
++    # Prove this exact operation accepts the genuine compatible baseline before
++    # changing only the raw wire type. A fixture/LR rejection is not the RED.
++    accepted = operations[operation](state)
++    if operation == "configuration":
++        _preload_gradients_are_absent(accepted)
++        assert not accepted.optimizer.state
++        accepted.validate_state(state)
++    elif operation == "load":
++        _equal(receiver.backend.checkpoint_state(), state)
++    group = state["adam_restore_recipe"]["groups"][0]
++    if case == "parameter_lr":
++        payload_lr = state["optimizer"]["param_groups"][0]["lr"]
++        assert type(payload_lr) is torch.Tensor
++        group["options"]["lr"] = torch.nn.Parameter(payload_lr.detach().clone(), requires_grad=False)
++    elif case == "recipe_dict":
++        state["adam_restore_recipe"] = OrderedDict(state["adam_restore_recipe"].items())
++    elif case == "groups_list":
++        state["adam_restore_recipe"]["groups"] = _WireList(state["adam_restore_recipe"]["groups"])
++    elif case == "group_dict":
++        state["adam_restore_recipe"]["groups"][0] = OrderedDict(group.items())
++    elif case == "options_dict":
++        group["options"] = OrderedDict(group["options"].items())
++    else:
++        group["options"]["betas"] = _WireTuple(group["options"]["betas"])
++        assert type(state["optimizer"]["param_groups"][0]["betas"]) is tuple
++    _mixed_gradients(source.backend)
++    _mixed_gradients(receiver.backend)
++    before_source, before_receiver, before_input = _observe(source.backend), _observe(receiver.backend), _wire_observe(state)
++    before_rng = _ambient(), _rng_continuation(source), _rng_continuation(receiver)
++    with pytest.raises(ValueError):
++        operations[operation](state)
++    _equal(_observe(source.backend), before_source)
++    _equal(_observe(receiver.backend), before_receiver)
++    _equal(_wire_observe(state), before_input)
++    _equal((_ambient(), _rng_continuation(source), _rng_continuation(receiver)), before_rng)

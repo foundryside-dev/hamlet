@@ -6,7 +6,7 @@ import math
 from contextlib import nullcontext
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Literal, cast
+from typing import Any, Literal, TypedDict, cast
 
 import numpy as np
 import torch
@@ -18,6 +18,178 @@ from townlet.exploration.action_selection import epsilon_greedy_action_selection
 from townlet.exploration.base import ExplorationStrategy
 from townlet.exploration.world_curiosity_state import ServiceClock, WorldRNGState
 from townlet.training.state import BatchedAgentState
+
+
+class AdamRestoreGroup(TypedDict):
+    """Inert ordered native names and owned Adam group configuration."""
+
+    parameter_names: list[str]
+    options: dict[str, Any]
+
+
+class AdamRestoreRecipe(TypedDict):
+    """Current native construction instruction, never owner authority."""
+
+    version: Literal[1]
+    algorithm: Literal["torch.optim.Adam"]
+    groups: list[AdamRestoreGroup]
+
+
+def _named_adam_parameters(modules: tuple[tuple[str, nn.Module], ...]) -> dict[str, nn.Parameter]:
+    named: dict[str, nn.Parameter] = {}
+    identities: set[int] = set()
+    for prefix, module in modules:
+        for suffix, parameter in module.named_parameters(remove_duplicate=False):
+            name = f"{prefix}.{suffix}"
+            if name in named or id(parameter) in identities:
+                raise ValueError("Native Adam requires unique model names without Parameter aliases")
+            named[name] = parameter
+            identities.add(id(parameter))
+    if not named:
+        raise ValueError("Native Adam requires named model Parameters")
+    return named
+
+
+def _adam_value_equal(left: Any, right: Any) -> bool:
+    """Exact option type/value equality under native concrete-device transport."""
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, torch.Tensor):
+        return (
+            left.layout == right.layout == torch.strided
+            and left.device.type in {"cpu", "cuda"}
+            and right.device.type in {"cpu", "cuda"}
+            and left.shape == right.shape
+            and left.dtype == right.dtype
+            and torch.equal(left.detach().cpu(), right.detach().cpu())
+        )
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(_adam_value_equal(value, right[key]) for key, value in left.items())
+    if isinstance(left, (tuple, list)):
+        return len(left) == len(right) and all(_adam_value_equal(value, other) for value, other in zip(left, right, strict=True))
+    return bool(left == right)
+
+
+def _validate_adam_options(options: Any) -> None:
+    required = {"lr", "betas", "eps", "weight_decay", "amsgrad"}
+    if type(options) is not dict or not required.issubset(options) or any(type(key) is not str for key in options):
+        raise ValueError("Native Adam requires complete inert group options")
+    betas = options["betas"]
+    if type(betas) not in {tuple, list} or len(betas) != 2:
+        raise ValueError("Native Adam betas require a numeric pair")
+    for value in (options["lr"], options["eps"], options["weight_decay"], *betas):
+        if isinstance(value, torch.Tensor):
+            if (
+                isinstance(value, nn.Parameter)
+                or value.layout != torch.strided
+                or value.device.type not in {"cpu", "cuda"}
+                or value.ndim != 0
+                or not value.is_floating_point()
+                or not torch.isfinite(value).item()
+            ):
+                raise ValueError("Native Adam settings require finite inert floating scalar tensors")
+        elif isinstance(value, bool) or not isinstance(value, (int, float, np.floating)) or not math.isfinite(value):
+            raise ValueError("Native Adam settings require finite numeric scalars")
+    if options["lr"] < 0 or options["eps"] < 0 or options["weight_decay"] < 0 or any(not 0 <= beta < 1 for beta in betas):
+        raise ValueError("Native Adam numeric settings outside accepted ranges")
+    for key, value in options.items():
+        if key in {"lr", "betas", "eps", "weight_decay"}:
+            continue
+        if key in {"foreach", "fused"} and value is None:
+            continue
+        if type(value) is not bool:
+            raise ValueError("Native Adam additional group settings must be booleans")
+
+
+def _validate_adam_recipe(named: dict[str, nn.Parameter], recipe: Any, payload: Any) -> AdamRestoreRecipe:
+    if (
+        type(recipe) is not dict
+        or set(recipe) != {"version", "algorithm", "groups"}
+        or type(recipe["version"]) is not int
+        or recipe["version"] != 1
+        or type(recipe["algorithm"]) is not str
+        or recipe["algorithm"] != "torch.optim.Adam"
+        or type(recipe["groups"]) is not list
+        or not recipe["groups"]
+    ):
+        raise ValueError("Native restore requires the exact current Adam recipe")
+    if type(payload) is not dict or set(payload) != {"state", "param_groups"} or type(payload["param_groups"]) is not list:
+        raise ValueError("Native Adam optimizer payload fields mismatch")
+    if len(recipe["groups"]) != len(payload["param_groups"]):
+        raise ValueError("Native Adam recipe/payload group counts disagree")
+    names: list[str] = []
+    identifiers: list[int] = []
+    for group, saved in zip(recipe["groups"], payload["param_groups"], strict=True):
+        if type(group) is not dict or set(group) != {"parameter_names", "options"} or type(group["parameter_names"]) is not list:
+            raise ValueError("Native Adam recipe group fields mismatch")
+        group_names = group["parameter_names"]
+        if any(type(name) is not str or name not in named for name in group_names):
+            raise ValueError("Native Adam recipe names must identify actual selected model Parameters")
+        if type(saved) is not dict or "params" not in saved or type(saved["params"]) is not list:
+            raise ValueError("Native Adam payload groups require ordered integer IDs")
+        if any(type(identifier) is not int for identifier in saved["params"]) or len(group_names) != len(saved["params"]):
+            raise ValueError("Native Adam names/IDs disagree")
+        _validate_adam_options(group["options"])
+        if not _adam_value_equal(group["options"], {key: value for key, value in saved.items() if key != "params"}):
+            raise ValueError("Native Adam recipe options disagree with optimizer payload")
+        names.extend(group_names)
+        identifiers.extend(saved["params"])
+    if len(names) != len(set(names)) or set(names) != set(named) or len(identifiers) != len(set(identifiers)):
+        raise ValueError("Native Adam requires complete unique named Parameter and integer ID coverage")
+    history = payload["state"]
+    if (
+        type(history) is not dict
+        or any(type(identifier) is not int for identifier in history)
+        or (history and set(history) != set(identifiers))
+    ):
+        raise ValueError("Native Adam requires empty or complete dense history with covered integer IDs")
+    return cast(AdamRestoreRecipe, recipe)
+
+
+def _capture_adam_recipe(named: dict[str, nn.Parameter], optimizer: torch.optim.Optimizer, payload: Any) -> AdamRestoreRecipe:
+    if type(optimizer) is not torch.optim.Adam:
+        raise ValueError("Native restore supports concrete torch.optim.Adam only")
+    names = {id(parameter): name for name, parameter in named.items()}
+    groups: list[AdamRestoreGroup] = []
+    for group in optimizer.param_groups:
+        if any(id(parameter) not in names for parameter in group["params"]):
+            raise ValueError("Native Adam contains a foreign Parameter")
+        groups.append(
+            {
+                "parameter_names": [names[id(parameter)] for parameter in group["params"]],
+                "options": deepcopy({key: value for key, value in group.items() if key != "params"}),
+            }
+        )
+    recipe: AdamRestoreRecipe = {"version": 1, "algorithm": "torch.optim.Adam", "groups": groups}
+    return _validate_adam_recipe(named, recipe, payload)
+
+
+def _validate_adam_candidate(
+    named: dict[str, nn.Parameter], optimizer: torch.optim.Optimizer, recipe: Any, payload: Any, *, exact_options: bool
+) -> AdamRestoreRecipe:
+    checked = _validate_adam_recipe(named, recipe, payload)
+    current_payload = deepcopy(optimizer.state_dict())
+    current = _capture_adam_recipe(named, optimizer, current_payload)
+    if len(current["groups"]) != len(checked["groups"]):
+        raise ValueError("Native Adam candidate group count differs; configure restore explicitly")
+    for actual, saved, actual_payload, saved_payload in zip(
+        current["groups"], checked["groups"], current_payload["param_groups"], payload["param_groups"], strict=True
+    ):
+        if actual["parameter_names"] != saved["parameter_names"] or actual_payload["params"] != saved_payload["params"]:
+            raise ValueError("Native Adam candidate named association differs; configure restore explicitly")
+        if actual["options"].keys() != saved["options"].keys() or (
+            exact_options and not _adam_value_equal(actual["options"], saved["options"])
+        ):
+            raise ValueError("Native Adam candidate group configuration differs; configure restore explicitly")
+    return checked
+
+
+def _adam_from_recipe(named: dict[str, nn.Parameter], recipe: Any, payload: Any) -> torch.optim.Adam:
+    checked = _validate_adam_recipe(named, recipe, payload)
+    groups = [{**deepcopy(group["options"]), "params": [named[name] for name in group["parameter_names"]]} for group in checked["groups"]]
+    # Actual group dictionaries retain accepted inert extra bools. They are not
+    # Adam constructor keyword arguments, and defaults are not another authority.
+    return torch.optim.Adam(groups)
 
 
 @dataclass(frozen=True)
@@ -550,8 +722,11 @@ class RNDExploration(ExplorationStrategy):
 
     def checkpoint_state(self) -> dict[str, Any]:
         """Owned snapshot, including FIFO order and clocks for learned-state resume."""
+        if any(parameter.requires_grad or parameter.grad is not None for parameter in self.fixed_network.parameters()):
+            raise ValueError("RND target must remain frozen and gradient-free")
         state = self.available_state()
-        state["schema"] = "rnd-state-v3"
+        state["schema"] = "rnd-state-v4"
+        state["adam_restore_recipe"] = _capture_adam_recipe(self._named_predictor_parameters(), self.optimizer, state["optimizer"])
         pending = torch.empty((0, self.obs_dim), device=self.device)
         if self.obs_buffer:
             pending = torch.stack(self.obs_buffer).detach().clone()
@@ -629,7 +804,7 @@ class RNDExploration(ExplorationStrategy):
                 if type(value) is not bool:
                     raise ValueError("RND checkpoint optimizer execution flags must be booleans")
 
-    def _prepare_available_state(self, state: dict[str, Any]) -> tuple[Any, Any, Any]:
+    def _prepare_available_state(self, state: dict[str, Any], recipe: AdamRestoreRecipe) -> tuple[Any, Any, Any]:
         expected_keys = set(self.available_state())
         missing = expected_keys - set(state)
         if missing:
@@ -654,6 +829,9 @@ class RNDExploration(ExplorationStrategy):
         if state["reward_rms_var"] < 0 or state["reward_rms_count"] <= 0:
             raise ValueError("RND checkpoint normalization variance/count invalid")
         fixed, predictor, optimizer = deepcopy((self.fixed_network, self.predictor_network, self.optimizer))
+        _validate_adam_candidate(
+            _named_adam_parameters((("predictor_network", predictor),)), optimizer, recipe, state["optimizer"], exact_options=False
+        )
         for module, key in ((fixed, "fixed_network"), (predictor, "predictor_network")):
             expected = module.state_dict()
             if set(state[key]) != set(expected):
@@ -736,11 +914,43 @@ class RNDExploration(ExplorationStrategy):
         """Pure complete current-native validation, with no live installation."""
         self.prepare_state(state)
 
+    def _named_predictor_parameters(self) -> dict[str, nn.Parameter]:
+        named = _named_adam_parameters((("predictor_network", self.predictor_network),))
+        fixed = {id(parameter) for parameter in self.fixed_network.parameters()}
+        if any(id(parameter) in fixed for parameter in named.values()):
+            raise ValueError("RND predictor Adam must exclude every fixed-target Parameter")
+        return named
+
+    def with_restore_configuration(self, state: dict[str, Any]) -> RNDExploration:
+        """Return an independent configured graph before learned-state installation.
+
+        The caller supplies selected factory provenance and source custody. Model
+        copying and real Adam construction consume no RNG and never mutate self.
+        """
+        try:
+            owned = deepcopy(state)
+            if type(owned) is not dict or owned.keys() != self.checkpoint_state().keys() or owned["schema"] != "rnd-state-v4":
+                raise ValueError("RND restore configuration requires complete rnd-state-v4")
+            candidate = deepcopy(self)
+            candidate.optimizer = _adam_from_recipe(
+                candidate._named_predictor_parameters(), owned["adam_restore_recipe"], owned["optimizer"]
+            )
+            for module in (candidate.fixed_network, candidate.predictor_network):
+                for parameter in module.parameters():
+                    parameter.grad = None
+            candidate.validate_state(owned)
+            return candidate
+        except (KeyError, TypeError, RuntimeError, AttributeError, OverflowError) as error:
+            raise ValueError("RND restore configuration is malformed") from error
+
     def _prepare_state(self, state: dict[str, Any]) -> tuple[tuple[Any, Any, Any], list[torch.Tensor], dict[str, Any]]:
-        if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "rnd-state-v3":
-            raise ValueError("RND requires complete current rnd-state-v3 checkpoint")
-        available = {key: value for key, value in state.items() if key not in {"schema", "predictor_service"}}
-        prepared = self._prepare_available_state(available)
+        if not isinstance(state, dict) or state.keys() != self.checkpoint_state().keys() or state["schema"] != "rnd-state-v4":
+            raise ValueError("RND requires complete current rnd-state-v4 checkpoint")
+        recipe = _validate_adam_candidate(
+            self._named_predictor_parameters(), self.optimizer, state["adam_restore_recipe"], state["optimizer"], exact_options=False
+        )
+        available = {key: value for key, value in state.items() if key not in {"schema", "predictor_service", "adam_restore_recipe"}}
+        prepared = self._prepare_available_state(available, recipe)
         service = state["predictor_service"]
         if not isinstance(service, dict) or set(service) != set(self.checkpoint_state()["predictor_service"]):
             raise ValueError("RND predictor service checkpoint fields mismatch")
@@ -890,7 +1100,15 @@ class RNDExploration(ExplorationStrategy):
             or (fresh.reward_rms.mean, fresh.reward_rms.var, fresh.reward_rms.count) != (0.0, 1.0, 1e-4)
         ):
             raise ValueError("RND reset candidate must have genuine fresh learning and no service work")
-        for key in ("fixed_network", "predictor_network", "optimizer", "reward_rms_mean", "reward_rms_var", "reward_rms_count"):
+        for key in (
+            "fixed_network",
+            "predictor_network",
+            "optimizer",
+            "adam_restore_recipe",
+            "reward_rms_mean",
+            "reward_rms_var",
+            "reward_rms_count",
+        ):
             current[key] = fresh_state[key]
         current["predictor_service"]["optimizer_epoch_origin"] = self._optimizer_updates
         current["predictor_service"]["optimizer_step_offset"] = 0

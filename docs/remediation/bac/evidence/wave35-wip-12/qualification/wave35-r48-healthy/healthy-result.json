@@ -1,0 +1,24 @@
+{
+  "name": "healthy",
+  "exit_code": 0,
+  "seconds": 11.429072856903076,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_native_factory_learning_baseline",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r48-healthy/healthy.log",
+  "sha256": "24643336fc30e82e3e090faed5964303edab7a2dbfa58d0b2cabe32031e5a4dd",
+  "candidate_tree": "d93793ffedc4f35b2b85fd9916b33690cc8687fa",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "manifest_sha256": "7b62a91549645a6a49b994c63b62709d497e218a1b627b02b0557d7acddb59e6",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

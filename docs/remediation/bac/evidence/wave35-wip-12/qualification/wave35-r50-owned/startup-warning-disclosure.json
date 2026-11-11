@@ -1,0 +1,7 @@
+{
+  "count": 3,
+  "type": "PytestBenchmarkWarning",
+  "cause": "Unusedbenchmarkplugin warnscontroller+2workers whenxdist active",
+  "pytest_summary": "340passed; no warnings count in pytest summary",
+  "scope": "Infrastructurestartupwarnings disclosed, not silently treated absent. Future scoped native-only parallel spec disables unusedbenchmarkplugin explicitly; no product warning suppression or skippedcases."
+}

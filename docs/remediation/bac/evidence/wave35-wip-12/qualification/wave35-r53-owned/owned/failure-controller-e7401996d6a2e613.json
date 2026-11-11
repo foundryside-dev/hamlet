@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_owned_native_metadata.py::test_owned_callback_preserves_actual_native_mapping[rnd]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "setup_native = ('rnd', <function setup_native.<locals>.rng at 0x7f9e3dc46c00>, <function setup_native.<locals>.factory at 0x7f9e3dc47560>)\n\n    def test_owned_callback_preserves_actual_native_mapping(setup_native):\n        actual = owner(setup_native)\n        # Primitive evidence is collected before call's result copier runs.\n>       witness = actual.call(\n            lambda backend, sources: tuple(\n                (type(native_rnd(backend.checkpoint_state())[key]).__name__, list(native_rnd(backend.checkpoint_state())[key]._metadata))\n                for key in (\"fixed_network\", \"predictor_network\")\n            )\n        )\nE       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'\n\ntests/test_townlet/regressions/bac/test_owned_native_metadata.py:186: TypeError",
+  "candidate_tree": "70b6d777bbd0a29d1088d9a53d586046a9c2a817"
+}

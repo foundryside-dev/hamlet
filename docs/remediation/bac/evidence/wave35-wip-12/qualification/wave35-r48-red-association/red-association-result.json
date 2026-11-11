@@ -1,0 +1,23 @@
+{
+  "name": "red-association",
+  "exit_code": 1,
+  "seconds": 11.350346088409424,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_restore_configuration.py::test_existing_decoder_refuses_same_shape_association_mismatch",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r48-red-association/red-association.log",
+  "sha256": "6e9c289e3a1eee595fedd656baaaecd8b3815745b6eebbe6318cfefbb22a7d31",
+  "candidate_tree": "d93793ffedc4f35b2b85fd9916b33690cc8687fa",
+  "base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+  "manifest_sha256": "7b62a91549645a6a49b994c63b62709d497e218a1b627b02b0557d7acddb59e6",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

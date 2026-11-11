@@ -1,0 +1,9 @@
+{
+  "status": "PASS all946 original ordered collected test identities preserved",
+  "function_count": 946,
+  "tree_entries": 975,
+  "comparison": "Full ordered module/class/function tree, as actually emitted by pytest --collect-only -q",
+  "original_log_sha256": "14dc5c3797c00ffa3c708e0ab4957ef25e88454a7213685881865cc5cad36eab",
+  "current_log_sha256": "532f0f344add4ae06635bd2636d8608ac4c20deebe4a5f78968889ac68c34721",
+  "parser_correction": "Initial attempted nodeid-line parser found0 and correctly refused its946 assertion. No application rerun or source change; compare actual emitted pytest collection tree."
+}

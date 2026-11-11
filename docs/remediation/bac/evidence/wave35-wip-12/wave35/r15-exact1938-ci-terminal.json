@@ -1,0 +1,35 @@
+{
+  "observed_at": "2026-11-10T23:03:19.133Z",
+  "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+  "status": "terminal, not green",
+  "runs": [
+    {
+      "name": "Lint",
+      "id": 42909388546,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "updated_at": "2026-11-10T21:54:55Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42909388546"
+    },
+    {
+      "name": "Config Validation",
+      "id": 42909388566,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "updated_at": "2026-11-10T21:55:45Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42909388566"
+    },
+    {
+      "name": "Tests",
+      "id": 42909388548,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "updated_at": "2026-11-10T22:39:56Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42909388548"
+    }
+  ],
+  "interpretation": "Unreleased WIP; no failure cause inferred from workflow status."
+}

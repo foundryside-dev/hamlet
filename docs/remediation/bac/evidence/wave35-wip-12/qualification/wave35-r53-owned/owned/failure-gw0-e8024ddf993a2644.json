@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_private_world_construction_and_owned_pressure_preserve_world1[icm]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "kind = 'icm'\n\n    @pytest.mark.parametrize(\"kind\", PROVIDERS)\n    def test_private_world_construction_and_owned_pressure_preserve_world1(kind: str) -> None:\n        world1 = _owned(kind)\n>       world1.call(lambda backend, sources: _warm(backend))\nE       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'\n\ntests/test_townlet/regressions/bac/test_pw_local_service.py:1148: TypeError",
+  "candidate_tree": "70b6d777bbd0a29d1088d9a53d586046a9c2a817"
+}

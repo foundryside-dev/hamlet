@@ -497,9 +497,9 @@ def test_ordinary_factory_learning_epoch_zero_current_schema(compiled: Any, fami
     backend = construct(compiled, family, unit)
     saved = backend.checkpoint_state()
     assert origin(saved, family) == 0
-    assert native(saved, family)["schema"] == ("icm-state-v3" if family == "icm" else "rnd-state-v3")
+    assert native(saved, family)["schema"] == ("icm-state-v4" if family == "icm" else "rnd-state-v4")
     if family == "adaptive_rnd":
-        assert saved["schema"] == "adaptive-intrinsic-state-v3"
+        assert saved["schema"] == "adaptive-intrinsic-state-v4"
     if family != "icm":
         assert ledger(saved, family)["version"] == 3
     backend.validate_state(saved)

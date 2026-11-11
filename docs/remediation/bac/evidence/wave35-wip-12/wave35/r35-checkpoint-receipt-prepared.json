@@ -1,0 +1,266 @@
+{
+  "status": "UNRELEASED WIP; no package or repository release",
+  "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+  "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+  "collection": {
+    "job": "collection",
+    "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+    "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+    "exit_code": 0,
+    "counts": {
+      "passed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 3.5551178455352783,
+    "source_guards": 805,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "fresh_family_processes": {
+    "rnd": {
+      "job": "family-rnd",
+      "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+      "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 11.366589307785034,
+      "source_guards": 805,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "adaptive": {
+      "job": "family-adaptive",
+      "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+      "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 12.363281488418579,
+      "source_guards": 805,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "icm": {
+      "job": "family-icm",
+      "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+      "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 7.885549068450928,
+      "source_guards": 805,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "q_factory": {
+      "job": "family-q_factory",
+      "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+      "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 9.591411828994751,
+      "source_guards": 805,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  },
+  "controls": {
+    "job": "controls",
+    "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+    "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+    "exit_code": 0,
+    "counts": {
+      "passed": 2,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 1
+    },
+    "wall_seconds": 11.932508707046509,
+    "source_guards": 805,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_same_six": {
+    "job": "independent",
+    "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+    "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+    "exit_code": 0,
+    "counts": {
+      "passed": 6,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 1
+    },
+    "wall_seconds": 20.395822048187256,
+    "source_guards": 805,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "static": {
+    "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+    "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+    "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+    "source_guards": 805,
+    "configs": 573,
+    "artifacts": 13,
+    "results": [
+      {
+        "name": "ruff-global",
+        "exit_code": 0,
+        "seconds": 0.12985563278198242,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-static/ruff-global.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      {
+        "name": "black-global",
+        "exit_code": 0,
+        "seconds": 45.21992254257202,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-static/black-global.log",
+        "sha256": "23bf68b9b8b1aaef4dd52142755e18cfd4b079b8e92034ed97912fb451e70162"
+      },
+      {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 1.1529474258422852,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-static/mypy.log",
+        "sha256": "e2626aa971f812d4320d36ce730dff6f87486fa24436430ef37d90cf5cf56058"
+      },
+      {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.4755940437316895,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-static/no-defaults.log",
+        "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+      },
+      {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 2.8455042839050293,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r35-static/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      }
+    ],
+    "all_passed": false,
+    "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+  },
+  "warning_parser_correction": {
+    "problem": "positive custody parser matched plural warnings only; actual pytest singular 1 warning was omitted",
+    "before_verifier_sha256": "54ab0a2cf47b90a42a010770813fbfffe8abf9a767f74151fc462829e15c6d32",
+    "after_verifier_sha256": "7a95e00045aa0d859f9726f30d36e65c1174b42b4624f58a0a07ed7b04205730",
+    "original_controls_custody": {
+      "job": "controls",
+      "base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+      "candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+      "exit_code": 0,
+      "counts": {
+        "passed": 2,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 11.932508707046509,
+      "source_guards": 805,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    "actual_summary": "2 passed, 1 warning in 6.66s",
+    "source": "wave35-r35-controls/controls.log",
+    "disposition": "Reparse same closed immutable runtime log with singular/plural matcher; no application rerun or source/test change. Historical pre-fix receipt preserved here. Sparse-invariant UserWarning recorded honestly as optional P3; no hidden suppression.",
+    "initial_repair_regression": {
+      "problem": "Parser loop variable name shadowed original job name; first repair wrote warnings-custody.json with correct counts but wrong job identity",
+      "disposition": "Intermediate misnamed receipt preserved but invalid; second administrative repair uses distinct count_name/count_label/count_matches, then reparses same closed log. No application rerun/source change."
+    },
+    "corrected_verifier_sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "verified_corrected_receipt": {
+      "path": "wave35-r35-controls/controls-custody.json",
+      "job": "controls",
+      "passed": 2,
+      "warnings": 1,
+      "runtime_reexecuted": false
+    }
+  },
+  "overlap": "Root4separatefamilycases+2serialcontrols are six distinct cases; independentSAME6not12unique. No repeat R34unchanged373/70/CLI34packs required for a test-only addition; prior proof kept source-bound, not relabelled R35 executions.",
+  "library_conditions": "Fresh family processes dynamo absent before constructor, present after constructor/before first public step; no optimizer warmup. First-step-empty-state/warm-library only. Constructors not qualified RNG-free.",
+  "scope": "Exact installed Torch2.11.0+cu130 built-in eager ordinary dense CPU Adam public steps1+2 from genuineRND/adaptiveinnerRND/ICM/Q factory retain all3 ambient RNGstates+nextdrawcontinuation while actualparameters/moments/countersadvance. Actualinstancehook all3consumptionpositivecontrol+finallycleanup/cleanstep3 and scoped sparse refusal. No production change.",
+  "optional_P3": [
+    "Explicit AMP grad_scale/found_inf absence/defaults consistency checks would strengthen profile admission assertions; current controlled genuine construction successful pinned ordinary path already excludes meaningful AMP mode.",
+    "Explicit sparse tensor invariant-check opt-in avoids one observed UserWarning; no suppression or required semantic assertion missing."
+  ],
+  "remaining_required": [
+    "R0shared/private stochastic entrypoint enrollment/copy-reset-publication exclusion/exactprivateforkrestore",
+    "B1BANK/CPepochs/history/reset/nativeoutercorrelation/stable-ownerfullD/E/F/T26",
+    "Genuine old_Run/sharedfxRig currentprotocol migrations/currentrunner/serving/mechanics/oracle6mypy",
+    "38originalpackages after28/66qualified;54requirements22freshreviews+synthesis/full>=70coverage/slow/applicablehardware/learningE2E/exactfinalCI/source-verifieddocs"
+  ],
+  "hardware": "CUDA unavailable and unqualified",
+  "runners_and_verifiers": "All namedR35runners/verifiersCLOSED; source/test/indexfrozen/no source writer",
+  "governance": "Existingauthorizedremoteonly; no newbranch/worktree/checkout/sourcecopy/deletion/PR/merge orscope reduction; no routine halt"
+}

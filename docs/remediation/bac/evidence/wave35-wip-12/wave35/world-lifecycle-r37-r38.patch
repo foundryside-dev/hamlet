@@ -1,0 +1,250 @@
+diff --git a/tests/test_townlet/regressions/bac/test_env_accepted_auth.py b/tests/test_townlet/regressions/bac/test_env_accepted_auth.py
+index de799e08..7161702b 100644
+--- a/tests/test_townlet/regressions/bac/test_env_accepted_auth.py
++++ b/tests/test_townlet/regressions/bac/test_env_accepted_auth.py
+@@ -14,6 +14,7 @@ from types import SimpleNamespace
+ import numpy as np
+ import pytest
+ import torch
++
+ from tests.test_townlet.regressions.bac.test_world_episode_identity import (
+     IDS,
+     SEED,
+diff --git a/tests/test_townlet/regressions/bac/test_world_episode_identity.py b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+index 0c0b8517..58a713b6 100644
+--- a/tests/test_townlet/regressions/bac/test_world_episode_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+@@ -231,10 +231,10 @@ class _Run:
+     def receipt(self, receipt_kind, **payload):
+         return self.issuer.issue(kind=receipt_kind, payload=payload)
+ 
+-    def role_receipt(self, role, receipt_kind, **payload):
+-        if role == "population":
++    def role_receipt(self, owner_role, receipt_kind, **payload):
++        if owner_role == "population":
+             return self.receipt(receipt_kind, **payload)
+-        return self.role_issuers[role].issue(kind=receipt_kind, payload=payload)
++        return self.role_issuers[owner_role].issue(kind=receipt_kind, payload=payload)
+ 
+     def validate_committed_batch(self, *, batch_episode, outcomes):
+         from townlet.training.episode import freeze_lane_outcome
+@@ -1391,3 +1391,103 @@ def test_component_all_inactive_ordinary_step_is_separate_from_empty_abandonment
+     assert run.env.global_tick == run.ledger.vector_ticks == 1
+     assert run.ledger.eligible_transitions == run.replay.retained_transitions == 0
+     assert run.env.world_phase == "active" and not run.outcomes and not run.committed_batches
++
++
++@pytest.mark.parametrize(
++    "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
++)
++def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
++    """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
++    source = _Run(_env(compiled))
++    initial = source.initial()
++    initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
++    captures = []
++    for batch, retired in ((1, (IDS[1],)), (2, ())):
++        source.reset(batch, retired_world_ids=retired)
++        source.step()
++        participants = tuple(wid for wid in IDS if wid not in retired)
++        _, closure, dispositions = source.close(batch, participants)
++        source.release_closed(batch, closure, dispositions)
++        captures.append((source.completed(tuple(range(1, batch + 1))), deepcopy(source.runtime.checkpoint_state()), source.ledger))
++    earlier, latest = captures
++    assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
++    assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
++    assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
++    _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
++    state, runtime_state, ledger = (initial, initial_runtime, zero_ledger) if damage == "initial_nonzero_ledger" else latest
++    # Earn the healthy native prepare/install and next-reset route before the
++    # negative. Only separately supplied cadence/selector or ledger will change.
++    healthy = _restore(compiled, state, tuple(reversed(IDS)), runtime_state=runtime_state, component_ledger=ledger)
++    continued = healthy.runtime.checkpoint_state()
++    for field in ("selector", "cadence"):
++        _same(continued[field], runtime_state[field])
++    assert healthy.ledger == ledger
++    next_batch = state["next_batch_episode"]
++    expected_sequences = (1, 1) if state["kind"] == "INITIAL" else (3, 3)
++    assert healthy.reset(next_batch, retired_world_ids=())[1].accepted.world_episode_seqs == expected_sequences
++    candidate = deepcopy(runtime_state)
++    if damage in ("initial_cadence", "earlier_cadence"):
++        old_runtime = initial_runtime if damage == "initial_cadence" else earlier[1]
++        for field in ("selector", "cadence"):
++            candidate[field] = deepcopy(old_runtime[field])
++        _same(candidate["bank"], latest[1]["bank"])
++        assert candidate["cadence"] != latest[1]["cadence"]
++    elif damage == "zero_ledger":
++        ledger = zero_ledger
++    elif damage == "earlier_ledger":
++        ledger = earlier[2]
++    elif damage == "same_count_ledger":
++        other = _Run(_env(compiled))
++        other.control_horizon = 2
++        for batch in (1, 2):
++            other.reset(batch, retired_world_ids=())
++            other.step()
++            if batch == 1:
++                other.step()
++            _, closure, dispositions = other.close(batch, IDS)
++            other.release_closed(batch, closure, dispositions)
++        ledger = other.ledger
++        assert ledger.completed_batch_episodes == latest[2].completed_batch_episodes
++        assert ledger.vector_ticks != latest[2].vector_ticks and ledger.eligible_transitions != latest[2].eligible_transitions
++    else:
++        ledger = latest[2]
++    targets, preparations, installations = [], [], []
++    original_init = _Run.__init__
++
++    def observed_init(run, env, bootstrap=True):
++        original_init(run, env, bootstrap=bootstrap)
++        targets.append((run, _state(env), run.ledger))
++        prepare_world = env.prepare_world_restore
++        install_child, install_world = run.runtime.install_restore, env.install_world_restore
++
++        def observed_prepare(**kwargs):
++            prepared = prepare_world(**kwargs)
++            preparations.append(prepared)
++            return prepared
++
++        def observed_child(**kwargs):
++            installations.append("runtime/BANK")
++            return install_child(**kwargs)
++
++        def observed_world(**kwargs):
++            installations.append("world")
++            return install_world(**kwargs)
++
++        monkeypatch.setattr(env, "prepare_world_restore", observed_prepare)
++        monkeypatch.setattr(run.runtime, "install_restore", observed_child)
++        monkeypatch.setattr(env, "install_world_restore", observed_world)
++
++    monkeypatch.setattr(_Run, "__init__", observed_init)
++    try:
++        with pytest.raises(ValueError):
++            _restore(compiled, state, tuple(reversed(IDS)), runtime_state=candidate, component_ledger=ledger)
++    finally:
++        assert len(targets) == len(preparations) == 1, "negative must reach genuine ENV restore preparation"
++        assert installations == [], "mismatched continuation must refuse before runtime/BANK or world installation"
++        target, before, original_ledger = targets[0]
++        assert target.ledger is original_ledger
++        assert target.env.world_phase == before["phase"]
++        assert dict(target.env.accepted_episode_seqs) == before["cursors"]
++        for name in ("positions", "meters", "dones"):
++            _same(getattr(target.env, name), before[name])
++        _same(target.env.step_counts, before["steps"])
+diff --git a/tests/test_townlet/regressions/bac/test_world_vfs_identity.py b/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
+index 70e7cd76..c40cf789 100644
+--- a/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_vfs_identity.py
+@@ -15,6 +15,7 @@ from typing import Any
+ 
+ import pytest
+ import torch
++
+ from townlet.config.world_roster import WorldRosterDeclaration
+ from townlet.environment.vectorized_env import WorldReceiptIssuer
+ from townlet.universe.compiler import UniverseCompiler
+@@ -979,3 +980,103 @@ def test_component_vfs_mixed_then_all_active_two_real_boundaries(compiled):
+         assert len(state["accepted_bindings"]) == batch + 1
+         release = owners.release
+     assert owners.env.prepare_episode(batch_episode=release.next_batch_episode, release=release).world_episode_seqs == (3, 3)
++
++
++@pytest.mark.parametrize(
++    "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
++)
++def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
++    """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
++    source = bound(compiled, ("a", "b"), ("a", "b"))
++    release = bootstrap(source)
++    initial = initial_snapshot(source, release)
++    initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
++    captures = []
++    for retired in (("b",), ()):
++        _, result = accept(source, release, retired_world_ids=retired)
++        state = completed_snapshot(source, result.accepted)
++        captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger))
++        release = source.release
++    earlier, latest = captures
++    assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
++    assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
++    assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
++    assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
++    state, runtime_state, ledger = (initial, initial_runtime, zero_ledger) if damage == "initial_nonzero_ledger" else latest
++    healthy = bound(compiled, ("a", "b"), ("b", "a"))
++    prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger)
++    json.dumps(prepared.payload)
++    installed = install_restore(healthy, prepared)
++    continued = healthy.runtime.checkpoint_state()
++    for field in ("selector", "cadence"):
++        assert_nested_equal(continued[field], runtime_state[field])
++    assert healthy.ledger == ledger
++    _, next_reset = accept(healthy, installed, retired_world_ids=())
++    assert next_reset.accepted.world_episode_seqs == ((1, 1) if state["kind"] == "INITIAL" else (3, 3))
++    candidate = copy.deepcopy(runtime_state)
++    if damage in ("initial_cadence", "earlier_cadence"):
++        old_runtime = initial_runtime if damage == "initial_cadence" else earlier[1]
++        for field in ("selector", "cadence"):
++            candidate[field] = copy.deepcopy(old_runtime[field])
++        assert_nested_equal(candidate["bank"], latest[1]["bank"])
++        assert candidate["cadence"] != latest[1]["cadence"]
++    elif damage == "zero_ledger":
++        ledger = zero_ledger
++    elif damage == "earlier_ledger":
++        ledger = earlier[2]
++    elif damage == "same_count_ledger":
++        other = bound(compiled, ("a", "b"), ("a", "b"))
++        other.control_horizon = 2
++        other_release = bootstrap(other)
++        for batch in (0, 1):
++            _, result = accept(other, other_release, retired_world_ids=())
++            if batch == 0:
++                other.step(legal_actions(other.env))
++            completed_snapshot(other, result.accepted)
++            other_release = other.release
++        ledger = other.saved_ledger
++        assert ledger.completed_batch_episodes == latest[2].completed_batch_episodes
++        assert ledger.vector_ticks != latest[2].vector_ticks and ledger.eligible_transitions != latest[2].eligible_transitions
++    else:
++        ledger = latest[2]
++    destination = bound(compiled, ("a", "b"), ("b", "a"))
++    env = destination.env
++    before = {
++        "phase": env.world_phase,
++        "cursors": dict(env.accepted_episode_seqs),
++        "physical": {name: getattr(env, name).clone() for name in ("positions", "meters", "dones", "step_counts")},
++        "ledger": destination.ledger,
++    }
++    preparations, installations = [], []
++    prepare_world = env.prepare_world_restore
++    install_child, install_world = destination.runtime.install_restore, env.install_world_restore
++
++    def observed_prepare(**kwargs):
++        actual = prepare_world(**kwargs)
++        preparations.append(actual)
++        return actual
++
++    def observed_child(**kwargs):
++        installations.append("runtime/BANK")
++        return install_child(**kwargs)
++
++    def observed_world(**kwargs):
++        installations.append("world")
++        return install_world(**kwargs)
++
++    monkeypatch.setattr(env, "prepare_world_restore", observed_prepare)
++    monkeypatch.setattr(destination.runtime, "install_restore", observed_child)
++    monkeypatch.setattr(env, "install_world_restore", observed_world)
++    try:
++        with pytest.raises(ValueError):
++            prepared = prepare_restore(destination, state, runtime_state=candidate, component_ledger=ledger)
++            json.dumps(prepared.payload)
++            install_restore(destination, prepared)
++    finally:
++        assert len(preparations) == 1, "negative must reach genuine ENV restore preparation"
++        assert installations == [], "mismatched continuation must refuse before runtime/BANK or world installation"
++        assert destination.ledger is before["ledger"]
++        assert env.world_phase == before["phase"]
++        assert dict(env.accepted_episode_seqs) == before["cursors"]
++        for name, original in before["physical"].items():
++            assert_nested_equal(getattr(env, name), original)

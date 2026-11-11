@@ -1,0 +1,9 @@
+"""Execute the unchanged standard CLI wrapper with inherited process identity checks."""
+import os
+from pathlib import Path
+import sys
+root = Path(os.environ["BAC_QUAL_ROOT"])
+hook = Path(__file__).parent / "compiler_identity_startup"
+os.environ["BAC_COMPILER_PROCESS_CUSTODY"] = "1"
+os.environ["PYTHONPATH"] = str(hook) + os.pathsep + os.environ["PYTHONPATH"]
+os.execv(sys.executable, [sys.executable, str(root / "scripts/validate_compiler_cli.py"), *sys.argv[1:]])

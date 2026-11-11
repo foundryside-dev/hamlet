@@ -1,0 +1,25 @@
+{
+  "name": "red",
+  "exit_code": 1,
+  "seconds": 7.5413408279418945,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py::test_count_reset_fresh_learning_retains_diagnostics_and_next_admission[shared]",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r18-red"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r18-red/red.log",
+  "sha256": "a02c98f25bf1f27c0905a52d104f5f6ab0bbba00707bd9146a26b7ed129bfbba",
+  "candidate_tree": "3dd9b4b8f2aa91b7085a4031951c0cb936e764f3",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "manifest_sha256": "7ef133994159363b9c91515129feadc7f22a39582f7387d5ce75f91aeb8dd4e1",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

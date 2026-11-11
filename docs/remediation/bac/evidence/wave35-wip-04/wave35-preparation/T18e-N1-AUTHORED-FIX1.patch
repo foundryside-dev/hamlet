@@ -1,0 +1,268 @@
+diff --git a/tests/test_townlet/regressions/bac/test_native_learning_reset.py b/tests/test_townlet/regressions/bac/test_native_learning_reset.py
+index f06814db..3ce041bd 100644
+--- a/tests/test_townlet/regressions/bac/test_native_learning_reset.py
++++ b/tests/test_townlet/regressions/bac/test_native_learning_reset.py
+@@ -1,51 +1,63 @@
+ """Native component reset proofs; BANK boundary and RNG custody are external gates."""
+ 
++import random
+ from copy import deepcopy
+ from typing import Any
+ 
++import numpy as np
+ import pytest
+ import torch
+ 
+ from tests.test_townlet.regressions.bac.test_pw_scope_conversion import compiled as compiled
+ from tests.test_townlet.regressions.bac.test_pw_scope_conversion import policy
+-from townlet.config.bac_options import RNDOptions
+-from townlet.config.exploration_policy import IntrinsicTransitionContext
++from townlet.config.bac_options import BaCOptions, RNDOptions
++from townlet.config.drive_as_code import IntrinsicStrategyConfig
++from townlet.config.exploration_policy import IntrinsicTransitionContext, resolve_exploration_policy
+ from townlet.exploration import provider_factory
+ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+ from townlet.exploration.icm import ICMExploration
+ from townlet.exploration.rnd import RNDExploration
+ from townlet.exploration.world_curiosity_state import ServiceClock
+ 
+ FAMILIES = ("rnd", "adaptive_rnd", "icm")
+ UNITS = ("vector_tick", "world_eligible_admission")
+ 
+ 
+ def assert_equal(left: Any, right: Any) -> None:
+     assert type(left) is type(right)
+     if isinstance(left, torch.Tensor):
+         assert left.shape == right.shape
+         assert left.dtype == right.dtype
+         assert left.device == right.device
+         assert torch.equal(left, right)
++    elif isinstance(left, np.ndarray):
++        assert left.shape == right.shape
++        assert left.dtype == right.dtype
++        assert np.array_equal(left, right)
+     elif isinstance(left, dict):
+         assert left.keys() == right.keys()
+         for key in left:
+             assert_equal(left[key], right[key])
+     elif isinstance(left, (list, tuple)):
+         assert len(left) == len(right)
+         for a, b in zip(left, right, strict=True):
+             assert_equal(a, b)
+     else:
+         assert left == right
+ 
+ 
++def ambient_rng() -> tuple[Any, ...]:
++    """Observe after real construction; native reset itself must consume no draws."""
++    return torch.get_rng_state().clone(), random.getstate(), deepcopy(np.random.get_state())
++
++
+ def inner(backend: Any) -> Any:
+     return backend.rnd if isinstance(backend, AdaptiveIntrinsicExploration) else backend
+ 
+ 
+ def native(state: dict[str, Any], family: str) -> dict[str, Any]:
+     return state["rnd_state"] if family == "adaptive_rnd" else state
+ 
+ 
+ def ledger(state: dict[str, Any], family: str) -> dict[str, Any]:
+     state = native(state, family)
+@@ -178,45 +190,51 @@ def assert_service_preserved(before: dict[str, Any], after: dict[str, Any], fami
+         b = native(after, family) if family == "icm" else new
+         assert_equal(a[key], b[key])
+     if family != "icm":
+         for key in ("options", "training_batch_size", "step_counter"):
+             assert_equal(old[key], new[key])
+     for key in ("epsilon", "epsilon_min", "epsilon_decay"):
+         assert_equal(native(before, family)[key], native(after, family)[key])
+ 
+ 
+ def install_reset(backend: Any, fresh: Any) -> None:
++    rng_before = ambient_rng()
+     prepared = backend.prepare_learning_reset(fresh=fresh)
++    assert_equal(ambient_rng(), rng_before)
+     backend.install_state(prepared)
++    assert_equal(ambient_rng(), rng_before)
+ 
+ 
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("unit", UNITS)
+ def test_reset_fresh_learning_retains_real_service_and_next_update(compiled: Any, family: str, unit: str) -> None:
+     backend = construct(compiled, family, unit)
+     train_with_tail(backend, family)
+     before = backend.checkpoint_state()
+     old_pending = list(backend._pending) if family == "icm" else list(inner(backend).obs_buffer)
+     fresh = construct(compiled, family, unit)
+     fresh_state = fresh.checkpoint_state()
+     source_gradients = gradients(backend)
++    rng_before = ambient_rng()
+     # First intended causal RED: genuine learned native reaches the absent operation.
+     prepared = backend.prepare_learning_reset(fresh=fresh)
++    assert_equal(ambient_rng(), rng_before)
+     assert_equal(backend.checkpoint_state(), before)
+     assert_equal(gradients(backend), source_gradients)
+     assert_equal(fresh.checkpoint_state(), fresh_state)
+     # Candidate ownership must not alias the caller-owned factory learning.
+     with torch.no_grad():
+         for module in modules(fresh):
+             for parameter in module.parameters():
+                 parameter.add_(3.0)
+     backend.install_state(prepared)
++    assert_equal(ambient_rng(), rng_before)
+     after = backend.checkpoint_state()
+     assert_service_preserved(before, after, family)
+     new_pending = list(backend._pending) if family == "icm" else list(inner(backend).obs_buffer)
+     for old_row, new_row in zip(old_pending, new_pending, strict=True):
+         if family == "icm":
+             assert old_row is not new_row
+             for key in ("predecessor", "successor"):
+                 assert old_row[key].data_ptr() != new_row[key].data_ptr()
+         else:
+             assert old_row.data_ptr() != new_row.data_ptr()
+@@ -355,22 +373,24 @@ def test_refused_offside_reset_keeps_source_and_fresh(compiled: Any, family: str
+         train_with_tail(fresh, family)
+     elif defect == "configuration":
+         fresh = construct(compiled, family, "world_eligible_admission")
+     else:
+         if family == "icm":
+             backend._counters["admitted_rows"] += 1
+         else:
+             inner(backend)._admitted_rows += 1
+     before, candidate = backend.checkpoint_state(), fresh.checkpoint_state()
+     before_gradients, candidate_gradients = gradients(backend), gradients(fresh)
++    rng_before = ambient_rng()
+     with pytest.raises(ValueError):
+         backend.prepare_learning_reset(fresh=fresh)
++    assert_equal(ambient_rng(), rng_before)
+     assert_equal(backend.checkpoint_state(), before)
+     assert_equal(fresh.checkpoint_state(), candidate)
+     assert_equal(gradients(backend), before_gradients)
+     assert_equal(gradients(fresh), candidate_gradients)
+ 
+ 
+ @pytest.mark.parametrize("family", FAMILIES)
+ @pytest.mark.parametrize("bad_origin", (True, -1, 2, 0.5))
+ def test_reset_origin_corruption_rejected_without_install(compiled: Any, family: str, bad_origin: Any) -> None:
+     backend = construct(compiled, family, "vector_tick")
+@@ -419,31 +439,46 @@ def test_rnd_manual_adam_displacement_survives_restore_then_reset_clears_it(comp
+     for parameter in rnd.predictor_network.parameters():
+         parameter.grad = torch.ones_like(parameter) * 0.01
+     rnd.optimizer.step()
+     before = backend.checkpoint_state()
+     assert ledger(before, family)["optimizer_updates"] == 1
+     assert ledger(before, family)["optimizer_step_offset"] == 1
+     assert adam_steps(backend) == {2}
+     restored = construct(compiled, family, "vector_tick")
+     restored.load_state(before)
+     assert_equal(restored.checkpoint_state(), before)
+-    install_reset(backend, construct(compiled, family, "vector_tick"))
+-    reset = backend.checkpoint_state()
+-    assert_service_preserved(before, reset, family)
+-    assert origin(reset, family) == 1
++    # A real managed update must preserve the nonzero displacement before reset.
++    service(restored, start=30, count=1, position=8, tick=8)
++    managed = restored.checkpoint_state()
++    assert ledger(managed, family)["optimizer_updates"] == 2
++    assert ledger(managed, family)["consumed_rows"] == 4
++    assert ledger(managed, family)["admitted_rows"] == 4
++    assert len(pending(managed, family)) == 0
++    assert origin(managed, family) == 0
++    assert ledger(managed, family)["optimizer_step_offset"] == 1
++    assert adam_steps(restored) == {3}
++    restored.validate_state(managed)
++    old_optimizer = inner(restored).optimizer
++    install_reset(restored, construct(compiled, family, "vector_tick"))
++    reset = restored.checkpoint_state()
++    assert_service_preserved(managed, reset, family)
++    assert origin(reset, family) == 2
+     assert ledger(reset, family)["optimizer_step_offset"] == 0
+-    assert rnd is not inner(backend) or rnd.optimizer is not inner(backend).optimizer
+-    assert adam_steps(backend) == set()
+-    service(backend, start=30, count=1, position=8, tick=8)
+-    assert adam_steps(backend) == {1}
+-    assert ledger(backend.checkpoint_state(), family)["optimizer_step_offset"] == 0
+-    backend.validate_state(backend.checkpoint_state())
++    assert old_optimizer is not inner(restored).optimizer
++    assert adam_steps(restored) == set()
++    service(restored, start=40, count=2, position=9, tick=9)
++    assert adam_steps(restored) == {1}
++    continued = restored.checkpoint_state()
++    assert ledger(continued, family)["optimizer_updates"] == 3
++    assert origin(continued, family) == 2
++    assert ledger(continued, family)["optimizer_step_offset"] == 0
++    restored.validate_state(continued)
+ 
+ 
+ @pytest.mark.parametrize("family", FAMILIES)
+ def test_actual_shared_factory_candidates_use_native_reset_contract(compiled: Any, family: str) -> None:
+     selected = policy(compiled, family, "shared", "paced_fifo")
+ 
+     def factory() -> Any:
+         return provider_factory.make_backend(selected, world_id=None, obs_dim=3, action_dim=2, device="cpu", rng=None, descriptor=None)
+ 
+     backend = factory()
+@@ -488,10 +523,63 @@ def test_negative_manual_displacement_is_distinct_from_learning_origin(compiled:
+     destination = construct(compiled, family, "vector_tick")
+     destination.load_state(saved)
+     assert_equal(destination.checkpoint_state(), saved)
+     assert origin(destination.checkpoint_state(), family) == 0
+     install_reset(destination, construct(compiled, family, "vector_tick"))
+     reset = destination.checkpoint_state()
+     assert origin(reset, family) == 1
+     assert ledger(reset, family)["optimizer_step_offset"] == 0
+     assert_service_preserved(saved, reset, family)
+     destination.validate_state(reset)
++
++
++def test_icm_real_mandatory_updates_survive_reset_and_continue(compiled: Any) -> None:
++    template = policy(compiled, "icm", "shared", "paced_fifo").to_dict()
++    options_data = template["authored_parameters"]["bac_options"]
++    options_data["rnd"]["overflow_policy"] = "service_before_admit"
++    options_data["providers"]["icm"]["training_batch_size"] = 2
++    options_data["providers"]["icm"]["max_pending_transitions"] = 4
++    selected = resolve_exploration_policy(
++        drive_intrinsic=IntrinsicStrategyConfig.model_validate(template["authored_parameters"]["drive_intrinsic"]),
++        training=compiled.get_level(compiled.metadata.primary_level).training,
++        options=BaCOptions.model_validate(options_data),
++    )
++    assert selected.strategy == "icm"
++    assert selected.overflow_policy == "service_before_admit"
++    assert selected.service_mode == "paced_fifo"
++    assert selected.max_updates_per_tick == 1
++
++    def factory() -> Any:
++        return provider_factory.make_backend(selected, world_id=None, obs_dim=3, action_dim=2, device="cpu", rng=None, descriptor=None)
++
++    backend = factory()
++    train_with_tail(backend, "icm")
++    first_overflow = service(backend, start=3, count=4, position=7, tick=7)
++    assert first_overflow.mandatory_service_updates == 1
++    assert first_overflow.optimizer_updates == 1
++    before = backend.checkpoint_state()
++    assert before["counters"]["mandatory_service_updates"] == 1
++    assert before["counters"]["optimizer_updates"] == 2
++    assert before["ordinary_updates_at_position"] == 1
++    assert len(before["pending"]) == 3
++    assert adam_steps(backend) == {2}
++    install_reset(backend, factory())
++    reset = backend.checkpoint_state()
++    assert_service_preserved(before, reset, "icm")
++    assert origin(reset, "icm") == 2
++    assert reset["last_loss"] == 0.0
++    assert backend.optimizer.state == {}
++    second_overflow = service(backend, start=7, count=2, position=7, tick=7)
++    assert second_overflow.mandatory_service_updates == 1
++    assert second_overflow.optimizer_updates == 1
++    after = backend.checkpoint_state()
++    assert after["counters"]["mandatory_service_updates"] == 2
++    assert after["counters"]["optimizer_updates"] == 3
++    assert after["counters"]["admitted_rows"] == 9
++    assert after["counters"]["consumed_rows"] == 6
++    assert len(after["pending"]) == 3
++    assert after["ordinary_updates_at_position"] == 1
++    assert after["service_position"] == 7
++    assert origin(after, "icm") == 2
++    assert adam_steps(backend) == {1}
++    assert_pairing(backend)
++    backend.validate_state(after)

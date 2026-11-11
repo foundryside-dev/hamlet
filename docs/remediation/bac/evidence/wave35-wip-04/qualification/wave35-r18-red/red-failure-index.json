@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "candidate_tree": "3dd9b4b8f2aa91b7085a4031951c0cb936e764f3",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'CountExploration' object has no attribute 'prepare_learning_reset'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py::test_count_reset_fresh_learning_retains_diagnostics_and_next_admission[shared]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

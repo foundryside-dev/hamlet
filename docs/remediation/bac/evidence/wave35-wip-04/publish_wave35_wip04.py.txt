@@ -1,0 +1,112 @@
+"""Preserve reviewed R22 nonmodel native reset and honest open integration gates."""
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+m = json.loads((W / 'wave35/r22-candidate.json').read_text())
+receipt = json.loads((W / 'wave35/r22-checkpoint-receipt.json').read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit']
+assert git('write-tree') == m['candidate_tree'] and not git('diff', '--name-only')
+assert receipt['candidate_tree'] == m['candidate_tree']
+assert receipt['status'] == 'UNRELEASED WIP; no package or repository release'
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+for key, count in (('root_coherent', 293), ('basic_owners', 182), ('independent_native', 154)):
+    assert receipt[key]['exit_code'] == 0 and receipt[key]['counts']['passed'] == count
+for key, count in (('bank_failed', 34), ('restore_failed', 0)):
+    assert receipt[key]['exit_code'] == 1 and receipt[key]['counts']['failed'] == 1
+    assert receipt[key]['counts']['passed'] == count
+for key in ('collection', 'root_coherent', 'basic_owners', 'independent_native', 'bank_failed', 'restore_failed'):
+    assert receipt[key]['source_index_import_threads_fixture_custody'] == 'PASS'
+for row in receipt['documents'].values():
+    assert sha(W / row['draft']) == row['sha256'], row['draft']
+for path, digest in receipt['review_sha256'].items():
+    assert sha(W / path) == digest, path
+for path, digest in receipt['retained_static_source_equivalence']['exact_subtrees'].items():
+    assert git('rev-parse', m['candidate_tree'] + ':' + path) == digest
+    assert git('rev-parse', receipt['retained_static_source_equivalence']['from_tree'] + ':' + path) == digest
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p)
+             for p in ('src', 'tests', 'configs', 'scripts', '.defaults-ratchet')}
+out = D / 'evidence/wave35-wip-04'
+assert not out.exists() and not (D / 'evidence/wave35-wip-04.json').exists()
+assert not (D / 'CURRENT-NONMODEL-LEARNING-RESET-CONTRACT.md').exists()
+out.mkdir()
+artifacts = {}
+
+
+def copy(source, target):
+    assert source.is_file() and not target.exists(), str(target)
+    assert '.bundle' not in str(source) and 'git-backups' not in str(source)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(source.read_bytes())
+    assert sha(source) == sha(target)
+    artifacts[target.relative_to(R).as_posix()] = {'sha256': sha(target), 'original': str(source)}
+
+
+for p in sorted(Q.glob('wave35-r*')):
+    match = re.match(r'wave35-r([0-9]+)(?:-|$)', p.name)
+    if match is None or not 18 <= int(match.group(1)) <= 22:
+        continue
+    if p.is_dir():
+        for f in sorted(p.rglob('*')):
+            if f.is_file() and f.suffix in ('.json', '.log'):
+                copy(f, out / 'qualification' / p.name / f.relative_to(p))
+    elif p.suffix == '.json':
+        copy(p, out / 'qualification' / p.name)
+for folder in ('wave35', 'wave35-preparation'):
+    for p in sorted((W / folder).rglob('*')):
+        if p.is_file() and p.suffix in ('.json', '.md', '.txt', '.patch'):
+            copy(p, out / folder / p.relative_to(W / folder))
+for name in ('capture_wave14_round.py', 'verify_bac_run.py', 'verify_bac_failed_run.py',
+             'verify_bac_static_run.py', 'run_bac_packet_checks_locked.py',
+             'bac_source_identity.py', 'publish_wave35_wip04.py'):
+    copy(Q / name, out / (name + '.txt'))
+for name in ('CURRENT-STATE.json', 'progress.md', 'tasks.json', 'final-review-lenses.json'):
+    copy(W / name, out / ('execution-' + name))
+for name in ('BAC-TRACKING-DRAFT.md', 'BAC-TRACKING-PUBLICATION.json'):
+    copy(W / 'wave29-preparation' / name, out / 'spaces-tracker-snapshot' / name)
+copy(W / receipt['documents']['nonmodel']['draft'], D / 'CURRENT-NONMODEL-LEARNING-RESET-CONTRACT.md')
+status = D / 'STATUS.md'
+before_status = status.read_text()
+assert before_status.startswith('# BAC implementation status\n')
+current = '''
+
+Latest checkpoint: Count and NONE native learning reset now have bounded source/specification/quality and public API truth approval at tested candidate `be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52`. This is **unreleased work in progress**, with original **28 qualified / 38 remaining / 66 total** unchanged. The [checkpoint evidence](evidence/wave35-wip-04.json) and [nonmodel reset contract](CURRENT-NONMODEL-LEARNING-RESET-CONTRACT.md) preserve actual successes, repaired defects and required failed gates. The earlier model reset and parent fixes remain in the preceding checkpoint.
+
+The current coherent selection passed 293 cases (154 nonmodel native, 61 model native, 47 parent, 31 environment); independent Astra passed the same 154 nonmodel cases. A separate Count/factory/EPS selection passed 182 cases. Collection passed for 706 cases. Selections overlap and are not summed. Every named execution has full 802-source/573-configuration/13-artifact/controller/index/import/thread/14-registry MAIN1 custody. Concrete NoneExploration owns native NONE preparation/reset; plain EPS diagnostics, ordinary loading and global selection remain intact, and Count/ICM retain nominal EPS inheritance. All eight introduced override errors are repaired. R21 Ruff, Black, expression documentation and the 600 defaults ratchet passed, with only six oracle mypy errors; those static results are retained by exact source/configuration/script/ratchet equivalence, not claimed as rerun R22 checks. The separately reviewed two-line factory expected-class correction is covered by the actual 182-case pass.
+
+Required BANK and restore checks remain failed before intended assertions: BANK stopped with 34 passes and one failure; restore with zero passes and one failure, both at the old shared Rig ENV.step call missing vector_step. A keyword-only edit cannot establish genuine initial participation, geometry, claim custody, canonical sole reward/service, closure or next-episode state. The reviewed next design adds real pre-first-step participation, then one shared fixture repair. R0 shared/private RNG custody, B1 BANK/CP reset provenance and epochs/history/native correlation, full D stable-owner restore, same-BANK transfer/reset, parent/native clock/cache correlation, ordinary runner, all-child publication and mechanics/oracle consumers stay required. The new process-cohort exact restore extension is optional P3, not a closure dependency or a change to existing K01 qualifications. The earlier failed full baseline is preserved, not relabeled current or green. Full/default, coverage at least 70%, slow/applicable hardware, learning/end-to-end evidence, 54 requirements, 22 fresh final review lenses plus synthesis, and exact-final-remote CI remain owed. CUDA is unavailable and unqualified. Earlier entries below are historical checkpoints.
+'''
+status.write_text('# BAC implementation status' + current + before_status[len('# BAC implementation status'):])
+manifest = {'status': receipt['status'], 'packet': 'Native Count/NONE reset and exact factory consumer alignment',
+            'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+            'execution_subtrees': execution, 'inventories': m['inventories'],
+            'source_files': m['source_files'], 'config_changes': m['config_changes'],
+            'receipt': receipt, 'artifacts': artifacts,
+            'qualified_progress': '28 qualified original packages,38 remaining,66 total unchanged; required BANK/restore integration remains failed.',
+            'publication': 'Existing authorized remote branch only; no new project branch/worktree/checkout/source copy/PR/merge/deletion. Private history bundle excluded.',
+            'next': 'Genuine initial participation and shared fixture lifecycle; RNG custody; BANK/CP reset/native correlation and stable owners; required current callers and finite final gates.'}
+mp = D / 'evidence/wave35-wip-04.json'
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+subprocess.run(['git', 'add', '-f', '--', *artifacts, str(mp.relative_to(R)), 'docs/remediation/bac/STATUS.md'], cwd=R, check=True)
+tree = git('write-tree')
+for path, digest in execution.items():
+    assert git('rev-parse', tree + ':' + path) == digest, path
+for path, row in artifacts.items():
+    assert sha(R / path) == row['sha256'], path
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.',
+                ':(glob,exclude)docs/remediation/bac/evidence/wave35-wip-04/**'], cwd=R, check=True)
+report = {'status': manifest['status'], 'evidence_tree': m['candidate_tree'],
+          'publication_tree': tree, 'source_equivalence': 'PASS',
+          'artifact_count': len(artifacts), 'staged_paths': git('diff', '--cached', '--name-only').splitlines()}
+(Q / 'wave35-wip-04-assembly.json').write_text(json.dumps(report, indent=2) + '\n')
+print(json.dumps({k: v for k, v in report.items() if k != 'staged_paths'}, indent=2))

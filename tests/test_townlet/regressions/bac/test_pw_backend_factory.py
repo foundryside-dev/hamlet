@@ -19,13 +19,13 @@ from townlet.config.exploration_policy import IntrinsicTransitionContext, Resolv
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.count_based import CountExploration
-from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration, NoneExploration
 from townlet.exploration.icm import ICMExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.exploration.world_curiosity_state import OwnedWorldBackend, WorldCuriosityDescriptor, WorldRNGState
 
 FAMILIES = ("none", "rnd", "adaptive_rnd", "count_based", "icm")
-CLASSES = (EpsilonGreedyExploration, RNDExploration, AdaptiveIntrinsicExploration, CountExploration, ICMExploration)
+CLASSES = (NoneExploration, RNDExploration, AdaptiveIntrinsicExploration, CountExploration, ICMExploration)
 OBS_DIM = 7
 ACTION_DIM = 3
 SEED = 42

@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r20-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r20-collection",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+        "tests/test_townlet/regressions/bac/test_count_provider.py",
+        "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+        "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+        "tests/test_townlet/regressions/bac/test_pw_private_bank.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py",
+        "-q",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only"
+      ]
+    }
+  ]
+}

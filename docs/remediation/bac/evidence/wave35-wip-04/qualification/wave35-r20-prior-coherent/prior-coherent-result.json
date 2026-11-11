@@ -1,0 +1,27 @@
+{
+  "name": "prior-coherent",
+  "exit_code": 0,
+  "seconds": 91.96866059303284,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_learning_reset.py",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r20-prior-coherent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r20-prior-coherent/prior-coherent.log",
+  "sha256": "746a6f6ca2b11c3bd6d2cce6c09117f815e34ae192d20698ead8d97f1c789fc8",
+  "candidate_tree": "7ca5f44955559411d2093364f53f0970b2ec732e",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "manifest_sha256": "42e4df8245bb6d5bfef07ebef0c10a2efce46313b9f546ac67e2620af209e7b2",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

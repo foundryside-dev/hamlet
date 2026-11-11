@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_private_bank.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_pristine_current_producer_and_env_fixture_control[none]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

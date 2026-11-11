@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "candidate_tree": "789b0c3ea34afced7a5b1531d8566973e836e5ee",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where <class 'townlet.exploration.epsilon_greedy.NoneExploration'> = type(<townlet.exploration.epsilon_greedy.NoneExploration object at 0x7f0cf9128ad0>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_factory_reuses_all_five_backends[shared-none-EpsilonGreedyExploration]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

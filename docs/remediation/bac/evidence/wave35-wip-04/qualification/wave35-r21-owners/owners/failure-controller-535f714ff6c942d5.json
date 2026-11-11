@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_factory_reuses_all_five_backends[shared-none-EpsilonGreedyExploration]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "strategy = 'none'\nexpected_class = <class 'townlet.exploration.epsilon_greedy.EpsilonGreedyExploration'>\nscope = 'shared'\n\n    @pytest.mark.parametrize(\"strategy,expected_class\", zip(FAMILIES, CLASSES, strict=True))\n    @pytest.mark.parametrize(\"scope\", (\"shared\", \"per_world\"))\n    def test_factory_reuses_all_five_backends(strategy: str, expected_class: type, scope: str) -> None:\n        policy = _policy(strategy, scope)\n        backend = _factory().make_backend(policy, **_arguments(policy))\n>       assert type(backend) is expected_class\nE       AssertionError: assert <class 'townlet.exploration.epsilon_greedy.NoneExploration'> is <class 'townlet.exploration.epsilon_greedy.EpsilonGreedyExploration'>\nE        +  where <class 'townlet.exploration.epsilon_greedy.NoneExploration'> = type(<townlet.exploration.epsilon_greedy.NoneExploration object at 0x7f0cf9128ad0>)\n\ntests/test_townlet/regressions/bac/test_pw_backend_factory.py:161: AssertionError",
+  "candidate_tree": "789b0c3ea34afced7a5b1531d8566973e836e5ee"
+}

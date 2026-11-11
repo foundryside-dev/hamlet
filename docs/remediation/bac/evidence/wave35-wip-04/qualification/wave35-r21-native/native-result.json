@@ -1,0 +1,25 @@
+{
+  "name": "native",
+  "exit_code": 0,
+  "seconds": 9.098268270492554,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r21-native"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-native/native.log",
+  "sha256": "1ec0160fe8ee57733c8e673193a29ece10e8214266168037966fd048ee9d26f9",
+  "candidate_tree": "789b0c3ea34afced7a5b1531d8566973e836e5ee",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "manifest_sha256": "486f5ecf81b473a9f87009c9bf16da482c746c6b3e58f90b3c804c9f7aaaa17c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

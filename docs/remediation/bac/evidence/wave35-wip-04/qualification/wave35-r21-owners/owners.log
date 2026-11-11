@@ -1,0 +1,34 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 413 items
+
+tests/test_townlet/regressions/bac/test_count_provider.py .............. [  3%]
+....................                                                     [  8%]
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py .F
+
+=================================== FAILURES ===================================
+_ test_factory_reuses_all_five_backends[shared-none-EpsilonGreedyExploration] __
+
+strategy = 'none'
+expected_class = <class 'townlet.exploration.epsilon_greedy.EpsilonGreedyExploration'>
+scope = 'shared'
+
+    @pytest.mark.parametrize("strategy,expected_class", zip(FAMILIES, CLASSES, strict=True))
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_factory_reuses_all_five_backends(strategy: str, expected_class: type, scope: str) -> None:
+        policy = _policy(strategy, scope)
+        backend = _factory().make_backend(policy, **_arguments(policy))
+>       assert type(backend) is expected_class
+E       AssertionError: assert <class 'townlet.exploration.epsilon_greedy.NoneExploration'> is <class 'townlet.exploration.epsilon_greedy.EpsilonGreedyExploration'>
+E        +  where <class 'townlet.exploration.epsilon_greedy.NoneExploration'> = type(<townlet.exploration.epsilon_greedy.NoneExploration object at 0x7f0cf9128ad0>)
+
+tests/test_townlet/regressions/bac/test_pw_backend_factory.py:161: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_backend_factory.py::test_factory_reuses_all_five_backends[shared-none-EpsilonGreedyExploration]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+========================= 1 failed, 35 passed in 0.55s =========================

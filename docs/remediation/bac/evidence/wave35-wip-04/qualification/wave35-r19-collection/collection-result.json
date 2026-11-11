@@ -1,0 +1,24 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 4.3642919063568115,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r19-collection/collection.log",
+  "sha256": "7f9a6428e7f73c00fa32445a31453d4304b98df80ff94a143fc12c6766e8658d",
+  "candidate_tree": "3a3447268b52800823681128c59991bedb84e4bf",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "manifest_sha256": "fc698ad4ad809efc4d54dde1a87886d38759293dc74915c003adeff3d9c07655",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 5.0539867877960205,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py",
+    "tests/test_townlet/regressions/bac/test_count_provider.py",
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+    "tests/test_townlet/regressions/bac/test_pw_private_bank.py",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+    "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-collection/collection.log",
+  "sha256": "1c6ae3438ed61afe60d88b12873a3e1145e55c14cbc9100c89dc062e4f3b3d08",
+  "candidate_tree": "789b0c3ea34afced7a5b1531d8566973e836e5ee",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "manifest_sha256": "486f5ecf81b473a9f87009c9bf16da482c746c6b3e58f90b3c804c9f7aaaa17c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

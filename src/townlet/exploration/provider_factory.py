@@ -9,7 +9,7 @@ from townlet.config.exploration_policy import ResolvedExplorationPolicy
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.base import ExplorationStrategy
 from townlet.exploration.count_based import CountExploration
-from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration, NoneExploration
 from townlet.exploration.icm import ICMExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
@@ -86,7 +86,7 @@ def make_backend(
         rng.validate_binding(descriptor=expected_descriptor, world_id=world_id, cuda_devices=cuda_devices)
 
     if policy.strategy == "none":
-        return make_policy_selector(policy)
+        return NoneExploration(epsilon=policy.epsilon_start, epsilon_decay=policy.epsilon_decay, epsilon_min=policy.epsilon_end)
     parameters = policy.provider_parameters
     if policy.strategy == "count_based":
         return CountExploration(

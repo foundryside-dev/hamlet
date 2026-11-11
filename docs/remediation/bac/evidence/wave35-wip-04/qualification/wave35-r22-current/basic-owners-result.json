@@ -1,0 +1,27 @@
+{
+  "name": "basic-owners",
+  "exit_code": 0,
+  "seconds": 9.680414915084839,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_count_provider.py",
+    "tests/test_townlet/regressions/bac/test_pw_backend_factory.py",
+    "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py",
+    "-x",
+    "-q",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r22-basic-owners"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r22-current/basic-owners.log",
+  "sha256": "a6a3b5d2aa4daf50c55628b61c65f0707816b03c7c698929e4be46c1b6ef8c23",
+  "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "manifest_sha256": "43a4f5eebcd721c8f1488c7a39c1432d4e99c9164b4bad3b52af2252fddf4f05",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

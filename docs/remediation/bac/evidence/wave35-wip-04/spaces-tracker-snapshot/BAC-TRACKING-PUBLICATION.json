@@ -1,0 +1,1319 @@
+{
+  "status": "updated_same_page_and_read_back",
+  "title": "BAC Work Completed and Remaining",
+  "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "created_at": "2026-11-10T14:07:57.502017Z",
+  "idempotency_key": "bac-work-tracker-2026-11-11-a7c4cd0b",
+  "drive_scope": "personal",
+  "parent": null,
+  "space_id": null,
+  "publication": "Created authorized private native editable text Page; no sharing changes, new Space, messages or automations.",
+  "verification": {
+    "readback_success": true,
+    "body_preserved_normalizing_whitespace": true,
+    "native_blocks": 32,
+    "completed_packet_ids": 28,
+    "remaining_packet_ids": 38,
+    "exact_packet_coverage": true,
+    "title_verified": true,
+    "headings_verified": true,
+    "visual_preview": "No rendered preview exposed by Page tools; visual layout not independently inspected.",
+    "latest_update": {
+      "readback_success": true,
+      "title_verified": true,
+      "changed_blocks_exact": true,
+      "all_untouched_blocks_preserved": true,
+      "block_order_preserved": true,
+      "native_blocks": 32,
+      "completed_packet_ids": 28,
+      "remaining_packet_ids": 38,
+      "exact_packet_coverage": true,
+      "all_applied": true,
+      "atomic_nonpatch_operations": 6,
+      "edit_receipt_sequence": 17,
+      "rendered_preview": "No rendered preview tool exposed; visual layout not independently inspected."
+    }
+  },
+  "source_checkpoint": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "source_set": [
+    "BAC-TRACKING-SNAPSHOT.json",
+    "../CURRENT-STATE.json",
+    "../progress.md",
+    "/workspace/hamlet/docs/remediation/bac/STATUS.md",
+    "/workspace/hamlet/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md"
+  ],
+  "source_total_lines": 3534,
+  "root_update_incorporated": "Remote383d2ac1 unchanged. Staged be7e7fcc N2Count/None reviewed unpublished:293coherentPASS,182basicPASS,154independent overlapping,706collected. BANK34PASS1FAIL/restore0PASS1FAIL oldsharedRig missingvector_step before assertions. R21static retained exact equivalence notR22rerun,6oldoracle errors. Contract truthreview pending. Next genuine initial participation/shared lifecycle/RNGcustody/nativecorrelation/remaining full gates. Fresh383d CIjobs01:14UTCConfigPASS/LintFAILmypy/TestsFAILfastsuite, rootcause not inferred.28/38/66unchanged.",
+  "draft_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave29-preparation/BAC-TRACKING-DRAFT.md",
+  "implementation_files_read_or_changed": false,
+  "runtime_or_git_mutations": false,
+  "subagents_spawned": false,
+  "updated_at": "2026-11-11T01:14:55Z",
+  "latest_source_snapshot_utc": "2026-11-11T01:14:02Z",
+  "latest_status": "Remote383d2ac1 unchanged. Staged be7e7fcc N2Count/None reviewed unpublished:293coherentPASS,182basicPASS,154independent overlapping,706collected. BANK34PASS1FAIL/restore0PASS1FAIL oldsharedRig missingvector_step before assertions. R21static retained exact equivalence notR22rerun,6oldoracle errors. Contract truthreview pending. Next genuine initial participation/shared lifecycle/RNGcustody/nativecorrelation/remaining full gates. Fresh383d CIjobs01:14UTCConfigPASS/LintFAILmypy/TestsFAILfastsuite, rootcause not inferred.28/38/66unchanged.",
+  "latest_edit_receipt": {
+    "new_sequence": 17,
+    "through_sequence": 17,
+    "operation_results": [
+      {
+        "operation_index": 0,
+        "preceding_block_id": null,
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+          "relative_position_base64": "AL+M+KELhAFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+            "hash": "b6ae9334212118f38c9203981435af53a7fa1ab286f24d7bee5e90afbf63d93a"
+          }
+        ]
+      },
+      {
+        "operation_index": 1,
+        "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+          "relative_position_base64": "AL+M+KELkw5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "hash": "a4903e7e68d7785d0ed1a1c299b6edda122656a71fcec893f232f31a9341065b"
+          }
+        ]
+      },
+      {
+        "operation_index": 2,
+        "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+          "relative_position_base64": "AL+M+KELhxJB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+            "hash": "3fcf63b2455e6b7b4a5dfbab370fd4caa3f147f032057653b847c25d814e617b"
+          }
+        ]
+      },
+      {
+        "operation_index": 3,
+        "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+          "relative_position_base64": "AL+M+KELxT5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+            "hash": "0a460d60635de669b2fdd32c1acb3f68b8ea955ce886cfd2074632d761717a2e"
+          }
+        ]
+      },
+      {
+        "operation_index": 4,
+        "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+          "relative_position_base64": "AL+M+KELqkFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "hash": "45f4e9970750817dcd12d16c9f745a6b045079045b7f1c16384c9691d0b8c662"
+          }
+        ]
+      },
+      {
+        "operation_index": 5,
+        "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+          "relative_position_base64": "AL+M+KELn0JB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "hash": "600f62db834eba1516b06c3627aceccec31e48e547ae97173ed544b232c09b2b"
+          }
+        ]
+      }
+    ]
+  },
+  "update_history": [
+    {
+      "updated_at": "2026-11-10T16:26:35.094098Z",
+      "latest_source_snapshot_utc": "2026-11-10T17:00:17Z",
+      "latest_status": "Zero-scale producer/current checkpoint cache prerequisite accepted and pushed; root22 and independentAstra22 PASS, coherent973PASS3CUDA skips. Next T18d runtime approved design/tests-first active; implementation not started. Original28/66 and38remaining unchanged. Newtip CI all in progress; nine mypy blockers and full acceptance remain open.",
+      "latest_edit_receipt": {
+        "new_sequence": 3,
+        "through_sequence": 3,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "197507d0527bd755ca1875b839874c90d5345770d23cbea708015921b6070d56"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "a79cc1fe73b18b09951d2d8154ee4158d1434fb2223a0b1f1057f626dcdbf7b1"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+              "relative_position_base64": "AL+M+KELhxJB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+                "hash": "f827a9a5fc40465dfe41a2cf742647214fafa758f3da23df458b497366678bee"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+              "relative_position_base64": "AL+M+KELxydB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+                "hash": "256b0f29a9c9c49d7820af298a11ec7c1007c4eb1e288c6583ce3f910f777c38"
+              }
+            ]
+          },
+          {
+            "operation_index": 4,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "09a714d9360b248f01570e93dc65775f8fe21e73149f1847f604e8be17835980"
+              }
+            ]
+          },
+          {
+            "operation_index": 5,
+            "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+              "relative_position_base64": "AL+M+KELqkFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+                "hash": "283c2b5394556cc354204ed824fd6af04cae3265f9d29766ea2b06d7b263db9c"
+              }
+            ]
+          },
+          {
+            "operation_index": 6,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "21cf4be368e2e55eb97a125b8571d507b28842d9b1bf079cb065a45699263b3f"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "updated_at": "2026-11-10T18:28:06Z",
+      "latest_source_snapshot_utc": "2026-11-10T18:27:05Z",
+      "latest_status": "T18d runtime component passed fresh independent whole-source/spec review, 150 independent tests and coherent root1123PASS3CUDA skips; staged/unpublished. Remote47d82 unchanged. Full repository collection stopped on obsolete PerformanceTracker import; bounded original curriculum test repair active. T18e read-only preparation only. Original28/38/66 and full acceptance remain unchanged.",
+      "latest_edit_receipt": {
+        "new_sequence": 4,
+        "through_sequence": 4,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "a36bb694257ef8044c21ffd2938ff84d08714ada5a7b654b33c3d3a5d70e5de8"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "36e8b73d3e391d42a693cc4f1ec33c45e8aef02507efeba4627adb6e2e5792c8"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+              "relative_position_base64": "AL+M+KELhxJB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+                "hash": "b227fdaefd3aaf574a283aaf055986c0deb03170d3bafea2e1bd1a9a0a31c74f"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+              "relative_position_base64": "AL+M+KELxydB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+                "hash": "c0094b93c6dca6cae10ee1fabf829b6727b800a73b7c844c9813525112811ee4"
+              }
+            ]
+          },
+          {
+            "operation_index": 4,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "2ad320c2d3402a1ed9dc25f1125ce4ea193a3ce603d782b0f264ca16f231525e"
+              }
+            ]
+          },
+          {
+            "operation_index": 5,
+            "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+              "relative_position_base64": "AL+M+KELqkFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+                "hash": "eb72e57dd18ebe1510f751f34d387c6ad172d3e0a3f59fde5c6526d8905a346f"
+              }
+            ]
+          },
+          {
+            "operation_index": 6,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "e3af76949191d5c2c987137fde7e44dc40bfc9c78a567c332aa375250b82c71b"
+              }
+            ]
+          },
+          {
+            "operation_index": 7,
+            "preceding_block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+              "relative_position_base64": "AL+M+KELkldB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+                "hash": "03238f12460f56cedd872d0256603ad1fc3e73ebe3ad1193953db8e9f933409d"
+              }
+            ]
+          }
+        ]
+      },
+      "source_checkpoint": "47d82ee6c3d138256155c8593e70d0108f8ab877"
+    },
+    {
+      "updated_at": "2026-11-10T18:44:53Z",
+      "latest_source_snapshot_utc": "2026-11-10T18:44:00Z",
+      "latest_status": "Pushed exact checkpoint30a802a996fe8bf7cd63e53d211fa8b2cd028f77/tree f0e630657a2c70197b7efc3f7b33b58f18e9f8e9 remains unreleased WIP. Runtime150 independent and1123 coherent passes/3CUDA skips; source/spec/doc truth approved. Current curriculum repair approved227PASS; collection8547/8548 with1 defaultperf deselection; CompilerCLI34packs35processesPASS. Earlier required full execution pending,9mypy remain,newCI all inprogress. Original28/38/66 unchanged.",
+      "latest_edit_receipt": {
+        "new_sequence": 5,
+        "through_sequence": 5,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "65c4c51d7a01a5fc6fcb66be705913673166cfb59f8fcaad18f0339c2436be4c"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "b46dff60216aac3949c95ea631f627b5bba2ecebdda3b6d5534b0ffe6ca81e86"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+              "relative_position_base64": "AL+M+KELhxJB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+                "hash": "e2804e90c7b8524e660df01f0e86ff6d7fe1d6c27cc9ff6c08c40ba83098663d"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+              "relative_position_base64": "AL+M+KELxydB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+                "hash": "59166850b680e0056167fec6cda4ee127cecf9e8791f54b2533bcced465d465d"
+              }
+            ]
+          },
+          {
+            "operation_index": 4,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "8c3e1ee1e4be30a16271b19e1ec9a785a9ef4b21c2fc7054c229a322b313ac2f"
+              }
+            ]
+          },
+          {
+            "operation_index": 5,
+            "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+              "relative_position_base64": "AL+M+KELqkFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+                "hash": "797dc65e641ef1a4c8640f1d76583ae2c12457511cb891ba39159e5a0c871aae"
+              }
+            ]
+          },
+          {
+            "operation_index": 6,
+            "preceding_block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+              "relative_position_base64": "AL+M+KELkkRB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+                "hash": "783d9eb86f89cc6eb235f50bf7cfee9129d42abcc80af9b0b9abbbb8775fd134"
+              }
+            ]
+          }
+        ]
+      },
+      "source_checkpoint": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77"
+    },
+    {
+      "updated_at": "2026-11-10T19:24:17Z",
+      "latest_source_snapshot_utc": "2026-11-10T19:23:30Z",
+      "latest_status": "Exact pushed30a802a9 local full gate FAILED:1010failed7285passed21skipped231errors40warnings,2003.7499s. Identity/custody and separate poisoning child verified.1241dedup node/phase records,160affected sourcefiles,15terminal-signature groups, not independent algorithmic defects. Results unpublished. T18e design independently approved0P1P2;29intendedRED composer tests approved;two-file production implementation active. CI observed19:21:31UTC ConfigPASS LintFAIL TestsINPROGRESS.28/38/66 unchanged.",
+      "latest_edit_receipt": {
+        "new_sequence": 6,
+        "through_sequence": 6,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "7e7f1cfcabf3fe77b97a06fcf3eb5836bc3f1a1b4d1f38e77dc8e16a96d2444c"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "cf9b8f7d832415273ebeceb82c0d6e7400135d4ae11469b8ce05050e1b354f44"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+              "relative_position_base64": "AL+M+KELxydB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+                "hash": "23aebea896c0c5f2011415a9b0662f0eccb9f4792c2fd36dbdf245c7fe2ec6cf"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "5dd3b75adc4527fccee2d3521ab32d9c25068c88e9941de0f2c42812e2f2bc2c"
+              }
+            ]
+          },
+          {
+            "operation_index": 4,
+            "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+              "relative_position_base64": "AL+M+KELqkFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+                "hash": "c52ed1dd34e54c448b76693674f890071ab099dd7d82f63b62a96d203502448c"
+              }
+            ]
+          },
+          {
+            "operation_index": 5,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "717c151749987b25b37334e2bcc8b9b0cb18829a4d1a830d02edf3f5ff72e84b"
+              }
+            ]
+          }
+        ]
+      },
+      "source_checkpoint": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77"
+    },
+    {
+      "updated_at": "2026-11-10T19:48:47.764211Z",
+      "sequence_before": 7,
+      "sequence_after": 9,
+      "status": "committed_and_read_back",
+      "edits": [
+        {
+          "sequence": 8,
+          "atomic_operations": 5,
+          "receipt": {
+            "new_sequence": 8,
+            "through_sequence": 8,
+            "operation_results": [
+              {
+                "operation_index": 0,
+                "preceding_block_id": null,
+                "created_block_ids": [],
+                "continuation_position": {
+                  "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                  "relative_position_base64": "AL+M+KELhAFB"
+                },
+                "affected_blocks": [
+                  {
+                    "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                    "hash": "d1df64afab390a2befaf529f2a49f01474ba3ab12c4309338de356056a6d65bc"
+                  }
+                ]
+              },
+              {
+                "operation_index": 1,
+                "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+                "created_block_ids": [],
+                "continuation_position": {
+                  "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                  "relative_position_base64": "AL+M+KELkw5B"
+                },
+                "affected_blocks": [
+                  {
+                    "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                    "hash": "057e5e78f24a3ccac2c669045135ca246570f79267bfc3e5985c0f43f7455d24"
+                  }
+                ]
+              },
+              {
+                "operation_index": 2,
+                "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+                "created_block_ids": [],
+                "continuation_position": {
+                  "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                  "relative_position_base64": "AL+M+KELxT5B"
+                },
+                "affected_blocks": [
+                  {
+                    "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                    "hash": "f09b3519b162ccb4ebfa616eca37b3319ff19d79c976821bbfa36df03fd59d1a"
+                  }
+                ]
+              },
+              {
+                "operation_index": 3,
+                "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+                "created_block_ids": [],
+                "continuation_position": {
+                  "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                  "relative_position_base64": "AL+M+KELn0JB"
+                },
+                "affected_blocks": [
+                  {
+                    "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                    "hash": "b77bedb9b0a830c39d1fb4b6f4681f4c544ee79e9bca8776692bf54a9cf1e95f"
+                  }
+                ]
+              },
+              {
+                "operation_index": 4,
+                "preceding_block_id": "08d6fbb6-b262-4acb-84ac-d3c973974444",
+                "created_block_ids": [],
+                "continuation_position": {
+                  "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+                  "relative_position_base64": "AL+M+KEL/lNB"
+                },
+                "affected_blocks": [
+                  {
+                    "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+                    "hash": "05a84d1c6bc7a1fc88963397405c5832504c905b0f5d91f9e0f348a035e72c70"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "sequence": 9,
+          "atomic_operations": 1,
+          "receipt": {
+            "new_sequence": 9,
+            "through_sequence": 9,
+            "operation_results": [
+              {
+                "operation_index": 0,
+                "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+                "created_block_ids": [],
+                "continuation_position": {
+                  "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                  "relative_position_base64": "AL+M+KELkw5B"
+                },
+                "affected_blocks": [
+                  {
+                    "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                    "hash": "c4f73090363b7f7aec77549cb3e41c46605e0982d683b514fcb9869ed07bae98"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "source_checkpoint": "31beef58892fe651daf6c9965f372b3643523ce2",
+      "changes": "Parent six P2 findings and repair round1 active; 63 collected (41 parent+22 ENV), first missing runtime-binding producer RED confirmed; no integrated pass. Native technical design/implementation, failed full gate,10 mypy and full final obligations retained. No user/access blocker.",
+      "verification": {
+        "native_blocks": 32,
+        "changed_blocks_exact": true,
+        "untouched_blocks_preserved": true,
+        "qualified_ids": 28,
+        "remaining_ids": 38,
+        "unique_ids": 66,
+        "rendered_preview": "Not available; layout not independently inspected."
+      },
+      "source_documents": [
+        "CURRENT-STATE.json",
+        "progress.md relevant tail",
+        "wave35-preparation/T18e-PARENT-STEP-INDEPENDENT-REVIEW.md",
+        "wave35-preparation/T18e-ENV-CANONICAL-REPORT.md",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r3-phase-red/phase-red-result.json",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r3-phase-red/phase-red-negative-custody.json"
+      ],
+      "latest_root_update": "Original parent implementer resumed repair round1; initial A/B/C regression repairs. All six findings remain open pending review and execution."
+    },
+    {
+      "status": "committed_and_read_back",
+      "sequence_after": 10,
+      "updated_at": "2026-11-10T21:00:07.847773Z",
+      "source": "Root connector exact-head verification",
+      "change": "CI terminal: Config Validation success, Lint failure, Tests failure; all exact31beef58. No inferred failure causes.",
+      "receipt": {
+        "new_sequence": 10,
+        "through_sequence": 10,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "8e6b069558f1a8a84b6375422c1d81607e89e2265683bf08ee3113e064ff148b"
+              }
+            ]
+          }
+        ]
+      },
+      "verification": "CI table exact, all other 31 native blocks unchanged; 28/38/66 coverage retained."
+    },
+    {
+      "status": "committed_and_read_back",
+      "updated_at": "2026-11-10T21:01:01.902537Z",
+      "sequence_before": 10,
+      "sequence_after": 11,
+      "atomic_operations": 7,
+      "receipt": {
+        "new_sequence": 11,
+        "through_sequence": 11,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "47950089fb728bd08b46aa49fb3261cbca55dcae9e0d893a355f13c496723a90"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "3da466362055bb9ee5c5543130eadd308a61ca8c28e60bca0b8344aee4fc7133"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+              "relative_position_base64": "AL+M+KELxydB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+                "hash": "61121fb1a105438d9f79a0cdce587b81ab519a6f528513d25587e4f1bd421948"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "c501667bfbf7b92b2bd9c88142251de0ddce78487ea41039b594c19dbcee1803"
+              }
+            ]
+          },
+          {
+            "operation_index": 4,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "0dc85e8c263d881daec312111d0fa902d40a232ed0db38be4bf775ca63c2298c"
+              }
+            ]
+          },
+          {
+            "operation_index": 5,
+            "preceding_block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+              "relative_position_base64": "AL+M+KELkkRB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+                "hash": "3631fc81586b646c598ec73420b0980315d6f7100f78d2217c85978dda4733a2"
+              }
+            ]
+          },
+          {
+            "operation_index": 6,
+            "preceding_block_id": "08d6fbb6-b262-4acb-84ac-d3c973974444",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+              "relative_position_base64": "AL+M+KEL/lNB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+                "hash": "11d124a649f635a92c5b4102687508cb625377351f606a80ca52d89d4d58ac0f"
+              }
+            ]
+          }
+        ]
+      },
+      "source_checkpoint": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "source_tree": "c259ecb8f5f7e0ca92da201f838caaad888eaf7f",
+      "changes": "New durable unreleased WIP; actual31ENV+44parent cases pass independently on same candidate (75, not150 unique). ENV review approved; parent A2/D2 tests-first round2 and C/D/E/F obligations open. Corrected native reset design approved, implementation owed. Six oracle mypy errors remain; CLI34packs35processes pass. ExactCI config success/lint failure/tests in progress; historical failed full baseline retained.",
+      "verification": {
+        "readback": true,
+        "blocks": 32,
+        "qualified_ids": 28,
+        "remaining_ids": 38,
+        "unique_ids": 66,
+        "changed_exact": true,
+        "untouched_preserved": true,
+        "visual_preview": "Not available; visual rendering not independently inspected."
+      },
+      "source_receipts": [
+        "wave35/r10-checkpoint-receipt.json",
+        "wave35/r10-publication-receipt.json",
+        "Root fresh exact1938 CI update supersedes initial receipt in-progress statuses"
+      ]
+    },
+    {
+      "status": "committed_and_read_back",
+      "updated_at": "2026-11-10T21:58:35.991584Z",
+      "sequence_before": 11,
+      "sequence_after": 12,
+      "atomic_operations": 4,
+      "receipt": {
+        "new_sequence": 12,
+        "through_sequence": 12,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "14755d724829f6a16bc7a9786840a023720093b2c66339be07e9d72741ea1352"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "8543f3b03cfd0094fa76c7cc55cbd91eb8d965fc9022f34656a8f8b1296dd17e"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "6779175f870c4db6cf071958407fd4b2bb37d6465134ced1fcb51e32ea431e0f"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "8e92d261139e929e2294da3756bc7e45639fb9b0d6142a4e8736ebdcd50e11c7"
+              }
+            ]
+          }
+        ]
+      },
+      "source_checkpoint": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+      "changes": "Local parent A2/D2 fixes independently approved; root and independent same47parent+31ENV cases pass. Native N1 authored61case suite approved after repair; RND and recovered actual mandatoryICM causal missing-method RED established. Native implementation underway, no GREEN/closure. Local work unpushed; original28qualified38remaining unchanged.",
+      "verification": {
+        "readback": true,
+        "blocks": 32,
+        "qualified_ids": 28,
+        "remaining_ids": 38,
+        "unique_ids": 66,
+        "changed_exact": true,
+        "untouched_preserved": true,
+        "visual_preview": "Unavailable; not independently inspected."
+      },
+      "source_receipts": [
+        "progress.md latest parent qualification entry",
+        "CURRENT-STATE.json (older native status reconciled with later review/root evidence)",
+        "wave35-preparation/T18e-NATIVE-LEARNING-RESET-INDEPENDENT-REVIEW.md",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r15-mandatory-red-exact/mandatory-red-exact-negative-custody.json",
+        "Root latest verified ICM recovery and production-baton report"
+      ]
+    },
+    {
+      "status": "committed_and_read_back",
+      "sequence_before": 12,
+      "sequence_after": 13,
+      "updated_at": "2026-11-10T23:01:32.658224Z",
+      "source": "Root fresh exact1938f7ca GitHub connector observation",
+      "change": "Terminal CI: Config Validation success21:55:45Z, Lint failure21:54:55Z, Tests failure22:39:56Z on10November2026. No inferred failure cause. Status timestamp updated only.",
+      "receipt": {
+        "new_sequence": 13,
+        "through_sequence": 13,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "62c0f16a1a747e215a7e2dbb6a229f966dda41ae58a3eae81779ed77a46d0825"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "c1eab8b9ea37e92f6b358684ac8a6485a081a7c6a77ae760f3d0bb0e7b58691a"
+              }
+            ]
+          }
+        ]
+      },
+      "verification": "Two changed blocks exact; all other30 blocks and all66 package mappings unchanged."
+    },
+    {
+      "status": "committed_and_read_back",
+      "sequence_before": 13,
+      "sequence_after": 14,
+      "updated_at": "2026-11-10T23:03:26.888152Z",
+      "source": "Root verified R17 candidate b0e3814b982eca65fa8ea3cb0dd7391a97009793 on1938f7ca",
+      "change": "Native learning reset implemented/source and API approved; root139PASS=61native+47parent+31ENV; independent same61native pass. Owner233 stops29PASS1FAIL before intended runnercheckpoint assertion at obsolete worldidentity fixture. Local unpushed; nonmodel/BANK/RNG/resetprovenance/nativeparent/caller/fullgates owed.",
+      "receipt": {
+        "new_sequence": 14,
+        "through_sequence": 14,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "34f9226658560ae06c7ad6135bcd17feb074b23071ddc5a58d0b3de28c356152"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "7a4a76ad3e69a04d6ac4e0c0f8a43b2b4112af3b3090591ce778acea9670323e"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "a92ba03e1dea1d5f8c24d4496d67bd44247ad8da2e1fa4b19a2c210c633097f1"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "c72dffbbd8accb2d32924dc23ba7333ea19f94c69c2c434ab7f4f9bac3c0b2ef"
+              }
+            ]
+          }
+        ]
+      },
+      "verification": {
+        "readback": true,
+        "blocks": 32,
+        "qualified": 28,
+        "remaining": 38,
+        "unique": 66,
+        "changed_exact": true,
+        "untouched_preserved": true,
+        "visual_preview": "Unavailable; not independently inspected."
+      }
+    },
+    {
+      "status": "committed_and_read_back",
+      "sequence_before": 14,
+      "sequence_after": 15,
+      "updated_at": "2026-11-10T23:17:40.751698Z",
+      "source": "wave35/r17-publication-receipt.json and root verified execution summary",
+      "source_checkpoint": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+      "source_tree": "8bf08f02050737324526c453bdc77fbf905c8ecb",
+      "change": "Native/parent139 evidence and independent same61 now durable; separate176 unit pass recorded without aggregation. Owner233 and loss prerequisite failures retained. New exact383d CI allinprogress. No release count or qualification upgrade.",
+      "receipt": {
+        "new_sequence": 15,
+        "through_sequence": 15,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "3134f7d2821fa5593765b2251790a59f6282f40c5871a048430d7ba84b996990"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "969ccdb5b8c8e61cafc1537689603f47fcc5d87582dd37c65cc87ba6ebee4865"
+              }
+            ]
+          },
+          {
+            "operation_index": 2,
+            "preceding_block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+              "relative_position_base64": "AL+M+KELxT5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+                "hash": "4141de5c3eca17ee4fe7ed45f86efff8db8afa44344bd620c54c6cefe36a7d25"
+              }
+            ]
+          },
+          {
+            "operation_index": 3,
+            "preceding_block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+              "relative_position_base64": "AL+M+KELn0JB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+                "hash": "a35e9f3c310facd2e37d51fb67a7e02b6a34565648f1f3c08764a885fa676405"
+              }
+            ]
+          }
+        ]
+      },
+      "verification": {
+        "readback": true,
+        "blocks": 32,
+        "qualified": 28,
+        "remaining": 38,
+        "unique": 66,
+        "changed_exact": true,
+        "untouched_preserved": true,
+        "visual_preview": "Unavailable; not independently inspected."
+      }
+    },
+    {
+      "status": "committed_and_read_back",
+      "sequence_before": 15,
+      "sequence_after": 16,
+      "updated_at": "2026-11-10T23:28:32.349948Z",
+      "source": "Root exact383d CI connector observation bac383ciLatest",
+      "change": "Config success(updated23:29:26Z), Lint failure(23:27:52Z), Tests inprogress(23:26:54Z). No inferred cause; only CI row and snapshot changed.",
+      "receipt": {
+        "new_sequence": 16,
+        "through_sequence": 16,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "079aa399576ec6b5b08c21af0bd7f48afdb6e435f7151bf098bca42dff78d45f"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "909fcc0d2f8d5a7a19151af8f445f99d67db4cd39df81a1e8bfc5fdd5c7b1b2a"
+              }
+            ]
+          }
+        ]
+      },
+      "verification": "32blocks readback; both changed blocks exact and other30 unchanged; full66 mapping preserved."
+    },
+    {
+      "updated_at": "2026-11-10T23:28:32.349948Z",
+      "latest_source_snapshot_utc": "2026-11-10T23:37:54Z",
+      "latest_status": "Native/parent139 evidence and independent same61 now durable; separate176 unit pass recorded without aggregation. Owner233 and loss prerequisite failures retained. New exact383d CI allinprogress. No release count or qualification upgrade. Latest383dCI ConfigPASS LintFAIL TestsIN_PROGRESS.",
+      "latest_edit_receipt": {
+        "new_sequence": 16,
+        "through_sequence": 16,
+        "operation_results": [
+          {
+            "operation_index": 0,
+            "preceding_block_id": null,
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+              "relative_position_base64": "AL+M+KELhAFB"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+                "hash": "079aa399576ec6b5b08c21af0bd7f48afdb6e435f7151bf098bca42dff78d45f"
+              }
+            ]
+          },
+          {
+            "operation_index": 1,
+            "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "created_block_ids": [],
+            "continuation_position": {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "relative_position_base64": "AL+M+KELkw5B"
+            },
+            "affected_blocks": [
+              {
+                "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+                "hash": "909fcc0d2f8d5a7a19151af8f445f99d67db4cd39df81a1e8bfc5fdd5c7b1b2a"
+              }
+            ]
+          }
+        ]
+      },
+      "source_checkpoint": "383d2ac145bafc01dc0a8adc1299f944a523d257"
+    }
+  ],
+  "source_checkpoint_tree": "8bf08f02050737324526c453bdc77fbf905c8ecb",
+  "local_unpublished_candidate": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52"
+}

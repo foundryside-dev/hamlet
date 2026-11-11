@@ -1,0 +1,53 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 84 items
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py ............. [ 15%]
+.....................F
+
+=================================== FAILURES ===================================
+_________ test_pristine_current_producer_and_env_fixture_control[none] _________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_pristine_current_producer_and_env_fixture_control(compiled: Any, family: str) -> None:
+        """Independent positive: no BANK import or _bank_type lookup whatsoever."""
+        policy = _policy(compiled, family, "per_world")
+        descriptor = _descriptor(policy, WORLD_IDS, 3)
+        owner = _owned(policy, descriptor, "world1")
+        snapshot = owner.snapshot()
+        assert snapshot["healthy"] is True and snapshot["rng"]["world_id"] == "world1"
+        selector = make_policy_selector(policy)
+        assert owner.call(lambda backend, sources: id(backend)) != id(selector)
+        env = _env(compiled, WORLD_IDS)
+        curiosity, population, boundary = _LocalRole(), _LocalRole(), _LocalRole()
+        authority = _bind(env, curiosity, population, boundary)
+        release = env.install_boundary_release(authority.bootstrap(first_batch_episode=1))
+        reservation = env.prepare_episode(batch_episode=1, release=release)
+        env.validate_episode_reservation(reservation)
+        reset = env.reset(reservation=reservation)
+        accepted = reset.accepted
+        assert accepted.world_ids == WORLD_IDS and accepted.world_episode_seqs == (1, 1)
+        assert env.validate_accepted_episode(accepted=accepted) is None
+        with pytest.raises(ValueError):
+            env.validate_accepted_episode(accepted=replace(accepted))
+        activation = curiosity.activation(accepted)
+        WorldReceiptIssuer.validate(activation, "activation", curiosity)
+        env.activate_episode(accepted=accepted, population_receipt=population.activation(accepted), curiosity_receipt=activation)
+        actions = env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       observation, rewards, dones, info = env.step(actions, depletion_multiplier=1.0)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_private_bank.py:778: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_private_bank.py::test_pristine_current_producer_and_env_fixture_control[none]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+======================== 1 failed, 34 passed in 12.72s =========================

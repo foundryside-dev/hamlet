@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py F
+
+=================================== FAILURES ===================================
+_ test_count_reset_fresh_learning_retains_diagnostics_and_next_admission[shared] _
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_count_reset_fresh_learning_retains_diagnostics_and_next_admission(compiled, scope):
+        backend = _new(compiled, "count_based", scope)
+        row = _learn_count(backend)
+        _decay(backend)
+        old = backend.checkpoint_state()
+        fresh = _new(compiled, "count_based", scope)
+        assert old["counts"] and old["eviction_count"] > 0
+        assert fresh.checkpoint_state()["counts"] == {}
+        assert fresh.epsilon > backend.epsilon
+        owner = backend
+>       _reset(backend, fresh)  # First causal RED: missing operation after genuine learning.
+        ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+backend = <townlet.exploration.count_based.CountExploration object at 0x7fc41cdc42f0>
+fresh = <townlet.exploration.count_based.CountExploration object at 0x7fc41cf94a50>
+
+    def _reset(backend, fresh):
+        source_before, fresh_before = backend.checkpoint_state(), fresh.checkpoint_state()
+        rng = _ambient()
+>       prepared = backend.prepare_learning_reset(fresh=fresh)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'CountExploration' object has no attribute 'prepare_learning_reset'
+
+tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py:144: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_nonmodel_learning_reset.py::test_count_reset_fresh_learning_retains_diagnostics_and_next_admission[shared]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 3.32s ===============================

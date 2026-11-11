@@ -1,0 +1,29 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/exploration/count_based.py:181: error: Return type "_PreparedCount" of "prepare_state" incompatible with return type "_PreparedEpsilon" in supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"  [override]
+src/townlet/exploration/count_based.py:224: error: Argument 1 of "install_state" is incompatible with supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"; supertype defines the argument type as "_PreparedEpsilon"  [override]
+src/townlet/exploration/count_based.py:224: note: This violates the Liskov substitution principle
+src/townlet/exploration/count_based.py:224: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+src/townlet/exploration/count_based.py:236: error: Return type "_PreparedCount" of "prepare_learning_reset" incompatible with return type "_PreparedEpsilon" in supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"  [override]
+src/townlet/exploration/count_based.py:236: error: Argument 1 of "prepare_learning_reset" is incompatible with supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"; supertype defines the argument type as "EpsilonGreedyExploration"  [override]
+src/townlet/exploration/count_based.py:236: note: This violates the Liskov substitution principle
+src/townlet/exploration/count_based.py:236: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+src/townlet/exploration/icm.py:385: error: Return type "_PreparedICM" of "prepare_state" incompatible with return type "_PreparedEpsilon" in supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"  [override]
+src/townlet/exploration/icm.py:482: error: Return type "_PreparedICM" of "prepare_learning_reset" incompatible with return type "_PreparedEpsilon" in supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"  [override]
+src/townlet/exploration/icm.py:482: error: Argument 1 of "prepare_learning_reset" is incompatible with supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"; supertype defines the argument type as "EpsilonGreedyExploration"  [override]
+src/townlet/exploration/icm.py:482: note: This violates the Liskov substitution principle
+src/townlet/exploration/icm.py:482: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+src/townlet/exploration/icm.py:534: error: Argument 1 of "install_state" is incompatible with supertype "townlet.exploration.epsilon_greedy.EpsilonGreedyExploration"; supertype defines the argument type as "_PreparedEpsilon"  [override]
+src/townlet/exploration/icm.py:534: note: This violates the Liskov substitution principle
+src/townlet/exploration/icm.py:534: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Missing named argument "vector_step" for "step" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:128: note: "step" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 14 errors in 3 files (checked 197 source files)

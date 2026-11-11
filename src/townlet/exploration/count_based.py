@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 from collections import OrderedDict
 from collections.abc import Mapping
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
 
 import torch
@@ -60,6 +62,18 @@ def _key(value: Any) -> tuple[int, ...]:
     ):
         raise ValueError("count keys require nonempty tuples of signed integer bins")
     return value
+
+
+@dataclass(slots=True)
+class _PreparedCount:
+    owner: CountExploration
+    policy: ResolvedExplorationPolicy
+    epsilon: float
+    decay: float
+    minimum: float
+    counts: OrderedDict[tuple[int, ...], int]
+    evictions: int
+    used: bool
 
 
 class CountExploration(EpsilonGreedyExploration):
@@ -161,11 +175,15 @@ class CountExploration(EpsilonGreedyExploration):
         }
 
     def load_state(self, state: dict[str, Any]) -> None:
-        """Validate the complete candidate before changing any owned state."""
+        """Validate and install complete count state through the owned seam."""
+        self.install_state(self.prepare_state(state))
+
+    def prepare_state(self, state: dict[str, Any]) -> _PreparedCount:
+        """Validate the complete candidate and detach its mutable owned data."""
         if not isinstance(state, Mapping) or set(state) != _STATE_FIELDS or state["schema_version"] != "count-state-v1":
             raise ValueError("count checkpoint requires the complete count-state-v1 schema")
         try:
-            restored_policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+            restored_policy = ResolvedExplorationPolicy.from_dict(deepcopy(state["policy"]))
         except (TypeError, ValueError, KeyError, AttributeError, OverflowError) as error:
             raise ValueError("invalid count checkpoint policy") from error
         identity = restored_policy.policy_identity
@@ -201,6 +219,45 @@ class CountExploration(EpsilonGreedyExploration):
         if len(lru) != len(counts) or len(set(lru)) != len(lru) or set(lru) != set(counts):
             raise ValueError("count checkpoint LRU must contain every admitted key exactly once")
         prepared_counts = OrderedDict((key, counts[key]) for key in lru)
-        self.policy = restored_policy
-        self.epsilon, self.epsilon_decay, self.epsilon_min = epsilon, decay, minimum
-        self._counts, self._eviction_count = prepared_counts, evictions
+        return _PreparedCount(self, restored_policy, epsilon, decay, minimum, prepared_counts, evictions, used=False)
+
+    def install_state(self, prepared: _PreparedCount) -> None:
+        """Swap only prevalidated owned state; reject before consuming foreign work."""
+        if type(prepared) is not _PreparedCount or prepared.owner is not self or prepared.used:
+            raise ValueError("count preparation is foreign, invalid or already consumed")
+        self.policy = prepared.policy
+        self.epsilon = prepared.epsilon
+        self.epsilon_decay = prepared.decay
+        self.epsilon_min = prepared.minimum
+        self._counts = prepared.counts
+        self._eviction_count = prepared.evictions
+        prepared.used = True
+
+    def prepare_learning_reset(self, *, fresh: CountExploration) -> _PreparedCount:
+        """Combine genuine fresh count learning with retained current diagnostics.
+
+        The outer owner authenticates factory construction, boundary and revisions.
+        This native operation neither constructs a backend nor touches any RNG.
+        """
+        if type(self) is not CountExploration or type(fresh) is not CountExploration or fresh is self:
+            raise ValueError("count reset requires distinct exact count family owners")
+        current_state, fresh_state = self.checkpoint_state(), fresh.checkpoint_state()
+        # Both complete actual snapshots must validate even though old counts are cleared.
+        self.prepare_state(current_state)
+        fresh.prepare_state(fresh_state)
+        if self.device != fresh.device or any(
+            current_state[name] != fresh_state[name] for name in ("policy_identity", "quantization_width", "max_entries")
+        ):
+            raise ValueError("count reset requires matching selected policy and device")
+        for provider in (self, fresh):
+            if provider._quantization_width.as_integer_ratio() != (provider._width_numerator, provider._width_denominator):
+                raise ValueError("count reset quantization state disagrees with the selected width")
+        if fresh_state["counts"] or fresh_state["lru"] or fresh_state["eviction_count"] != 0:
+            raise ValueError("count reset requires genuine fresh empty count learning")
+        if fresh_state["epsilon"] != fresh.policy.epsilon_start:
+            raise ValueError("count reset requires the selected constructor's initial diagnostics")
+        # Retain the current validated policy transport, including inactive provenance.
+        # Active identity/configuration matched above; only actual fresh learning moves.
+        for name in ("counts", "lru", "eviction_count"):
+            current_state[name] = fresh_state[name]
+        return self.prepare_state(current_state)

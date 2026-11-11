@@ -1,0 +1,246 @@
+{
+  "status": "UNRELEASED WIP; no package or repository release",
+  "created_at": "2026-11-11T01:15:39.665047+00:00",
+  "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+  "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+  "collection": {
+    "job": "collection",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exit_code": 0,
+    "counts": {
+      "passed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 4.695103883743286,
+    "source_guards": 802,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "root_coherent": {
+    "job": "coherent",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exit_code": 0,
+    "counts": {
+      "passed": 293,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 48.62175512313843,
+    "source_guards": 802,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "basic_owners": {
+    "job": "basic-owners",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exit_code": 0,
+    "counts": {
+      "passed": 182,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 9.680414915084839,
+    "source_guards": 802,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "independent_native": {
+    "job": "independent-native",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exit_code": 0,
+    "counts": {
+      "passed": 154,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 8.935266733169556,
+    "source_guards": 802,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "bank_failed": {
+    "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exit_code": 1,
+    "counts": {
+      "failed": 1,
+      "passed": 34,
+      "skipped": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "summary": "======================== 1 failed, 34 passed in 12.72s =========================",
+    "wall_seconds": 17.2251455783844,
+    "source_guards": 802,
+    "process_identities": 1,
+    "configs": 573,
+    "artifacts": 13,
+    "registry": 14,
+    "available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "unique_node_phase_failures": 1,
+    "affected_files": 1,
+    "signature_groups": 1,
+    "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+  },
+  "restore_failed": {
+    "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exit_code": 1,
+    "counts": {
+      "failed": 1,
+      "passed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "summary": "============================== 1 failed in 3.34s ===============================",
+    "wall_seconds": 7.31546425819397,
+    "source_guards": 802,
+    "process_identities": 1,
+    "configs": 573,
+    "artifacts": 13,
+    "registry": 14,
+    "available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "unique_node_phase_failures": 1,
+    "affected_files": 1,
+    "signature_groups": 1,
+    "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+  },
+  "retained_static": {
+    "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+    "base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+    "candidate_tree": "789b0c3ea34afced7a5b1531d8566973e836e5ee",
+    "source_guards": 802,
+    "configs": 573,
+    "artifacts": 13,
+    "results": [
+      {
+        "name": "ruff-global",
+        "exit_code": 0,
+        "seconds": 0.10550570487976074,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-static/ruff-global.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      {
+        "name": "black-global",
+        "exit_code": 0,
+        "seconds": 44.49382543563843,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-static/black-global.log",
+        "sha256": "17cca27960780c0d5f278494a022a139bb0065b73d3a43462ca1431a0af8b67a"
+      },
+      {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 1.328275442123413,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-static/mypy.log",
+        "sha256": "e2626aa971f812d4320d36ce730dff6f87486fa24436430ef37d90cf5cf56058"
+      },
+      {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.0629756450653076,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-static/no-defaults.log",
+        "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+      },
+      {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 1.9513723850250244,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r21-static/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      }
+    ],
+    "all_passed": false,
+    "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+  },
+  "retained_static_source_equivalence": {
+    "from_tree": "789b0c3ea34afced7a5b1531d8566973e836e5ee",
+    "to_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+    "exact_subtrees": {
+      "src": "0097fc9cd3e9bb537d3abd6b0f962e72d3c40db7",
+      "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+      "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+      ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+    },
+    "only_sourceguard_change": [
+      "tests/test_townlet/regressions/bac/test_pw_backend_factory.py"
+    ],
+    "qualification": "R21 static results retained on identical static inputs; no R22 static rerun claimed. Factory test expected class correction separately reviewed and exercised in R22 basic182."
+  },
+  "documents": {
+    "nonmodel": {
+      "draft": "wave35-preparation/T18e-NONMODEL-CURRENT-CONTRACT-DRAFT.md",
+      "sha256": "635c0fb9878db9e755b7f995c016c6141ffa8faf9681a626f27f2e52b2501fb5",
+      "truth_review": "Astra final API TRUTH/SPEC/QUALITY APPROVE; no whole package or integration closure."
+    }
+  },
+  "review_sha256": {
+    "wave35-preparation/T18e-NONMODEL-RESET-INDEPENDENT-REVIEW.md": "2bb4e2c40d13fdd2cbcd00c7f7cbb23a92ee9848b1efcb6cd32705766eeb9323",
+    "wave35-preparation/T18e-N2-FACTORY-CONSUMER-INDEPENDENT-REVIEW.md": "c11da6511b18210889bad0ddc7d2898736cc74a1268c123983d789ea8abafebd"
+  },
+  "source_qualification": "Bounded native Count/None reset source, spec, quality and public API approved. Concrete None subclass preserves plain EPS diagnostics/selection and Count/ICM nominal inheritance; eight introduced mypy override defects repaired. Factory exact-type expectation aligned with independent review. All actual named run custody PASS, but BANK/restore fail before intended assertion.",
+  "current_progress": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "historical_full_failure": "Exact30a802a9:1010failed7285passed21skipped40warnings231errors;1241deduplicatednodephases160files15signatures. Priorpublishedwave35-wip-01.json proof retained; not repeated through known causal prerequisites.",
+  "remaining_required": [
+    "C genuine pre-first-step participation ENV producer and actual POP consumer; preserve empty abandonment semantics pending accepted-requirement facts",
+    "shared Rig complete genuine lifecycle/geometry/canonical sole reward-service migration; BANK and restore intended assertions",
+    "R0 shared RNG reset exclusion/current ambient recovery and private exact current named fork/restore; supported entrypoint enrollment",
+    "B1 BANK/CP same issuer/epochs/history/lifetime vs learning origins/native correlation",
+    "fullD stable owner completed restore, actual sameBANK transfer/reset E, parent-native clocks/cache/ledger F",
+    "actual DemoRunner checkpoint/loss integration; HC/T26 all-child publication and recovery",
+    "genuine MechanicsSession/current oracle six type errors and preserved pinned-reference capability",
+    "all remaining original packages;54requirements;22freshfinalreviews+synthesis;full/default>=70%coverage/slow/applicablehardware/learningE2E/finalCI"
+  ],
+  "optional_extensions": [
+    "New exact process-cohort checkpoint/restore is optional P3, not a required R0/B1 or existing K01 obligation.",
+    "Bare Adam.step interception is not inherently required if actual selected path is proved RNG-free; same-owner reset and stochastic regions still need proper custody."
+  ],
+  "hardware": "CUDA unavailable and unqualified; no hardware skip treated as pass",
+  "publication_authority": "John authorized all work pushes to existing remote branch; no new branch/worktree/source copy/PR/merge/deletion",
+  "spaces_tracker": "Existing same Page page_6ffffcb967fc8191a354fbe3661e4cb8 Astra refreshing; original66 exact coverage28/38 unchanged."
+}

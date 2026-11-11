@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "candidate_tree": "d8ecf2a8320b532a4bbea37ec2ff5c0575c7791d",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py"
+  ],
+  "signatures": [
+    {
+      "error": "Use -v to get more diff",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

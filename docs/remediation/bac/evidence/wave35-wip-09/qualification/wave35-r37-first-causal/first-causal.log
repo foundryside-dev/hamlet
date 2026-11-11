@@ -1,0 +1,57 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py F
+
+=================================== FAILURES ===================================
+_______ test_actual_env_lifecycle_prerequisite_without_public_validator ________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_actual_env_lifecycle_prerequisite_without_public_validator(compiled):
+        """Independent fixture control: genuine INITIAL, acceptance and next entry."""
+        run = _Run(_env(compiled))
+>       initial = run.initial()
+                  ^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.test_townlet.regressions.bac.test_world_episode_identity._Run object at 0x7f8f1eb597f0>
+
+    def initial(self):
+        states = {
+            "population": {"component_vector_ticks": self.ledger.vector_ticks, "accepted": self.accepted},
+            "curriculum": deepcopy(self.curriculum.checkpoint_state()),
+            "exploration": deepcopy(self.runtime.checkpoint_state()),
+            "network": deepcopy(self.q.state_dict()),
+            "optimizer": deepcopy(self.optimizer.state_dict()),
+            "scheduler": {"state": None if self.scheduler is None else deepcopy(self.scheduler.state_dict())},
+            "replay": deepcopy(self.replay.serialize()),
+            "selection": {"epsilon": self.runtime.epsilon, "diagnostic": self.current_epsilons.clone()},
+        }
+        owner_fields = {
+>           name: self.role_receipt(
+                name,
+                "initial_owner",
+                state=states[name],
+                role=name,
+                semantic_execution_identity=self.env.semantic_execution_identity,
+                bootstrap_first_batch=1,
+                world_binding=self.env.world_ids,
+            )
+            for name in ("population", "curriculum", "exploration", "network", "optimizer", "scheduler", "replay", "selection")
+        }
+E       TypeError: _Run.role_receipt() got multiple values for argument 'role'
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:620: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_actual_env_lifecycle_prerequisite_without_public_validator
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 3.85s ===============================

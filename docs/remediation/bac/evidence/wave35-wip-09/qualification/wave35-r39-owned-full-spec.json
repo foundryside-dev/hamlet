@@ -1,0 +1,32 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r39-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r39-owned-full",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owned-full",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+        "tests/test_townlet/regressions/bac/test_env_accepted_auth.py",
+        "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "3",
+        "--dist",
+        "worksteal",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r39-owned-full"
+      ]
+    }
+  ]
+}

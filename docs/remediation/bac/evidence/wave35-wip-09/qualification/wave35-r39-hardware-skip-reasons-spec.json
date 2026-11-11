@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r39-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r39-hardware-skip-reasons",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "hardware-skip-reasons",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape0-argument_shape0-cuda]",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape1-argument_shape1-cuda]",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape2-argument_shape2-cuda]",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape3-argument_shape3-cuda]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r39-hardware-skip-reasons"
+      ]
+    }
+  ]
+}

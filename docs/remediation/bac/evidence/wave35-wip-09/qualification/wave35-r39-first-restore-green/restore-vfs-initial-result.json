@@ -1,0 +1,25 @@
+{
+  "name": "restore-vfs-initial",
+  "exit_code": 0,
+  "seconds": 14.868919610977173,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r39-restore-vfs-initial"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r39-first-restore-green/restore-vfs-initial.log",
+  "sha256": "d2f79cc1ed37b3892fe2d9c27c168e4765e4fa0fd334e49c7bcc9c15064fc47b",
+  "candidate_tree": "74ab2af445a6421e4056f6d5600a14e75fd97665",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "manifest_sha256": "02f1df59b64215c63c913f884a7ffd6b92aea9962cab18ffd5f48ea27f3fd41b",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

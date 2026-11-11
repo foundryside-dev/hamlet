@@ -1,0 +1,56 @@
+{
+  "status": "DURABLE UNRELEASED WIP; no package/repository release or merge",
+  "published_at": "2026-11-11T02:58:55.610Z",
+  "commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "tree": "bed365ff7a95d3054320997cc29ef3b4e0136796",
+  "branch": "project-recovery-bac-2026-11-01",
+  "remote_sha": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+  "remote_tree": "bed365ff7a95d3054320997cc29ef3b4e0136796",
+  "remote_verification": "Exact GitHub branch API SHA/tree after completed authorized git push; independently matches local commit/tree.",
+  "execution_candidate": "575487046d3b1cc26c265c40848d30af2f68ff7d",
+  "execution_equivalence": "All src/tests/configs/scripts/.defaults-ratchet subtrees exactly match qualified R26.",
+  "artifacts": 327,
+  "changed_paths": 331,
+  "worktree": "clean",
+  "evidence_manifest": "docs/remediation/bac/evidence/wave35-wip-05.json",
+  "public_contract": "docs/remediation/bac/CURRENT-INITIAL-PARTICIPATION-CONTRACT.md",
+  "source_guard_postqualification_change": "Only deliberate STATUS.md prose; all other803 guards and protected configs/artifacts unchanged, all execution subtrees exact.",
+  "evidence": "Root57 PASS; independent SAME57 PASS, overlaps. Owner suite78PASS1FAIL before old world-lifecycle _Run intended assertion. Full source/process custody PASS; compiler34packs/35processes PASS; globalRuff/Black/Expr/defaults600PASS, mypy6existingoracleerrors.",
+  "ci_observed_at": "2026-11-11T02:58:55.610Z",
+  "CI": [
+    {
+      "id": 42948884235,
+      "name": "Config Validation",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+      "updated_at": "2026-11-11T02:54:10Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42948884235"
+    },
+    {
+      "id": 42948884325,
+      "name": "Tests",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+      "updated_at": "2026-11-11T02:51:57Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42948884325"
+    },
+    {
+      "id": 42948884202,
+      "name": "Lint",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+      "updated_at": "2026-11-11T02:53:27Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42948884202"
+    }
+  ],
+  "progress": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "authority": "All work pushes authorized to existing branch; no extra branch/worktree/checkout/source copy/PR/merge/deletion, private history bundle excluded.",
+  "next": "Continue actual POP/query-preservation consumer, causal current fixtures, RNG/BANK/CP/native/runner/mechanics finite programme. No routine halt."
+}

@@ -1,0 +1,22 @@
+{
+  "job": "restore-vfs-initial",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "candidate_tree": "74ab2af445a6421e4056f6d5600a14e75fd97665",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 14.868919610977173,
+  "source_guards": 806,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

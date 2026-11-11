@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r39-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r39-positive-core",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "positive-core",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_actual_env_lifecycle_prerequisite_without_public_validator",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_two_cycles_capture_replay_then_single_service_and_earned_effects",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_component_vfs_mixed_then_all_active_two_real_boundaries",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r39-positive-core"
+      ]
+    }
+  ]
+}

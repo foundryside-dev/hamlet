@@ -1,0 +1,534 @@
+{
+  "status": "UNRELEASED WIP; no package or repository release",
+  "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+  "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+  "root_component_previous_identical_scope": {
+    "job": "component",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+    "exit_code": 0,
+    "counts": {
+      "passed": 70,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 108.12035131454468,
+    "source_guards": 804,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "root_component_source_equality": {
+    "r33_candidate": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+    "r34_candidate": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "all_guarded_differences": {
+      "source_files": {
+        "tests/test_townlet/regressions/bac/test_intrinsic_composition.py": {
+          "r33": "9d4c9812af426a6611e4169a4b33b2d52f4762ba4157ffc1278e3891ae2d54c8",
+          "r34": "a16c2a52e03949fda94de1a1a886d84b0fb3ef40a8e116477f7d942ebbb902b0"
+        }
+      },
+      "configs": {},
+      "artifacts": {}
+    },
+    "disposition": "Only composer test differs, outside CPP focused selection. Root70 was executed onR33 and is retained honestly; current independent SAME70 below was executed onR34. No rootR34 execution or140unique cases claimed."
+  },
+  "independent_component": {
+    "job": "independent-component",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "exit_code": 0,
+    "counts": {
+      "passed": 70,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 25.623462438583374,
+    "source_guards": 804,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "coherent_owners": {
+    "job": "coherent-owners",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "exit_code": 0,
+    "counts": {
+      "passed": 373,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 44.94613432884216,
+    "source_guards": 804,
+    "process_identities": 4,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "collection": {
+    "job": "collection",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "exit_code": 0,
+    "counts": {
+      "passed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 4.162720680236816,
+    "source_guards": 804,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "first_fixture": {
+    "job": "first-fixture",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "exit_code": 0,
+    "counts": {
+      "passed": 1,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 10.886719703674316,
+    "source_guards": 804,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "full_fixture": {
+    "job": "fixture",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "exit_code": 0,
+    "counts": {
+      "passed": 31,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 23.9211642742157,
+    "source_guards": 804,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "compiler_cli": {
+    "status": "PASS required compiler CLI and all actual process identities",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "packs": 34,
+    "process_identities": 35,
+    "source_guards_per_process": 804,
+    "configs_per_process": 573,
+    "artifacts_per_process": 13,
+    "wall_seconds": 139.7197232246399,
+    "log_sha256": "92f644e2e705c65f3eb785032ea7d28402065b0a44f998619ec86deeccfccdf9",
+    "profile_hashes": {
+      "compiler-cli/compiler-processes/173191.json": "1da2a232b30e368588b03245ed7b3c30d85a5cce845d9cb106a1d8d2603a1952",
+      "compiler-cli/compiler-processes/173240.json": "2a8f04a1936a65a106d6d4c945b3c170e550619b5c1bb21513aeb1ec672c12bc",
+      "compiler-cli/compiler-processes/173374.json": "10d4d265e0d8230cee1452cb5e2ed02e69cc98971311fbb1665ffb50b179738c",
+      "compiler-cli/compiler-processes/173454.json": "43c45eee68ff35131f1f93bdd09c48b843a460ac7a8fd3ab8f5b8262d9a534fc",
+      "compiler-cli/compiler-processes/173481.json": "50b49d8116abfde07a1bf587ca38a83440be46e6d537f76c378f769433a1fcf5",
+      "compiler-cli/compiler-processes/173506.json": "3270f67df24e08b42f383cae9cba232eff07873036d23881f3a927dc840dea92",
+      "compiler-cli/compiler-processes/173533.json": "862a55c94acd77b76a16e5f95c0ffa62c2da8ba3f9cb87afd8155cd306d69739",
+      "compiler-cli/compiler-processes/173558.json": "cce5985f6c457f568d6e729dac76e86719600e5e4f85ceab2f892aa7606aac05",
+      "compiler-cli/compiler-processes/173585.json": "306e5f4fe0dff018ec11f7cc56ab17248404f0507dc47192f26c5ea619ca88cc",
+      "compiler-cli/compiler-processes/173611.json": "ae8974ee286404b2cc0499885922612e4eeaf17e44ad083ad2fd738a77be91be",
+      "compiler-cli/compiler-processes/173638.json": "e1f2c7ddba3f32851c162bdc7ff0ba1dac640a66033a8ae9354bbba798d3f76a",
+      "compiler-cli/compiler-processes/173671.json": "0be6b1a2581eb19700a1368eeeb3e79ffb35c28b164dc63f226610c938634618",
+      "compiler-cli/compiler-processes/173719.json": "a3688bcad124f5ad4c0f1ac097f2a5690393ee240ffd70138e903e7e42849176",
+      "compiler-cli/compiler-processes/173744.json": "02a0baadfad55c5c3cb3df53c87966577b1da10512ee59768249202498e6720a",
+      "compiler-cli/compiler-processes/173769.json": "83b5ee2765ef1f31a445077a0f1001d7c03541e70171f032acd6d5292f27d179",
+      "compiler-cli/compiler-processes/173794.json": "e7e45d86817b79a4b4a084f8cb166aa95b49032afc6e09f1530ad9472781e8b8",
+      "compiler-cli/compiler-processes/173819.json": "2cd855268fc9cf06cf483f25a09329dbf01b4edde7b89f71e1407b9a3297a8ea",
+      "compiler-cli/compiler-processes/173844.json": "0e0484aa8027da220cecf10d9d28dbd0e524ef2051108d498a4801c84226d41d",
+      "compiler-cli/compiler-processes/173869.json": "65ec69bccde35b0690485d2839824396a9f78f4a0cce6ba55fd22ff36f289e42",
+      "compiler-cli/compiler-processes/173894.json": "a9fcbfd7e3dbf2c1cb7e4142afd74ae88412a5c1bc3ea44a4333f4aaf37abb16",
+      "compiler-cli/compiler-processes/173919.json": "f7876461fedb61d2fed7396483d769670d3afb8e68e68dc49f7108f9922ea545",
+      "compiler-cli/compiler-processes/173944.json": "0c129784eb366624dfec7d450697e8ff6395b89ba63b4d44c1110a9b3af0657f",
+      "compiler-cli/compiler-processes/173969.json": "a58f5e526b3d513f2825606acd5ad6f41ee3dc2f6a12df540937b4f31489b8f8",
+      "compiler-cli/compiler-processes/173994.json": "392259562b5cfcd48fa76af4d2bb075faf643e5f01d6c8f70dd64be5790035ab",
+      "compiler-cli/compiler-processes/174019.json": "71ab37e2bf584eb7dc8e4bc8169d55e3ccdf4559dbddec2eaddcad810674cb83",
+      "compiler-cli/compiler-processes/174044.json": "d545483f4baaa16bd3e6c2b883a4c28187a1922ec982cb961130a9df8bdf3f07",
+      "compiler-cli/compiler-processes/174069.json": "80979ce77513f5ee8f3b150901c0e019cc0c4e64d2d45f7baf091849a32cad47",
+      "compiler-cli/compiler-processes/174094.json": "d4897a674b2e8499e535b218662ce35c19d5fcd706e3fad4a0e2dc128aca0405",
+      "compiler-cli/compiler-processes/174119.json": "d7dc90c5603a91f6e4323387751d09a46133ee00433e537ab08f091716b28076",
+      "compiler-cli/compiler-processes/174144.json": "60cc11a27c3c4a22bd862a26b620bc81e6a7fc837b544220c62275bbacf96cde",
+      "compiler-cli/compiler-processes/174168.json": "45d1f2eef736b4008e06b846aeb9e4261550bcfe3fad267cec141c36a46c5b16",
+      "compiler-cli/compiler-processes/174193.json": "7db4a47d87e791e7a3f08386c36eb17e91bc6715b6c7ec87be80a201733f70d9",
+      "compiler-cli/compiler-processes/174217.json": "62ed5280f0cce02b4572b3385069357cd3fe0a39823a595efa68b3785fbd293b",
+      "compiler-cli/compiler-processes/174241.json": "9e84b71ced7ce85ddc8a39a107375cc51b6628f20b92681ee2c2a800c5be097c",
+      "compiler-cli/compiler-processes/174266.json": "e34df6ff5bb9c292598c26942ee373990cfd6eed0becf728d46291bfb77586c6"
+    },
+    "scope": "Compiler fleet only; not repository or whole-BAC qualification."
+  },
+  "static": {
+    "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+    "source_guards": 804,
+    "configs": 573,
+    "artifacts": 13,
+    "results": [
+      {
+        "name": "ruff-global",
+        "exit_code": 0,
+        "seconds": 0.12402129173278809,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-static/ruff-global.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      {
+        "name": "black-global",
+        "exit_code": 0,
+        "seconds": 50.75994038581848,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-static/black-global.log",
+        "sha256": "6aa09e752a9b68ec8828043a62fd422783ca01775665f1a6817badba61f31a71"
+      },
+      {
+        "name": "mypy",
+        "exit_code": 1,
+        "seconds": 0.9512572288513184,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-static/mypy.log",
+        "sha256": "e2626aa971f812d4320d36ce730dff6f87486fa24436430ef37d90cf5cf56058"
+      },
+      {
+        "name": "no-defaults",
+        "exit_code": 0,
+        "seconds": 1.8657310009002686,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-static/no-defaults.log",
+        "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+      },
+      {
+        "name": "expression-doc",
+        "exit_code": 0,
+        "seconds": 3.3483495712280273,
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r34-static/expression-doc.log",
+        "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+      }
+    ],
+    "all_passed": false,
+    "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+  },
+  "causal_adversarial_red": [
+    {
+      "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "86fae3c974e87e1ccbfa4d6f15fe695c851c767d",
+      "exit_code": 1,
+      "counts": {
+        "failed": 1,
+        "passed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "summary": "============================== 1 failed in 4.01s ===============================",
+      "wall_seconds": 13.328054904937744,
+      "source_guards": 804,
+      "process_identities": 1,
+      "configs": 573,
+      "artifacts": 13,
+      "registry": 14,
+      "available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "unique_node_phase_failures": 1,
+      "affected_files": 1,
+      "signature_groups": 1,
+      "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+    },
+    {
+      "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "86fae3c974e87e1ccbfa4d6f15fe695c851c767d",
+      "exit_code": 1,
+      "counts": {
+        "failed": 1,
+        "passed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "summary": "============================== 1 failed in 10.19s ==============================",
+      "wall_seconds": 21.875254154205322,
+      "source_guards": 804,
+      "process_identities": 1,
+      "configs": 573,
+      "artifacts": 13,
+      "registry": 14,
+      "available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "unique_node_phase_failures": 1,
+      "affected_files": 1,
+      "signature_groups": 1,
+      "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+    },
+    {
+      "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "86fae3c974e87e1ccbfa4d6f15fe695c851c767d",
+      "exit_code": 1,
+      "counts": {
+        "failed": 1,
+        "passed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "summary": "============================== 1 failed in 3.71s ===============================",
+      "wall_seconds": 7.913471937179565,
+      "source_guards": 804,
+      "process_identities": 1,
+      "configs": 573,
+      "artifacts": 13,
+      "registry": 14,
+      "available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "unique_node_phase_failures": 1,
+      "affected_files": 1,
+      "signature_groups": 1,
+      "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+    },
+    {
+      "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "86fae3c974e87e1ccbfa4d6f15fe695c851c767d",
+      "exit_code": 1,
+      "counts": {
+        "failed": 1,
+        "passed": 0,
+        "skipped": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "summary": "============================== 1 failed in 12.81s ==============================",
+      "wall_seconds": 21.85197401046753,
+      "source_guards": 804,
+      "process_identities": 1,
+      "configs": 573,
+      "artifacts": 13,
+      "registry": 14,
+      "available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "unique_node_phase_failures": 1,
+      "affected_files": 1,
+      "signature_groups": 1,
+      "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+    }
+  ],
+  "fixed_adversarial_green": [
+    {
+      "job": "adversarial-1",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 11.337010622024536,
+      "source_guards": 804,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    {
+      "job": "adversarial-2",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 11.415751218795776,
+      "source_guards": 804,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    {
+      "job": "adversarial-3",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 8.86342191696167,
+      "source_guards": 804,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    },
+    {
+      "job": "adversarial-4",
+      "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+      "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "wall_seconds": 7.836506128311157,
+      "source_guards": 804,
+      "process_identities": 1,
+      "config_digests": 573,
+      "protected_artifacts": 13,
+      "worktree_registry_records": 14,
+      "worktrees_available": 1,
+      "source_index_import_threads_fixture_custody": "PASS",
+      "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+    }
+  ],
+  "positive_learning_and_diagnostic_core": {
+    "job": "positive-core",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+    "exit_code": 0,
+    "counts": {
+      "passed": 3,
+      "skipped": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "wall_seconds": 11.992615461349487,
+    "source_guards": 804,
+    "process_identities": 1,
+    "config_digests": 573,
+    "protected_artifacts": 13,
+    "worktree_registry_records": 14,
+    "worktrees_available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+  },
+  "causal_composer_failure": {
+    "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+    "base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+    "candidate_tree": "f0f1b79b7df95402269d8e306330f6b38a233a27",
+    "exit_code": 1,
+    "counts": {
+      "failed": 1,
+      "passed": 127,
+      "skipped": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 0,
+      "warnings": 0
+    },
+    "summary": "=================== 1 failed, 127 passed in 88.86s (0:01:28) ===================",
+    "wall_seconds": 97.0229606628418,
+    "source_guards": 804,
+    "process_identities": 1,
+    "configs": 573,
+    "artifacts": 13,
+    "registry": 14,
+    "available": 1,
+    "source_index_import_threads_fixture_custody": "PASS",
+    "unique_node_phase_failures": 1,
+    "affected_files": 1,
+    "signature_groups": 1,
+    "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+  },
+  "overlap": "IndependentSAME70 repeats rootR33focused70; composerfirst1 is included in full31 and full31 included in current coherent373. Adversarial4/core3 overlap focused70/parent47; no summed-unique count or package release. Current coherent373 includes parent47+ENV80+composer31+native61+nonmodel154.",
+  "static_limit": "Mypy fails with six required existing oracle driver errors; Ruff,Black,expression docs,unchanged600defaults pass.",
+  "remaining_required": [
+    "Old world-lifecycle _Run and separate shared fx.Rig current protocol migration before broad repeat",
+    "R0 shared/private RNG custody, actual stochastic entrypoint admission and CPU Adam witness; B1 BANK/CP epochs/history/reset provenance; native correlation/stable-owner full D/E/F and T26",
+    "Current runner/serving/mechanics/oracle and all-family/scope/manual controls",
+    "38 original packages after28/66 qualified;54requirements/22freshfinaldesign-source reviews+synthesis;full/default/coverage>=70/slow/applicablehardware/learningE2E/exactfinalCI/source-verifieddocs"
+  ],
+  "optional_not_required": "New process-cohort exact checkpoint/restore and general active zero-tick simulator continuation not added to accepted scope.",
+  "hardware": "CUDA unavailable and unqualified",
+  "runners_and_verifiers": "ALL named R34 runners/verifiers CLOSED; source/test/index frozen; no source writer",
+  "governance": "No new branch/worktree/checkout/source copies/deletions/PR/merge. Existing authorized remote branch only; no routine halt.",
+  "review_sha256": {
+    "wave35-preparation/T18e-INITIAL-PARTICIPATION-POP-INDEPENDENT-REVIEW.md": "044976cbd3d1ea0178870956d958261bf825fbc2526182343ef6763890238aac",
+    "wave35-preparation/T18e-INTRINSIC-COMPOSITION-FIXTURE-INDEPENDENT-REVIEW.md": "0e2a4c07d468d51133ed1f0fbc3c092ef8d55ffd0fdf00b678a85de7aae79985"
+  },
+  "author_report": "wave35-preparation/T18e-INITIAL-PARTICIPATION-POP-REPORT.md",
+  "author_report_sha256": "6f73c070467610a3ec7b3a354d090ba51702435cdaf3105844d19d73f5eb6575",
+  "fixture_author_report": {
+    "path": "wave35-preparation/T18e-INTRINSIC-COMPOSITION-FIXTURE-MIGRATION.md",
+    "sha256": "8a7e0c6ffd7ecbac50e1b12097080a26238e66dd2d3636422db3ac2bc09a04ec"
+  },
+  "documents": {
+    "initial_participation": {
+      "draft": "wave35-preparation/T18e-INITIAL-PARTICIPATION-POP-CONTRACT-DRAFT.md",
+      "sha256": "d0428a97f4af4ed83d84e63f9a1d8a3654e9546954277d8bd29f5ad879321365",
+      "target": "docs/remediation/bac/CURRENT-INITIAL-PARTICIPATION-CONTRACT.md",
+      "prior_sha256": "ee0550c7955e9d866f6885b6b2ee8b4ce87ea92f203a91d19f5d3b02ad3013f5",
+      "API_truth": "SPEC QUALITY APPROVE; final independent report above"
+    }
+  }
+}

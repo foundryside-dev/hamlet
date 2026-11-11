@@ -1,0 +1,60 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py F
+
+=================================== FAILURES ===================================
+_______ test_actual_env_lifecycle_prerequisite_without_public_validator ________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_actual_env_lifecycle_prerequisite_without_public_validator(compiled):
+        """Independent fixture control: genuine INITIAL, acceptance and next entry."""
+        run = _Run(_env(compiled))
+        initial = run.initial()
+        assert initial["kind"] == "INITIAL"
+        assert initial["accepted_bindings"] == []
+        assert initial["accepted_episode_seqs"] == dict.fromkeys(IDS, 0)
+        reservation = run.env.prepare_episode(batch_episode=1, release=run.release)
+        run.env.validate_episode_reservation(reservation)
+        receipt = run.env.reset(reservation=reservation)
+        first = receipt.accepted
+        assert isinstance(first, WorldAcceptedEpisode)
+        assert first.world_ids == IDS and first.world_episode_seqs == (1, 1)
+        assert first.batch_episode == 1
+        assert run.env.world_phase == "active-awaiting-activation"
+        assert receipt.observation is not None
+        run.accepted = first
+        run.env.activate_episode(
+            accepted=first,
+            population_receipt=run.population.activation(first),
+            curiosity_receipt=run.bank.activation(first),
+        )
+>       run.step()
+
+tests/test_townlet/regressions/bac/test_env_accepted_auth.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.test_townlet.regressions.bac.test_world_episode_identity._Run object at 0x7ff1b7b4b230>
+participants = ('orchard-west', 'river-house')
+
+    def step(self, participants=IDS):
+        # Control actual active-on-entry lanes; no fabricated simulator steps.
+        for index, world_id in enumerate(self.env.world_ids):
+            self.env.dones[index] = world_id not in participants
+        masks = self.env.get_action_masks()
+        actions = masks.to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:152: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_actual_env_lifecycle_prerequisite_without_public_validator
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 3.19s ===============================

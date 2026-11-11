@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r38-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r38-remaining-restore-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "remaining-2",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r38-remaining-2"
+      ]
+    }
+  ]
+}

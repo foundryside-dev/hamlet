@@ -1,0 +1,42 @@
+{
+  "original_manifest_sha256": "382b131da7aaf5b701f9771fa49d01cc60ef7e7048134ce77434ac60cc79d1d3",
+  "qualified_manifest_sha256": "14465de083d40b04a988934d1a122f66493041850751e4e4074292f01acbfdf8",
+  "scope": "W35-WORLD-LIFECYCLE-CURRENT-MIGRATION",
+  "source_guards": 806,
+  "new_published_document_guard": "docs/remediation/bac/CURRENT-CPU-ADAM-RNG-PROFILE.md",
+  "new_inventory": [
+    {
+      "path": "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+      "lines": 856,
+      "sha256": "31a7d0d607a643f0e1f5b36f951fd10188f62d37b3981eadf5f928e39151b006",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_env_accepted_auth.py",
+      "lines": 270,
+      "sha256": "eadc370b7773eac8ebbef0eeddd60e803416dd71f7eca7875fc4244ea315d98b",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_world_constructor_transport.py",
+      "lines": 211,
+      "sha256": "daad8f762000886969762d52e2a415cc4a853d875621daf24449b9815bc61592",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+      "lines": 586,
+      "sha256": "3a7ae1dd63d56b2f81b7a3a2d8a8b7302355747d7c61431bbcc6fb8dec4ab675",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+      "lines": 1241,
+      "sha256": "0a90bb7e57956ce714b8bc4f663cbdb3aa237448dd1437d733f98c04ec913f11",
+      "present": true
+    }
+  ],
+  "runtime_executed_before_update": false,
+  "source_or_candidate_changed": false,
+  "preparation_note": "First metadata updater failed at Python parse before mutations; capture nevertheless completed. Reconciled same unexecuted R36 metadata with new bounded inventory/document guard; no recapture/application retry."
+}

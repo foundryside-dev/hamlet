@@ -1,0 +1,25 @@
+{
+  "name": "remaining-2",
+  "exit_code": 1,
+  "seconds": 9.935029029846191,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r38-remaining-2"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r38-remaining-restore-red/remaining-2.log",
+  "sha256": "8e7b36c33edc858343e61a2a94a618b6b042970149c2c508a9a01896bc493682",
+  "candidate_tree": "d8ecf2a8320b532a4bbea37ec2ff5c0575c7791d",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "manifest_sha256": "873cc814a8ee185cdf67cf65776636efb37906fc3f6f1d1aa4dd7350df1e5ed5",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

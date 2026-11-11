@@ -1,0 +1,28 @@
+{
+  "name": "hardware-skip-reasons",
+  "exit_code": 0,
+  "seconds": 28.58807063102722,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape0-argument_shape0-cuda]",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape1-argument_shape1-cuda]",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape2-argument_shape2-cuda]",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec[shape3-argument_shape3-cuda]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r39-hardware-skip-reasons"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r39-hardware-skip-reasons/hardware-skip-reasons.log",
+  "sha256": "632073cf2313e5dd7471d0ce3b3b02517d20466f4b794ec35008160ec743f8d7",
+  "candidate_tree": "74ab2af445a6421e4056f6d5600a14e75fd97665",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "manifest_sha256": "02f1df59b64215c63c913f884a7ffd6b92aea9962cab18ffd5f48ea27f3fd41b",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

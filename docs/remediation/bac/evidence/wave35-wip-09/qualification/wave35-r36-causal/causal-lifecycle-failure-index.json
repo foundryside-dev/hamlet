@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "candidate_tree": "c94a3ca5a3e4b34875fbdb58e42384accf63a957",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_env_accepted_auth.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_actual_env_lifecycle_prerequisite_without_public_validator",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

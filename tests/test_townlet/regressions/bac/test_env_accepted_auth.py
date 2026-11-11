@@ -1,8 +1,8 @@
-"""Actual ENV identity authentication; local owner receipts do not qualify BANK.
+"""Actual ENV identity authentication through real component prerequisites.
 
-The prerequisite deliberately never looks up the proposed public method. These
-tests reuse the charged real compiler/lifecycle fixture, including nine explicit
-local roles, without claiming real provider, replay, runner or bank integration.
+The prerequisite completes the lifecycle without invoking the validator assertion
+helper. These tests reuse real compiler/lifecycle/replay/BANK owners and nine roles,
+without claiming production POP learning, runner or all-child native integration.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from tests.test_townlet.regressions.bac.test_world_episode_identity import (
     _Run,
     _same,
     _state,
+    _unissued_step,
 )
 from tests.test_townlet.regressions.bac.test_world_episode_identity import (
     compiled as compiled,
@@ -97,19 +98,19 @@ def test_actual_env_lifecycle_prerequisite_without_public_validator(compiled):
     assert first.batch_episode == 1
     assert run.env.world_phase == "active-awaiting-activation"
     assert receipt.observation is not None
-    run.accepted = first
+    run.adopt_reset(reservation, receipt, retired_world_ids=())
     run.env.activate_episode(
         accepted=first,
         population_receipt=run.population.activation(first),
-        curiosity_receipt=run.bank.activation(first),
+        curiosity_receipt=run.runtime.begin_episode(accepted=first),
     )
     run.step()
     assert bool((run.env.step_counts > 0).all())
-    _, closure, dispositions = run.close(1)
+    _, closure, dispositions = run.close(1, run.env.world_ids)
     assert run.env.world_phase == "closed-awaiting-release"
     run.release_closed(1, closure, dispositions)
     assert run.env.world_phase == "released-completed"
-    second = run.reset(2)[1].accepted
+    second = run.reset(2, retired_world_ids=())[1].accepted
     assert second is not first
     assert second.world_ids == IDS and second.world_episode_seqs == (2, 2)
     assert dict(run.env.accepted_episode_seqs) == dict.fromkeys(IDS, 2)
@@ -117,7 +118,7 @@ def test_actual_env_lifecycle_prerequisite_without_public_validator(compiled):
 
 def test_public_authentication_accepts_real_token_repeatedly_without_reset(compiled):
     run = _Run(_env(compiled))
-    accepted = run.reset(1)[1].accepted
+    accepted = run.reset(1, retired_world_ids=())[1].accepted
     _pure_validation(run.env, accepted)
     run.step()
     _pure_validation(run.env, accepted)
@@ -126,7 +127,7 @@ def test_public_authentication_accepts_real_token_repeatedly_without_reset(compi
 @pytest.mark.parametrize("kind", ["copy", "constructed", "duck", "none", "changed_case", "changed_unicode"])
 def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
     run = _Run(_env(compiled))
-    accepted = run.reset(1)[1].accepted
+    accepted = run.reset(1, retired_world_ids=())[1].accepted
     if kind == "copy":
         candidate = replace(accepted)
     elif kind == "constructed":
@@ -148,8 +149,8 @@ def test_public_authentication_refuses_unissued_identity_purely(compiled, kind):
 def test_public_authentication_refuses_foreign_env_with_same_public_identity(compiled):
     run = _Run(_env(compiled))
     foreign = _Run(_env(compiled))
-    accepted = run.reset(1)[1].accepted
-    other = foreign.reset(1)[1].accepted
+    accepted = run.reset(1, retired_world_ids=())[1].accepted
+    other = foreign.reset(1, retired_world_ids=())[1].accepted
     assert accepted.world_ids == other.world_ids
     assert accepted.world_episode_seqs == other.world_episode_seqs
     assert accepted.batch_episode == other.batch_episode
@@ -162,11 +163,11 @@ def test_public_authentication_refuses_foreign_env_with_same_public_identity(com
 
 def test_public_authentication_refuses_stale_token_after_valid_boundary_and_fresh_reset(compiled):
     run = _Run(_env(compiled))
-    old = run.reset(1)[1].accepted
+    old = run.reset(1, retired_world_ids=())[1].accepted
     run.step()
-    _, closure, dispositions = run.close(1)
+    _, closure, dispositions = run.close(1, run.env.world_ids)
     run.release_closed(1, closure, dispositions)
-    current = run.reset(2)[1].accepted
+    current = run.reset(2, retired_world_ids=())[1].accepted
     assert current.world_episode_seqs == (2, 2)
     _pure_refusal(run.env, old)
     _pure_validation(run.env, current)
@@ -184,7 +185,7 @@ def test_public_authentication_preserves_exact_case_and_unicode_ids(compiled, id
         lane_world_ids=ids,
     )
     run = _Run(env)
-    accepted = run.reset(1)[1].accepted
+    accepted = run.reset(1, retired_world_ids=())[1].accepted
     _pure_validation(env, accepted)
     assert accepted.world_ids == ids
     assert env.world_ids == ids
@@ -202,7 +203,7 @@ def test_initial_has_no_accepted_token_to_authenticate(compiled):
 
 def test_public_authentication_requires_explicit_keyword_argument(compiled):
     run = _Run(_env(compiled))
-    accepted = run.reset(1)[1].accepted
+    accepted = run.reset(1, retired_world_ids=())[1].accepted
     method = _validator(run.env)
     before = _snapshot(run.env)
     with pytest.raises(TypeError):
@@ -220,21 +221,21 @@ def test_identity_authentication_does_not_activate_or_release_phase_permissions(
     _pure_validation(run.env, accepted)
     before = _snapshot(run.env)
     with pytest.raises(ValueError):
-        run.env.step(torch.zeros(2, dtype=torch.long), depletion_multiplier=1.0)
+        run.env.step(torch.zeros(2, dtype=torch.long), vector_step=_unissued_step())
     _same(before, _snapshot(run.env))
-    run.accepted = accepted
+    run.adopt_reset(reservation, receipt, retired_world_ids=())
     run.env.activate_episode(
         accepted=accepted,
         population_receipt=run.population.activation(accepted),
-        curiosity_receipt=run.bank.activation(accepted),
+        curiosity_receipt=run.runtime.begin_episode(accepted=accepted),
     )
     _pure_validation(run.env, accepted)
     run.step()
-    _, closure, dispositions = run.close(1)
+    _, closure, dispositions = run.close(1, run.env.world_ids)
     _pure_validation(run.env, accepted)
     before = _snapshot(run.env)
     with pytest.raises(ValueError):
-        run.env.step(torch.zeros(2, dtype=torch.long), depletion_multiplier=1.0)
+        run.env.step(torch.zeros(2, dtype=torch.long), vector_step=_unissued_step())
     with pytest.raises(ValueError):
         run.env.prepare_episode(batch_episode=2, release=run.release)
     with pytest.raises(ValueError):
@@ -246,7 +247,7 @@ def test_identity_authentication_does_not_activate_or_release_phase_permissions(
 
 def test_identity_authentication_keeps_quarantine_and_physics_refusal(compiled):
     run = _Run(_env(compiled))
-    accepted = run.reset(1)[1].accepted
+    accepted = run.reset(1, retired_world_ids=())[1].accepted
     run.env.abandon_episode(accepted=accepted, reason="runtime_failure")
     assert run.env.world_phase == "quarantined"
     method = _validator(run.env)
@@ -255,7 +256,7 @@ def test_identity_authentication_keeps_quarantine_and_physics_refusal(compiled):
         with pytest.raises(ValueError):
             run.env.vfs_random_state()
         with pytest.raises(ValueError):
-            run.env.step(torch.zeros(2, dtype=torch.long), depletion_multiplier=1.0)
+            run.env.step(torch.zeros(2, dtype=torch.long), vector_step=_unissued_step())
         with pytest.raises(ValueError):
             run.initial()
         _same(before, _quarantined_snapshot(run.env))
@@ -264,7 +265,7 @@ def test_identity_authentication_keeps_quarantine_and_physics_refusal(compiled):
     with pytest.raises(ValueError):
         run.env.vfs_random_state()
     with pytest.raises(ValueError):
-        run.env.step(torch.zeros(2, dtype=torch.long), depletion_multiplier=1.0)
+        run.env.step(torch.zeros(2, dtype=torch.long), vector_step=_unissued_step())
     with pytest.raises(ValueError):
         run.initial()
     _same(before, _quarantined_snapshot(run.env))

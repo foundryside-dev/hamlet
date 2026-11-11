@@ -1,0 +1,25 @@
+{
+  "name": "causal-lifecycle",
+  "exit_code": 1,
+  "seconds": 7.087967872619629,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_actual_env_lifecycle_prerequisite_without_public_validator",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r36-causal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r36-causal/causal-lifecycle.log",
+  "sha256": "e69bc81107b9da2bc268c56e35847cc98a1bcd070ba46cfbb69a480ac6727b64",
+  "candidate_tree": "c94a3ca5a3e4b34875fbdb58e42384accf63a957",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "manifest_sha256": "14465de083d40b04a988934d1a122f66493041850751e4e4074292f01acbfdf8",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

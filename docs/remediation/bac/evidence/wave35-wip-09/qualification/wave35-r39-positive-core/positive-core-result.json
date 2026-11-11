@@ -1,0 +1,27 @@
+{
+  "name": "positive-core",
+  "exit_code": 0,
+  "seconds": 19.54317307472229,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_env_accepted_auth.py::test_actual_env_lifecycle_prerequisite_without_public_validator",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_two_cycles_capture_replay_then_single_service_and_earned_effects",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_component_vfs_mixed_then_all_active_two_real_boundaries",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r39-positive-core"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r39-positive-core/positive-core.log",
+  "sha256": "00f0fd14816c95a017eff4ee0cd95af536f08de2b6770cbfa19f042ed33aaf47",
+  "candidate_tree": "74ab2af445a6421e4056f6d5600a14e75fd97665",
+  "base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+  "manifest_sha256": "02f1df59b64215c63c913f884a7ffd6b92aea9962cab18ffd5f48ea27f3fd41b",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

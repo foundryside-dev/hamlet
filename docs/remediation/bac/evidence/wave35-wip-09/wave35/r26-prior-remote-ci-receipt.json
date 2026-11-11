@@ -1,0 +1,34 @@
+{
+  "observed_at": "2026-11-11T02:45:44.290Z",
+  "head_sha": "d442680317e71a3d34f312a360ded1e7737375fc",
+  "runs": [
+    {
+      "id": 42937937163,
+      "name": "Config Validation",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "d442680317e71a3d34f312a360ded1e7737375fc",
+      "updated_at": "2026-11-11T01:20:43Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42937937163"
+    },
+    {
+      "id": 42937935134,
+      "name": "Lint",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "d442680317e71a3d34f312a360ded1e7737375fc",
+      "updated_at": "2026-11-11T01:19:26Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42937935134"
+    },
+    {
+      "id": 42937935171,
+      "name": "Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "d442680317e71a3d34f312a360ded1e7737375fc",
+      "updated_at": "2026-11-11T02:37:45Z",
+      "html_url": "https://github.com/foundryside-dev/hamlet/actions/runs/42937935171"
+    }
+  ],
+  "scope": "Exact preceding published checkpoint CI; no failure cause inferred from workflow status. Not results for unpublished R26 candidate."
+}

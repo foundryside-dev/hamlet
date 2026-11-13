@@ -1,0 +1,33 @@
+{
+  "review_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/R72-DOCUMENTATION-REVIEW.md",
+  "review_sha256": "dee5932dfa4e6f052f7adeabd5deb0edaeb8dadb3e43f2a025d3b458fbdae2e3",
+  "candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+  "documents": [
+    {
+      "path": "docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md",
+      "before_sha256": "2c1adde08dcbdff182906e227f394d82b560674190deaa8f3605346ab80e146b",
+      "approved_sha256": "9c469e9009dd3d5e23a9469d5e55d60d71b305971fbcc1d7e43caca2d899cdf4",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/r72-docs/CURRENT-CURIOSITY-BANK-CONTRACT.md"
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+      "before_sha256": "9edd156dc0966e78d5c360d06a7c14db5e7bb45077f17622856ccd9c4c67ca92",
+      "approved_sha256": "278ec39ba2955853d61385459fd7b09a2be05442a618527f59312aa995cff92d",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/r72-docs/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md"
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "before_sha256": "bf0baea43a7222200f48e8c1fb2bf14cdbfe7ac1fd70577bbb845620959a2c9b",
+      "approved_sha256": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/r72-docs/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md"
+    },
+    {
+      "path": "docs/remediation/bac/STATUS.md",
+      "before_sha256": "f268d7ca52d88ffa32a3c44ded67715638ca891aa8c686936c27a8b6eab2e1ee",
+      "approved_sha256": "4032a33374ed042dd75c52d240c8399652857d7bdec8cb29f93879e1d0ef8e90",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/r72-docs/STATUS.md"
+    }
+  ],
+  "intermediate_document_tree": "ff1beaa69efa06908f9a3aec4c32b8694ec959f5",
+  "execution_subtree_equivalence": "PASS"
+}

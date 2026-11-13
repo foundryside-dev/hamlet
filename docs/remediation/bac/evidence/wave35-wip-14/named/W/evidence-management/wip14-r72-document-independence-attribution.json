@@ -1,0 +1,23 @@
+{
+  "schema": "bac-root-attributed-document-independence-v1",
+  "status": "Root explicit identity attestation transcribed; not a new independent review",
+  "basis": "Root task message explicitly identified these authors, reviewer and integration roles.",
+  "reviewer": "bac_astra_bank_stageb_review; gpt-6-astra medium",
+  "producers": {
+    "CURRENT-CURIOSITY-BANK-CONTRACT.md": "bac_bank_cp_stageb; gpt-6-sol high",
+    "CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md": "bac_bank_cp_stageb; gpt-6-sol high",
+    "CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": "bac_astra_atomic_capture_review; gpt-6-astra medium",
+    "STATUS.md": "/root, using source-author facts"
+  },
+  "integration": {
+    "root": "W",
+    "path": "wave35/r72-approved-document-integration.json",
+    "sha256": "584549df49e20763822eb912cca1d5e1bc604545f5ec3ce8f755107412df6df4"
+  },
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/R72-DOCUMENTATION-REVIEW.md",
+    "sha256": "dee5932dfa4e6f052f7adeabd5deb0edaeb8dadb3e43f2a025d3b458fbdae2e3"
+  },
+  "root_role": "Integrator of exact approved bytes/source-subtree checks, not independent reviewer; STATUS author only."
+}

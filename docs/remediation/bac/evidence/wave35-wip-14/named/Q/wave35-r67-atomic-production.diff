@@ -1,0 +1,39 @@
+diff --git a/src/townlet/exploration/world_curiosity_state.py b/src/townlet/exploration/world_curiosity_state.py
+index 45ce7cdc..84aad1b1 100644
+--- a/src/townlet/exploration/world_curiosity_state.py
++++ b/src/townlet/exploration/world_curiosity_state.py
+@@ -1029,6 +1029,34 @@ class OwnedWorldBackend(_BackendOwner):
+             finally:
+                 self._revision += 1
+ 
++    def snapshot_with_capture(self, capture: Callable[[Any], Any], *, lineage: RNGOperation | None) -> tuple[dict[str, Any], Any]:
++        """Capture native and auxiliary value data against the same live backend.
++
++        The read-only callback must not perform lifecycle work or retain live
++        aliases. All result copying precedes activation cleanup and RNG capture.
++        """
++        with self._scope("snapshot", lineage) as operation:
++            if not callable(capture):
++                raise ValueError("Owned snapshot capture must be callable")
++            try:
++                with self._rng._activate("service", operation):
++                    backend_state = _owned(self._backend.checkpoint_state())
++                    captured = _owned(capture(self._backend))
++                return (
++                    {
++                        "schema": "owned-world-backend-v1",
++                        "healthy": not self._failed,
++                        "backend": backend_state,
++                        "rng": self._rng._snapshot(),
++                    },
++                    captured,
++                )
++            except BaseException:
++                self._failed = True
++                raise
++            finally:
++                self._revision += 1
++
+     def prepare_restore(
+         self,
+         payload: Any,

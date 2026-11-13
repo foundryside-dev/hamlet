@@ -1,0 +1,174 @@
+{
+  "derived_from": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-gc-membership-parsed.json",
+  "sha256": "16149699a3489c76f0b092768a01648f9c02558862a014729a6e44c44f3f2476",
+  "analysis": [
+    {
+      "job": "archive-gc-diagnostic",
+      "case_ordinal": 0,
+      "generation": [
+        9,
+        14,
+        14,
+        17
+      ],
+      "preexisting_retired": [],
+      "new_retired": [],
+      "cohort_ids": [
+        140634843236304,
+        140634842359440,
+        140634956395888,
+        140634843239824,
+        140634957184528,
+        140634957174800
+      ],
+      "lost_cohort_ids": []
+    },
+    {
+      "job": "archive-gc-diagnostic",
+      "case_ordinal": 1,
+      "generation": [
+        43,
+        48,
+        48,
+        58
+      ],
+      "preexisting_retired": [
+        {
+          "participant_id": "140634727552096",
+          "owner_id": 140634727651344,
+          "owner_type": "townlet.exploration.scoped_curiosity.CuriosityBank"
+        },
+        {
+          "participant_id": "140634727560016",
+          "owner_id": 140635145696352,
+          "owner_type": "townlet.exploration.world_curiosity_state.OwnedWorldBackend"
+        },
+        {
+          "participant_id": "140634727561408",
+          "owner_id": 140635145690640,
+          "owner_type": "townlet.exploration.world_curiosity_state.OwnedWorldBackend"
+        },
+        {
+          "participant_id": "140634842798112",
+          "owner_id": 140634843239824,
+          "owner_type": "townlet.exploration.world_curiosity_state.OwnedWorldBackend"
+        },
+        {
+          "participant_id": "140634842799504",
+          "owner_id": 140634957184528,
+          "owner_type": "townlet.exploration.world_curiosity_state.OwnedWorldBackend"
+        },
+        {
+          "participant_id": "140634956372816",
+          "owner_id": 140634959117824,
+          "owner_type": "townlet.exploration.world_curiosity_state.SharedWorldBackend"
+        },
+        {
+          "participant_id": "140634956511328",
+          "owner_id": 140634843236304,
+          "owner_type": "townlet.exploration.scoped_curiosity.CuriosityBank"
+        },
+        {
+          "participant_id": "140634956512960",
+          "owner_id": 140634843238864,
+          "owner_type": "townlet.exploration.world_curiosity_state.OwnedWorldBackend"
+        },
+        {
+          "participant_id": "140634956513152",
+          "owner_id": 140634956680896,
+          "owner_type": "townlet.exploration.world_curiosity_state.OwnedWorldBackend"
+        },
+        {
+          "participant_id": "140634957754736",
+          "owner_id": 140634959114464,
+          "owner_type": "townlet.exploration.scoped_curiosity.CuriosityBank"
+        }
+      ],
+      "new_retired": [],
+      "cohort_ids": [
+        140634612932176,
+        140634498826064,
+        140634498821200,
+        140634956568512,
+        140634956578112,
+        140634498823888
+      ],
+      "lost_cohort_ids": []
+    },
+    {
+      "job": "cohort-gc-diagnostic",
+      "case_ordinal": 0,
+      "generation": [
+        8,
+        9,
+        9,
+        13
+      ],
+      "preexisting_retired": [
+        {
+          "participant_id": "140093570272720",
+          "owner_id": 140093570451408,
+          "owner_type": "townlet.exploration.scoped_curiosity.CuriosityBank"
+        },
+        {
+          "participant_id": "140093570278000",
+          "owner_id": 140093570452688,
+          "owner_type": "townlet.exploration.world_curiosity_state.SharedWorldBackend"
+        },
+        {
+          "participant_id": "140093683571824",
+          "owner_id": 140093686313184,
+          "owner_type": "townlet.exploration.scoped_curiosity.CuriosityBank"
+        },
+        {
+          "participant_id": "140093683571968",
+          "owner_id": 140093686316544,
+          "owner_type": "townlet.exploration.world_curiosity_state.SharedWorldBackend"
+        }
+      ],
+      "new_retired": [],
+      "cohort_ids": [
+        140093568856016,
+        140093569900032
+      ],
+      "lost_cohort_ids": []
+    },
+    {
+      "job": "cohort-gc-diagnostic",
+      "case_ordinal": 1,
+      "generation": [
+        20,
+        24,
+        24,
+        27
+      ],
+      "preexisting_retired": [
+        {
+          "participant_id": "140093568790272",
+          "owner_id": 140093568856016,
+          "owner_type": "townlet.exploration.scoped_curiosity.CuriosityBank"
+        },
+        {
+          "participant_id": "140093568790320",
+          "owner_id": 140093569904592,
+          "owner_type": "townlet.exploration.world_curiosity_state.SharedWorldBackend"
+        },
+        {
+          "participant_id": "140093568794352",
+          "owner_id": 140093569900032,
+          "owner_type": "townlet.exploration.world_curiosity_state.SharedWorldBackend"
+        }
+      ],
+      "new_retired": [],
+      "cohort_ids": [
+        140093683486864,
+        140093569905808,
+        140093873108336,
+        140093686754320,
+        140093569936752
+      ],
+      "lost_cohort_ids": []
+    }
+  ],
+  "conclusion": "Every post-preparation GC retirement existed BEFORE preparation; no newly enrolled preparation member or cohort owner was lost. Domain generation rises on natural install admission draining retired peers; stale-token refusal is required by accepted core contract. Retain post-prepare GC; isolate setup garbage before preparing instead."
+}

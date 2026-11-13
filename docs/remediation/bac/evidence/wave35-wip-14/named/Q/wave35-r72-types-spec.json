@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r72-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r72-types",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet"
+      ]
+    },
+    {
+      "name": "owned-mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet/exploration/curiosity_checkpoint.py",
+        "src/townlet/exploration/scoped_curiosity.py",
+        "--follow-imports=silent"
+      ]
+    }
+  ]
+}

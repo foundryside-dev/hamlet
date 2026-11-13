@@ -1,0 +1,123 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [37 items]
+
+.....................F..F............                                    [100%]
+=================================== FAILURES ===================================
+_____ test_offside_cohort_stays_alive_through_gc_and_token_install[shared] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4e7fdd0b00>
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_offside_cohort_stays_alive_through_gc_and_token_install(compiled, monkeypatch, scope):
+        from townlet.exploration.world_curiosity_state import OwnedWorldBackend, SharedWorldBackend, WorldRNGState
+    
+        run, _ = _run(compiled, "rnd", scope)
+        saved = _bank(run)
+        refs = []
+    
+        def track(factory):
+            def record(*args, **kwargs):
+                value = factory(*args, **kwargs)
+                refs.append(weakref.ref(value))
+                return value
+    
+            return record
+    
+        for cls, name in ((WorldRNGState, "create"), (OwnedWorldBackend, "construct"), (SharedWorldBackend, "reserve")):
+            monkeypatch.setattr(cls, name, track(getattr(cls, name)))
+        token = run.bank.prepare_restore(state=saved, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+        gc.collect()
+        assert refs and all(reference() is not None for reference in refs), "preparation lost a registered lifetime owner"
+>       run.bank.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:745: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4e8bbd1940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+___ test_offside_cohort_stays_alive_through_gc_and_token_install[per_world] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4e800b4050>
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_offside_cohort_stays_alive_through_gc_and_token_install(compiled, monkeypatch, scope):
+        from townlet.exploration.world_curiosity_state import OwnedWorldBackend, SharedWorldBackend, WorldRNGState
+    
+        run, _ = _run(compiled, "rnd", scope)
+        saved = _bank(run)
+        refs = []
+    
+        def track(factory):
+            def record(*args, **kwargs):
+                value = factory(*args, **kwargs)
+                refs.append(weakref.ref(value))
+                return value
+    
+            return record
+    
+        for cls, name in ((WorldRNGState, "create"), (OwnedWorldBackend, "construct"), (SharedWorldBackend, "reserve")):
+            monkeypatch.setattr(cls, name, track(getattr(cls, name)))
+        token = run.bank.prepare_restore(state=saved, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+        gc.collect()
+        assert refs and all(reference() is not None for reference in refs), "preparation lost a registered lifetime owner"
+>       run.bank.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:745: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4e8bbd1940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install[shared]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install[per_world]
+======================== 2 failed, 35 passed in 16.77s =========================

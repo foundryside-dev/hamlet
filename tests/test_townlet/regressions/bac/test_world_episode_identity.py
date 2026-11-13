@@ -12,6 +12,7 @@ from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 import torch
 
@@ -61,11 +62,65 @@ def _env(compiled, order=IDS):
     )
 
 
+def _baseline_inputs(compiled):
+    from townlet.config.drive_as_code import IntrinsicStrategyConfig
+    from townlet.config.training_v2_config import TrainingV2Config
+
+    selected = compiled.get_level("L0_test")
+    drive = selected.drive.intrinsic.model_dump()
+    drive.update(strategy="none", base_weight=0.0, apply_modifiers=[])
+    return {
+        "drive_intrinsic": IntrinsicStrategyConfig.model_validate(drive),
+        "training_input": TrainingV2Config.model_validate(selected.training.model_dump()),
+    }
+
+
+def _selected_inputs(compiled, *, family, scope):
+    from townlet.config.bac_options import BaCOptions
+    from townlet.config.drive_as_code import IntrinsicStrategyConfig
+    from townlet.config.training_v2_config import TrainingV2Config
+
+    selected = compiled.get_level("L0_test")
+    drive = selected.drive.intrinsic.model_dump()
+    drive.update(strategy=family, base_weight=0.0 if family == "none" else 0.4, apply_modifiers=[])
+    training = selected.training.model_dump()
+    training["replay_buffer"]["batch_size"] = 2
+    training["intrinsic"]["rnd"].update(feature_dim=4, learning_rate=0.001)
+    training["intrinsic"].update(initial_weight=0.4, survival_window=10, min_survival_fraction=0.01)
+    training["intrinsic"]["annealing"].update(min_weight=0.01, threshold=100.0, decay_rate=0.9)
+    training["training_loop"]["max_steps_per_episode"] = 20
+    options = {
+        "curiosity_scope": {"scope": scope, "seed_policy": "legacy_shared_v1" if scope == "shared" else "world_id_derived_v1"},
+        "provider_parameter_source": "training",
+        "rnd": {"service_mode": "paced_fifo", "max_updates_per_tick": 1, "max_pending_rows": 4, "overflow_policy": "drop_oldest"},
+        "providers": {
+            "count_based": {"quantization_width": 0.125, "max_entries": 4},
+            "icm": {
+                "feature_dim": 4,
+                "hidden_dim": 8,
+                "learning_rate": 0.001,
+                "inverse_weight": 0.8,
+                "forward_weight": 0.2,
+                "training_batch_size": 2,
+                "max_pending_transitions": 4,
+            },
+        },
+    }
+    training["bac_options"] = BaCOptions.model_validate(options).model_dump()
+    return {
+        "drive_intrinsic": IntrinsicStrategyConfig.model_validate(drive),
+        "training_input": TrainingV2Config.model_validate(training),
+    }
+
+
 def _same(left, right):
     if isinstance(left, torch.Tensor):
         assert isinstance(right, torch.Tensor)
         assert left.dtype == right.dtype and left.device == right.device
         assert left.shape == right.shape and torch.equal(left, right)
+    elif isinstance(left, np.ndarray):
+        assert type(left) is type(right) and left.dtype == right.dtype
+        assert left.shape == right.shape and np.array_equal(left, right)
     elif isinstance(left, dict):
         assert left.keys() == right.keys()
         for key in left:
@@ -130,7 +185,7 @@ class _Sink:
 
 
 class _Run:
-    def __init__(self, env, bootstrap=True):
+    def __init__(self, env, bootstrap=True, *, drive_intrinsic, training_input):
         from townlet.agent.network_factory import NetworkFactory
         from townlet.agent.optimizer_factory import OptimizerFactory
         from townlet.config.bac_options import resolve_bac_options
@@ -146,8 +201,9 @@ class _Run:
 
         self.env = env
         self.boundary = self.population = self
-        selected = env.universe.get_level(env.level_name)
-        authored = selected.training.model_dump()
+        assert isinstance(drive_intrinsic, IntrinsicStrategyConfig)
+        assert isinstance(training_input, TrainingV2Config)
+        authored = training_input.model_dump()
         authored["population"]["size"] = env.num_agents
         authored["seed"] = env.vfs_random_state()["training_seed"]
         training = TrainingV2Config.model_validate(authored)
@@ -158,14 +214,15 @@ class _Run:
             config=brain.architecture.token_set, action_dim=env.action_dim, token_spec=env.token_spec
         ).to(env.device)
         self.optimizer, self.scheduler = OptimizerFactory.build(config=brain.optimizer, parameters=self.q.parameters())
-        self.replay = ReplayBuffer(capacity=brain.replay.capacity, device=env.device)
+        self.replay_capacity = brain.replay.capacity
+        self.replay = ReplayBuffer(capacity=self.replay_capacity, device=env.device)
         effective = env.universe.effective_run
         self.curriculum = build_curriculum(
             training, curriculum_options=effective.options.curriculum, static_policy=effective.static_policy, device=env.device
         )
         self.curriculum.initialize_population(env.num_agents)
         self.policy = resolve_exploration_policy(
-            drive_intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0, apply_modifiers=[]),
+            drive_intrinsic=drive_intrinsic,
             training=training,
             options=options,
         )
@@ -724,8 +781,8 @@ class _Run:
         )
 
 
-def _restore(compiled, state, order, *, runtime_state, component_ledger, component_state):
-    run = _Run(_env(compiled, order), bootstrap=False)
+def _restore(compiled, state, order, *, runtime_state, component_ledger, component_state, drive_intrinsic, training_input):
+    run = _Run(_env(compiled, order), bootstrap=False, drive_intrinsic=drive_intrinsic, training_input=training_input)
     prepared = run.env.prepare_world_restore(
         kind=state["kind"],
         state=state,
@@ -822,13 +879,13 @@ def test_real_env_requires_explicit_roster_seed_binding(compiled):
 
 
 def test_reservation_and_failed_preflight_are_pure(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     before = _state(run.env)
     first = run.env.prepare_episode(batch_episode=1, release=run.release)
     second = run.env.prepare_episode(batch_episode=1, release=run.release)
     assert first.world_ids == second.world_ids == IDS
     assert first.world_episode_seqs == second.world_episode_seqs == (1, 1)
-    foreign = _Run(_env(compiled))
+    foreign = _Run(_env(compiled), **_baseline_inputs(compiled))
     foreign_reservation = foreign.env.prepare_episode(batch_episode=1, release=foreign.release)
     before = _state(run.env)
     with pytest.raises(ValueError):
@@ -839,7 +896,7 @@ def test_reservation_and_failed_preflight_are_pure(compiled):
 
 
 def test_authority_bootstrap_binding_and_consumption(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     assert run.env.bind_boundary_authority(owner=run.boundary, role_owners=run.roles) is run.authority
     before = _state(run.env)
     with pytest.raises(ValueError):
@@ -855,7 +912,7 @@ def test_authority_bootstrap_binding_and_consumption(compiled):
 
 
 def test_reset_retry_after_rollout_owns_original_observation(compiled, monkeypatch):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     calls = []
     original = run.env._get_observations
 
@@ -878,7 +935,7 @@ def test_reset_retry_after_rollout_owns_original_observation(compiled, monkeypat
 
 
 def test_activation_requires_owned_matching_receipts(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     reservation = run.env.prepare_episode(batch_episode=1, release=run.release)
     reset = run.env.reset(reservation=reservation)
     accepted = reset.accepted
@@ -898,7 +955,7 @@ def test_activation_requires_owned_matching_receipts(compiled):
 
 
 def test_late_reset_failure_quarantines_without_false_rollback(compiled, monkeypatch):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     reservation = run.env.prepare_episode(batch_episode=1, release=run.release)
 
     def fail_late():
@@ -916,12 +973,12 @@ def test_late_reset_failure_quarantines_without_false_rollback(compiled, monkeyp
     with pytest.raises((ValueError, RuntimeError)):
         run.initial()
     # No assertion of simulator or RNG rollback: reconstruction is the recovery.
-    fresh = _Run(_env(compiled))
+    fresh = _Run(_env(compiled), **_baseline_inputs(compiled))
     assert fresh.reset(1, retired_world_ids=())[1].accepted.world_episode_seqs == (1, 1)
 
 
 def test_close_alone_blocks_save_next_release_is_save_independent(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=())
     run.step()
     prepared, closure, dispositions = run.close(1, run.env.world_ids)
@@ -939,8 +996,8 @@ def test_close_alone_blocks_save_next_release_is_save_independent(compiled):
 
 
 def test_wrong_release_and_changed_disposition_are_pure(compiled):
-    run = _Run(_env(compiled))
-    foreign = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
+    foreign = _Run(_env(compiled), **_baseline_inputs(compiled))
     before = _state(run.env)
     with pytest.raises(ValueError):
         run.env.install_boundary_release(foreign.release)
@@ -963,7 +1020,7 @@ def test_wrong_release_and_changed_disposition_are_pure(compiled):
 
 
 def test_empty_abandon_is_not_completion_or_initial(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=IDS)
     abandoned = run.env.abandon_episode(accepted=run.accepted, reason="empty_participation")
     assert run.env.abandon_episode(accepted=run.accepted, reason="empty_participation") is abandoned
@@ -978,7 +1035,7 @@ def test_empty_abandon_is_not_completion_or_initial(compiled):
 
 
 def test_participating_episode_cannot_claim_empty_abandon(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=(IDS[1],))
     run.step()
     before = _state(run.env)
@@ -988,7 +1045,7 @@ def test_participating_episode_cannot_claim_empty_abandon(compiled):
 
 
 def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     before = _state(run.env)
     state = run.initial()
     _same(state, run.initial())
@@ -1012,6 +1069,7 @@ def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
         runtime_state=run.runtime.checkpoint_state(),
         component_ledger=run.ledger,
         component_state=run.component_state(),
+        **_baseline_inputs(compiled),
     )
     assert restored.env.world_phase == "bootstrap-ready"
     assert restored.reset(1, retired_world_ids=())[1].accepted.world_episode_seqs == (1, 1)
@@ -1035,9 +1093,9 @@ def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
     ],
 )
 def test_malformed_initial_restore_is_pure(compiled, field, value):
-    state = _Run(_env(compiled)).initial()
+    state = _Run(_env(compiled), **_baseline_inputs(compiled)).initial()
     state[field] = value
-    target = _Run(_env(compiled), bootstrap=False)
+    target = _Run(_env(compiled), bootstrap=False, **_baseline_inputs(compiled))
     before = _state(target.env)
     with pytest.raises((TypeError, ValueError)):
         target.env.prepare_world_restore(
@@ -1062,7 +1120,7 @@ def test_malformed_initial_restore_is_pure(compiled, field, value):
 
 
 def test_initial_restore_over_live_boundary_refuses(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     state = run.initial()
     run.reset(1, retired_world_ids=())
     before = _state(run.env)
@@ -1078,7 +1136,7 @@ def test_initial_restore_over_live_boundary_refuses(compiled):
 
 
 def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
-    first = _Run(_env(compiled))
+    first = _Run(_env(compiled), **_baseline_inputs(compiled))
     first.reset(1, retired_world_ids=())
     first.step()
     _, closure, dispositions = first.close(1, first.env.world_ids)
@@ -1092,6 +1150,7 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
         runtime_state=first.runtime.checkpoint_state(),
         component_ledger=first.ledger,
         component_state=first.component_state(),
+        **_baseline_inputs(compiled),
     )
     assert dict(second.env.accepted_episode_seqs) == dict.fromkeys(IDS, 1)
     assert second.reset(2, retired_world_ids=(IDS[1],))[1].accepted.world_ids == tuple(reversed(IDS))
@@ -1113,6 +1172,7 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
         runtime_state=second.runtime.checkpoint_state(),
         component_ledger=second.ledger,
         component_state=second.component_state(),
+        **_baseline_inputs(compiled),
     )
     restored_bindings = third.completed((1, 2))["accepted_bindings"]
     _same(saved2["accepted_bindings"], restored_bindings)
@@ -1127,7 +1187,7 @@ def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
 
 @pytest.mark.parametrize("damage", ["missing_latest", "duplicate_batch", "wrong_latest", "foreign_world", "bool_sequence"])
 def test_completed_binding_corruption_refuses_before_install(compiled, damage):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     for batch in (1, 2):
         run.reset(batch, retired_world_ids=())
         run.step()
@@ -1144,7 +1204,7 @@ def test_completed_binding_corruption_refuses_before_install(compiled, damage):
         state["accepted_bindings"][0]["world_ids"][0] = "foreign"
     else:
         state["accepted_bindings"][0]["world_episode_seqs"][1] = True
-    target = _Run(_env(compiled), bootstrap=False)
+    target = _Run(_env(compiled), bootstrap=False, **_baseline_inputs(compiled))
     before = _state(target.env)
     with pytest.raises((ValueError, TypeError)):
         target.env.prepare_world_restore(
@@ -1158,7 +1218,7 @@ def test_completed_binding_corruption_refuses_before_install(compiled, damage):
 
 
 def test_step_before_activation_and_changed_reservation_refuse(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     reservation = run.env.prepare_episode(batch_episode=1, release=run.release)
     run.env.reset(reservation=reservation)
     before = _state(run.env)
@@ -1170,7 +1230,7 @@ def test_step_before_activation_and_changed_reservation_refuse(compiled):
 
 
 def test_empty_close_and_unknown_history_reference_refuse(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=())
     before = _state(run.env)
     with pytest.raises(ValueError):
@@ -1186,7 +1246,7 @@ def test_empty_close_and_unknown_history_reference_refuse(compiled):
 
 
 def test_initial_schema_exact_and_snapshot_isolation(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     state = run.initial()
     assert set(state) == {
         "schema",
@@ -1217,8 +1277,8 @@ def test_initial_schema_exact_and_snapshot_isolation(compiled):
 
 @pytest.mark.parametrize("mode", ["wrong_kind", "extra_key", "changed_manifest", "wrong_seed", "unknown_member"])
 def test_restore_identity_and_kind_mismatch_refuse(compiled, mode):
-    state = _Run(_env(compiled)).initial()
-    target = _Run(_env(compiled), bootstrap=False)
+    state = _Run(_env(compiled), **_baseline_inputs(compiled)).initial()
+    target = _Run(_env(compiled), bootstrap=False, **_baseline_inputs(compiled))
     kind, order = "INITIAL", IDS
     if mode == "wrong_kind":
         kind = "COMPLETED"
@@ -1243,7 +1303,7 @@ def test_restore_identity_and_kind_mismatch_refuse(compiled, mode):
 
 
 def test_foreign_boundary_effect_receipt_cannot_release(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=())
     run.step()
     _, closure, dispositions = run.close(1, run.env.world_ids)
@@ -1266,14 +1326,14 @@ def test_foreign_boundary_effect_receipt_cannot_release(compiled):
     "field,value", [("batch_episode", True), ("batch_episode", 1.0), ("world_episode_seqs", [True, 1]), ("world_episode_seqs", [1.0, 1])]
 )
 def test_last_closure_numeric_alias_refuses(compiled, field, value):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=())
     run.step()
     _, closure, dispositions = run.close(1, run.env.world_ids)
     run.release_closed(1, closure, dispositions)
     state = run.completed((1,))
     state["last_closed_episode"][field] = value
-    target = _Run(_env(compiled), bootstrap=False)
+    target = _Run(_env(compiled), bootstrap=False, **_baseline_inputs(compiled))
     before = _state(target.env)
     with pytest.raises(ValueError):
         target.env.prepare_world_restore(
@@ -1288,7 +1348,7 @@ def test_last_closure_numeric_alias_refuses(compiled, field, value):
 
 @pytest.mark.parametrize("damage", ["foreign_effect", "wrong_content", "foreign_initial"])
 def test_bound_outer_proof_rejects_wrong_child(compiled, monkeypatch, damage):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     issuer = run.boundary if damage == "foreign_initial" else run.population
     original = issuer.receipt
     foreign = _Sink()
@@ -1319,7 +1379,7 @@ def test_bound_outer_proof_rejects_wrong_child(compiled, monkeypatch, damage):
 
 
 def test_prepared_close_refuses_intervening_rollout(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.control_horizon = 2  # Genuine further A rollout is within the declared cap.
     run.reset(1, retired_world_ids=(IDS[1],))
     run.step()
@@ -1347,7 +1407,7 @@ def test_prepared_close_refuses_intervening_rollout(compiled):
 
 
 def test_closure_installed_before_acknowledgement_retries_once(compiled, monkeypatch):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=())
     run.step()
     original = run.env.close_episode
@@ -1379,7 +1439,7 @@ def test_closure_installed_before_acknowledgement_retries_once(compiled, monkeyp
 
 def test_component_two_cycles_capture_replay_then_single_service_and_earned_effects(compiled, monkeypatch):
     """Missing replay, duplicate reward/service, toy effects or episode-clock reuse fail here."""
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     assert run.roles["network"] is run.q and run.roles["optimizer"] is run.optimizer
     assert run.roles["replay"] is run.replay and run.roles["curriculum"] is run.curriculum
     assert run.roles["curiosity"] is run.bank and run.bank_issuer.owner is run.bank
@@ -1457,7 +1517,7 @@ def test_component_two_cycles_capture_replay_then_single_service_and_earned_effe
 def test_component_step_registry_authenticates_identity_content_and_single_use(compiled, damage):
     from copy import copy
 
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=(IDS[1],))
     actions = run.env.get_action_masks().to(torch.long).argmax(dim=1)
     issued = run.prepare_step(actions)
@@ -1468,7 +1528,7 @@ def test_component_step_registry_authenticates_identity_content_and_single_use(c
     elif damage == "copied":
         candidate = copy(issued)
     elif damage == "foreign":
-        other = _Run(_env(compiled))
+        other = _Run(_env(compiled), **_baseline_inputs(compiled))
         other.reset(1, retired_world_ids=(IDS[1],))
         candidate = other.prepare_step(actions)
     elif damage == "changed_actions":
@@ -1484,7 +1544,7 @@ def test_component_step_registry_authenticates_identity_content_and_single_use(c
 
 
 def test_component_all_inactive_ordinary_step_is_separate_from_empty_abandonment(compiled):
-    run = _Run(_env(compiled))
+    run = _Run(_env(compiled), **_baseline_inputs(compiled))
     run.reset(1, retired_world_ids=IDS)
     _, rewards, _, info, _ = run.step()
     _same(rewards, torch.zeros(2))
@@ -1500,7 +1560,7 @@ def test_component_all_inactive_ordinary_step_is_separate_from_empty_abandonment
 )
 def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
     """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
-    source = _Run(_env(compiled))
+    source = _Run(_env(compiled), **_baseline_inputs(compiled))
     initial = source.initial()
     initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
     initial_component = source.component_state()
@@ -1534,7 +1594,13 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
     # Earn the healthy native prepare/install and next-reset route before the
     # negative. Only separately supplied cadence/selector or ledger will change.
     healthy = _restore(
-        compiled, state, tuple(reversed(IDS)), runtime_state=runtime_state, component_ledger=ledger, component_state=component
+        compiled,
+        state,
+        tuple(reversed(IDS)),
+        runtime_state=runtime_state,
+        component_ledger=ledger,
+        component_state=component,
+        **_baseline_inputs(compiled),
     )
     continued = healthy.runtime.checkpoint_state()
     for field in ("selector", "cadence"):
@@ -1555,7 +1621,7 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
     elif damage == "earlier_ledger":
         ledger = earlier[2]
     elif damage == "same_count_ledger":
-        other = _Run(_env(compiled))
+        other = _Run(_env(compiled), **_baseline_inputs(compiled))
         other.control_horizon = 2
         for batch in (1, 2):
             other.reset(batch, retired_world_ids=())
@@ -1572,8 +1638,8 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
     targets, preparations, installations = [], [], []
     original_init = _Run.__init__
 
-    def observed_init(run, env, bootstrap=True):
-        original_init(run, env, bootstrap=bootstrap)
+    def observed_init(run, env, bootstrap=True, *, drive_intrinsic, training_input):
+        original_init(run, env, bootstrap=bootstrap, drive_intrinsic=drive_intrinsic, training_input=training_input)
         targets.append((run, _state(env), run.ledger))
         prepare_world = env.prepare_world_restore
         install_child, install_world = run.runtime.install_restore, env.install_world_restore
@@ -1598,7 +1664,15 @@ def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication
     monkeypatch.setattr(_Run, "__init__", observed_init)
     try:
         with pytest.raises(ValueError):
-            _restore(compiled, state, tuple(reversed(IDS)), runtime_state=candidate, component_ledger=ledger, component_state=component)
+            _restore(
+                compiled,
+                state,
+                tuple(reversed(IDS)),
+                runtime_state=candidate,
+                component_ledger=ledger,
+                component_state=component,
+                **_baseline_inputs(compiled),
+            )
     finally:
         assert len(targets) == len(preparations) == 1, "negative must reach genuine ENV restore preparation"
         assert installations == [], "mismatched continuation must refuse before runtime/BANK or world installation"

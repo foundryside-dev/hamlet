@@ -1,0 +1,47 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "d5cc3a3e28653e7b8bbcc4566a625561fdc2b60b",
+  "source_guards": 814,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "ruff-global",
+      "exit_code": 0,
+      "seconds": 0.1134653091430664,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-static/ruff-global.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "black-global",
+      "exit_code": 0,
+      "seconds": 63.05667209625244,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-static/black-global.log",
+      "sha256": "8972dc68829dc24bfa0fce3deabf32708b080a8e0157b947a681fbc45302bd7c"
+    },
+    {
+      "name": "mypy",
+      "exit_code": 1,
+      "seconds": 8.520726442337036,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-static/mypy.log",
+      "sha256": "f8706c36a0b674cf4c51b23bf5c9051ab69fc868a9bb54bfd50d8d093880cc83"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.3005340099334717,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-static/no-defaults.log",
+      "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+    },
+    {
+      "name": "expression-doc",
+      "exit_code": 0,
+      "seconds": 3.1192984580993652,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-static/expression-doc.log",
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+    }
+  ],
+  "all_passed": false,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

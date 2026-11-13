@@ -17,7 +17,14 @@ import torch
 
 from townlet.config.exploration_policy import ResolvedExplorationPolicy
 from townlet.config.world_roster import WorldAcceptedEpisode, WorldRecord, WorldRosterDeclaration, validate_world_snapshot, world_binding
-from townlet.exploration.world_curiosity_state import CuriosityEventId, CuriosityStepStamp, ServiceClock, WorldCuriosityDescriptor
+from townlet.exploration.rng_custody import RNGOperation
+from townlet.exploration.world_curiosity_state import (
+    CuriosityEventId,
+    CuriosityStepStamp,
+    ServiceClock,
+    WorldCuriosityDescriptor,
+    WorldRNGState,
+)
 from townlet.training.episode import freeze_lane_outcome, lane_outcome_from_state
 from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
 
@@ -500,18 +507,27 @@ def validate_origin(
             require(sequence > base, "private runtime must follow initialization")
 
 
-def validate_archived_native(source: dict[str, Any], *, descriptor: WorldCuriosityDescriptor, device: torch.device) -> None:
+def validate_archived_native(
+    source: dict[str, Any],
+    *,
+    descriptor: WorldCuriosityDescriptor,
+    device: torch.device,
+    validation_rng: WorldRNGState,
+    lineage: RNGOperation,
+) -> None:
     """Actual shared provider validation under separately disposable ambient custody."""
+    from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+    from townlet.exploration.icm import ICMExploration
     from townlet.exploration.provider_factory import make_backend
-    from townlet.exploration.world_curiosity_state import WorldRNGState
+    from townlet.exploration.rnd import RNDExploration
 
     policy = ResolvedExplorationPolicy.from_dict(source["policy"])
     source_descriptor = WorldCuriosityDescriptor.from_dict(source["descriptor"])
     devices: tuple[int, ...] = ()
     if device.type == "cuda":
         devices = (cast(int, device.index),)
-    rng = WorldRNGState.create(descriptor=descriptor, world_id=sorted(descriptor.world_ids)[0], cuda_devices=devices)
-    with rng.activate("model_init"):
+    with validation_rng.activate_under("model_init", lineage=lineage):
+        validation_rng.validate_binding(descriptor=descriptor, world_id=sorted(descriptor.world_ids)[0], cuda_devices=devices)
         provider = make_backend(
             policy,
             world_id=None,
@@ -522,6 +538,10 @@ def validate_archived_native(source: dict[str, Any], *, descriptor: WorldCuriosi
             descriptor=None,
         )
         payload = source["shared_backend"]
+        if policy.strategy in ("rnd", "adaptive_rnd", "icm"):
+            if not isinstance(provider, (RNDExploration, AdaptiveIntrinsicExploration, ICMExploration)):
+                raise ValueError("trainable archive requires a native restore configuration provider")
+            provider = provider.with_restore_configuration(payload["native"])
         validate_native(provider, payload["native"], policy=policy, descriptor=source_descriptor)
         provider.load_state(owned(payload["native"]))
         require(same(provider.checkpoint_state(), payload["native"]), "source native transport changed")

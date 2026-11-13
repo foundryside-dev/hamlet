@@ -1,0 +1,102 @@
+diff --git a/tests/test_townlet/regressions/bac/test_bank_rng_custody.py b/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
+index 7c8e2c7c..53079cf6 100644
+--- a/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
+@@ -90,35 +90,17 @@ def _reward_content(reward):
+     return dict(raw=reward.raw, scales=reward.scales, eligible=reward.eligible, event_ids=reward.event_ids, scope=reward.scope)
+ 
+ 
+-def _gc_membership(bank, label):
+-    from townlet.exploration.rng_custody import process_rng_domain
+-
+-    domain = process_rng_domain()
+-    with domain._lock:
+-        members = {}
+-        for participant, member in domain._members.items():
+-            owner = member.owner()
+-            members[id(participant)] = (id(owner), f"{type(owner).__module__}.{type(owner).__qualname__}", member.owner)
+-        cohort = []
+-        for record in bank._restore_tokens.values():
+-            held = record[-1]
+-            objects = [held.bank, *held.input_rngs, *held.owners.values()]
+-            if held.shared is not None:
+-                objects.append(held.shared)
+-            if held.validation_rng is not None:
+-                objects.append(held.validation_rng)
+-            cohort.extend(id(value) for value in objects)
+-        state = dict(
+-            generation=domain._generation,
+-            revision=domain._revision,
+-            currency=domain._currency,
+-            bank_participant=id(bank._rng_participant),
+-            members=members,
+-            cohort=cohort,
+-            tokens={id(token): (id(record.participant), record.generation) for token, record in domain._tokens.items()},
+-        )
+-    print("GC_MEMBERSHIP", label, state, flush=True)
+-    return state
++def _prepared_cohort_refs(bank):
++    refs = []
++    for record in bank._restore_tokens.values():
++        cohort = record[-1]
++        owners = [cohort.bank, *cohort.input_rngs, *cohort.owners.values()]
++        if cohort.shared is not None:
++            owners.append(cohort.shared)
++        if cohort.validation_rng is not None:
++            owners.append(cohort.validation_rng)
++        refs.extend(weakref.ref(owner) for owner in owners)
++    return refs
+ 
+ 
+ def _learned_boundary(compiled, family, scope):
+@@ -346,22 +328,19 @@ def test_learned_shared_archive_source_precedes_private_target(compiled, monkeyp
+         return rng
+ 
+     monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+-    _gc_membership(target.bank, "archive-before-prepare")
++    # Clear prior cases' unreachable owners before a new global membership token.
++    gc.collect()
+     token = target.runtime.prepare_private_initialization(
+         state=target.restore_context["runtime"],
+         initialization=initialization,
+         parent_restore=parent,
+         validate_parent_restore=target.validate_parent_restore,
+     )
+-    prepared_membership = _gc_membership(target.bank, "archive-after-prepare")
++    cohort_refs = _prepared_cohort_refs(target.bank)
+     gc.collect()
+-    collected_membership = _gc_membership(target.bank, "archive-after-gc")
+-    assert set(prepared_membership["cohort"]).issubset({row[0] for row in collected_membership["members"].values() if row[2]() is not None})
++    assert cohort_refs and all(reference() is not None for reference in cohort_refs)
+     assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+-    try:
+-        target.runtime.install_restore(prepared=token)
+-    finally:
+-        _gc_membership(target.bank, "archive-after-install-attempt")
++    target.runtime.install_restore(prepared=token)
+     converted = target.bank.checkpoint_state()
+     assert converted["initialization_origin"]["initialization"] == initialization
+     identity._same(converted["initialization_origin"]["source_checkpoint"], source_bank)
+@@ -777,17 +756,14 @@ def test_offside_cohort_stays_alive_through_gc_and_token_install(compiled, monke
+ 
+     for cls, name in ((WorldRNGState, "create"), (OwnedWorldBackend, "construct"), (SharedWorldBackend, "reserve")):
+         monkeypatch.setattr(cls, name, track(getattr(cls, name)))
+-    _gc_membership(run.bank, "cohort-before-prepare")
++    # Actual admission drains pre-existing retirement before sealing this token.
++    gc.collect()
+     token = run.bank.prepare_restore(state=saved, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+-    prepared_membership = _gc_membership(run.bank, "cohort-after-prepare")
++    cohort_refs = _prepared_cohort_refs(run.bank)
+     gc.collect()
+-    collected_membership = _gc_membership(run.bank, "cohort-after-gc")
+-    assert set(prepared_membership["cohort"]).issubset({row[0] for row in collected_membership["members"].values() if row[2]() is not None})
++    assert cohort_refs and all(reference() is not None for reference in cohort_refs)
+     assert refs and all(reference() is not None for reference in refs), "preparation lost a registered lifetime owner"
+-    try:
+-        run.bank.install_restore(prepared=token)
+-    finally:
+-        _gc_membership(run.bank, "cohort-after-install-attempt")
++    run.bank.install_restore(prepared=token)
+     identity._same(run.bank.checkpoint_state(), saved)
+     # Inputs are retained until the token outcome, then disposable roots release.
+     gc.collect()

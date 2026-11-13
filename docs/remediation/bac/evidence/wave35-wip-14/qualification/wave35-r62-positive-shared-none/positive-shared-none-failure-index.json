@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "bac658ac8a7f07f260eacec67e0b459de001b6dc",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where <built-in method equal of type object at 0x7f869b7f1000> = torch.equal",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-none]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

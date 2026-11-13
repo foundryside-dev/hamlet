@@ -1,0 +1,28 @@
+{
+  "name": "shared-controls",
+  "exit_code": 0,
+  "seconds": 11.321567296981812,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-none]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-rnd]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[shared-none]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[shared-rnd]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r68-shared-controls/shared-controls.log",
+  "sha256": "f85011b2face5d4a3c545e16c82764758dd740143de9b03b60d6b00d4b9eec81",
+  "candidate_tree": "470af0e048ebf40fe5cf491d9a206414d6c35e32",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "099077becdfd4aa6a2a013b7d2586d018fde0f7c601f4bc3705467edf1f8e07a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

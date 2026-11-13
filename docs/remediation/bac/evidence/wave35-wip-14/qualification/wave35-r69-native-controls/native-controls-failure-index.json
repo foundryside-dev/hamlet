@@ -1,0 +1,59 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "unique_node_phase_failures": 9,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: RNG entrypoint is not registered for this owner",
+      "count": 5,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[icm]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Input: 'RND target must remain frozen and gradient-free'",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[shared-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[per_world-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[per_world-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[shared-adaptive_rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

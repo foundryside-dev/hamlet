@@ -1,0 +1,12 @@
+{
+  "cpu": "400000 100000",
+  "affinity": 5,
+  "memory_current": "824696832",
+  "memory_limit": "17179869184",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+  "workspace_free": 24964837376,
+  "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+  "threads": 1,
+  "CUDA": "unavailable/unqualified",
+  "processes": "    PID    PPID %CPU   RSS COMMAND\n      1       0  0.0   880 tail\n      2       1  0.0  1788 cloud-agent-log\n      3       2  0.0   264 caas-prefix-tra\n    125       1  0.1 35660 dockerd\n    176     125  0.8 21252 containerd\n    474       0  0.2 46396 codex\n   3862       1  0.0     0 git\n   5366       1  0.0     0 git\n  15222     474  1.9 15196 codex-linux-san\n  15227   15222  0.0   924 bwrap\n  15228   15227  7.6 14608 codex\n  15229   15228  7.4  1848 bash\n  15232   15229 49.6 18960 python\n  15237     474 27.0 15192 codex-linux-san\n  15259     474  9.8 15192 codex-linux-san\n  15261     474 17.4 15192 codex-linux-san\n  15284   15259  4.0   924 bwrap\n  15285   15237  0.0   928 bwrap\n  15286   15284 20.2     0 codex\n  15287   15285 17.4     0 codex\n  15289     474 17.3 15196 codex-linux-san\n  15290   15261  0.1   928 bwrap\n  15291   15290  9.7 14612 codex\n  15316   15289  0.0   928 bwrap\n  15318   15291 55.7 12372 python\n  15320   15316 14.3 14616 codex\n  15325   15320 82.0  9428 python\n  15329   15232  266  2484 ps\n"
+}

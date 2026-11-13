@@ -1,0 +1,102 @@
+{
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r61-candidate.json",
+  "tree": "adc0e0ce38785f66c7d9d6dd162388b4a3f9ea7d",
+  "files": 5,
+  "lines": 1564,
+  "reviewed_scopes": {
+    "T21": {
+      "files": 5,
+      "lines": 1564
+    },
+    "W34-T18d-CURRENT-RUNTIME": {
+      "files": 5,
+      "lines": 4663
+    },
+    "W34-CURRENT-CURRICULUM-CONSUMER-REPAIR": {
+      "files": 5,
+      "lines": 1478
+    },
+    "W35-T18e-REAL-COMPOSER-PRIMITIVE": {
+      "files": 3,
+      "lines": 4682
+    },
+    "W35-N1-NATIVE-LEARNING-RESET": {
+      "files": 5,
+      "lines": 2800
+    },
+    "W35-N1-OWNER-CONSUMER-ALIGNMENT": {
+      "files": 5,
+      "lines": 3228
+    },
+    "W35-N2-NONMODEL-LEARNING-RESET": {
+      "files": 5,
+      "lines": 1267
+    },
+    "W35-C-INITIAL-PARTICIPATION-ENV": {
+      "files": 5,
+      "lines": 4840
+    },
+    "W35-C-INITIAL-PARTICIPATION-POP": {
+      "files": 5,
+      "lines": 4951
+    },
+    "W35-R0-CPU-ADAM-RNG-PROFILE": {
+      "files": 5,
+      "lines": 2531
+    },
+    "W35-WORLD-LIFECYCLE-CURRENT-MIGRATION": {
+      "files": 5,
+      "lines": 4584
+    },
+    "W35-R0-CORE-CURRENT": {
+      "files": 5,
+      "lines": 4397
+    },
+    "W35-R0-CORE-PUBLIC-CONTRACT": {
+      "files": 1,
+      "lines": 114
+    },
+    "W35-R0-EXISTING-OWNER-REGRESSIONS": {
+      "files": 4,
+      "lines": 3346
+    },
+    "W35-NATIVE-RESTORE-CONFIGURATION": {
+      "files": 5,
+      "lines": 3427
+    },
+    "W35-NATIVE-V4-EXISTING-RESET-METADATA": {
+      "files": 5,
+      "lines": 2961
+    },
+    "W35-NATIVE-V4-EXISTING-SERVICE": {
+      "files": 5,
+      "lines": 3050
+    },
+    "W35-NATIVE-V4-EXISTING-UNIT-LOCAL": {
+      "files": 5,
+      "lines": 4834
+    },
+    "W35-PURE-BOOTSTRAP-CORE": {
+      "files": 5,
+      "lines": 3983
+    },
+    "W35-BANK-PAYLOAD-ADOPTION": {
+      "files": 5,
+      "lines": 4561
+    }
+  },
+  "source_guards": 813,
+  "config_changes": {},
+  "resources": {
+    "cpu": "400000 100000",
+    "affinity": 5,
+    "memory_current": "797978624",
+    "memory_limit": "17179869184",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+    "workspace_free": 24966053888,
+    "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+    "threads": 1,
+    "CUDA": "unavailable/unqualified",
+    "processes": "    PID    PPID %CPU   RSS COMMAND\n      1       0  0.0   880 tail\n      2       1  0.0  1788 cloud-agent-log\n      3       2  0.0   264 caas-prefix-tra\n    125       1  0.1 35676 dockerd\n    176     125  0.8 21252 containerd\n    474       0  0.2 49796 codex\n   3862       1  0.0     0 git\n   5366       1  0.0     0 git\n  11657     474  5.4 15200 codex-linux-san\n  11659   11657  0.0   924 bwrap\n  11660   11659  2.9 14612 codex\n  11661   11660  0.0  1848 bash\n  11664   11661 50.0 18960 python\n  11732   11664  0.0  2472 ps\n"
+  }
+}

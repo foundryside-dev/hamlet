@@ -1,0 +1,25 @@
+{
+  "name": "causal-green",
+  "exit_code": 0,
+  "seconds": 9.085001468658447,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_capture.py::test_atomic_capture_one_serializer_same_parameters_and_detached_gradients",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r67-causal-green/causal-green.log",
+  "sha256": "00ad73b76efd052a644957781b9a6da49197e71fe2307ebd5a16cdd7b0552bf8",
+  "candidate_tree": "04af55dcf99559c949b16af6fa92effd30b54f6f",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "f256db6b0a8759ef5a15501fe1a637f4f8d62c09dc224e999ec47eb4aa29f102",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

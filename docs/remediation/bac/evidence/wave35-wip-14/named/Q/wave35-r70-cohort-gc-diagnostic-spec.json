@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r70-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-cohort-gc-diagnostic",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cohort-gc-diagnostic",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-rnd]",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s"
+      ]
+    }
+  ]
+}

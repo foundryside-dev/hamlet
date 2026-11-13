@@ -1,0 +1,25 @@
+{
+  "name": "fixture-control",
+  "exit_code": 0,
+  "seconds": 10.037718534469604,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_two_cycles_capture_replay_then_single_service_and_earned_effects",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r60-fixture-control/fixture-control.log",
+  "sha256": "3f41449ce114b173e954cc652fcab5101ff7856cab9d3bac79528d78f9328550",
+  "candidate_tree": "dc8138f7594d23b180e88844ed0a8389cad9a197",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "11f7f4ec563f9562cf0dce580821d2a2be4f56473c6991cb7680fa7c83a12837",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

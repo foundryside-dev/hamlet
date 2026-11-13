@@ -1,0 +1,233 @@
+diff --git a/tests/test_townlet/regressions/bac/test_bank_rng_custody.py b/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
+index 888ae15f..731de365 100644
+--- a/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
+@@ -4,8 +4,10 @@ These tests use the existing real nine-owner _Run controller. They do not claim
+ that its fresh Q/replay/curriculum after restore is full parent D continuation.
+ """
+ 
++import random
+ from copy import deepcopy
+ 
++import numpy as np
+ import pytest
+ import test_world_episode_identity as identity
+ import torch
+@@ -25,9 +27,9 @@ def _run(compiled, family, scope, *, bootstrap=True):
+     return run, inputs
+ 
+ 
+-def _cycle(run, batch, *, prepared_reset=None):
++def _cycle(run, batch):
+     run.control_horizon = 1
+-    _, reset = run.reset(batch, retired_world_ids=()) if prepared_reset is None else prepared_reset
++    _, reset = run.reset(batch, retired_world_ids=())
+     assert reset.accepted is run.accepted and run.env.world_phase == "active"
+     eligible_before, retained_before = run.ledger.eligible_transitions, run.replay.retained_transitions
+     _, _, _, info, _ = run.step()
+@@ -38,6 +40,7 @@ def _cycle(run, batch, *, prepared_reset=None):
+     _, closure, dispositions = run.close(batch, run.env.world_ids)
+     run.release_closed(batch, closure, dispositions)
+     assert run.ledger.completed_batch_episodes == batch
++    return reset
+ 
+ 
+ def _native(bank_state, family, scope):
+@@ -63,26 +66,28 @@ def _bank(run):
+     return run.runtime.checkpoint_state()["bank"]
+ 
+ 
+-def _same_reset_field(name, left, right):
+-    if (
+-        isinstance(left, torch.Tensor)
+-        and isinstance(right, torch.Tensor)
+-        and left.dtype == right.dtype
+-        and left.device == right.device
+-        and left.shape == right.shape
+-        and not torch.equal(left, right)
+-    ):
+-        index = tuple(torch.nonzero(left != right, as_tuple=False)[0].tolist())
+-        pytest.fail(f"fourth reset {name}{index}: {left[index].item()!r} != {right[index].item()!r}")
+-    try:
+-        identity._same(left, right)
+-    except AssertionError as error:
+-        raise AssertionError(f"fourth reset {name} differs") from error
++def _ambient():
++    numpy = np.random.get_state()
++    return random.getstate(), (numpy[0], numpy[1].copy(), numpy[2], numpy[3], numpy[4]), torch.get_rng_state().clone()
+ 
+ 
+-@pytest.mark.parametrize("family", FAMILIES)
+-@pytest.mark.parametrize("scope", SCOPES)
+-def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
++def _set_ambient(state):
++    random.setstate(state[0])
++    np.random.set_state(state[1])
++    torch.set_rng_state(state[2])
++
++
++def _same_ambient(left, right):
++    assert left[0] == right[0] and left[1][0] == right[1][0]
++    assert np.array_equal(left[1][1], right[1][1]) and left[1][2:] == right[1][2:]
++    identity._same(left[2], right[2])
++
++
++def _reward_content(reward):
++    return dict(raw=reward.raw, scales=reward.scales, eligible=reward.eligible, event_ids=reward.event_ids, scope=reward.scope)
++
++
++def _learned_boundary(compiled, family, scope):
+     source, inputs = _run(compiled, family, scope)
+     for batch in (1, 2, 3):
+         _cycle(source, batch)
+@@ -93,41 +98,127 @@ def test_selected_family_learns_saves_restores_and_continues(compiled, family, s
+         assert _updates(saved_bank, family, scope) == 0
+     state = source.completed((1, 2, 3))
+     runtime_state = source.runtime.checkpoint_state()
+-    restored = identity._restore(
++    saved_ledger = source.ledger
++    saved_component = source.component_state()
++    return source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component
++
++
++def _restore_saved(compiled, inputs, state, runtime_state, saved_ledger, saved_component):
++    return identity._restore(
+         compiled,
+         state,
+         identity.IDS,
+         runtime_state=runtime_state,
+-        component_ledger=source.ledger,
+-        component_state=source.component_state(),
++        component_ledger=saved_ledger,
++        component_state=saved_component,
+         **inputs,
+     )
++
++
++@pytest.mark.parametrize("family", FAMILIES)
++@pytest.mark.parametrize("scope", SCOPES)
++def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
++    source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
++    restored = _restore_saved(compiled, inputs, state, runtime_state, saved_ledger, saved_component)
+     identity._same(_bank(restored), saved_bank)
+-    assert restored.ledger == source.ledger and state["kind"] == "COMPLETED"
++    assert restored.ledger == saved_ledger == source.ledger and state["kind"] == "COMPLETED"
+     assert restored.env.world_phase == source.env.world_phase == "released-completed"
+-    source.control_horizon = restored.control_horizon = 1
+-    source_reset = source.reset(4, retired_world_ids=())
+-    source_observation = source_reset[1].observation.detach().clone()
+-    source_masks = source.current_masks.detach().clone()
+-    source_binding = (source_reset[1].accepted.world_ids, source_reset[1].accepted.world_episode_seqs)
+-    source_ticks = (source.ledger.vector_ticks, source.env.global_tick)
+-    restored_reset = restored.reset(4, retired_world_ids=())
+-    for name, left, right in (
+-        ("accepted world IDs", source_binding[0], restored_reset[1].accepted.world_ids),
+-        ("accepted episode sequences", source_binding[1], restored_reset[1].accepted.world_episode_seqs),
+-        ("observation", source_observation, restored_reset[1].observation),
+-        ("action masks", source_masks, restored.current_masks),
+-        ("ledger tick", source_ticks[0], restored.ledger.vector_ticks),
+-        ("ENV tick", source_ticks[1], restored.env.global_tick),
+-    ):
+-        _same_reset_field(name, left, right)
+-    _cycle(source, 4, prepared_reset=source_reset)
+-    _cycle(restored, 4, prepared_reset=restored_reset)
+-    identity._same(_bank(source), _bank(restored))
++    reset = _cycle(restored, 4)
++    assert reset.accepted.world_episode_seqs == (4, 4) and restored.env.world_phase == "released-completed"
+     if family in TRAINABLE:
+         assert _updates(_bank(restored), family, scope) > _updates(saved_bank, family, scope)
+ 
+ 
++@pytest.mark.parametrize("family", FAMILIES)
++@pytest.mark.parametrize("scope", SCOPES)
++def test_learned_bank_equal_authentic_input_continues_exactly(compiled, family, scope, monkeypatch):
++    source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
++    receiver = _restore_saved(compiled, inputs, state, runtime_state, saved_ledger, saved_component)
++    identity._same(_bank(receiver), saved_bank)
++    assert receiver.ledger == saved_ledger == source.ledger and state["kind"] == "COMPLETED"
++    assert receiver.env.world_phase == source.env.world_phase == "released-completed"
++
++    # Both BANKs enter a genuine locally accepted episode. Their physical reset
++    # observations may differ under the supported fresh-episode contract.
++    source.control_horizon = receiver.control_horizon = 1
++    source_reset = source.reset(4, retired_world_ids=())[1]
++    receiver_reset = receiver.reset(4, retired_world_ids=())[1]
++    assert source_reset.accepted is source.accepted and receiver_reset.accepted is receiver.accepted
++    assert source.accepted is not receiver.accepted
++    assert source.accepted.world_ids == receiver.accepted.world_ids == identity.IDS
++    assert source.accepted.world_episode_seqs == receiver.accepted.world_episode_seqs == (4, 4)
++    identity._same(_bank(source), _bank(receiver))
++
++    reward_method, service_method = source.runtime.reward, source.runtime.admit_and_service
++    captured = {}
++
++    def observed_reward(**kwargs):
++        captured["reward_before"] = _ambient()
++        result = reward_method(**kwargs)
++        captured["reward_after"] = _ambient()
++        captured["reward_call"] = kwargs
++        captured["reward"] = deepcopy(result)
++        return result
++
++    def observed_service(**kwargs):
++        captured["service_before"] = _ambient()
++        result = service_method(**kwargs)
++        captured["service_after"] = _ambient()
++        captured["service_call"] = kwargs
++        captured["receipts"] = deepcopy(result)
++        return result
++
++    monkeypatch.setattr(source.runtime, "reward", observed_reward)
++    monkeypatch.setattr(source.runtime, "admit_and_service", observed_service)
++    eligible_before, retained_before = source.ledger.eligible_transitions, source.replay.retained_transitions
++    _, _, _, info, actual_receipts = source.step()
++    handoff = info["intrinsic_transition"]
++    assert captured["reward_call"]["context"] is handoff.context
++    assert captured["reward_call"]["stamp"] is handoff.stamp
++    assert captured["reward_call"]["accepted"] is source.accepted
++    assert captured["service_call"]["context"] is handoff.context
++    identity._same(actual_receipts, captured["receipts"])
++    context = handoff.context
++    admitted = int(context.active_on_entry.sum())
++    assert admitted > 0 and source.ledger.eligible_transitions == eligible_before + admitted
++    assert source.replay.retained_transitions == min(source.replay_capacity, retained_before + admitted)
++    receiver_ledger, receiver_replay = receiver.ledger, receiver.replay.retained_transitions
++    local_stamp = receiver.bank.prepare_step_stamp(
++        accepted=receiver.accepted,
++        world_ids=receiver.accepted.world_ids,
++        active_on_entry=context.active_on_entry,
++        vector_tick=context.vector_tick,
++    )
++    for field in ("event_ids", "world_ids", "world_episode_seqs", "eligible_seqs", "eligible"):
++        identity._same(getattr(local_stamp, field), getattr(handoff.stamp, field))
++
++    # Ambient rewind supplies equal component input to the shared backend. It
++    # is a differential-test precondition, not a production RNG-custody claim.
++    ambient_after_source = _ambient()
++    try:
++        _set_ambient(captured["reward_before"])
++        local_reward = receiver.bank.reward(
++            context=context,
++            stamp=local_stamp,
++            accepted=receiver.accepted,
++            update_stats=captured["reward_call"]["update_stats"],
++        )
++        _same_ambient(_ambient(), captured["reward_after"])
++        _set_ambient(captured["service_before"])
++        local_receipts = receiver.bank.admit_and_service(context=context, stamp=local_stamp, accepted=receiver.accepted)
++        _same_ambient(_ambient(), captured["service_after"])
++    finally:
++        _set_ambient(ambient_after_source)
++    identity._same(_reward_content(local_reward), _reward_content(captured["reward"]))
++    identity._same(local_receipts, captured["receipts"])
++    assert receiver.ledger == receiver_ledger and receiver.replay.retained_transitions == receiver_replay
++    source_live, receiver_live = source.bank.checkpoint_state(), receiver.bank.checkpoint_state()
++    assert source_live["bank_phase"] == receiver_live["bank_phase"] == "live_episode"
++    identity._same(receiver_live, source_live)
++    if family in TRAINABLE:
++        assert _updates(source_live, family, scope) > _updates(saved_bank, family, scope)
++
++
+ def _owner_call(run, work):
+     if run.policy.curiosity_scope == "shared":
+         return run.bank._shared.call(work, lineage=None)

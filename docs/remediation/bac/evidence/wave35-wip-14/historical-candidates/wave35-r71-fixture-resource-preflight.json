@@ -1,0 +1,12 @@
+{
+  "cpu": "400000 100000",
+  "affinity": 5,
+  "memory_current": "815812608",
+  "memory_limit": "17179869184",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+  "workspace_free": 24959893504,
+  "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+  "threads": 1,
+  "CUDA": "unavailable/unqualified",
+  "processes": "    PID    PPID %CPU   RSS COMMAND\n      1       0  0.0   880 tail\n      2       1  0.0  1788 cloud-agent-log\n      3       2  0.0   264 caas-prefix-tra\n    125       1  0.1 35680 dockerd\n    176     125  0.8 21272 containerd\n    474       0  0.3 38768 codex\n   3862       1  0.0     0 git\n   5366       1  0.0     0 git\n  25025     474  3.2 15196 codex-linux-san\n  25027   25025  0.0   924 bwrap\n  25028   25027  0.0 14616 codex\n  25029   25028 42.8 18972 python\n  25120   25029  0.0  2468 ps\n"
+}

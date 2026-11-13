@@ -1,0 +1,72 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 58 items / 57 deselected / 1 selected
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py F            [100%]
+
+=================================== FAILURES ===================================
+___ test_selected_family_learns_saves_restores_and_continues[per_world-none] ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
+>       source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:93: in _learned_boundary
+    _cycle(source, batch)
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:35: in _cycle
+    _, _, _, info, _ = run.step()
+                       ^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:546: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1423: in step
+    rewards = self._reward_calculator._calculate_shaped_rewards(
+src/townlet/environment/reward_calculator.py:32: in _calculate_shaped_rewards
+    intrinsic_reward = env._exploration_runtime.reward(
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:964: in reward
+    return self._bank_call("reward", context=context, stamp=stamp, accepted=accepted, update_stats=update_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:862: in _bank_call
+    return getattr(self._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:131: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:208: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:582: in reward
+    values, weight = self._call(accepted.world_ids[group[0]], compute)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f24fd2a6f90>
+world = 'orchard-west'
+operation = <function CuriosityBank.reward.<locals>.compute at 0x7f24fd01b100>
+
+    def _call(self, world: str, operation: Callable[[Any], Any]) -> Any:
+        self._observations += 1
+        try:
+            if self.scope == "per_world":
+>               return self._owners[world].call(lambda backend, sources: operation(backend))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+src/townlet/exploration/scoped_curiosity.py:357: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-none]
+======================= 1 failed, 57 deselected in 3.51s =======================

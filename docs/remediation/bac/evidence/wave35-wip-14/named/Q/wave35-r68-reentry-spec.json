@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r68-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r68-reentry",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "reentry",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_reentry_and_peer_callback_refuse_before_nested_native_work",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "family-controls",
+  "exit_code": 0,
+  "seconds": 22.85370922088623,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r69-family-controls"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-family-controls/family-controls.log",
+  "sha256": "d737b134927073fa8233ff5dc8a7a87b6292fb79af2b682aaaf27dcc1c0817f0",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "a91b44e1c848e694b50949492de63c2d1c7d9d5114787d277d50c27015ecbb25",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

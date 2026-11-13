@@ -1,0 +1,30 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r69-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "poison-cuts",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_restore_uncertainty_poisons_only_its_isolated_process",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_install_exit_completion_failure_quarantines_assigned_candidate",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r69-poison-cuts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r69-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-native-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "native-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_final_named_gradients_and_saved_adam_configuration",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_empty_adam_group_recipe_survives_learned_restore",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_missing_native_recipe_refuses_without_source_or_ambient_change",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_saved_signed_manual_adam_offsets_continue",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_gradient_profile_refusal_keeps_original_healthy",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_initial_selected_bank_roundtrip_then_real_service",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_actual_count_eviction_lru_survives_saved_restore",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_initial_shared_factory_retains_actual_ambient_consumption",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r69-native-controls"
+      ]
+    }
+  ]
+}

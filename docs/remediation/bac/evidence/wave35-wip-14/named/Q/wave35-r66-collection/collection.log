@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 16 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_world_rng_capture.py>
+            <Function test_atomic_capture_one_serializer_same_parameters_and_detached_gradients>
+            <Function test_atomic_capture_rng_follows_callback_copies_and_activation_completion>
+            <Function test_atomic_capture_preserves_snapshot_transport_and_explicit_lineage>
+            <Function test_atomic_capture_reentry_refuses_during_native_and_gradient_intervals>
+            <Function test_atomic_capture_excludes_actual_peer_admission_through_cleanup>
+            <Function test_atomic_capture_failure_quarantines_without_poisoning_healthy_peers[native]>
+            <Function test_atomic_capture_failure_quarantines_without_poisoning_healthy_peers[capture]>
+            <Function test_atomic_capture_failure_quarantines_without_poisoning_healthy_peers[auxiliary-copy]>
+            <Function test_atomic_capture_noncallable_refuses_before_native_work_and_keeps_owner_usable[None]>
+            <Function test_atomic_capture_noncallable_refuses_before_native_work_and_keeps_owner_usable[17]>
+            <Function test_atomic_capture_noncallable_refuses_before_native_work_and_keeps_owner_usable[capture]>
+            <Function test_atomic_capture_noncallable_refuses_before_native_work_and_keeps_owner_usable[invalid3]>
+            <Function test_atomic_capture_invalidates_prepared_destination_revision>
+            <Function test_fresh_child_atomic_capture_poison_fails_common_domain_closed[setter]>
+            <Function test_fresh_child_atomic_capture_poison_fails_common_domain_closed[cleanup]>
+            <Function test_fresh_child_atomic_capture_poison_fails_common_domain_closed[completion]>
+
+========================= 16 tests collected in 0.16s ==========================

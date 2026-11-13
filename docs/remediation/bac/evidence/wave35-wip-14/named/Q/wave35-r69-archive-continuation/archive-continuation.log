@@ -1,0 +1,701 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [10 items]
+
+.FF.FFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_ test_learned_shared_archive_source_precedes_private_target[fresh_private-count_based] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb49503cd60>
+family = 'count_based', initialization = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fb4a77e5940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[fresh_private-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb48e45ab10>
+family = 'rnd', initialization = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fb4a77e5940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[fresh_private-adaptive_rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb48e30a9c0>
+family = 'adaptive_rnd', initialization = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fb4a77e5940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[fresh_private-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb49be2acf0>
+family = 'icm', initialization = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fb4a77e5940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-count_based] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f551d824d60>
+family = 'count_based', initialization = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f552ffd1940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-adaptive_rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb4a6ba6b50>
+family = 'adaptive_rnd', initialization = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fb4a77e5940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5516c46b10>
+family = 'rnd', initialization = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f552ffd1940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+_ test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb4a7015f50>
+family = 'icm', initialization = 'clone_learned_archive_pending'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("initialization", ("fresh_private", "clone_learned_archive_pending"))
+    def test_learned_shared_archive_source_precedes_private_target(compiled, monkeypatch, family, initialization):
+        from townlet.exploration.world_curiosity_state import WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        source_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(source_bank, family, "shared") > 0
+        target, target_inputs = _run(compiled, family, "per_world", bootstrap=False)
+        source_state = source.completed((1, 2, 3))
+        assert tuple(item["batch_episode"] for item in source_state["accepted_bindings"]) == (1, 2, 3)
+        parent = target.env.prepare_world_restore(
+            kind="COMPLETED",
+            state=source_state,
+            world_roster=identity._roster(),
+            destination_world_ids=identity.IDS,
+            semantic_execution_identity=target.env.semantic_execution_identity,
+        )
+        boundary = target.boundary.receipt("restored_boundary", kind="COMPLETED", state=deepcopy(source_state), prepared=parent)
+        target.restore_context = {
+            "prepared": parent,
+            "boundary": boundary,
+            "mode": "private_initialized",
+            "runtime": source.runtime.checkpoint_state(),
+            "component": source.component_state(),
+            "ledger": source.ledger,
+            "release": None,
+        }
+        create, rng_refs = WorldRNGState.create, []
+    
+        def retain_rng(*args, **kwargs):
+            rng = create(*args, **kwargs)
+            rng_refs.append(weakref.ref(rng))
+            return rng
+    
+        monkeypatch.setattr(WorldRNGState, "create", retain_rng)
+        token = target.runtime.prepare_private_initialization(
+            state=target.restore_context["runtime"],
+            initialization=initialization,
+            parent_restore=parent,
+            validate_parent_restore=target.validate_parent_restore,
+        )
+        gc.collect()
+        assert len(rng_refs) >= len(identity.IDS) + 1 and all(reference() is not None for reference in rng_refs)
+>       target.runtime.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:763: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1272: in install_restore
+    self._bank.install_restore(prepared=publication.bank_handle)
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fb4a77e5940>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-count_based]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-icm]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-count_based]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-icm]
+========================= 8 failed, 2 passed in 15.19s =========================

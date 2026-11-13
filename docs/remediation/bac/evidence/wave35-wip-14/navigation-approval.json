@@ -1,0 +1,30 @@
+{
+  "owner": "root",
+  "basis": "Independent terminal evidence review4bb5a2cb and approved exact contracts/process; factual navigation only",
+  "manifest": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+    "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+  },
+  "selection_plan": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-14/selection-plan.json",
+    "sha256": "2195ce33e7a08039434f3018e5e426b3924a6564e1211181b249040c79ef8ea8",
+    "bytes": 763830
+  },
+  "chain": {
+    "path": "docs/remediation/bac/evidence/checkpoint-chain.json",
+    "before_sha256": "66855796f0b943937f04f89872fe6219277558e7ba6ba8e2ef49b7c24ea50e94",
+    "after_sha256": "c1908db4d80641a5097bbeb122d447d5e387b7456fa71ae990402145e8e3869e",
+    "historical_entries_preserved": 47
+  },
+  "index": {
+    "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+    "before_sha256": "d9933e7b775f64c66467ae2779e1c819dc1ce987c14a21be46654d0590a09934",
+    "after_sha256": "7aa9f517d81d590ba26421efc2222357aee3e5f0d0e44e4205e068beb3ee1eeb"
+  },
+  "source_guard": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-14/publication-guard.json",
+    "sha256": "37aee027ca4974154afb55566fc486c5d88137449667f520c6f9f4f3006b8f6d",
+    "bytes": 1491
+  },
+  "status": "ROOT NAVIGATION REVIEWED; actual commit/push/CI pending"
+}

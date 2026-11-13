@@ -1,0 +1,83 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py F            [100%]
+
+=================================== FAILURES ===================================
+_____ test_selected_family_learns_saves_restores_and_continues[shared-rnd] _____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
+        source, inputs = _run(compiled, family, scope)
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(saved_bank, family, scope) > 0, "real service must have updated Adam"
+        else:
+            assert _updates(saved_bank, family, scope) == 0
+        state = source.completed((1, 2, 3))
+        runtime_state = source.runtime.checkpoint_state()
+        restored = identity._restore(
+            compiled,
+            state,
+            identity.IDS,
+            runtime_state=runtime_state,
+            component_ledger=source.ledger,
+            component_state=source.component_state(),
+            **inputs,
+        )
+        identity._same(_bank(restored), saved_bank)
+        assert restored.ledger == source.ledger and state["kind"] == "COMPLETED"
+        assert restored.env.world_phase == source.env.world_phase == "released-completed"
+        _cycle(source, 4)
+        _cycle(restored, 4)
+>       identity._same(_bank(source), _bank(restored))
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([ 1.0000,  1.0000,  0.0000,  0.0000,  0.0000,  1.0000,  1.0000,  0.0000,
+         1.0000,  1.0000,  0.0000,  1....0,  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+         0.0000,  0.0000,  1.0000,  0.0000,  0.0000])
+right = tensor([ 1.0000,  0.5714,  0.4286,  0.0000,  0.0000,  1.0000,  1.0000,  0.0000,
+         1.0000,  1.0000,  0.0000,  1....0,  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+         0.0000,  0.0000,  1.0000,  0.0000,  0.0000])
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.dtype == right.dtype and left.device == right.device
+>           assert left.shape == right.shape and torch.equal(left, right)
+E           assert (torch.Size([141]) == torch.Size([141])
+E             
+E             Use -v to get more diff and False)
+E            +  where False = <built-in method equal of type object at 0x7ff669bf1000>(tensor([ 1.0000,  1.0000,  0.0000,  0.0000,  0.0000,  1.0000,  1.0000,  0.0000,\n         1.0000,  1.0000,  0.0000,  1....0,  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,\n         0.0000,  0.0000,  1.0000,  0.0000,  0.0000]), tensor([ 1.0000,  0.5714,  0.4286,  0.0000,  0.0000,  1.0000,  1.0000,  0.0000,\n         1.0000,  1.0000,  0.0000,  1....0,  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,\n         0.0000,  0.0000,  1.0000,  0.0000,  0.0000]))
+E            +    where <built-in method equal of type object at 0x7ff669bf1000> = torch.equal
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:119: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-rnd]
+============================== 1 failed in 4.76s ===============================

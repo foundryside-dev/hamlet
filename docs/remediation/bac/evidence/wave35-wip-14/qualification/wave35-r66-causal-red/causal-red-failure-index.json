@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "50cc2a1dbcd9a90afdb15a2f26b1325d87b5f4ca",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_world_rng_capture.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'OwnedWorldBackend' object has no attribute 'snapshot_with_capture'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_capture.py::test_atomic_capture_one_serializer_same_parameters_and_detached_gradients",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

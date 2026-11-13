@@ -1,0 +1,30 @@
+{
+  "name": "existing-fixture",
+  "exit_code": 0,
+  "seconds": 19.82132863998413,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r69-existing-fixture"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-existing-fixture/existing-fixture.log",
+  "sha256": "4fd8be67027d4d70e90bc777b9d6ea4d0763885b14526f275e046f2d7830ab93",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "a91b44e1c848e694b50949492de63c2d1c7d9d5114787d277d50c27015ecbb25",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

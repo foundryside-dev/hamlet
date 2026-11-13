@@ -1,0 +1,25 @@
+{
+  "name": "positive-shared-rnd",
+  "exit_code": 1,
+  "seconds": 9.639640092849731,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-rnd]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r62-positive-shared-rnd/positive-shared-rnd.log",
+  "sha256": "09ebdeadfa8486c4d047746f578715f658d8c5a6cf3e05d7ddb9a639bca8e90d",
+  "candidate_tree": "bac658ac8a7f07f260eacec67e0b459de001b6dc",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "bb5df21d64badd9eca203ca797d6bdfabf41f1312b43a3e37e0d6b993ae41d0a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

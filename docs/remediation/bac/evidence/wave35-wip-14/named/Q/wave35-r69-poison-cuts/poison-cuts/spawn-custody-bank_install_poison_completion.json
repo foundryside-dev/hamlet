@@ -1,0 +1,22 @@
+{
+  "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+  "job": "poison-cuts",
+  "case": "bank_install_poison_completion",
+  "expected_message": "bank install poison completion fail closed",
+  "parent_job_exit_code": 0,
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "manifest_sha256": "a91b44e1c848e694b50949492de63c2d1c7d9d5114787d277d50c27015ecbb25",
+  "child_pid": 23471,
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "debug": true,
+  "source_guards": 814,
+  "configs": 573,
+  "artifacts": 13,
+  "child_receipt_sha256": "4fa8ce739edbe119ecd4b4c14e0b8d4fe0efa65b51795144f61da437f42774a7",
+  "parent_observation_sha256": "dae8432c65cf1d6c813f4cfacbe4a74ef3a3e6c86c809c4a6b9b0c0d568c83b1",
+  "verifier_sha256": "8fd7638fca79d2479286821f55573445f1acb4fc28a5efd801cec8a40cb53209",
+  "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+}

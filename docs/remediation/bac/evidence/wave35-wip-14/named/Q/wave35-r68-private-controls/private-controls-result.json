@@ -1,0 +1,28 @@
+{
+  "name": "private-controls",
+  "exit_code": 1,
+  "seconds": 12.363439321517944,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-none]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-rnd]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[per_world-none]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[per_world-rnd]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r68-private-controls/private-controls.log",
+  "sha256": "d22e595aef0dca325a863ba82681b20b7f43dd5c628ff165a62290eddfef39e4",
+  "candidate_tree": "470af0e048ebf40fe5cf491d9a206414d6c35e32",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "099077becdfd4aa6a2a013b7d2586d018fde0f7c601f4bc3705467edf1f8e07a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

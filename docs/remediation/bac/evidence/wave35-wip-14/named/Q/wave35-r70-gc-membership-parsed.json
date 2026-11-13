@@ -1,0 +1,1057 @@
+{
+  "archive-gc-diagnostic": [
+    {
+      "generation": 9,
+      "revision": 34,
+      "currency": 98,
+      "bank_participant": 140634956511328,
+      "members": {
+        "140634957754736": [
+          140634959114464,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe82a897880; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe820c7f0e0>"
+        ],
+        "140634956372816": [
+          140634959117824,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe82ba70400; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe820c7fe00>"
+        ],
+        "140634956511328": [
+          140634843236304,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe819e00630; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819dfc7d0>"
+        ],
+        "140634956513152": [
+          140634956680896,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819d49df0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a2cec0>"
+        ],
+        "140634956512960": [
+          140634843238864,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819e03240; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd1d0>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {},
+      "label": "archive-before-prepare"
+    },
+    {
+      "generation": 14,
+      "revision": 41,
+      "currency": 126,
+      "bank_participant": 140634956511328,
+      "members": {
+        "140634957754736": [
+          140634959114464,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe82a897880; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe820c7f0e0>"
+        ],
+        "140634956372816": [
+          140634959117824,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe82ba70400; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe820c7fe00>"
+        ],
+        "140634956511328": [
+          140634843236304,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe819e00630; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819dfc7d0>"
+        ],
+        "140634956513152": [
+          140634956680896,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819d49df0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a2cec0>"
+        ],
+        "140634956512960": [
+          140634843238864,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819e03240; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd1d0>"
+        ],
+        "140634842795136": [
+          140634957174800,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe820aebe70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe820aa5810>"
+        ],
+        "140634842792976": [
+          140634842359440,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe819dedcb0; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe819d26690>"
+        ],
+        "140634842798112": [
+          140634843239824,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819dee520; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd590>"
+        ],
+        "140634842797872": [
+          140634956395888,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe819dedd50; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe8209e7570>"
+        ],
+        "140634842799504": [
+          140634957184528,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819deecf0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820aa7e10>"
+        ]
+      },
+      "cohort": [
+        140634843236304,
+        140634842359440,
+        140634956395888,
+        140634843239824,
+        140634957184528,
+        140634957174800
+      ],
+      "tokens": {
+        "140634842795328": [
+          140634956511328,
+          14
+        ]
+      },
+      "label": "archive-after-prepare"
+    },
+    {
+      "generation": 14,
+      "revision": 41,
+      "currency": 126,
+      "bank_participant": 140634956511328,
+      "members": {
+        "140634957754736": [
+          140634959114464,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe82a897880; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe820c7f0e0>"
+        ],
+        "140634956372816": [
+          140634959117824,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe82ba70400; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe820c7fe00>"
+        ],
+        "140634956511328": [
+          140634843236304,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe819e00630; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819dfc7d0>"
+        ],
+        "140634956513152": [
+          140634956680896,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819d49df0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a2cec0>"
+        ],
+        "140634956512960": [
+          140634843238864,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819e03240; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd1d0>"
+        ],
+        "140634842795136": [
+          140634957174800,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe820aebe70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe820aa5810>"
+        ],
+        "140634842792976": [
+          140634842359440,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe819dedcb0; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe819d26690>"
+        ],
+        "140634842798112": [
+          140634843239824,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819dee520; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd590>"
+        ],
+        "140634842797872": [
+          140634956395888,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe819dedd50; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe8209e7570>"
+        ],
+        "140634842799504": [
+          140634957184528,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819deecf0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820aa7e10>"
+        ]
+      },
+      "cohort": [
+        140634843236304,
+        140634842359440,
+        140634956395888,
+        140634843239824,
+        140634957184528,
+        140634957174800
+      ],
+      "tokens": {
+        "140634842795328": [
+          140634956511328,
+          14
+        ]
+      },
+      "label": "archive-after-gc"
+    },
+    {
+      "generation": 17,
+      "revision": 42,
+      "currency": 126,
+      "bank_participant": 140634956511328,
+      "members": {
+        "140634957754736": [
+          140634959114464,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe82a897880; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe820c7f0e0>"
+        ],
+        "140634956372816": [
+          140634959117824,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe82ba70400; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe820c7fe00>"
+        ],
+        "140634956511328": [
+          140634843236304,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe819e00630; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819dfc7d0>"
+        ],
+        "140634956513152": [
+          140634956680896,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819d49df0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a2cec0>"
+        ],
+        "140634956512960": [
+          140634843238864,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819e03240; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd1d0>"
+        ],
+        "140634842798112": [
+          140634843239824,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819dee520; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd590>"
+        ],
+        "140634842799504": [
+          140634957184528,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819deecf0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820aa7e10>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {},
+      "label": "archive-after-install-attempt"
+    },
+    {
+      "generation": 43,
+      "revision": 129,
+      "currency": 424,
+      "bank_participant": 140634613030048,
+      "members": {
+        "140634957754736": [
+          140634959114464,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe82a897880; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe820c7f0e0>"
+        ],
+        "140634956372816": [
+          140634959117824,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe82ba70400; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe820c7fe00>"
+        ],
+        "140634956511328": [
+          140634843236304,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe819e00630; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819dfc7d0>"
+        ],
+        "140634956513152": [
+          140634956680896,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819d49df0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a2cec0>"
+        ],
+        "140634956512960": [
+          140634843238864,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819e03240; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd1d0>"
+        ],
+        "140634842798112": [
+          140634843239824,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819dee520; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd590>"
+        ],
+        "140634842799504": [
+          140634957184528,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819deecf0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820aa7e10>"
+        ],
+        "140634727552096": [
+          140634727651344,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe812f86cf0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe812fc1810>"
+        ],
+        "140634727560016": [
+          140635145696352,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe81305f420; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe82be6f460>"
+        ],
+        "140634727561408": [
+          140635145690640,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe81305fc90; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe82be6de10>"
+        ],
+        "140634727555360": [
+          140634842192528,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe812f6f920; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819cfda90>"
+        ],
+        "140634842802288": [
+          140634842193168,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe812f6f510; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe819cfdd10>"
+        ],
+        "140634613030048": [
+          140634612932176,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe80c2e0fe0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe80c259e50>"
+        ],
+        "140634613035568": [
+          140634843156560,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2070; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de9050>"
+        ],
+        "140634613038352": [
+          140634843155792,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2700; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de8d50>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {},
+      "label": "archive-before-prepare"
+    },
+    {
+      "generation": 48,
+      "revision": 136,
+      "currency": 452,
+      "bank_participant": 140634613030048,
+      "members": {
+        "140634957754736": [
+          140634959114464,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe82a897880; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe820c7f0e0>"
+        ],
+        "140634956372816": [
+          140634959117824,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe82ba70400; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe820c7fe00>"
+        ],
+        "140634956511328": [
+          140634843236304,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe819e00630; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819dfc7d0>"
+        ],
+        "140634956513152": [
+          140634956680896,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819d49df0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a2cec0>"
+        ],
+        "140634956512960": [
+          140634843238864,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819e03240; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd1d0>"
+        ],
+        "140634842798112": [
+          140634843239824,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819dee520; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819dfd590>"
+        ],
+        "140634842799504": [
+          140634957184528,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe819deecf0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820aa7e10>"
+        ],
+        "140634727552096": [
+          140634727651344,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe812f86cf0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe812fc1810>"
+        ],
+        "140634727560016": [
+          140635145696352,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe81305f420; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe82be6f460>"
+        ],
+        "140634727561408": [
+          140635145690640,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe81305fc90; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe82be6de10>"
+        ],
+        "140634727555360": [
+          140634842192528,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe812f6f920; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819cfda90>"
+        ],
+        "140634842802288": [
+          140634842193168,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe812f6f510; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe819cfdd10>"
+        ],
+        "140634613030048": [
+          140634612932176,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe80c2e0fe0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe80c259e50>"
+        ],
+        "140634613035568": [
+          140634843156560,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2070; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de9050>"
+        ],
+        "140634613038352": [
+          140634843155792,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2700; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de8d50>"
+        ],
+        "140634613038784": [
+          140634498823888,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe812fc7330; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe8055876d0>"
+        ],
+        "140634498695872": [
+          140634498826064,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe805580860; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe805587f50>"
+        ],
+        "140634498701104": [
+          140634956568512,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe8055811c0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a117c0>"
+        ],
+        "140634498700672": [
+          140634498821200,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe805580900; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe805586c50>"
+        ],
+        "140634498704464": [
+          140634956578112,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe8055819e0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a13d40>"
+        ]
+      },
+      "cohort": [
+        140634612932176,
+        140634498826064,
+        140634498821200,
+        140634956568512,
+        140634956578112,
+        140634498823888
+      ],
+      "tokens": {
+        "140634498704368": [
+          140634613030048,
+          48
+        ]
+      },
+      "label": "archive-after-prepare"
+    },
+    {
+      "generation": 48,
+      "revision": 136,
+      "currency": 452,
+      "bank_participant": 140634613030048,
+      "members": {
+        "140634957754736": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe82a897880; dead>"
+        ],
+        "140634956372816": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe82ba70400; dead>"
+        ],
+        "140634956511328": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe819e00630; dead>"
+        ],
+        "140634956513152": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe819d49df0; dead>"
+        ],
+        "140634956512960": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe819e03240; dead>"
+        ],
+        "140634842798112": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe819dee520; dead>"
+        ],
+        "140634842799504": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe819deecf0; dead>"
+        ],
+        "140634727552096": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe812f86cf0; dead>"
+        ],
+        "140634727560016": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe81305f420; dead>"
+        ],
+        "140634727561408": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7fe81305fc90; dead>"
+        ],
+        "140634727555360": [
+          140634842192528,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe812f6f920; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819cfda90>"
+        ],
+        "140634842802288": [
+          140634842193168,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe812f6f510; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe819cfdd10>"
+        ],
+        "140634613030048": [
+          140634612932176,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe80c2e0fe0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe80c259e50>"
+        ],
+        "140634613035568": [
+          140634843156560,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2070; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de9050>"
+        ],
+        "140634613038352": [
+          140634843155792,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2700; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de8d50>"
+        ],
+        "140634613038784": [
+          140634498823888,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe812fc7330; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe8055876d0>"
+        ],
+        "140634498695872": [
+          140634498826064,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe805580860; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe805587f50>"
+        ],
+        "140634498701104": [
+          140634956568512,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe8055811c0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a117c0>"
+        ],
+        "140634498700672": [
+          140634498821200,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe805580900; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe805586c50>"
+        ],
+        "140634498704464": [
+          140634956578112,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe8055819e0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a13d40>"
+        ]
+      },
+      "cohort": [
+        140634612932176,
+        140634498826064,
+        140634498821200,
+        140634956568512,
+        140634956578112,
+        140634498823888
+      ],
+      "tokens": {
+        "140634498704368": [
+          140634613030048,
+          48
+        ]
+      },
+      "label": "archive-after-gc"
+    },
+    {
+      "generation": 58,
+      "revision": 137,
+      "currency": 453,
+      "bank_participant": 140634613030048,
+      "members": {
+        "140634727555360": [
+          140634842192528,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe812f6f920; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe819cfda90>"
+        ],
+        "140634842802288": [
+          140634842193168,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7fe812f6f510; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7fe819cfdd10>"
+        ],
+        "140634613030048": [
+          140634612932176,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7fe80c2e0fe0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7fe80c259e50>"
+        ],
+        "140634613035568": [
+          140634843156560,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2070; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de9050>"
+        ],
+        "140634613038352": [
+          140634843155792,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe80c2e2700; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe819de8d50>"
+        ],
+        "140634613038784": [
+          140634498823888,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe812fc7330; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe8055876d0>"
+        ],
+        "140634498695872": [
+          140634498826064,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe805580860; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe805587f50>"
+        ],
+        "140634498701104": [
+          140634956568512,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe8055811c0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a117c0>"
+        ],
+        "140634498700672": [
+          140634498821200,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7fe805580900; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7fe805586c50>"
+        ],
+        "140634498704464": [
+          140634956578112,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7fe8055819e0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7fe820a13d40>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {
+        "140634498704368": [
+          140634613030048,
+          48
+        ]
+      },
+      "label": "archive-after-install-attempt"
+    }
+  ],
+  "cohort-gc-diagnostic": [
+    {
+      "generation": 8,
+      "revision": 47,
+      "currency": 132,
+      "bank_participant": 140093568790272,
+      "members": {
+        "140093683571824": [
+          140093686313184,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a25659b20; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a6870e0>"
+        ],
+        "140093683571968": [
+          140093686316544,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a2565bba0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a1a687e00>"
+        ],
+        "140093570272720": [
+          140093570451408,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a137765c0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a138087d0>"
+        ],
+        "140093570278000": [
+          140093570452688,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a137f3290; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13808cd0>"
+        ],
+        "140093568790272": [
+          140093568856016,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>"
+        ],
+        "140093568790320": [
+          140093569904592,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {},
+      "label": "cohort-before-prepare"
+    },
+    {
+      "generation": 9,
+      "revision": 49,
+      "currency": 132,
+      "bank_participant": 140093568790272,
+      "members": {
+        "140093683571824": [
+          140093686313184,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a25659b20; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a6870e0>"
+        ],
+        "140093683571968": [
+          140093686316544,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a2565bba0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a1a687e00>"
+        ],
+        "140093570272720": [
+          140093570451408,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a137765c0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a138087d0>"
+        ],
+        "140093570278000": [
+          140093570452688,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a137f3290; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13808cd0>"
+        ],
+        "140093568790272": [
+          140093568856016,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>"
+        ],
+        "140093568790320": [
+          140093569904592,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>"
+        ],
+        "140093568794352": [
+          140093569900032,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>"
+        ]
+      },
+      "cohort": [
+        140093568856016,
+        140093569900032
+      ],
+      "tokens": {
+        "140093568681792": [
+          140093568790272,
+          9
+        ]
+      },
+      "label": "cohort-after-prepare"
+    },
+    {
+      "generation": 9,
+      "revision": 49,
+      "currency": 132,
+      "bank_participant": 140093568790272,
+      "members": {
+        "140093683571824": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a25659b20; dead>"
+        ],
+        "140093683571968": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a2565bba0; dead>"
+        ],
+        "140093570272720": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a137765c0; dead>"
+        ],
+        "140093570278000": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a137f3290; dead>"
+        ],
+        "140093568790272": [
+          140093568856016,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>"
+        ],
+        "140093568790320": [
+          140093569904592,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>"
+        ],
+        "140093568794352": [
+          140093569900032,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>"
+        ]
+      },
+      "cohort": [
+        140093568856016,
+        140093569900032
+      ],
+      "tokens": {
+        "140093568681792": [
+          140093568790272,
+          9
+        ]
+      },
+      "label": "cohort-after-gc"
+    },
+    {
+      "generation": 13,
+      "revision": 50,
+      "currency": 133,
+      "bank_participant": 140093568790272,
+      "members": {
+        "140093568790272": [
+          140093568856016,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>"
+        ],
+        "140093568790320": [
+          140093569904592,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>"
+        ],
+        "140093568794352": [
+          140093569900032,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {
+        "140093568681792": [
+          140093568790272,
+          9
+        ]
+      },
+      "label": "cohort-after-install-attempt"
+    },
+    {
+      "generation": 20,
+      "revision": 55,
+      "currency": 151,
+      "bank_participant": 140093867844016,
+      "members": {
+        "140093568790272": [
+          140093568856016,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>"
+        ],
+        "140093568790320": [
+          140093569904592,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>"
+        ],
+        "140093568794352": [
+          140093569900032,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>"
+        ],
+        "140093867844016": [
+          140093683486864,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>"
+        ],
+        "140093867843968": [
+          140093873354272,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>"
+        ],
+        "140093867842480": [
+          140093872975184,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {
+        "140093568681792": [
+          140093568790272,
+          9
+        ]
+      },
+      "label": "cohort-before-prepare"
+    },
+    {
+      "generation": 24,
+      "revision": 61,
+      "currency": 171,
+      "bank_participant": 140093867844016,
+      "members": {
+        "140093568790272": [
+          140093568856016,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>"
+        ],
+        "140093568790320": [
+          140093569904592,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>"
+        ],
+        "140093568794352": [
+          140093569900032,
+          "townlet.exploration.world_curiosity_state.SharedWorldBackend",
+          "<weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>"
+        ],
+        "140093867844016": [
+          140093683486864,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>"
+        ],
+        "140093867843968": [
+          140093873354272,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>"
+        ],
+        "140093867842480": [
+          140093872975184,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>"
+        ],
+        "140093568793152": [
+          140093569905808,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7f6a13799a30; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a13783490>"
+        ],
+        "140093568784800": [
+          140093686754320,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d3a0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1a6f2c10>"
+        ],
+        "140093568793488": [
+          140093873108336,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7f6a1a49ef70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a258ab570>"
+        ],
+        "140093570276704": [
+          140093569936752,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49dcb0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1378ad70>"
+        ]
+      },
+      "cohort": [
+        140093683486864,
+        140093569905808,
+        140093873108336,
+        140093686754320,
+        140093569936752
+      ],
+      "tokens": {
+        "140093568681792": [
+          140093568790272,
+          9
+        ],
+        "140093570273584": [
+          140093867844016,
+          24
+        ]
+      },
+      "label": "cohort-after-prepare"
+    },
+    {
+      "generation": 24,
+      "revision": 61,
+      "currency": 171,
+      "bank_participant": 140093867844016,
+      "members": {
+        "140093568790272": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a136f6390; dead>"
+        ],
+        "140093568790320": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a136f62a0; dead>"
+        ],
+        "140093568794352": [
+          10519792,
+          "builtins.NoneType",
+          "<weakref at 0x7f6a25bd23e0; dead>"
+        ],
+        "140093867844016": [
+          140093683486864,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>"
+        ],
+        "140093867843968": [
+          140093873354272,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>"
+        ],
+        "140093867842480": [
+          140093872975184,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>"
+        ],
+        "140093568793152": [
+          140093569905808,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7f6a13799a30; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a13783490>"
+        ],
+        "140093568784800": [
+          140093686754320,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d3a0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1a6f2c10>"
+        ],
+        "140093568793488": [
+          140093873108336,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7f6a1a49ef70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a258ab570>"
+        ],
+        "140093570276704": [
+          140093569936752,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49dcb0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1378ad70>"
+        ]
+      },
+      "cohort": [
+        140093683486864,
+        140093569905808,
+        140093873108336,
+        140093686754320,
+        140093569936752
+      ],
+      "tokens": {
+        "140093570273584": [
+          140093867844016,
+          24
+        ]
+      },
+      "label": "cohort-after-gc"
+    },
+    {
+      "generation": 27,
+      "revision": 62,
+      "currency": 172,
+      "bank_participant": 140093867844016,
+      "members": {
+        "140093867844016": [
+          140093683486864,
+          "townlet.exploration.scoped_curiosity.CuriosityBank",
+          "<weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>"
+        ],
+        "140093867843968": [
+          140093873354272,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>"
+        ],
+        "140093867842480": [
+          140093872975184,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>"
+        ],
+        "140093568793152": [
+          140093569905808,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7f6a13799a30; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a13783490>"
+        ],
+        "140093568784800": [
+          140093686754320,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49d3a0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1a6f2c10>"
+        ],
+        "140093568793488": [
+          140093873108336,
+          "townlet.exploration.world_curiosity_state.WorldRNGState",
+          "<weakref at 0x7f6a1a49ef70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a258ab570>"
+        ],
+        "140093570276704": [
+          140093569936752,
+          "townlet.exploration.world_curiosity_state.OwnedWorldBackend",
+          "<weakref at 0x7f6a1a49dcb0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1378ad70>"
+        ]
+      },
+      "cohort": [],
+      "tokens": {
+        "140093570273584": [
+          140093867844016,
+          24
+        ]
+      },
+      "label": "cohort-after-install-attempt"
+    }
+  ]
+}

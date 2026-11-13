@@ -7,13 +7,9 @@
   },
   "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
   "current_local_candidate": {
-    "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
-    "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
-    "status": "Locally assembled WIP13; independent remote publication verification pending",
-    "selection_plan": {
-      "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
-      "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
-    }
+    "checkpoint": "wave35-wip-14",
+    "candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+    "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6"
   },
   "entries": [
     {
@@ -1520,13 +1516,53 @@
         "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
       },
       "publication": "Locally assembled; independent remote publication and CI verification pending"
+    },
+    {
+      "id": "wave35-wip-14",
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+        "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+      },
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-13.json",
+        "sha256": "f05ca336a4c96c9c36c17ca2edd0c5778937f719f8bc4fadcfabfe2ea9c45cdb"
+      },
+      "previous_catalog_entry": "wave35-wip-13",
+      "identity": {
+        "evidence_base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+        "evidence_candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+        "execution_subtrees": {
+          "src": "6c6768fffd2ce35f148402a1ccef90dffe7f9c37",
+          "tests": "5aa1336e4338caa0088065609efe9064536a5fb7",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+        }
+      },
+      "status": "UNRELEASED WIP; bounded CPU BANK/owner component qualified; whole programme open",
+      "packet": "Managed BANK/CP RNG custody and atomic owner capture",
+      "round": 72,
+      "receipt_pointer": "#/receipt",
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "qualified_progress": "28 qualified /38remaining /66 original packages unchanged; bounded BANK/owner progress",
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-14/selection-plan.json",
+        "sha256": "2195ce33e7a08039434f3018e5e426b3924a6564e1211181b249040c79ef8ea8",
+        "bytes": 763830
+      },
+      "publication": "Source/evidence checkpoint; exact remote/CI verification separate from assembly"
     }
   ],
-  "latest_verified_remote_publication_at_assembly": "wave35-wip-12",
+  "latest_verified_remote_publication_at_assembly": "wave35-wip-13",
   "current_checkpoint": {
-    "path": "docs/remediation/bac/evidence/wave35-wip-13.json",
-    "sha256": "f05ca336a4c96c9c36c17ca2edd0c5778937f719f8bc4fadcfabfe2ea9c45cdb",
-    "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
-    "publication": "Locally assembled; independent remote publication and CI verification pending"
-  }
+    "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+    "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a",
+    "candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+    "publication": "Source/evidence checkpoint; exact remote/CI verification separate from assembly"
+  },
+  "latest_verified_remote_commit_at_assembly": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6"
 }

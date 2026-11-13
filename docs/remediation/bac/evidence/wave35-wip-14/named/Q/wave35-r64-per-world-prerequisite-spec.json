@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r64-candidate.json",
+  "workers": 1,
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r64-per-world-prerequisite",
+  "jobs": [
+    {
+      "name": "per-world-prerequisite",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-k",
+        "test_selected_family_learns_saves_restores_and_continues and per_world and none"
+      ]
+    }
+  ]
+}

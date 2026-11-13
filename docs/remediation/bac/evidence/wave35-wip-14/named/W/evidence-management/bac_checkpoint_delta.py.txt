@@ -1,0 +1,469 @@
+"""Finite, additive WIP14 evidence selection and local materialization; no Git or runtime calls.
+
+The receipt is root supplied. This tool checks evidence structure and exact bytes, not qualification.
+"""
+
+import argparse
+import hashlib
+import json
+import re
+from pathlib import Path
+
+SHA = re.compile(r"[0-9a-f]{64}\Z")
+TREE = re.compile(r"[0-9a-f]{40}\Z")
+PREFIX = "docs/remediation/bac/evidence/"
+STATUSES = {"PASSED", "FAILED", "INTERRUPTED", "UNRUN", "DIAGNOSTIC", "PARTIAL", "MIXED"}
+
+
+def need(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def checked_root(path):
+    p = Path(path).absolute()
+    need(".." not in p.parts and p.is_dir(), f"invalid root: {p}")
+    need(all(not x.is_symlink() for x in (p, *p.parents)), f"symlink root ancestor: {p}")
+    return p
+
+
+def ordinary_absolute(path):
+    p = Path(path).absolute()
+    need(".." not in p.parts and p.is_file(), f"ordinary file required: {p}")
+    need(all(not x.is_symlink() for x in (p, *p.parents)), f"symlink metadata path: {p}")
+    return p
+
+
+def exclusive_absolute(path):
+    p = Path(path).absolute()
+    need(".." not in p.parts and not p.exists() and not p.is_symlink(), f"exclusive output required: {p}")
+    checked_root(p.parent)
+    return p
+
+
+def safe(root, relative, *, file=True):
+    root = checked_root(root)
+    rel = Path(relative)
+    need(str(relative) == rel.as_posix() and not rel.is_absolute() and rel.parts and ".." not in rel.parts and "." not in rel.parts, f"unsafe path: {relative}")
+    need(root.is_dir() and not root.is_symlink(), f"missing or symlink root: {root}")
+    p = root
+    for part in rel.parts:
+        p = p / part
+        need(not p.is_symlink(), f"symlink path: {p}")
+    need(p.is_file() if file else p.exists(), f"missing path: {p}")
+    return p
+
+
+def output_path(root, relative):
+    root = checked_root(root)
+    rel = Path(relative)
+    need(str(relative) == rel.as_posix() and not rel.is_absolute() and rel.parts and ".." not in rel.parts and "." not in rel.parts, "unsafe output path")
+    need(root.is_dir() and not root.is_symlink(), "missing output root")
+    p = root
+    for part in rel.parts[:-1]:
+        p = p / part
+        need(not p.is_symlink(), f"symlink output parent: {p}")
+        need(not p.exists() or p.is_dir(), f"non-directory output parent: {p}")
+    p = p / rel.parts[-1]
+    need(not p.exists() and not p.is_symlink(), f"output exists: {p}")
+    return p
+
+
+def read_json(path):
+    value = json.loads(path.read_text())
+    need(isinstance(value, dict), f"JSON object required: {path}")
+    return value
+
+
+def check_file(root, ref):
+    need(isinstance(ref, dict) and isinstance(ref.get("path"), str) and isinstance(ref.get("sha256"), str), "path/hash reference required")
+    need(SHA.fullmatch(ref["sha256"]) is not None, "invalid SHA256")
+    p = safe(root, ref["path"])
+    need(digest(p) == ref["sha256"], f"hash mismatch: {p}")
+    if "bytes" in ref:
+        need(type(ref["bytes"]) is int and p.stat().st_size == ref["bytes"], f"size mismatch: {p}")
+    return p
+
+
+def rooted(roots, ref):
+    need(ref.get("root") in roots, "unknown reference root")
+    return check_file(roots[ref["root"]], ref)
+
+
+def descendants(qualification, relative):
+    top = safe(qualification, relative, file=False)
+    paths = [top] if top.is_file() else sorted(top.rglob("*"))
+    need(all(not p.is_symlink() for p in paths), f"symlink descendant: {top}")
+    need(all(p.is_file() or p.is_dir() for p in paths), "unsupported descendant")
+    return ([{"path": p.relative_to(qualification).as_posix(), "type": "file", "sha256": digest(p), "bytes": p.stat().st_size}
+             if p.is_file() else {"path": p.relative_to(qualification).as_posix(), "type": "directory"} for p in paths])
+
+
+def _lookup(root, inventory_path, wip13_path, wip13_plan_path, chain_path):
+    for p in (inventory_path, wip13_path, wip13_plan_path, chain_path):
+        ordinary_absolute(p)
+    inventory = read_json(inventory_path)
+    need(inventory.get("schema") == "bac-evidence-inventory-v1" and inventory.get("metrics", {}).get("integrity_failures") == 0, "invalid baseline inventory")
+    manifest = read_json(wip13_path)
+    plan = read_json(wip13_plan_path)
+    chain = read_json(chain_path)
+    mrel = wip13_path.relative_to(root).as_posix()
+    prel = wip13_plan_path.relative_to(root).as_posix()
+    need(mrel == PREFIX + "wave35-wip-13.json" and prel == PREFIX + "wave35-wip-13/selection-plan.json", "wrong WIP13 paths")
+    need(manifest.get("selection_plan") == {"path": prel, "sha256": digest(wip13_plan_path)}, "WIP13 plan link mismatch")
+    need(plan.get("status") == "READY FOR ROOT PUBLICATION CHECKS", "WIP13 plan status mismatch")
+    need(plan.get("inventory_sha256") == digest(inventory_path), "baseline inventory differs from WIP13")
+    need(manifest.get("predecessor") == plan.get("previous_checkpoint"), "WIP13 predecessor mismatch")
+    prev = manifest["predecessor"]
+    check_file(root, prev)
+    need(prev["sha256"] in inventory["objects"] and prev["path"] in inventory["objects"][prev["sha256"]]["paths"], "baseline predecessor absent")
+    need(chain.get("entries") and chain["entries"][-1].get("manifest") == {"path": mrel, "sha256": digest(wip13_path)}, "current chain predecessor mismatch")
+    need(chain.get("current_checkpoint", {}).get("path") == mrel and chain["current_checkpoint"].get("sha256") == digest(wip13_path), "current chain pointer mismatch")
+    lookup = {}
+    for sha, row in inventory["objects"].items():
+        need(SHA.fullmatch(sha) and type(row.get("bytes")) is int and isinstance(row.get("paths"), list), "bad baseline object")
+        lookup.setdefault(sha, []).extend((p, row["bytes"]) for p in row["paths"])
+    need(set(manifest.get("artifacts", {})) == {v["path"] for v in plan.get("objects", {}).values()}, "WIP13 object path set mismatch")
+    for sha, row in plan["objects"].items():
+        need(SHA.fullmatch(sha) and row.get("path", "").startswith(PREFIX), "bad WIP13 object")
+        need(manifest["artifacts"][row["path"]]["sha256"] == sha and manifest["artifacts"][row["path"]]["bytes"] == row["bytes"], "WIP13 object disagreement")
+        if row["action"] == "copy-new":
+            need(row["path"].startswith(PREFIX + "wave35-wip-13/"), "WIP13 new object escaped")
+            lookup.setdefault(sha, []).append((row["path"], row["bytes"]))
+        else:
+            need(row["action"] == "reference-existing" and (row["path"], row["bytes"]) in lookup.get(sha, []), "WIP13 reuse disagreement")
+    return lookup, {"path": mrel, "sha256": digest(wip13_path)}, {"path": prel, "sha256": digest(wip13_plan_path)}, digest(chain_path)
+
+
+def receipt_refs(receipt):
+    if receipt.get("review_subject"):
+        yield receipt["review_subject"]
+    for group in ("component_receipts", "reviews", "documents", "dependencies"):
+        for ref in receipt.get(group, []):
+            yield ref
+            if group == "reviews":
+                if ref.get("independence_evidence"):
+                    yield ref["independence_evidence"]
+                yield from ref.get("reviewed_subject", [])
+    for check in receipt.get("attempt_index", []):
+        yield from check.get("required_dependencies", [])
+        for child in check.get("expected_children", []):
+            if child.get("witness"):
+                yield child["witness"]
+        for attempt in check.get("attempts", []):
+            yield {"root": "W", **attempt["candidate_manifest"]}
+            if attempt.get("record"):
+                yield attempt["record"]
+            yield from attempt.get("process_custody", [])
+            yield from attempt.get("log_paths", [])
+            if attempt.get("result"):
+                yield attempt["result"]
+            if attempt.get("verifier"):
+                yield attempt["verifier"]
+
+
+def validate_receipt(receipt, roots, terminal_path, selected_entries):
+    need(receipt.get("schema") == "bac-wip14-terminal-receipt-v1", "receipt schema mismatch")
+    need(receipt.get("interval_start") == 59 and type(receipt.get("terminal_round")) is int and receipt["terminal_round"] >= 59, "finite terminal interval required")
+    need(receipt.get("status") == "SEALED FOR EVIDENCE SELECTION", "final receipt incomplete or draft")
+    need(TREE.fullmatch(receipt.get("base_commit", "")) and TREE.fullmatch(receipt.get("candidate_tree", "")), "invalid terminal source identity")
+    subtrees = receipt.get("execution_subtrees", {})
+    need(set(subtrees) == {"src", "tests", "configs", "scripts", ".defaults-ratchet"} and all(TREE.fullmatch(x) for x in subtrees.values()), "execution subtrees missing")
+    candidate = check_file(roots["W"], receipt["candidate_manifest"])
+    need(receipt.get("review_subject", {}).get("root") == "W", "frozen review subject required")
+    rooted(roots, receipt["review_subject"])
+    cm = read_json(candidate)
+    need((cm.get("base_commit"), cm.get("candidate_tree")) == (receipt["base_commit"], receipt["candidate_tree"]), "terminal manifest identity mismatch")
+    need(receipt.get("package_accounting") and sum(receipt["package_accounting"].get(k, -1000) for k in ("qualified", "remaining")) == receipt["package_accounting"].get("total"), "package accounting invalid")
+    entries = receipt.get("interval_entries")
+    need(isinstance(entries, list) and entries, "interval entries required")
+    declared = {}
+    for entry in entries:
+        name = entry.get("path", "")
+        need(name not in declared and name in selected_entries and entry.get("round") in range(59, receipt["terminal_round"] + 1), "interval entry mismatch")
+        need(re.fullmatch(r"wave35-r(\d+)(?:-|$).*", name) and int(re.match(r"wave35-r(\d+)", name).group(1)) == entry["round"], "entry round mismatch")
+        need(entry.get("kind") in {"attempt", "support"} and entry.get("status") in STATUSES, "entry role/status required")
+        declared[name] = entry
+    need(set(declared) == selected_entries, "finite interval membership changed")
+    need({e["round"] for e in entries} == set(range(59, receipt["terminal_round"] + 1)), "missing round evidence")
+    attempts = receipt.get("attempt_index")
+    need(isinstance(attempts, list) and attempts, "attempt index required")
+    covered = set()
+    top_statuses = {}
+    top_records = {}
+    record_identities = set()
+    identities = set()
+    for check in attempts:
+        need(check.get("check") and check.get("check_kind") in {"runtime", "static", "collection", "capture", "preflight", "diagnostic"} and check.get("status") in STATUSES and isinstance(check.get("attempts"), list) and check["attempts"], "check record incomplete")
+        ids = set()
+        for a in check["attempts"]:
+            name = a.get("path", "")
+            need(name in declared and declared[name]["kind"] == "attempt", "attempt not in interval")
+            need(a.get("id") and a["id"] not in ids and a.get("record_id"), "duplicate or unidentified attempt")
+            record_identity = (name, a["record_id"])
+            need(record_identity not in record_identities, "duplicate semantic record ID")
+            record_identities.add(record_identity)
+            ids.add(a["id"]); covered.add(name)
+            need(a.get("status") in STATUSES and a["status"] != "MIXED", "attempt status invalid")
+            top_statuses.setdefault(name, set()).add(a["status"])
+            top_records.setdefault(name, []).append(a)
+            if a.get("record"):
+                need(a["record"].get("root") == "Q", "semantic record must be qualification evidence")
+                rooted(roots, a["record"])
+            need(TREE.fullmatch(a.get("base_commit", "")) and TREE.fullmatch(a.get("candidate_tree", "")), "attempt source identity absent")
+            manifest = check_file(roots["W"], a["candidate_manifest"])
+            m = read_json(manifest)
+            need((m.get("base_commit"), m.get("candidate_tree")) == (a["base_commit"], a["candidate_tree"]), "attempt manifest identity mismatch")
+            identity = (a["candidate_tree"], check["check"], a["id"])
+            need(identity not in identities, "duplicate source/check/attempt")
+            identities.add(identity)
+            observed = descendants(roots["Q"], name)
+            need(a.get("descendants") == observed, f"attempt descendant set changed: {name}")
+            if a["status"] == "UNRUN":
+                need(a.get("unrun_reason") and a.get("exit_code") is None and a.get("started_at") is None, "unrun cannot claim execution")
+            else:
+                missing = any(a.get(field) is None for field in ("command", "started_at", "ended_at", "exit_code", "counts"))
+                need(not missing or a.get("custody_unavailable_reason"), "unavailable execution fields need explicit reason")
+                if a["status"] == "PASSED":
+                    need(a.get("exit_code") == 0, "passing attempt result invalid")
+                if check.get("qualifying") and a["id"] == check.get("terminal_attempt"):
+                    complete = a.get("command") and a.get("exit_code") == 0 and isinstance(a.get("counts"), dict) and type(a["counts"].get("passed")) is int and a["counts"]["passed"] > 0
+                    duration = a.get("duration_seconds")
+                    timed = (a.get("started_at") is not None and a.get("ended_at") is not None) or (a.get("started_at") is None and a.get("ended_at") is None and a.get("absolute_time_unavailable_reason"))
+                    need(check["check_kind"] == "runtime" and a["status"] == "PASSED" and complete and type(duration) in (int, float) and duration > 0 and timed, "qualifying runtime attempt incomplete")
+            need(a.get("environment") is not None and a.get("hardware") is not None and isinstance(a.get("process_custody"), list), "environment/process custody missing")
+            need(all(ref.get("role") in {"controller", "worker", "child", "import_thread_debug"} for ref in a["process_custody"]), "process custody role missing")
+            if check.get("qualifying") and a["id"] == check.get("terminal_attempt"):
+                roles = {ref["role"] for ref in a["process_custody"]}
+                need({"controller", "import_thread_debug"} <= roles and a.get("result") and a.get("log_paths"), "passing attempt custody incomplete")
+                worker_paths = {ref.get("root", "") + "/" + ref.get("path", "") for ref in a["process_custody"] if ref["role"] == "worker"}
+                topology, count = a.get("process_topology"), a.get("actual_worker_count")
+                need((topology == "single_process" and count == 0 and not worker_paths) or
+                     (topology == "xdist" and type(count) is int and count > 0 and len(worker_paths) == count),
+                     "runtime worker topology mismatch")
+            elif a["status"] != "UNRUN" and not a["process_custody"]:
+                need(a.get("custody_unavailable_reason"), "historical missing custody must be explicit")
+            for ref in a["process_custody"] + a.get("log_paths", []):
+                rooted(roots, ref)
+            if a.get("result"):
+                result = rooted(roots, a["result"])
+                if result.suffix == ".json":
+                    record = read_json(result)
+                    need(record.get("candidate_tree", a["candidate_tree"]) == a["candidate_tree"], "result source identity mismatch")
+                    if "exit_code" in record:
+                        need(record["exit_code"] == a.get("exit_code"), "result exit mismatch")
+                    if "counts" in record:
+                        need(record["counts"] == a.get("counts"), "result counts mismatch")
+                    if "status" in record:
+                        need(record["status"] == a["status"], "result status mismatch")
+                    if "seconds" in record:
+                        need(record["seconds"] == a.get("duration_seconds"), "result duration mismatch")
+                    if "command" in record:
+                        need(record["command"] == a.get("command"), "result command mismatch")
+                    if "base_commit" in record:
+                        need(record["base_commit"] == a["base_commit"], "result base commit mismatch")
+                    if "manifest_sha256" in record:
+                        need(record["manifest_sha256"] == a["candidate_manifest"]["sha256"], "result manifest mismatch")
+            if a.get("verifier"):
+                rooted(roots, a["verifier"])
+            elif a["status"] == "PASSED":
+                need(not check.get("qualifying") and a.get("verifier_unavailable_reason"), "passing attempt missing verifier")
+        need(check.get("terminal_attempt") in ids, "orphan terminal attempt pointer")
+        need(any(a["id"] == check["terminal_attempt"] and a["status"] == check["status"] for a in check["attempts"]), "terminal status disagreement")
+        for child in check.get("expected_children", []):
+            need(child.get("id") and child.get("status") in {"EXECUTED", "UNRUN"}, "child status missing")
+            if child["status"] == "EXECUTED":
+                witness = rooted(roots, child["witness"])
+                need(child.get("attempt_id") in ids, "child attempt pointer mismatch")
+                expected_tree = next(a["candidate_tree"] for a in check["attempts"] if a["id"] == child["attempt_id"])
+                if check.get("qualifying"):
+                    need(child["attempt_id"] == check["terminal_attempt"], "qualifying child must bind terminal attempt")
+                    need(child.get("candidate_tree") == expected_tree, "qualifying child source mismatch")
+                else:
+                    need(child.get("candidate_tree") == expected_tree, "child source mismatch")
+                if witness.suffix == ".json":
+                    need(read_json(witness).get("candidate_tree") == child["candidate_tree"], "child witness source mismatch")
+            else:
+                need(child.get("reason") and not child.get("witness"), "unrun child cannot satisfy witness")
+        if check.get("qualifying"):
+            need(check["status"] == "PASSED" and all(x.get("status") == "EXECUTED" for x in check.get("expected_children", [])), "unrun child or check cannot satisfy qualification")
+        for ref in check.get("required_dependencies", []):
+            rooted(roots, ref)
+    need(covered == {n for n, e in declared.items() if e["kind"] == "attempt"}, "unindexed attempts")
+    for name, statuses in top_statuses.items():
+        expected = "MIXED" if len(statuses) > 1 else next(iter(statuses))
+        need(declared[name]["status"] == expected, "top-level attempt status mismatch")
+        if len(top_records[name]) > 1:
+            need(all(a.get("record") for a in top_records[name]), "shared attempt directory needs explicit result records")
+            need(all(a["record"].get("path", "").startswith(name + "/") for a in top_records[name]), "shared record outside declared directory")
+            refs = [(a["record"].get("path"), a["record"].get("sha256")) for a in top_records[name]]
+            need(len(set(refs)) == len(refs), "duplicate shared authoritative record")
+            need(all(a["status"] == "UNRUN" or a.get("result") for a in top_records[name]), "shared executed record missing result")
+            need(all(not a.get("result") or (a["result"].get("root"), a["result"].get("path"), a["result"].get("sha256")) ==
+                     (a["record"].get("root"), a["record"].get("path"), a["record"].get("sha256")) for a in top_records[name]),
+                 "shared record/result disagreement")
+    for ref in receipt.get("component_receipts", []):
+        component = rooted(roots, ref)
+        need(TREE.fullmatch(ref.get("candidate_tree", "")) and ref.get("scope"), "component scope/identity missing")
+        if component.suffix == ".json":
+            need(read_json(component).get("candidate_tree") == ref["candidate_tree"], "component receipt source mismatch")
+    if receipt["terminal_round"] >= 67:
+        component_names = {ref.get("path") for ref in receipt["component_receipts"] if ref.get("root") == "W"}
+        need({"wave35/r64-stageA-receipt.json", "wave35/r67-owner-capture-receipt.json"} <= component_names, "R64/R67 bounded component receipts required")
+    reviews = receipt.get("reviews")
+    need(isinstance(reviews, list) and any(r.get("role") == "terminal" for r in reviews), "terminal review missing")
+    for review in reviews:
+        rooted(roots, review)
+        need(review.get("reviewer") and review.get("producer") and review["reviewer"] != review["producer"] and review.get("independent") is True, "review independence missing")
+        need(review.get("independence_evidence"), "review independence evidence missing")
+        rooted(roots, review["independence_evidence"])
+        need(review.get("scope") and review.get("disposition") and review.get("reviewed_subject"), "review subject/scope missing")
+        subjects = review["reviewed_subject"]
+        need(isinstance(subjects, list) and subjects, "review subject list missing")
+        for ref in subjects:
+            rooted(roots, ref)
+        if review["role"] == "terminal":
+            need(any(ref.get("root") == "W" and ref.get("path") == receipt["candidate_manifest"]["path"] and ref.get("sha256") == receipt["candidate_manifest"]["sha256"] for ref in subjects), "terminal review subject mismatch")
+            need(any(ref.get("root") == "W" and ref.get("path") == receipt["review_subject"]["path"] and ref.get("sha256") == receipt["review_subject"]["sha256"] for ref in subjects), "frozen qualification review subject mismatch")
+    for ref in receipt.get("documents", []):
+        rooted(roots, ref)
+    known_checks = {check["check"] for check in attempts}
+    need(len(known_checks) == len(attempts), "duplicate check ID")
+    dependencies = receipt.get("dependencies", [])
+    for check in attempts:
+        for local in check.get("required_dependencies", []):
+            need(any(check["check"] in global_ref.get("required_by", []) and all(local.get(k) == global_ref.get(k) for k in ("root", "path", "sha256")) for global_ref in dependencies), "required helper missing from named closure")
+    for ref in dependencies:
+        rooted(roots, ref)
+        need(ref.get("role") and ref.get("required_by") and set(ref["required_by"]) <= known_checks, "dependency closure missing")
+    need(receipt.get("required_next") and receipt.get("scope"), "gaps/scope missing")
+    need(terminal_path == candidate, "terminal manifest path mismatch")
+
+
+def plan(root, work, qualification, inventory_path, wip13_path, wip13_plan_path, chain_path, receipt_path, *, draft=False):
+    roots = {"R": checked_root(root), "W": checked_root(work), "Q": checked_root(qualification)}
+    inventory_path, wip13_path, wip13_plan_path, chain_path = map(lambda p: Path(p).absolute(), (inventory_path, wip13_path, wip13_plan_path, chain_path))
+    need(wip13_path == roots["R"] / PREFIX / "wave35-wip-13.json" and wip13_plan_path == roots["R"] / PREFIX / "wave35-wip-13/selection-plan.json", "WIP13 paths must be published archive paths")
+    need(chain_path == roots["R"] / PREFIX / "checkpoint-chain.json", "chain path mismatch")
+    lookup, predecessor, prior_plan, chain_sha = _lookup(roots["R"], inventory_path, wip13_path, wip13_plan_path, chain_path)
+    receipt_path = Path(receipt_path).absolute()
+    need(receipt_path.is_relative_to(roots["W"]), "receipt outside work root")
+    receipt = read_json(safe(roots["W"], receipt_path.relative_to(roots["W"])))
+    terminal = receipt.get("terminal_round")
+    need(type(terminal) is int and terminal >= 59, "terminal round required")
+    tops = {p.name: p for p in roots["Q"].iterdir() if re.fullmatch(r"wave35-r\d+(?:-.*)?", p.name) and 59 <= int(re.match(r"wave35-r(\d+)", p.name).group(1)) <= terminal}
+    need(tops, "empty interval")
+    if not draft:
+        validate_receipt(receipt, roots, safe(roots["W"], receipt["candidate_manifest"]["path"]), set(tops))
+    selected = {}
+    def add(p, logical):
+        need(p.is_file() and not p.is_symlink(), f"not ordinary input: {p}")
+        need(logical not in selected or selected[logical] == p, f"logical destination collision: {logical}")
+        selected[logical] = p
+    interval_inventory = {name: descendants(roots["Q"], name) for name in sorted(tops)}
+    for name, records in interval_inventory.items():
+        for row in records:
+            if row["type"] == "file":
+                add(safe(roots["Q"], row["path"]), "qualification/" + row["path"])
+    for n in range(59, terminal + 1):
+        for suffix in ("candidate.json", "fixture-resource-preflight.json"):
+            rel = f"wave35/r{n}-{suffix}"
+            add(safe(roots["W"], rel), "historical-candidates/" + rel.replace("/", "-"))
+    add(receipt_path, "checkpoint-receipt.json")
+    for ref in receipt_refs(receipt):
+        p = rooted(roots, ref)
+        name = ref["path"]
+        if p.suffix == ".py":
+            name += ".txt"
+        add(p, f"named/{ref['root']}/{name}")
+    objects, inputs, selected_paths = {}, [], {}
+    for logical, p in sorted(selected.items()):
+        sha, size = digest(p), p.stat().st_size
+        need(logical not in selected_paths, "logical alias collision")
+        selected_paths[logical] = sha
+        inputs.append({"original": str(p), "logical_path": logical, "sha256": sha, "bytes": size})
+        if sha in objects:
+            continue
+        matches = sorted(set(lookup.get(sha, [])))
+        if matches:
+            path, expected_size = matches[0]
+            need(path.startswith(PREFIX) and expected_size == size, "reuse size mismatch")
+            check_file(roots["R"], {"path": path, "sha256": sha, "bytes": size})
+            objects[sha] = {"action": "reference-existing", "path": path, "bytes": size}
+        else:
+            destination = PREFIX + "wave35-wip-14/" + logical
+            need(not destination.endswith(".py"), "executable Python snapshot")
+            output_path(roots["R"], destination)
+            objects[sha] = {"action": "copy-new", "path": destination, "bytes": size, "source": str(p)}
+    return {"schema": "bac-wip14-delta-plan-v1", "status": "DRAFT PLAN ONLY" if draft else "READY FOR ROOT PUBLICATION CHECKS", "authority": "Integrity and selection only; no qualification or publication approval", "interval": [59, terminal], "interval_inventory": interval_inventory, "receipt": {"original": str(receipt_path), "sha256": digest(receipt_path)}, "inventory_sha256": digest(inventory_path), "previous_checkpoint": predecessor, "wip13_selection_plan": prior_plan, "chain": {"path": chain_path.relative_to(roots["R"]).as_posix(), "sha256": chain_sha}, "candidate_tree": receipt.get("candidate_tree"), "base_commit": receipt.get("base_commit"), "execution_subtrees": receipt.get("execution_subtrees"), "inputs": inputs, "objects": objects, "metrics": {"input_paths": len(inputs), "unique_objects": len(objects), "new_objects": sum(v["action"] == "copy-new" for v in objects.values()), "reused_objects": sum(v["action"] == "reference-existing" for v in objects.values())}}
+
+
+def assemble(root, work, qualification, inventory_path, wip13_path, wip13_plan_path, chain_path, plan_path, report_path):
+    root = checked_root(root); plan_path = ordinary_absolute(plan_path); report_path = exclusive_absolute(report_path)
+    published = read_json(plan_path)
+    need(published.get("schema") == "bac-wip14-delta-plan-v1" and published.get("status") == "READY FOR ROOT PUBLICATION CHECKS", "draft or invalid plan")
+    fresh = plan(root, work, qualification, inventory_path, wip13_path, wip13_plan_path, chain_path, published["receipt"]["original"])
+    need(fresh == published, "plan inputs, membership, chain or objects changed")
+    seen = set()
+    for sha, row in published["objects"].items():
+        need(SHA.fullmatch(sha) and row["path"] not in seen, "inconsistent plan object mapping")
+        seen.add(row["path"])
+        if row["action"] == "reference-existing":
+            check_file(root, {"path": row["path"], "sha256": sha, "bytes": row["bytes"]})
+        else:
+            need(row["action"] == "copy-new" and row["path"].startswith(PREFIX + "wave35-wip-14/"), "invalid copy mapping")
+            output_path(root, row["path"])
+            source = ordinary_absolute(row["source"])
+            need(source.stat().st_size == row["bytes"] and digest(source) == sha, "copy source changed")
+    for row in published["inputs"]:
+        source = ordinary_absolute(row["original"])
+        need(source.stat().st_size == row["bytes"] and digest(source) == row["sha256"], "input changed")
+    copied = []
+    for sha, row in published["objects"].items():
+        if row["action"] != "copy-new":
+            continue
+        dest = output_path(root, row["path"])
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        with Path(row["source"]).open("rb") as src, dest.open("xb") as out:
+            for block in iter(lambda: src.read(1024 * 1024), b""):
+                out.write(block)
+        check_file(root, {"path": row["path"], "sha256": sha, "bytes": row["bytes"]})
+        copied.append(row["path"])
+    result = {"schema": "bac-wip14-assembly-proposal-v1", "status": "INCOMPLETE PUBLICATION PROPOSAL; ROOT REVIEW REQUIRED", "candidate_tree": published["candidate_tree"], "execution_subtrees": published["execution_subtrees"], "previous_checkpoint": published["previous_checkpoint"], "selection_plan_sha256": digest(plan_path), "receipt": published["receipt"], "objects": published["objects"], "inputs": published["inputs"], "copied": copied, "chain_prior_sha256": published["chain"]["sha256"], "publication_tree": None, "navigation_approved": False}
+    with report_path.open("x") as out:
+        json.dump(result, out, indent=2, sort_keys=True); out.write("\n")
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("mode", choices=("plan", "assemble"))
+    for name in ("root", "work", "qualification", "inventory", "wip13-manifest", "wip13-plan", "chain", "output"):
+        parser.add_argument("--" + name, required=True, type=Path)
+    parser.add_argument("--receipt", type=Path)
+    parser.add_argument("--plan", type=Path)
+    parser.add_argument("--draft", action="store_true")
+    args = parser.parse_args()
+    shared = (args.root, args.work, args.qualification, args.inventory, args.wip13_manifest, args.wip13_plan, args.chain)
+    if args.mode == "plan":
+        need(args.receipt is not None and args.plan is None, "plan requires receipt")
+        result = plan(*shared, args.receipt, draft=args.draft)
+        with exclusive_absolute(args.output).open("x") as out:
+            json.dump(result, out, indent=2, sort_keys=True); out.write("\n")
+        print(json.dumps({"status": result["status"], **result["metrics"]}))
+    else:
+        need(args.plan is not None and args.receipt is None and not args.draft, "assemble requires sealed plan")
+        result = assemble(*shared, args.plan, args.output)
+        print(json.dumps({"status": result["status"], "copied": len(result["copied"]) }))
+
+
+if __name__ == "__main__":
+    main()

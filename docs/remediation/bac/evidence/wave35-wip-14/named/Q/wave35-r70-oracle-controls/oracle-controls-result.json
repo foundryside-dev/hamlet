@@ -1,0 +1,26 @@
+{
+  "name": "oracle-controls",
+  "exit_code": 0,
+  "seconds": 12.84719443321228,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-oracle-controls/oracle-controls.log",
+  "sha256": "d617b5ffeb85d568b418e1eecf0cb56c8e1555441e3b99c6be81f4ed8166a767",
+  "candidate_tree": "6c9a0e029769056cf27a379e983261c169b8da57",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "2b8f921c26d1084e4b8bd1fd7238da17a9f92b117ce628048898c0e0c334467f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

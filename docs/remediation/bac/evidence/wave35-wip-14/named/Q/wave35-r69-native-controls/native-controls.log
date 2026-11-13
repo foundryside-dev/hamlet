@@ -1,0 +1,700 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [84 items]
+
+....................F.FF.FFF.FFF........................................ [ 85%]
+............                                                             [100%]
+=================================== FAILURES ===================================
+____ test_archive_validation_uses_source_policy_and_target_model_init[none] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcb6a8b9940>
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_archive_validation_uses_source_policy_and_target_model_init(compiled, monkeypatch, family):
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+        from townlet.exploration import provider_factory
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved = _bank(source)
+        target, _ = _run(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            target.policy,
+            world_ids=tuple(reversed(identity.IDS)),
+            observation_dim=target.bank.descriptor.observation_dim,
+            action_dim=target.bank.descriptor.action_dim,
+            training_seed=target.bank.descriptor.training_seed + 17,
+        )
+        first = sorted(descriptor.world_ids)[0]
+        validation_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        reference_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        with reference_rng.activate("model_init"):
+            expected_model_init = _ambient()
+        entry = _ambient()
+        actual_factory, attach = provider_factory.make_backend, checkpoint.attach_gradients
+        observed = []
+    
+        def factory(policy, **kwargs):
+            assert policy.to_dict() == source.policy.to_dict() and policy.curiosity_scope == "shared"
+            assert kwargs["world_id"] is kwargs["rng"] is kwargs["descriptor"] is None
+            assert kwargs["device"] == torch.device("cpu")
+            _same_ambient(_ambient(), expected_model_init)
+            provider = actual_factory(policy, **kwargs)
+            return provider
+    
+        def observe_final(provider, values, selected):
+            attach(provider, values, selected)
+            observed.append(provider)
+    
+        monkeypatch.setattr(provider_factory, "make_backend", factory)
+        monkeypatch.setattr(checkpoint, "attach_gradients", observe_final)
+        domain = process_rng_domain()
+>       with domain.operation(participant=validation_rng.rng_participant, operation_kind="prepare", lineage=None) as lineage:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:890: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fcb765d1940>
+
+    @contextmanager
+    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        # Another thread waits at this actual lock before any enrolled work.
+        with self._lock:
+            self._usable()
+            self._collect_retired()
+            member = self._member(participant)
+            owner = member.owner()
+            if owner is None:
+                raise ValueError("RNG participant owner is no longer alive")
+            if operation_kind not in member.entrypoints:
+>               raise ValueError("RNG entrypoint is not registered for this owner")
+E               ValueError: RNG entrypoint is not registered for this owner
+
+src/townlet/exploration/rng_custody.py:241: ValueError
+_ test_archive_validation_uses_source_policy_and_target_model_init[count_based] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcb6aa58640>
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_archive_validation_uses_source_policy_and_target_model_init(compiled, monkeypatch, family):
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+        from townlet.exploration import provider_factory
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved = _bank(source)
+        target, _ = _run(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            target.policy,
+            world_ids=tuple(reversed(identity.IDS)),
+            observation_dim=target.bank.descriptor.observation_dim,
+            action_dim=target.bank.descriptor.action_dim,
+            training_seed=target.bank.descriptor.training_seed + 17,
+        )
+        first = sorted(descriptor.world_ids)[0]
+        validation_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        reference_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        with reference_rng.activate("model_init"):
+            expected_model_init = _ambient()
+        entry = _ambient()
+        actual_factory, attach = provider_factory.make_backend, checkpoint.attach_gradients
+        observed = []
+    
+        def factory(policy, **kwargs):
+            assert policy.to_dict() == source.policy.to_dict() and policy.curiosity_scope == "shared"
+            assert kwargs["world_id"] is kwargs["rng"] is kwargs["descriptor"] is None
+            assert kwargs["device"] == torch.device("cpu")
+            _same_ambient(_ambient(), expected_model_init)
+            provider = actual_factory(policy, **kwargs)
+            return provider
+    
+        def observe_final(provider, values, selected):
+            attach(provider, values, selected)
+            observed.append(provider)
+    
+        monkeypatch.setattr(provider_factory, "make_backend", factory)
+        monkeypatch.setattr(checkpoint, "attach_gradients", observe_final)
+        domain = process_rng_domain()
+>       with domain.operation(participant=validation_rng.rng_participant, operation_kind="prepare", lineage=None) as lineage:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:890: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fcb765d1940>
+
+    @contextmanager
+    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        # Another thread waits at this actual lock before any enrolled work.
+        with self._lock:
+            self._usable()
+            self._collect_retired()
+            member = self._member(participant)
+            owner = member.owner()
+            if owner is None:
+                raise ValueError("RNG participant owner is no longer alive")
+            if operation_kind not in member.entrypoints:
+>               raise ValueError("RNG entrypoint is not registered for this owner")
+E               ValueError: RNG entrypoint is not registered for this owner
+
+src/townlet/exploration/rng_custody.py:241: ValueError
+____ test_archive_validation_uses_source_policy_and_target_model_init[rnd] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcb6a255d90>
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_archive_validation_uses_source_policy_and_target_model_init(compiled, monkeypatch, family):
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+        from townlet.exploration import provider_factory
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved = _bank(source)
+        target, _ = _run(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            target.policy,
+            world_ids=tuple(reversed(identity.IDS)),
+            observation_dim=target.bank.descriptor.observation_dim,
+            action_dim=target.bank.descriptor.action_dim,
+            training_seed=target.bank.descriptor.training_seed + 17,
+        )
+        first = sorted(descriptor.world_ids)[0]
+        validation_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        reference_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        with reference_rng.activate("model_init"):
+            expected_model_init = _ambient()
+        entry = _ambient()
+        actual_factory, attach = provider_factory.make_backend, checkpoint.attach_gradients
+        observed = []
+    
+        def factory(policy, **kwargs):
+            assert policy.to_dict() == source.policy.to_dict() and policy.curiosity_scope == "shared"
+            assert kwargs["world_id"] is kwargs["rng"] is kwargs["descriptor"] is None
+            assert kwargs["device"] == torch.device("cpu")
+            _same_ambient(_ambient(), expected_model_init)
+            provider = actual_factory(policy, **kwargs)
+            return provider
+    
+        def observe_final(provider, values, selected):
+            attach(provider, values, selected)
+            observed.append(provider)
+    
+        monkeypatch.setattr(provider_factory, "make_backend", factory)
+        monkeypatch.setattr(checkpoint, "attach_gradients", observe_final)
+        domain = process_rng_domain()
+>       with domain.operation(participant=validation_rng.rng_participant, operation_kind="prepare", lineage=None) as lineage:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:890: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fcb765d1940>
+
+    @contextmanager
+    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        # Another thread waits at this actual lock before any enrolled work.
+        with self._lock:
+            self._usable()
+            self._collect_retired()
+            member = self._member(participant)
+            owner = member.owner()
+            if owner is None:
+                raise ValueError("RNG participant owner is no longer alive")
+            if operation_kind not in member.entrypoints:
+>               raise ValueError("RNG entrypoint is not registered for this owner")
+E               ValueError: RNG entrypoint is not registered for this owner
+
+src/townlet/exploration/rng_custody.py:241: ValueError
+_ test_archive_validation_uses_source_policy_and_target_model_init[adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcb5c43e030>
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_archive_validation_uses_source_policy_and_target_model_init(compiled, monkeypatch, family):
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+        from townlet.exploration import provider_factory
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved = _bank(source)
+        target, _ = _run(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            target.policy,
+            world_ids=tuple(reversed(identity.IDS)),
+            observation_dim=target.bank.descriptor.observation_dim,
+            action_dim=target.bank.descriptor.action_dim,
+            training_seed=target.bank.descriptor.training_seed + 17,
+        )
+        first = sorted(descriptor.world_ids)[0]
+        validation_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        reference_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        with reference_rng.activate("model_init"):
+            expected_model_init = _ambient()
+        entry = _ambient()
+        actual_factory, attach = provider_factory.make_backend, checkpoint.attach_gradients
+        observed = []
+    
+        def factory(policy, **kwargs):
+            assert policy.to_dict() == source.policy.to_dict() and policy.curiosity_scope == "shared"
+            assert kwargs["world_id"] is kwargs["rng"] is kwargs["descriptor"] is None
+            assert kwargs["device"] == torch.device("cpu")
+            _same_ambient(_ambient(), expected_model_init)
+            provider = actual_factory(policy, **kwargs)
+            return provider
+    
+        def observe_final(provider, values, selected):
+            attach(provider, values, selected)
+            observed.append(provider)
+    
+        monkeypatch.setattr(provider_factory, "make_backend", factory)
+        monkeypatch.setattr(checkpoint, "attach_gradients", observe_final)
+        domain = process_rng_domain()
+>       with domain.operation(participant=validation_rng.rng_participant, operation_kind="prepare", lineage=None) as lineage:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:890: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fcb765d1940>
+
+    @contextmanager
+    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        # Another thread waits at this actual lock before any enrolled work.
+        with self._lock:
+            self._usable()
+            self._collect_retired()
+            member = self._member(participant)
+            owner = member.owner()
+            if owner is None:
+                raise ValueError("RNG participant owner is no longer alive")
+            if operation_kind not in member.entrypoints:
+>               raise ValueError("RNG entrypoint is not registered for this owner")
+E               ValueError: RNG entrypoint is not registered for this owner
+
+src/townlet/exploration/rng_custody.py:241: ValueError
+____ test_archive_validation_uses_source_policy_and_target_model_init[icm] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcb6a247bd0>
+family = 'icm'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_archive_validation_uses_source_policy_and_target_model_init(compiled, monkeypatch, family):
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+        from townlet.exploration import provider_factory
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor, WorldRNGState
+    
+        source, _ = _run(compiled, family, "shared")
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved = _bank(source)
+        target, _ = _run(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            target.policy,
+            world_ids=tuple(reversed(identity.IDS)),
+            observation_dim=target.bank.descriptor.observation_dim,
+            action_dim=target.bank.descriptor.action_dim,
+            training_seed=target.bank.descriptor.training_seed + 17,
+        )
+        first = sorted(descriptor.world_ids)[0]
+        validation_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        reference_rng = WorldRNGState.create(descriptor=descriptor, world_id=first, cuda_devices=())
+        with reference_rng.activate("model_init"):
+            expected_model_init = _ambient()
+        entry = _ambient()
+        actual_factory, attach = provider_factory.make_backend, checkpoint.attach_gradients
+        observed = []
+    
+        def factory(policy, **kwargs):
+            assert policy.to_dict() == source.policy.to_dict() and policy.curiosity_scope == "shared"
+            assert kwargs["world_id"] is kwargs["rng"] is kwargs["descriptor"] is None
+            assert kwargs["device"] == torch.device("cpu")
+            _same_ambient(_ambient(), expected_model_init)
+            provider = actual_factory(policy, **kwargs)
+            return provider
+    
+        def observe_final(provider, values, selected):
+            attach(provider, values, selected)
+            observed.append(provider)
+    
+        monkeypatch.setattr(provider_factory, "make_backend", factory)
+        monkeypatch.setattr(checkpoint, "attach_gradients", observe_final)
+        domain = process_rng_domain()
+>       with domain.operation(participant=validation_rng.rng_participant, operation_kind="prepare", lineage=None) as lineage:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:890: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fcb765d1940>
+
+    @contextmanager
+    def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        # Another thread waits at this actual lock before any enrolled work.
+        with self._lock:
+            self._usable()
+            self._collect_retired()
+            member = self._member(participant)
+            owner = member.owner()
+            if owner is None:
+                raise ValueError("RNG participant owner is no longer alive")
+            if operation_kind not in member.entrypoints:
+>               raise ValueError("RNG entrypoint is not registered for this owner")
+E               ValueError: RNG entrypoint is not registered for this owner
+
+src/townlet/exploration/rng_custody.py:241: ValueError
+______ test_fixed_target_gradient_is_never_exported_as_lawful[shared-rnd] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+        with pytest.raises(ValueError, match="fixed target gradient"):
+>           run.bank.checkpoint_state()
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1072: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:223: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1009: in checkpoint_state
+    shared = self._shared.call(
+src/townlet/exploration/world_curiosity_state.py:1259: in call
+    return _owned(operation(self._backend))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1011: in <lambda>
+    native=checkpoint.owned(provider.checkpoint_state()),
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rnd.RNDExploration object at 0x7fcb6aaf4e20>
+
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Owned snapshot, including FIFO order and clocks for learned-state resume."""
+        if any(parameter.requires_grad or parameter.grad is not None for parameter in self.fixed_network.parameters()):
+>           raise ValueError("RND target must remain frozen and gradient-free")
+E           ValueError: RND target must remain frozen and gradient-free
+
+src/townlet/exploration/rnd.py:726: ValueError
+
+During handling of the above exception, another exception occurred:
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+>       with pytest.raises(ValueError, match="fixed target gradient"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'fixed target gradient'
+E        Input: 'RND target must remain frozen and gradient-free'
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1071: AssertionError
+_ test_fixed_target_gradient_is_never_exported_as_lawful[shared-adaptive_rnd] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+        with pytest.raises(ValueError, match="fixed target gradient"):
+>           run.bank.checkpoint_state()
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1072: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:223: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1009: in checkpoint_state
+    shared = self._shared.call(
+src/townlet/exploration/world_curiosity_state.py:1259: in call
+    return _owned(operation(self._backend))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1011: in <lambda>
+    native=checkpoint.owned(provider.checkpoint_state()),
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/adaptive_intrinsic.py:263: in checkpoint_state
+    "rnd_state": self.rnd.checkpoint_state(),
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rnd.RNDExploration object at 0x7fcb5c43d150>
+
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Owned snapshot, including FIFO order and clocks for learned-state resume."""
+        if any(parameter.requires_grad or parameter.grad is not None for parameter in self.fixed_network.parameters()):
+>           raise ValueError("RND target must remain frozen and gradient-free")
+E           ValueError: RND target must remain frozen and gradient-free
+
+src/townlet/exploration/rnd.py:726: ValueError
+
+During handling of the above exception, another exception occurred:
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+>       with pytest.raises(ValueError, match="fixed target gradient"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'fixed target gradient'
+E        Input: 'RND target must remain frozen and gradient-free'
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1071: AssertionError
+____ test_fixed_target_gradient_is_never_exported_as_lawful[per_world-rnd] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+        with pytest.raises(ValueError, match="fixed target gradient"):
+>           run.bank.checkpoint_state()
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1072: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:223: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1020: in checkpoint_state
+    backend, gradients = self._owners[world].snapshot_with_capture(
+src/townlet/exploration/world_curiosity_state.py:1043: in snapshot_with_capture
+    backend_state = _owned(self._backend.checkpoint_state())
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rnd.RNDExploration object at 0x7fcb55675bf0>
+
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Owned snapshot, including FIFO order and clocks for learned-state resume."""
+        if any(parameter.requires_grad or parameter.grad is not None for parameter in self.fixed_network.parameters()):
+>           raise ValueError("RND target must remain frozen and gradient-free")
+E           ValueError: RND target must remain frozen and gradient-free
+
+src/townlet/exploration/rnd.py:726: ValueError
+
+During handling of the above exception, another exception occurred:
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+>       with pytest.raises(ValueError, match="fixed target gradient"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'fixed target gradient'
+E        Input: 'RND target must remain frozen and gradient-free'
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1071: AssertionError
+_ test_fixed_target_gradient_is_never_exported_as_lawful[per_world-adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+        with pytest.raises(ValueError, match="fixed target gradient"):
+>           run.bank.checkpoint_state()
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1072: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:223: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1020: in checkpoint_state
+    backend, gradients = self._owners[world].snapshot_with_capture(
+src/townlet/exploration/world_curiosity_state.py:1043: in snapshot_with_capture
+    backend_state = _owned(self._backend.checkpoint_state())
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/adaptive_intrinsic.py:263: in checkpoint_state
+    "rnd_state": self.rnd.checkpoint_state(),
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rnd.RNDExploration object at 0x7fcb6a2c9150>
+
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Owned snapshot, including FIFO order and clocks for learned-state resume."""
+        if any(parameter.requires_grad or parameter.grad is not None for parameter in self.fixed_network.parameters()):
+>           raise ValueError("RND target must remain frozen and gradient-free")
+E           ValueError: RND target must remain frozen and gradient-free
+
+src/townlet/exploration/rnd.py:726: ValueError
+
+During handling of the above exception, another exception occurred:
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ("rnd", "adaptive_rnd"))
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_fixed_target_gradient_is_never_exported_as_lawful(compiled, family, scope):
+        run, _ = _run(compiled, family, scope)
+    
+        def invalid_target(provider):
+            native = provider.rnd if family == "adaptive_rnd" else provider
+            fixed = next(native.fixed_network.parameters())
+            assert not fixed.requires_grad and fixed.grad is None
+            fixed.grad = torch.zeros_like(fixed)
+    
+        _owner_call(run, invalid_target)
+>       with pytest.raises(ValueError, match="fixed target gradient"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'fixed target gradient'
+E        Input: 'RND target must remain frozen and gradient-free'
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:1071: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[none]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[count_based]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init[icm]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_fixed_target_gradient_is_never_exported_as_lawful[per_world-adaptive_rnd]
+======================== 9 failed, 75 passed in 29.76s =========================

@@ -1,0 +1,35 @@
+{
+  "schema": "bac-bounded-causal-receipt-v1",
+  "candidate_tree": "d5cc3a3e28653e7b8bbcc4566a625561fdc2b60b",
+  "manifest_sha256": "734d9c821f4634ecce04c9ee5d760ab8e4434c355dd0c5d056f64be5bc27f312",
+  "results": {
+    "collection": {
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-collection/collection-custody.json",
+      "sha256": "05b1c96a2276f09a01ca3b222f9d1fa0b6e1c6be8fb5d79839377e8518ac356f"
+    },
+    "archive-gc-diagnostic": {
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-archive-gc-diagnostic/archive-gc-diagnostic-custody.json",
+      "sha256": "0cf43e928c8864e66f0205003dcb0e8cd407570a2ea7799fe037370560a16bd5"
+    },
+    "cohort-gc-diagnostic": {
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-cohort-gc-diagnostic/cohort-gc-diagnostic-custody.json",
+      "sha256": "aea60c70fa351f483c663c3e65acc54957e0ff1c88bc855edd99f546d15fb19c"
+    },
+    "archive-continuation": {
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-archive-continuation/archive-continuation-custody.json",
+      "sha256": "be548b2425ff3eb7326e482df74660d25de8f94c34f362ea267bcca51103ce33"
+    }
+  },
+  "static": {
+    "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-static-spec.json",
+    "spec_sha256": "d8cdc3c38eb2fcaf0f47a20a5028ee8b5eb2aaf35a80dbb2285e0d49a5a177bd",
+    "pass": [
+      "globalruff",
+      "globalblack734",
+      "defaults600",
+      "expressiondoc"
+    ],
+    "failed": "mypy7=ownedCP1+existingoracle6; oldBANK14removed"
+  },
+  "disposition": "GC qualification closed by sameordered2+3PASS andallarchive10PASS43.7571s, all814custody; sourceAstra scopedSPECQUALITYPASS. OwnedCPtypeerror requiresfix beforebroadqualification; no wholeBANK/parent/hardware completion."
+}

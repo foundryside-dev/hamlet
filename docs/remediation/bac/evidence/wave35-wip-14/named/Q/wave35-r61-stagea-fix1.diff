@@ -1,0 +1,85 @@
+diff --git a/tests/test_townlet/regressions/bac/test_bank_rng_custody.py b/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
+index e351cce8..91fc1cd8 100644
+--- a/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_bank_rng_custody.py
+@@ -22,22 +22,26 @@ def _run(compiled, family, scope, *, bootstrap=True):
+     assert run.policy.strategy == family and run.policy.curiosity_scope == scope
+     assert run.bank is run.roles["curiosity"] and run.bank_issuer.owner is run.bank
+     assert set(run.roles) == set("population curiosity curriculum exploration network optimizer scheduler replay selection".split())
+     return run, inputs
+ 
+ 
+ def _cycle(run, batch):
+     run.control_horizon = 1
+     _, reset = run.reset(batch, retired_world_ids=())
+     assert reset.accepted is run.accepted and run.env.world_phase == "active"
+-    run.step()
+-    assert run.ledger.vector_ticks == batch and run.replay.retained_transitions == run.ledger.eligible_transitions
++    eligible_before, retained_before = run.ledger.eligible_transitions, run.replay.retained_transitions
++    _, _, _, info, _ = run.step()
++    admitted = int(info["active_on_entry"].sum())
++    assert admitted > 0 and run.ledger.eligible_transitions == eligible_before + admitted
++    assert run.replay.retained_transitions == min(run.replay_capacity, retained_before + admitted)
++    assert run.ledger.vector_ticks == batch
+     _, closure, dispositions = run.close(batch, run.env.world_ids)
+     run.release_closed(batch, closure, dispositions)
+     assert run.ledger.completed_batch_episodes == batch
+ 
+ 
+ def _native(bank_state, family, scope):
+     if scope == "shared":
+         values = [bank_state["shared_backend"]["native"]]
+     else:
+         values = [row["backend"]["backend"] for row in bank_state["worlds"]]
+diff --git a/tests/test_townlet/regressions/bac/test_world_episode_identity.py b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+index 7fac007c..5b2a7fed 100644
+--- a/tests/test_townlet/regressions/bac/test_world_episode_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+@@ -84,22 +84,22 @@ def _selected_inputs(compiled, *, family, scope):
+     drive.update(strategy=family, base_weight=0.0 if family == "none" else 0.4, apply_modifiers=[])
+     training = selected.training.model_dump()
+     training["replay_buffer"]["batch_size"] = 2
+     training["intrinsic"]["rnd"].update(feature_dim=4, learning_rate=0.001)
+     training["intrinsic"].update(initial_weight=0.4, survival_window=10, min_survival_fraction=0.01)
+     training["intrinsic"]["annealing"].update(min_weight=0.01, threshold=100.0, decay_rate=0.9)
+     training["training_loop"]["max_steps_per_episode"] = 20
+     options = {
+         "curiosity_scope": {"scope": scope, "seed_policy": "legacy_shared_v1" if scope == "shared" else "world_id_derived_v1"},
+         "provider_parameter_source": "training",
++        "rnd": {"service_mode": "paced_fifo", "max_updates_per_tick": 1, "max_pending_rows": 4, "overflow_policy": "drop_oldest"},
+         "providers": {
+-            "rnd": {"service_mode": "paced_fifo", "max_updates_per_tick": 1, "max_pending_rows": 4, "overflow_policy": "drop_oldest"},
+             "count_based": {"quantization_width": 0.125, "max_entries": 4},
+             "icm": {
+                 "feature_dim": 4,
+                 "hidden_dim": 8,
+                 "learning_rate": 0.001,
+                 "inverse_weight": 0.8,
+                 "forward_weight": 0.2,
+                 "training_batch_size": 2,
+                 "max_pending_transitions": 4,
+             },
+@@ -203,21 +203,22 @@ class _Run:
+         authored["population"]["size"] = env.num_agents
+         authored["seed"] = env.vfs_random_state()["training_seed"]
+         training = TrainingV2Config.model_validate(authored)
+         options = resolve_bac_options(training.bac_options, training=training).options
+         brain = apply_training_overrides(env.universe.brain, training)
+         assert brain.architecture.token_set is not None
+         self.q = NetworkFactory.build_token_set(
+             config=brain.architecture.token_set, action_dim=env.action_dim, token_spec=env.token_spec
+         ).to(env.device)
+         self.optimizer, self.scheduler = OptimizerFactory.build(config=brain.optimizer, parameters=self.q.parameters())
+-        self.replay = ReplayBuffer(capacity=brain.replay.capacity, device=env.device)
++        self.replay_capacity = brain.replay.capacity
++        self.replay = ReplayBuffer(capacity=self.replay_capacity, device=env.device)
+         effective = env.universe.effective_run
+         self.curriculum = build_curriculum(
+             training, curriculum_options=effective.options.curriculum, static_policy=effective.static_policy, device=env.device
+         )
+         self.curriculum.initialize_population(env.num_agents)
+         self.policy = resolve_exploration_policy(
+             drive_intrinsic=drive_intrinsic,
+             training=training,
+             options=options,
+         )

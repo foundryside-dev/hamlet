@@ -1,0 +1,22 @@
+diff --git a/tests/test_townlet/regressions/bac/test_world_episode_identity.py b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+index 5b2a7fed..4ef2280e 100644
+--- a/tests/test_townlet/regressions/bac/test_world_episode_identity.py
++++ b/tests/test_townlet/regressions/bac/test_world_episode_identity.py
+@@ -12,6 +12,7 @@ from dataclasses import replace
+ from pathlib import Path
+ from types import SimpleNamespace
+ 
++import numpy as np
+ import pytest
+ import torch
+ 
+@@ -117,6 +118,9 @@ def _same(left, right):
+         assert isinstance(right, torch.Tensor)
+         assert left.dtype == right.dtype and left.device == right.device
+         assert left.shape == right.shape and torch.equal(left, right)
++    elif isinstance(left, np.ndarray):
++        assert type(left) is type(right) and left.dtype == right.dtype
++        assert left.shape == right.shape and np.array_equal(left, right)
+     elif isinstance(left, dict):
+         assert left.keys() == right.keys()
+         for key in left:

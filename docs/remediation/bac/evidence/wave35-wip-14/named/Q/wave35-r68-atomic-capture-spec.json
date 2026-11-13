@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r68-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r68-atomic-capture",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "atomic-capture",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_capture_keeps_native_and_gradients_under_one_exclusion",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

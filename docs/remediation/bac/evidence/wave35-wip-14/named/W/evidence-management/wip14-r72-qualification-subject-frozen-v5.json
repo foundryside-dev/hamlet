@@ -1,0 +1,359 @@
+{
+  "schema": "bac-wip14-qualification-subject-draft-v1",
+  "status": "FROZEN FOR INDEPENDENT EVIDENCE REVIEW; NOT PUBLICATION AUTHORITY",
+  "candidate_manifest": {
+    "path": "wave35/r72-candidate.json",
+    "sha256": "873bf5e23b2e0166d72095efbe93b4c832ed2f577700f5ff1a86531744221326"
+  },
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+  "terminal_round": 72,
+  "interval_start": 59,
+  "execution_subtrees": {
+    "src": "6c6768fffd2ce35f148402a1ccef90dffe7f9c37",
+    "tests": "5aa1336e4338caa0088065609efe9064536a5fb7",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "component_receipts": [
+    {
+      "root": "W",
+      "path": "wave35/r64-stageA-receipt.json",
+      "sha256": "2c1b9e8b0e5f7abb7df7078d1c5618efba7a444dc32a010be960aaf12f64719e",
+      "candidate_tree": "3f4eda577080aeffb26a6530b33d32b1e689e246",
+      "scope": "Historical source-bound component/causal/diagnostic evidence; not terminal R72 execution."
+    },
+    {
+      "root": "W",
+      "path": "wave35/r67-owner-capture-receipt.json",
+      "sha256": "04c030043c7df163b9597484b291601290108cf55382e7526057ab62f898af23",
+      "candidate_tree": "04af55dcf99559c949b16af6fa92effd30b54f6f",
+      "scope": "Historical source-bound component/causal/diagnostic evidence; not terminal R72 execution."
+    },
+    {
+      "root": "W",
+      "path": "wave35/r69-causal-receipt.json",
+      "sha256": "c180760947db228506105bf69b5b960828e37223b347760e72cc642e8246a234",
+      "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+      "scope": "Historical source-bound component/causal/diagnostic evidence; not terminal R72 execution."
+    },
+    {
+      "root": "W",
+      "path": "wave35/r70-diagnostic-receipt.json",
+      "sha256": "6ca380de8b75862307996009c740d60e621c790cb9b60ea29b3c527252e66191",
+      "candidate_tree": "6c9a0e029769056cf27a379e983261c169b8da57",
+      "scope": "Historical source-bound component/causal/diagnostic evidence; not terminal R72 execution."
+    },
+    {
+      "root": "W",
+      "path": "wave35/r71-causal-receipt.json",
+      "sha256": "7b18943fb525af2b723164ad321ed80cb801276657ba4215b53ec379d28097b0",
+      "candidate_tree": "d5cc3a3e28653e7b8bbcc4566a625561fdc2b60b",
+      "scope": "Historical source-bound component/causal/diagnostic evidence; not terminal R72 execution."
+    },
+    {
+      "root": "W",
+      "path": "wave35/r72-bank-component-receipt.json",
+      "sha256": "e2bad20684bfe39082cf8979deac2b340f9585994b7705bea27a75e7efeb35d6",
+      "candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+      "scope": "All five selected curiosity families/both scopes, learned-state fresh-episode restore, same authentic-input BANK exact continuation, saved optimizer/native/gradient configuration, archive fresh/clone future learning, cohort lifetime/currentness and isolated poison/install-exit behavior. C10/K01 defer independent exact simulator trajectory."
+    }
+  ],
+  "required_next": [
+    "Full current parent/Q/replay/optimizer/scheduler/curriculum joint restoration and durable all-child publication",
+    "Actual ordinary runner/oracle integration, including deliberately unqualified known runner case deselected from this component suite and six oracle type errors",
+    "Full repository integration/coverage>=70/slow/applicablehardware/fresh54requirements22lenseslearningmatrix/finalremoteCI",
+    "CUDAserver access/profiles/exactsource hardware execution still unavailable; skips notpasses",
+    "Sourceverifieddocs/evidencepublication and exactremoteSHA/CI pending"
+  ],
+  "scope": "Bounded BANK/CP R72; core and historical components remain source-bound; whole acceptance open",
+  "overlap": "Independent155 and affected15 overlap coherent1290; no summing of reruns/collections/CLI as unique cases.",
+  "missing_facts": [
+    "Independent terminal evidence review of these exact frozen subject/index bytes and candidate manifest, with actual reviewer/producer independence evidence.",
+    "After review, root seals final receipt and performs final-mode selection, exact input/reuse rehash, publication guards, remote identity and CI verification."
+  ],
+  "observed_integrity_mismatches": [],
+  "unresolved_helper_hashes": [],
+  "attempt_index_artifact": {
+    "root": "W",
+    "path": "evidence-management/wip14-r59-r72-attempt-index-frozen-v5.json",
+    "sha256": "c012995f3a31bc6700374a9d804f46706c9cecc027de3de02e375e09d9b8b3b6"
+  },
+  "authoritative_terminal_component": {
+    "root": "W",
+    "path": "wave35/r72-bank-component-receipt.json",
+    "sha256": "e2bad20684bfe39082cf8979deac2b340f9585994b7705bea27a75e7efeb35d6"
+  },
+  "terminal_component_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-BANK-CP-STAGEB-R72-REVIEW.md",
+    "sha256": "5e93e98ce16b671125a1f8dabaf532f08a3fba4d387b4f65e4370657196f181d",
+    "role": "sealed component application review",
+    "reviewer": "bac_astra_bank_stageb_review; gpt-6-astra medium",
+    "producer": "bac_bank_cp_stageb; gpt-6-sol high",
+    "independent": true,
+    "independence_evidence": {
+      "root": "W",
+      "path": "wave35/r72-bank-component-receipt.json",
+      "sha256": "e2bad20684bfe39082cf8979deac2b340f9585994b7705bea27a75e7efeb35d6"
+    },
+    "scope": "All five selected curiosity families/both scopes, learned-state fresh-episode restore, same authentic-input BANK exact continuation, saved optimizer/native/gradient configuration, archive fresh/clone future learning, cohort lifetime/currentness and isolated poison/install-exit behavior. C10/K01 defer independent exact simulator trajectory.",
+    "disposition": "SPEC PASS; QUALITY PASS; zero unresolved material component findings",
+    "reviewed_subject": [
+      {
+        "root": "W",
+        "path": "wave35/r72-candidate.json",
+        "sha256": "873bf5e23b2e0166d72095efbe93b4c832ed2f577700f5ff1a86531744221326"
+      }
+    ],
+    "limitation": "Application review only, not subsequently drafted full evidence-index subject review."
+  },
+  "terminal_facts": {
+    "coherent": "1290PASS2CUDAunavailableSKIP183.0770147s",
+    "independent": "sameBANK155 subsetPASS141.4772329s",
+    "archive_controls": "15PASS32.5532684s",
+    "compiler_cli": "34packs35actualprocessPASS165.8923612s",
+    "static": "RuffBlack734/default600/expressionPASS; owned2mypyPASS; global6existingoracleerrors",
+    "source_process_custody": "814source573config13artifact/14registryMAIN1/controllerworkers+13coherentand4independentactualchildren verified"
+  },
+  "collection_fact": "1292 selected /1293 collected; one known ordinary runner deselected, still required",
+  "verifier_dependency_audit": {
+    "root": "W",
+    "path": "evidence-management/wip14-verifier-dependency-audit.json",
+    "sha256": "d381131a9271082bd3940e0520334c78dff4aefd0c5cb27c28e517f5a9711e2b"
+  },
+  "approved_document_integration": {
+    "root": "W",
+    "path": "wave35/r72-approved-document-integration.json",
+    "sha256": "584549df49e20763822eb912cca1d5e1bc604545f5ec3ce8f755107412df6df4"
+  },
+  "documents": [
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md",
+      "sha256": "9c469e9009dd3d5e23a9469d5e55d60d71b305971fbcc1d7e43caca2d899cdf4",
+      "role": "approved current document",
+      "prior_sha256": "2c1adde08dcbdff182906e227f394d82b560674190deaa8f3605346ab80e146b"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+      "sha256": "278ec39ba2955853d61385459fd7b09a2be05442a618527f59312aa995cff92d",
+      "role": "approved current document",
+      "prior_sha256": "9edd156dc0966e78d5c360d06a7c14db5e7bb45077f17622856ccd9c4c67ca92"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "sha256": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c",
+      "role": "approved current document",
+      "prior_sha256": "bf0baea43a7222200f48e8c1fb2bf14cdbfe7ac1fd70577bbb845620959a2c9b"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/STATUS.md",
+      "sha256": "4032a33374ed042dd75c52d240c8399652857d7bdec8cb29f93879e1d0ef8e90",
+      "role": "approved current document",
+      "prior_sha256": "f268d7ca52d88ffa32a3c44ded67715638ca891aa8c686936c27a8b6eab2e1ee"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/EVIDENCE-PROCESS.md",
+      "sha256": "95c787200b0a7f3f4cceaf0cad2b899fcfb9f2053a3ff0fbffd17856f4d3f07d",
+      "role": "approved evidence publication process",
+      "prior_sha256": "cbf4e48bcbbfe4618168719add930d1a35c3eef49683da3037e5f7f5d9a3ca97"
+    }
+  ],
+  "documentation_reviews": [
+    {
+      "root": "W",
+      "path": "wave35-preparation/R72-DOCUMENTATION-REVIEW.md",
+      "sha256": "dee5932dfa4e6f052f7adeabd5deb0edaeb8dadb3e43f2a025d3b458fbdae2e3",
+      "role": "source-truth documentation review: CURRENT-CURIOSITY-BANK-CONTRACT.md",
+      "reviewer": "bac_astra_bank_stageb_review; gpt-6-astra medium",
+      "producer": "bac_bank_cp_stageb; gpt-6-sol high",
+      "independent": true,
+      "independence_evidence": {
+        "root": "W",
+        "path": "evidence-management/wip14-r72-document-independence-attribution.json",
+        "sha256": "2dee89cec2055a9ec9f08af179b6d20111eceba0f19e0f052ef45f6ced322a7b"
+      },
+      "scope": "This exact approved document and R72 bounded source truth; no whole-programme acceptance",
+      "disposition": "Final SPEC PASS / QUALITY PASS; initial core framing finding resolved in sealed addendum",
+      "reviewed_subject": [
+        {
+          "root": "R",
+          "path": "docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md",
+          "sha256": "9c469e9009dd3d5e23a9469d5e55d60d71b305971fbcc1d7e43caca2d899cdf4"
+        }
+      ]
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/R72-DOCUMENTATION-REVIEW.md",
+      "sha256": "dee5932dfa4e6f052f7adeabd5deb0edaeb8dadb3e43f2a025d3b458fbdae2e3",
+      "role": "source-truth documentation review: CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+      "reviewer": "bac_astra_bank_stageb_review; gpt-6-astra medium",
+      "producer": "bac_bank_cp_stageb; gpt-6-sol high",
+      "independent": true,
+      "independence_evidence": {
+        "root": "W",
+        "path": "evidence-management/wip14-r72-document-independence-attribution.json",
+        "sha256": "2dee89cec2055a9ec9f08af179b6d20111eceba0f19e0f052ef45f6ced322a7b"
+      },
+      "scope": "This exact approved document and R72 bounded source truth; no whole-programme acceptance",
+      "disposition": "Final SPEC PASS / QUALITY PASS; initial core framing finding resolved in sealed addendum",
+      "reviewed_subject": [
+        {
+          "root": "R",
+          "path": "docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+          "sha256": "278ec39ba2955853d61385459fd7b09a2be05442a618527f59312aa995cff92d"
+        }
+      ]
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/R72-DOCUMENTATION-REVIEW.md",
+      "sha256": "dee5932dfa4e6f052f7adeabd5deb0edaeb8dadb3e43f2a025d3b458fbdae2e3",
+      "role": "source-truth documentation review: CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "reviewer": "bac_astra_bank_stageb_review; gpt-6-astra medium",
+      "producer": "bac_astra_atomic_capture_review; gpt-6-astra medium",
+      "independent": true,
+      "independence_evidence": {
+        "root": "W",
+        "path": "evidence-management/wip14-r72-document-independence-attribution.json",
+        "sha256": "2dee89cec2055a9ec9f08af179b6d20111eceba0f19e0f052ef45f6ced322a7b"
+      },
+      "scope": "This exact approved document and R72 bounded source truth; no whole-programme acceptance",
+      "disposition": "Final SPEC PASS / QUALITY PASS; initial core framing finding resolved in sealed addendum",
+      "reviewed_subject": [
+        {
+          "root": "R",
+          "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+          "sha256": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c"
+        }
+      ]
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/R72-DOCUMENTATION-REVIEW.md",
+      "sha256": "dee5932dfa4e6f052f7adeabd5deb0edaeb8dadb3e43f2a025d3b458fbdae2e3",
+      "role": "source-truth documentation review: STATUS.md",
+      "reviewer": "bac_astra_bank_stageb_review; gpt-6-astra medium",
+      "producer": "/root, using source-author facts",
+      "independent": true,
+      "independence_evidence": {
+        "root": "W",
+        "path": "evidence-management/wip14-r72-document-independence-attribution.json",
+        "sha256": "2dee89cec2055a9ec9f08af179b6d20111eceba0f19e0f052ef45f6ced322a7b"
+      },
+      "scope": "This exact approved document and R72 bounded source truth; no whole-programme acceptance",
+      "disposition": "Final SPEC PASS / QUALITY PASS; initial core framing finding resolved in sealed addendum",
+      "reviewed_subject": [
+        {
+          "root": "R",
+          "path": "docs/remediation/bac/STATUS.md",
+          "sha256": "4032a33374ed042dd75c52d240c8399652857d7bdec8cb29f93879e1d0ef8e90"
+        }
+      ]
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/WIP14-TOOLING-IMPLEMENTATION-REVIEW.md",
+      "sha256": "c15efdaab2c7bd7f9502184a9fd9e56f8d6e4f910de9f0e8f57a0f6e1b97e466",
+      "role": "tool and evidence-process integrity review",
+      "reviewer": "bac_astra_checkpoint14_tool_review; gpt-6-astra medium",
+      "producer": "bac_checkpoint14_tooling; gpt-6-sol high",
+      "independent": true,
+      "independence_evidence": {
+        "root": "W",
+        "path": "wave35/r72-approved-process-integration.json",
+        "sha256": "d4929ab3e06713edd3a67aad349665f38b83fb0c828e0c4907f27a4803ccf56b"
+      },
+      "scope": "Exact round3 evidence helper, synthetic tests and approved evidence-process bytes; not application or final subject review",
+      "disposition": "Independent 21 tests PASS; final scoped integrity rereview approved",
+      "reviewed_subject": [
+        {
+          "root": "W",
+          "path": "evidence-management/bac_checkpoint_delta.py",
+          "sha256": "33e992e31a2bfcdb0fa70fac315acc92ec3e961831b0d612c2ba8148c16ef8f8"
+        },
+        {
+          "root": "W",
+          "path": "evidence-management/test_checkpoint_delta.py",
+          "sha256": "8af61971bf01a7e2045d344fabad87905af4aaf0b5004418ecf98fa9e13941e2"
+        },
+        {
+          "root": "R",
+          "path": "docs/remediation/bac/EVIDENCE-PROCESS.md",
+          "sha256": "95c787200b0a7f3f4cceaf0cad2b899fcfb9f2053a3ff0fbffd17856f4d3f07d"
+        }
+      ]
+    }
+  ],
+  "publication_tree_distinction": "Root document/process intermediate tree 7cf433f7d47736f9da0b0ebddc2bb1d310b9a699 differs from executed R72 by design; source execution subtrees unchanged.",
+  "schema_diagnostic": {
+    "scope": "In-memory diagnostic only; draft status gate bypassed solely to inspect subsequent structure, never saved or used for plan/assembly",
+    "result": "Validates through attempts/source/descendants/process/children/component records; terminal review intentionally pending",
+    "helper_sha256": "33e992e31a2bfcdb0fa70fac315acc92ec3e961831b0d612c2ba8148c16ef8f8"
+  },
+  "approved_process_integration": {
+    "root": "W",
+    "path": "wave35/r72-approved-process-integration.json",
+    "sha256": "d4929ab3e06713edd3a67aad349665f38b83fb0c828e0c4907f27a4803ccf56b"
+  },
+  "tool_seals": {
+    "helper": {
+      "root": "W",
+      "path": "evidence-management/bac_checkpoint_delta.py",
+      "sha256": "33e992e31a2bfcdb0fa70fac315acc92ec3e961831b0d612c2ba8148c16ef8f8"
+    },
+    "tests": {
+      "root": "W",
+      "path": "evidence-management/test_checkpoint_delta.py",
+      "sha256": "8af61971bf01a7e2045d344fabad87905af4aaf0b5004418ecf98fa9e13941e2"
+    },
+    "report": {
+      "root": "W",
+      "path": "evidence-management/WIP14-TOOLING-REPORT.md",
+      "sha256": "763b5997ed348e420420d5e45aebd53968577f71de9b0401a31fa2761edd2560"
+    },
+    "review": {
+      "root": "W",
+      "path": "evidence-management/WIP14-TOOLING-IMPLEMENTATION-REVIEW.md",
+      "sha256": "c15efdaab2c7bd7f9502184a9fd9e56f8d6e4f910de9f0e8f57a0f6e1b97e466"
+    }
+  },
+  "global_type_transition": {
+    "R71": {
+      "errors": 7,
+      "files": 2,
+      "log": {
+        "root": "Q",
+        "path": "wave35-r71-static/mypy.log",
+        "sha256": "f8706c36a0b674cf4c51b23bf5c9051ab69fc868a9bb54bfd50d8d093880cc83"
+      }
+    },
+    "R72": {
+      "errors": 6,
+      "files": 1,
+      "log": {
+        "root": "Q",
+        "path": "wave35-r72-types/mypy.log",
+        "sha256": "4ea529af0c494933628d982814f712eacb2dc7c472fec04d13c403cfccaea1cd"
+      }
+    },
+    "scope": "Owned BANK/CP typing passes; six oracle errors remain; retain failed R71 and R72 global checks."
+  },
+  "historical_metadata_limits": [
+    "Absolute runtime start/end timestamps were not recorded in raw result JSON; positive actual duration_seconds retained with explicit absence reason.",
+    "Ordinary verifier version use is root-attested and published-byte verified, not a fabricated per-run self-recorded verifier hash.",
+    "Failed, unrun, diagnostic, R65 partial capture and R64 premature-launch attempts remain distinct and immutable."
+  ]
+}

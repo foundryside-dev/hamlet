@@ -1,0 +1,82 @@
+{
+  "schema": "bac-bounded-causal-receipt-v1",
+  "created": "2026-11-13T05:44:59.631363+00:00",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r69-candidate.json",
+  "manifest_sha256": "a91b44e1c848e694b50949492de63c2d1c7d9d5114787d277d50c27015ecbb25",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "checks": {
+    "private-controls": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-private-controls/private-controls-result.json",
+      "result_sha256": "c8e9c594a79efbde7f760a6bc071064d1ddd1c7543806438e6f974af3586a172",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-private-controls/private-controls-custody.json",
+      "custody_sha256": "63f80d6d8c73d0ded78c1113cba78f8bfd6ed00a233c952559e95172c653258d"
+    },
+    "existing-fixture": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-existing-fixture/existing-fixture-result.json",
+      "result_sha256": "76e489b5a8e3317a5fd266a0bcf90d5d471bc1ef5f60c854ea1f5d6b9cc0890c",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-existing-fixture/existing-fixture-custody.json",
+      "custody_sha256": "9cf084156d3cefff3f05e901b11b75c0a2224f67c7d1984cdc00be764f9f8894"
+    },
+    "family-controls": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-family-controls/family-controls-result.json",
+      "result_sha256": "fd4ccb80faefcb1a1af1fcebef7ca1b93da436996656ab64c7d515817f54564a",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-family-controls/family-controls-custody.json",
+      "custody_sha256": "f751dbc22cfe2d4eed24cdfc2117199d17e118cdbd04d0e862f233175d375db6"
+    },
+    "archive-continuation": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-archive-continuation/archive-continuation-result.json",
+      "result_sha256": "dc8dd7edfc86284caa4855544047cf71d6cf8ed5f1827964ee5a25bd63651bd2",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-archive-continuation/archive-continuation-negative-custody.json",
+      "custody_sha256": "94680a9d7b96439e9e8b473aa32207ec1ef8a76ddae0dae5c3dab2ca098aebc7"
+    },
+    "native-controls": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-native-controls/native-controls-result.json",
+      "result_sha256": "89b903795f0f625a25de02feb51dd1442018318338ee6bc085d226f9c47817d6",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-native-controls/native-controls-negative-custody.json",
+      "custody_sha256": "a7c73e8d3c5171b59d9dabd19f25d93de3e40f5d69550f35a1e7d36cda069be4"
+    },
+    "custody-controls": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-custody-controls/custody-controls-result.json",
+      "result_sha256": "bfd2d821a2a762406f22bacbc4c563f92ace324b9d298d0e88cd4765b9bb200e",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-custody-controls/custody-controls-negative-custody.json",
+      "custody_sha256": "ce44127a098384d5bbb6f7944dd9cbcc394044eccfeae3dea47aae482e966cc0"
+    },
+    "poison-cuts": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts-result.json",
+      "result_sha256": "bb7dfa765e676acab4db656b9e6d9a12f2d4da1d35a841b0cedc41db18cd54f1",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts-custody.json",
+      "custody_sha256": "698ac15c6f48d92946f4d61216550e74d20585d648f8da55939e17b32eae6519"
+    }
+  },
+  "child_custody": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts-custody.json",
+      "sha256": "698ac15c6f48d92946f4d61216550e74d20585d648f8da55939e17b32eae6519"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts/spawn-custody-bank_restore_poison_setter.json",
+      "sha256": "65c68f12293e13e5cc6a58114f087d36b69eca061a795722073ab4e496289069"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts/spawn-custody-bank_restore_poison_completion.json",
+      "sha256": "7c491950041c9b7ee46386d62b00e9355230729260c05c1122756ff7b07ca2a7"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts/spawn-custody-bank_restore_poison_cleanup.json",
+      "sha256": "49e96ab81feb56e8c0254dc196d393b3777820e8f128e6c845f9fb96be46e723"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts/spawn-custody-bank_install_poison_completion.json",
+      "sha256": "77f806ca0ebaa0a7008b3eff4a812f9c301d1e639b97c782bfb7b7bd30ecbc3b"
+    }
+  ],
+  "overlap": "private4 subset of family20; selections are not additive aggregate test totals",
+  "disposition": "NOT QUALIFIED: archive8/cohort2 membership GC refusal unresolved; native9 two test-oracle errors; all exact source/process custody passed",
+  "open": [
+    "GC owner retirement attribution before any production/test lifetime repair",
+    "Correct standalone RNG entrypoint and native target-refusal regex",
+    "independent adversarial execution after causal repairs",
+    "coherent owner suites/global gates/docs/evidence/remotecheckpoint"
+  ],
+  "qualified_scope": "All20 family restored liveness/equal-input witnesses; four genuine isolated BANK poisoncuts; originalfixture67; narrow ndarray fixture independent SPECQUALITYPASS. Not whole BANK/parent/BAC/hardware qualification."
+}

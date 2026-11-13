@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "0025129671a00923ade12102ea179dae472d0e8b",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: fourth reset observation(0, 1): 0.4285714328289032 != 0.7142857313156128",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-none]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

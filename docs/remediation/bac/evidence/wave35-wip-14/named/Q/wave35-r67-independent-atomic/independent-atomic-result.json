@@ -1,0 +1,25 @@
+{
+  "name": "independent-atomic",
+  "exit_code": 0,
+  "seconds": 27.910327196121216,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_capture.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r67-independent-atomic/independent-atomic.log",
+  "sha256": "1afd2d0cc9addca7f2b01381b10aa3ab3228e3c15dd9013a0d013f8527219155",
+  "candidate_tree": "04af55dcf99559c949b16af6fa92effd30b54f6f",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "f256db6b0a8759ef5a15501fe1a637f4f8d62c09dc224e999ec47eb4aa29f102",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

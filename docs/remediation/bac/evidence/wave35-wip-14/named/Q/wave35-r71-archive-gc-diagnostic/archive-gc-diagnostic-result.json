@@ -1,0 +1,26 @@
+{
+  "name": "archive-gc-diagnostic",
+  "exit_code": 0,
+  "seconds": 19.724799871444702,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-none]",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-count_based]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r71-archive-gc-diagnostic/archive-gc-diagnostic.log",
+  "sha256": "e61eeb96d92ae6545ec434861080c27229b0b539ee91e639f9313e7e848ecec5",
+  "candidate_tree": "d5cc3a3e28653e7b8bbcc4566a625561fdc2b60b",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "734d9c821f4634ecce04c9ee5d760ab8e4434c355dd0c5d056f64be5bc27f312",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

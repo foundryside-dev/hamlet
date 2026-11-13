@@ -1,0 +1,8 @@
+{
+  "exitcode": 0,
+  "manifest_sha256": "f256db6b0a8759ef5a15501fe1a637f4f8d62c09dc224e999ec47eb4aa29f102",
+  "message": "owner capture poison cleanup fail closed",
+  "process_pid": 18898,
+  "qualified": true,
+  "queued_pid": 18898
+}

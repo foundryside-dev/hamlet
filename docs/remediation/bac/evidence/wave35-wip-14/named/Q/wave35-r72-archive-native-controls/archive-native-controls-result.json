@@ -1,0 +1,26 @@
+{
+  "name": "archive-native-controls",
+  "exit_code": 0,
+  "seconds": 32.55326843261719,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r72-archive-native-controls/archive-native-controls.log",
+  "sha256": "00e44e8b116f086147b571843d0ddaf04c67ee94c2f9de7183920ed3ca0ab948",
+  "candidate_tree": "c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "873bf5e23b2e0166d72095efbe93b4c832ed2f577700f5ff1a86531744221326",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

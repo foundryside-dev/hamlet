@@ -1,0 +1,56 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py F            [100%]
+
+=================================== FAILURES ===================================
+_____ test_bank_reentry_and_peer_callback_refuse_before_nested_native_work _____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_bank_reentry_and_peer_callback_refuse_before_nested_native_work(compiled):
+        run, _ = _run(compiled, "rnd", "shared")
+        peer, _ = _run(compiled, "count_based", "per_world")
+        saved = _bank(run)
+        original = run.bank._report
+        attempts = []
+    
+        def report(estimate):
+            with pytest.raises(RuntimeError):
+                run.bank.checkpoint_state()
+            with pytest.raises(RuntimeError):
+                peer.bank.checkpoint_state()
+            attempts.append(estimate.operation)
+            original(estimate)
+    
+        run.bank._report = report
+>       token = run.bank.prepare_restore(state=saved, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:306: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:131: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1176: in prepare_restore
+    self._report_transport(state, "restore", parent_restore)
+src/townlet/exploration/scoped_curiosity.py:1041: in _report_transport
+    self._report(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+estimate = AllocationEstimate(schema='curiosity-allocation-estimate-v1', operation='restore', scope='shared', device='cpu', model... tensors', 'allocator/activation/library workspace', 'parent callback copies and retention from earlier preparations'))
+
+    def report(estimate):
+>       with pytest.raises(RuntimeError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:298: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_reentry_and_peer_callback_refuse_before_nested_native_work
+============================== 1 failed in 4.02s ===============================

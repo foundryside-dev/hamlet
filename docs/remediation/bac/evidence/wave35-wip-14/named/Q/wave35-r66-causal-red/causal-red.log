@@ -1,0 +1,59 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_world_rng_capture.py F           [100%]
+
+=================================== FAILURES ===================================
+__ test_atomic_capture_one_serializer_same_parameters_and_detached_gradients ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6792d1e060>
+
+    def test_atomic_capture_one_serializer_same_parameters_and_detached_gradients(compiled: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Repeating serialization or cloning before capture loses this identity/state."""
+        _, _, owner, _ = _private(compiled, "rnd")
+        expected_gradients = owner.call(lambda backend, sources: bootstrap._mixed_gradients(backend, "rnd"), lineage=None)
+        backend = _raw(owner)
+        parameters = _parameters(backend, "rnd")
+        assert parameters and any(parameter.grad is None for parameter in parameters)
+        assert any(parameter.grad is not None and bool(torch.count_nonzero(parameter.grad)) for parameter in parameters)
+        expected_native = owner.snapshot(lineage=None)["backend"]
+        real_checkpoint = type(backend).checkpoint_state
+        native_calls: list[tuple[int, tuple[int, ...]]] = []
+        capture_calls: list[tuple[int, tuple[int, ...]]] = []
+    
+        def checkpoint(candidate: Any) -> Any:
+            assert candidate is backend
+            native_calls.append((id(candidate), tuple(map(id, _parameters(candidate, "rnd")))))
+            # An equal native payload would hide this nonserialized side effect if
+            # an implementation called checkpoint_state a second time for RNG.
+            if len(native_calls) > 1:
+                for parameter in _parameters(candidate, "rnd"):
+                    parameter.grad = torch.full_like(parameter, 19.0)
+            return real_checkpoint(candidate)
+    
+        def capture(candidate: Any) -> dict[str, Any]:
+            assert candidate is backend and len(native_calls) == 1
+            capture_calls.append((id(candidate), tuple(map(id, _parameters(candidate, "rnd")))))
+            paired, gradients = bootstrap._pairing(candidate, "rnd")
+            assert paired
+            # Return actual Parameters and borrowed gradients inside value transport;
+            # the public result must contain only detached independent tensors.
+            return {"gradients": gradients, "borrowed": [parameter.grad for parameter in parameters], "weights": parameters}
+    
+        before = bootstrap._ambient()
+        with monkeypatch.context() as patch:
+            patch.setattr(type(backend), "checkpoint_state", checkpoint)
+>           envelope, auxiliary = owner.snapshot_with_capture(capture, lineage=None)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'OwnedWorldBackend' object has no attribute 'snapshot_with_capture'
+
+tests/test_townlet/regressions/bac/test_world_rng_capture.py:105: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_rng_capture.py::test_atomic_capture_one_serializer_same_parameters_and_detached_gradients
+============================== 1 failed in 3.36s ===============================

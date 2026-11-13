@@ -1,0 +1,25 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "6c9a0e029769056cf27a379e983261c169b8da57",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: RNG preparation membership changed",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install[shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install[per_world]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

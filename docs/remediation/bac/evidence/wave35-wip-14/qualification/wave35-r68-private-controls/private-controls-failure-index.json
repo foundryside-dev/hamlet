@@ -1,0 +1,33 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "470af0e048ebf40fe5cf491d9a206414d6c35e32",
+  "unique_node_phase_failures": 4,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[per_world-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[per_world-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

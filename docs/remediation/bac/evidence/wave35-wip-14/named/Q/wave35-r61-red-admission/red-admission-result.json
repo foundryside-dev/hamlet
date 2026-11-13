@@ -1,0 +1,25 @@
+{
+  "name": "red-admission",
+  "exit_code": 1,
+  "seconds": 8.685331344604492,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_reentry_and_peer_callback_refuse_before_nested_native_work",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r61-red-admission/red-admission.log",
+  "sha256": "d344cce9bc7ea780119605ef0bddebd5f9697c651a7af87873a3219ac9f0e427",
+  "candidate_tree": "adc0e0ce38785f66c7d9d6dd162388b4a3f9ea7d",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "bd2765b3dbd0b8395f9e832984bf9777321ee2c7d54b270c34b240d8cde8b6ef",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

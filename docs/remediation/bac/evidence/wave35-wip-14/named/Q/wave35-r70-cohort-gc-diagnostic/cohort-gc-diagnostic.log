@@ -1,0 +1,139 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py .GC_MEMBERSHIP cohort-before-prepare {'generation': 8, 'revision': 47, 'currency': 132, 'bank_participant': 140093568790272, 'members': {140093683571824: (140093686313184, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a25659b20; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a6870e0>), 140093683571968: (140093686316544, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a2565bba0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a1a687e00>), 140093570272720: (140093570451408, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a137765c0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a138087d0>), 140093570278000: (140093570452688, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a137f3290; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13808cd0>), 140093568790272: (140093568856016, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>), 140093568790320: (140093569904592, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>)}, 'cohort': [], 'tokens': {}}
+GC_MEMBERSHIP cohort-after-prepare {'generation': 9, 'revision': 49, 'currency': 132, 'bank_participant': 140093568790272, 'members': {140093683571824: (140093686313184, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a25659b20; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a6870e0>), 140093683571968: (140093686316544, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a2565bba0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a1a687e00>), 140093570272720: (140093570451408, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a137765c0; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a138087d0>), 140093570278000: (140093570452688, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a137f3290; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13808cd0>), 140093568790272: (140093568856016, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>), 140093568790320: (140093569904592, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>), 140093568794352: (140093569900032, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>)}, 'cohort': [140093568856016, 140093569900032], 'tokens': {140093568681792: (140093568790272, 9)}}
+GC_MEMBERSHIP cohort-after-gc {'generation': 9, 'revision': 49, 'currency': 132, 'bank_participant': 140093568790272, 'members': {140093683571824: (10519792, 'builtins.NoneType', <weakref at 0x7f6a25659b20; dead>), 140093683571968: (10519792, 'builtins.NoneType', <weakref at 0x7f6a2565bba0; dead>), 140093570272720: (10519792, 'builtins.NoneType', <weakref at 0x7f6a137765c0; dead>), 140093570278000: (10519792, 'builtins.NoneType', <weakref at 0x7f6a137f3290; dead>), 140093568790272: (140093568856016, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>), 140093568790320: (140093569904592, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>), 140093568794352: (140093569900032, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>)}, 'cohort': [140093568856016, 140093569900032], 'tokens': {140093568681792: (140093568790272, 9)}}
+GC_MEMBERSHIP cohort-after-install-attempt {'generation': 13, 'revision': 50, 'currency': 133, 'bank_participant': 140093568790272, 'members': {140093568790272: (140093568856016, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>), 140093568790320: (140093569904592, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>), 140093568794352: (140093569900032, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>)}, 'cohort': [], 'tokens': {140093568681792: (140093568790272, 9)}}
+FGC_MEMBERSHIP cohort-before-prepare {'generation': 20, 'revision': 55, 'currency': 151, 'bank_participant': 140093867844016, 'members': {140093568790272: (140093568856016, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>), 140093568790320: (140093569904592, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>), 140093568794352: (140093569900032, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>), 140093867844016: (140093683486864, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>), 140093867843968: (140093873354272, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>), 140093867842480: (140093872975184, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>)}, 'cohort': [], 'tokens': {140093568681792: (140093568790272, 9)}}
+GC_MEMBERSHIP cohort-after-prepare {'generation': 24, 'revision': 61, 'currency': 171, 'bank_participant': 140093867844016, 'members': {140093568790272: (140093568856016, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a136f6390; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a13682fd0>), 140093568790320: (140093569904592, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a136f62a0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13782fd0>), 140093568794352: (140093569900032, 'townlet.exploration.world_curiosity_state.SharedWorldBackend', <weakref at 0x7f6a25bd23e0; to 'townlet.exploration.world_curiosity_state.SharedWorldBackend' at 0x7f6a13781e00>), 140093867844016: (140093683486864, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>), 140093867843968: (140093873354272, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>), 140093867842480: (140093872975184, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>), 140093568793152: (140093569905808, 'townlet.exploration.world_curiosity_state.WorldRNGState', <weakref at 0x7f6a13799a30; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a13783490>), 140093568784800: (140093686754320, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d3a0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1a6f2c10>), 140093568793488: (140093873108336, 'townlet.exploration.world_curiosity_state.WorldRNGState', <weakref at 0x7f6a1a49ef70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a258ab570>), 140093570276704: (140093569936752, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49dcb0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1378ad70>)}, 'cohort': [140093683486864, 140093569905808, 140093873108336, 140093686754320, 140093569936752], 'tokens': {140093568681792: (140093568790272, 9), 140093570273584: (140093867844016, 24)}}
+GC_MEMBERSHIP cohort-after-gc {'generation': 24, 'revision': 61, 'currency': 171, 'bank_participant': 140093867844016, 'members': {140093568790272: (10519792, 'builtins.NoneType', <weakref at 0x7f6a136f6390; dead>), 140093568790320: (10519792, 'builtins.NoneType', <weakref at 0x7f6a136f62a0; dead>), 140093568794352: (10519792, 'builtins.NoneType', <weakref at 0x7f6a25bd23e0; dead>), 140093867844016: (140093683486864, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>), 140093867843968: (140093873354272, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>), 140093867842480: (140093872975184, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>), 140093568793152: (140093569905808, 'townlet.exploration.world_curiosity_state.WorldRNGState', <weakref at 0x7f6a13799a30; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a13783490>), 140093568784800: (140093686754320, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d3a0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1a6f2c10>), 140093568793488: (140093873108336, 'townlet.exploration.world_curiosity_state.WorldRNGState', <weakref at 0x7f6a1a49ef70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a258ab570>), 140093570276704: (140093569936752, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49dcb0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1378ad70>)}, 'cohort': [140093683486864, 140093569905808, 140093873108336, 140093686754320, 140093569936752], 'tokens': {140093570273584: (140093867844016, 24)}}
+GC_MEMBERSHIP cohort-after-install-attempt {'generation': 27, 'revision': 62, 'currency': 172, 'bank_participant': 140093867844016, 'members': {140093867844016: (140093683486864, 'townlet.exploration.scoped_curiosity.CuriosityBank', <weakref at 0x7f6a1a49f240; to 'townlet.exploration.scoped_curiosity.CuriosityBank' at 0x7f6a1a3d5090>), 140093867843968: (140093873354272, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a137d8cc0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a258e7620>), 140093867842480: (140093872975184, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d800; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a2588ad50>), 140093568793152: (140093569905808, 'townlet.exploration.world_curiosity_state.WorldRNGState', <weakref at 0x7f6a13799a30; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a13783490>), 140093568784800: (140093686754320, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49d3a0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1a6f2c10>), 140093568793488: (140093873108336, 'townlet.exploration.world_curiosity_state.WorldRNGState', <weakref at 0x7f6a1a49ef70; to 'townlet.exploration.world_curiosity_state.WorldRNGState' at 0x7f6a258ab570>), 140093570276704: (140093569936752, 'townlet.exploration.world_curiosity_state.OwnedWorldBackend', <weakref at 0x7f6a1a49dcb0; to 'townlet.exploration.world_curiosity_state.OwnedWorldBackend' at 0x7f6a1378ad70>)}, 'cohort': [], 'tokens': {140093570273584: (140093867844016, 24)}}
+F
+
+=================================== FAILURES ===================================
+_____ test_offside_cohort_stays_alive_through_gc_and_token_install[shared] _____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6a1375dcd0>
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_offside_cohort_stays_alive_through_gc_and_token_install(compiled, monkeypatch, scope):
+        from townlet.exploration.world_curiosity_state import OwnedWorldBackend, SharedWorldBackend, WorldRNGState
+    
+        run, _ = _run(compiled, "rnd", scope)
+        saved = _bank(run)
+        refs = []
+    
+        def track(factory):
+            def record(*args, **kwargs):
+                value = factory(*args, **kwargs)
+                refs.append(weakref.ref(value))
+                return value
+    
+            return record
+    
+        for cls, name in ((WorldRNGState, "create"), (OwnedWorldBackend, "construct"), (SharedWorldBackend, "reserve")):
+            monkeypatch.setattr(cls, name, track(getattr(cls, name)))
+        _gc_membership(run.bank, "cohort-before-prepare")
+        token = run.bank.prepare_restore(state=saved, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+        prepared_membership = _gc_membership(run.bank, "cohort-after-prepare")
+        gc.collect()
+        collected_membership = _gc_membership(run.bank, "cohort-after-gc")
+        assert set(prepared_membership["cohort"]).issubset({row[0] for row in collected_membership["members"].values() if row[2]() is not None})
+        assert refs and all(reference() is not None for reference in refs), "preparation lost a registered lifetime owner"
+        try:
+>           run.bank.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:788: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f6a25c0c830>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+___ test_offside_cohort_stays_alive_through_gc_and_token_install[per_world] ____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6a1375e780>
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_offside_cohort_stays_alive_through_gc_and_token_install(compiled, monkeypatch, scope):
+        from townlet.exploration.world_curiosity_state import OwnedWorldBackend, SharedWorldBackend, WorldRNGState
+    
+        run, _ = _run(compiled, "rnd", scope)
+        saved = _bank(run)
+        refs = []
+    
+        def track(factory):
+            def record(*args, **kwargs):
+                value = factory(*args, **kwargs)
+                refs.append(weakref.ref(value))
+                return value
+    
+            return record
+    
+        for cls, name in ((WorldRNGState, "create"), (OwnedWorldBackend, "construct"), (SharedWorldBackend, "reserve")):
+            monkeypatch.setattr(cls, name, track(getattr(cls, name)))
+        _gc_membership(run.bank, "cohort-before-prepare")
+        token = run.bank.prepare_restore(state=saved, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+        prepared_membership = _gc_membership(run.bank, "cohort-after-prepare")
+        gc.collect()
+        collected_membership = _gc_membership(run.bank, "cohort-after-gc")
+        assert set(prepared_membership["cohort"]).issubset({row[0] for row in collected_membership["members"].values() if row[2]() is not None})
+        assert refs and all(reference() is not None for reference in refs), "preparation lost a registered lifetime owner"
+        try:
+>           run.bank.install_restore(prepared=token)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:788: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/exploration/scoped_curiosity.py:146: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1409: in install_restore
+    process_rng_domain().validate_current(token=currency, operation=self._lineage)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f6a25c0c830>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        with self._lock:
+            self._usable()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:341: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install[shared]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install[per_world]
+========================= 2 failed, 1 passed in 5.44s ==========================

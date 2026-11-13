@@ -1,0 +1,36 @@
+{
+  "schema": "bac-bounded-causal-receipt-v1",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r70-candidate.json",
+  "manifest_sha256": "2b8f921c26d1084e4b8bd1fd7238da17a9f92b117ce628048898c0e0c334467f",
+  "candidate_tree": "6c9a0e029769056cf27a379e983261c169b8da57",
+  "checks": {
+    "collection": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-collection/collection-result.json",
+      "result_sha256": "f43a516c80ee2eebd30957117b725f40494d4ff2612f8e8823a339abf3a0db36",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-collection/collection-custody.json",
+      "custody_sha256": "2c187c69af95df80524978035d7d1a77102950c90b66b321b6b5349e607d684a"
+    },
+    "archive-gc-diagnostic": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-archive-gc-diagnostic/archive-gc-diagnostic-result.json",
+      "result_sha256": "49632cf9eb710a97aa76f87cf1eb0d7dca3736bd9b3ab51099171a0d33541ee9",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-archive-gc-diagnostic/archive-gc-diagnostic-negative-custody.json",
+      "custody_sha256": "bd9988f80a33aaccb18d91dc0394c12e9f7393f5c18b762d895aa9f2e9e6d99c"
+    },
+    "cohort-gc-diagnostic": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-cohort-gc-diagnostic/cohort-gc-diagnostic-result.json",
+      "result_sha256": "f5dae623d1775e8c3380e3266d53896a1c8b28a755e1364af77629195bb217ba",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-cohort-gc-diagnostic/cohort-gc-diagnostic-negative-custody.json",
+      "custody_sha256": "25baba50dadf980aae1fb88b86557f692022d891d7296217d147899d3d4766f8"
+    },
+    "oracle-controls": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-oracle-controls/oracle-controls-result.json",
+      "result_sha256": "db1c4d4e715a76f58ad8c9ec6a68b670a748d299e920fea4d21204f501ce6aca",
+      "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-oracle-controls/oracle-controls-custody.json",
+      "custody_sha256": "565f180036c31d4e9431b57dc03a3327fcfda18061a3e05dc21be77beef5f659"
+    }
+  },
+  "attribution": "/workspace/bac-review-2026-11-01/qualification/wave35-r70-gc-attribution.json",
+  "attribution_sha256": "db2e1366e6005fb191dbae5e3677ca6f32a0ac05275c04d37c8955803d5850c3",
+  "scope": "Diagnostic+oracle correction only; production4unchanged; not whole BANKqualification",
+  "disposition": "EveryGCretirementpreexistscurrentpreparation; no requiredcurrentcohortlost; actualcorecurrencyrefusal correct. Repairtestsetupgarbageisolation while retainingpostpreparationGC."
+}

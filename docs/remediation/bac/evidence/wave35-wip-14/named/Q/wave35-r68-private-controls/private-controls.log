@@ -1,0 +1,279 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py FFFF         [100%]
+
+=================================== FAILURES ===================================
+___ test_selected_family_learns_saves_restores_and_continues[per_world-none] ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
+>       source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:96: in _learned_boundary
+    _cycle(source, batch)
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:43: in _cycle
+    _, closure, dispositions = run.close(batch, run.env.world_ids)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:691: in close
+    _same(self.runtime.checkpoint_state(), published)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = array([1954106886, 4107175876, 3331723397, 2746628833, 2090710675,
+        652945823, 1801880257, 3467269575, 31115003...,  565224836,  165737341, 2893608891, 2589638504,
+       1780695358,  445413192, 1211668950, 2978595650], dtype=uint32)
+right = array([1954106886, 4107175876, 3331723397, 2746628833, 2090710675,
+        652945823, 1801880257, 3467269575, 31115003...,  565224836,  165737341, 2893608891, 2589638504,
+       1780695358,  445413192, 1211668950, 2978595650], dtype=uint32)
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.dtype == right.dtype and left.device == right.device
+            assert left.shape == right.shape and torch.equal(left, right)
+        elif isinstance(left, dict):
+            assert left.keys() == right.keys()
+            for key in left:
+                _same(left[key], right[key])
+        elif isinstance(left, (tuple, list)):
+            assert type(left) is type(right) and len(left) == len(right)
+            for first, second in zip(left, right, strict=True):
+                _same(first, second)
+        else:
+>           assert type(left) is type(right) and left == right
+E           ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:129: ValueError
+___ test_selected_family_learns_saves_restores_and_continues[per_world-rnd] ____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
+>       source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:96: in _learned_boundary
+    _cycle(source, batch)
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:43: in _cycle
+    _, closure, dispositions = run.close(batch, run.env.world_ids)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:691: in close
+    _same(self.runtime.checkpoint_state(), published)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = array([ 547064958,  452975543, 3381108277,  832983377, 4250496505,
+       1241066919, 3494303876, 4119112778, 16028820..., 2963818378,  358875921,  932204831, 1932696230,
+        910910799, 3726590360, 2343425941, 3172392962], dtype=uint32)
+right = array([ 547064958,  452975543, 3381108277,  832983377, 4250496505,
+       1241066919, 3494303876, 4119112778, 16028820..., 2963818378,  358875921,  932204831, 1932696230,
+        910910799, 3726590360, 2343425941, 3172392962], dtype=uint32)
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.dtype == right.dtype and left.device == right.device
+            assert left.shape == right.shape and torch.equal(left, right)
+        elif isinstance(left, dict):
+            assert left.keys() == right.keys()
+            for key in left:
+                _same(left[key], right[key])
+        elif isinstance(left, (tuple, list)):
+            assert type(left) is type(right) and len(left) == len(right)
+            for first, second in zip(left, right, strict=True):
+                _same(first, second)
+        else:
+>           assert type(left) is type(right) and left == right
+E           ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:129: ValueError
+__ test_learned_bank_equal_authentic_input_continues_exactly[per_world-none] ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', scope = 'per_world'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa4fef5afd0>
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_learned_bank_equal_authentic_input_continues_exactly(compiled, family, scope, monkeypatch):
+>       source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:138: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:96: in _learned_boundary
+    _cycle(source, batch)
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:43: in _cycle
+    _, closure, dispositions = run.close(batch, run.env.world_ids)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:691: in close
+    _same(self.runtime.checkpoint_state(), published)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = array([1954106886, 4107175876, 3331723397, 2746628833, 2090710675,
+        652945823, 1801880257, 3467269575, 31115003...,  565224836,  165737341, 2893608891, 2589638504,
+       1780695358,  445413192, 1211668950, 2978595650], dtype=uint32)
+right = array([1954106886, 4107175876, 3331723397, 2746628833, 2090710675,
+        652945823, 1801880257, 3467269575, 31115003...,  565224836,  165737341, 2893608891, 2589638504,
+       1780695358,  445413192, 1211668950, 2978595650], dtype=uint32)
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.dtype == right.dtype and left.device == right.device
+            assert left.shape == right.shape and torch.equal(left, right)
+        elif isinstance(left, dict):
+            assert left.keys() == right.keys()
+            for key in left:
+                _same(left[key], right[key])
+        elif isinstance(left, (tuple, list)):
+            assert type(left) is type(right) and len(left) == len(right)
+            for first, second in zip(left, right, strict=True):
+                _same(first, second)
+        else:
+>           assert type(left) is type(right) and left == right
+E           ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:129: ValueError
+___ test_learned_bank_equal_authentic_input_continues_exactly[per_world-rnd] ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'per_world'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa4fec968b0>
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_learned_bank_equal_authentic_input_continues_exactly(compiled, family, scope, monkeypatch):
+>       source, inputs, saved_bank, state, runtime_state, saved_ledger, saved_component = _learned_boundary(compiled, family, scope)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:138: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:96: in _learned_boundary
+    _cycle(source, batch)
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:43: in _cycle
+    _, closure, dispositions = run.close(batch, run.env.world_ids)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:691: in close
+    _same(self.runtime.checkpoint_state(), published)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:123: in _same
+    _same(left[key], right[key])
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:127: in _same
+    _same(first, second)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = array([ 547064958,  452975543, 3381108277,  832983377, 4250496505,
+       1241066919, 3494303876, 4119112778, 16028820..., 2963818378,  358875921,  932204831, 1932696230,
+        910910799, 3726590360, 2343425941, 3172392962], dtype=uint32)
+right = array([ 547064958,  452975543, 3381108277,  832983377, 4250496505,
+       1241066919, 3494303876, 4119112778, 16028820..., 2963818378,  358875921,  932204831, 1932696230,
+        910910799, 3726590360, 2343425941, 3172392962], dtype=uint32)
+
+    def _same(left, right):
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.dtype == right.dtype and left.device == right.device
+            assert left.shape == right.shape and torch.equal(left, right)
+        elif isinstance(left, dict):
+            assert left.keys() == right.keys()
+            for key in left:
+                _same(left[key], right[key])
+        elif isinstance(left, (tuple, list)):
+            assert type(left) is type(right) and len(left) == len(right)
+            for first, second in zip(left, right, strict=True):
+                _same(first, second)
+        else:
+>           assert type(left) is type(right) and left == right
+E           ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:129: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[per_world-rnd]
+============================== 4 failed in 6.77s ===============================

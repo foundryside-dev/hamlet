@@ -1,0 +1,49 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "unique_node_phase_failures": 8,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: RNG preparation membership changed",
+      "count": 8,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[clone_learned_archive_pending-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target[fresh_private-icm]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

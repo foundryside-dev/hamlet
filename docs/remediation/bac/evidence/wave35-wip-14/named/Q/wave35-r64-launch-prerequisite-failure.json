@@ -1,0 +1,11 @@
+{
+  "error": "Root launched four harnesses before asynchronous capture session88263 completed; FileNotFoundError r64-candidate.json",
+  "application_execution": false,
+  "affected": [
+    "liveness-shared-none",
+    "liveness-shared-rnd",
+    "differential-shared-none",
+    "differential-shared-rnd"
+  ],
+  "resolution": "Awaited capture completion and verified manifest. New attempt output directories/specs preserve startup failure separately."
+}

@@ -1,0 +1,149 @@
+{
+  "schema": "bac-wip14-verifier-dependency-audit-v1",
+  "status": "READ-ONLY BYTE AUDIT; root historical command attribution distinguished",
+  "baseline_inventory": {
+    "root": "W",
+    "path": "evidence-management/inventory-v2.json",
+    "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
+  },
+  "published_plan": {
+    "root": "R",
+    "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
+    "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
+  },
+  "verifiers": [
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_run.py",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "bytes": 3032,
+      "published_target": {
+        "root": "R",
+        "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "wip13_named_original_matches": [
+        {
+          "logical_path": "explicit/verify_bac_run.py.txt",
+          "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "attribution": "Root attests this unchanged ordinary verifier command path across R59\u2013R72; output records lacking helper hashes remain explicitly attributed, not self-attesting.",
+      "reuse": "Exact current/published byte equality verified; no new copy needed."
+    },
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_failed_run.py",
+        "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+      },
+      "bytes": 4596,
+      "published_target": {
+        "root": "R",
+        "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt",
+        "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+      },
+      "wip13_named_original_matches": [],
+      "attribution": "Root attests this unchanged ordinary verifier command path across R59\u2013R72; output records lacking helper hashes remain explicitly attributed, not self-attesting.",
+      "reuse": "Exact current/published byte equality verified; no new copy needed."
+    },
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_static_run.py",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      },
+      "bytes": 2532,
+      "published_target": {
+        "root": "R",
+        "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      },
+      "wip13_named_original_matches": [
+        {
+          "logical_path": "explicit/verify_bac_static_run.py.txt",
+          "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_static_run.py",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "attribution": "Root attests this unchanged ordinary verifier command path across R59\u2013R72; output records lacking helper hashes remain explicitly attributed, not self-attesting.",
+      "reuse": "Exact current/published byte equality verified; no new copy needed."
+    },
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_compiler_cli_run.py",
+        "sha256": "6b92675d03c5fe6d918f0d24f250ddf5fd66f3d715a80f66c6d04edb9700235f"
+      },
+      "bytes": 3064,
+      "published_target": {
+        "root": "R",
+        "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_compiler_cli_run.py.txt",
+        "sha256": "6b92675d03c5fe6d918f0d24f250ddf5fd66f3d715a80f66c6d04edb9700235f"
+      },
+      "wip13_named_original_matches": [
+        {
+          "logical_path": "explicit/verify_bac_compiler_cli_run.py.txt",
+          "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_compiler_cli_run.py",
+          "sha256": "6b92675d03c5fe6d918f0d24f250ddf5fd66f3d715a80f66c6d04edb9700235f"
+        }
+      ],
+      "attribution": "Root attests this unchanged ordinary verifier command path across R59\u2013R72; output records lacking helper hashes remain explicitly attributed, not self-attesting.",
+      "reuse": "Exact current/published byte equality verified; no new copy needed."
+    },
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_spawn_identity.py",
+        "sha256": "3f68e4af47eed338dee711879da8f82d51da06f25a4750200c49d673aa6e19f7"
+      },
+      "bytes": 4539,
+      "published_target": {
+        "root": "R",
+        "path": "docs/remediation/bac/evidence/wave35-wip-10/verify_bac_spawn_identity.py.txt",
+        "sha256": "3f68e4af47eed338dee711879da8f82d51da06f25a4750200c49d673aa6e19f7"
+      },
+      "wip13_named_original_matches": [
+        {
+          "logical_path": "explicit/verify_bac_spawn_identity.py.txt",
+          "original": "/workspace/bac-review-2026-11-01/qualification/verify_bac_spawn_identity.py",
+          "sha256": "3f68e4af47eed338dee711879da8f82d51da06f25a4750200c49d673aa6e19f7"
+        }
+      ],
+      "attribution": "Actual child custody verifier_sha256 provides version binding where present.",
+      "reuse": "Exact current/published byte equality verified; no new copy needed."
+    },
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_owned_spawn_identity.py",
+        "sha256": "dd9101db18203a0399587a0b3ccabfac8f26672d5a7bb58426d85acb45196ee0"
+      },
+      "bytes": 5019,
+      "published_target": null,
+      "wip13_named_original_matches": [],
+      "attribution": "Actual child custody verifier_sha256 provides version binding where present.",
+      "reuse": "New named child verifier version; preserve separately, not substituted for historical core verifier."
+    },
+    {
+      "current": {
+        "root": "Q",
+        "path": "verify_bac_publication_spawn_identity.py",
+        "sha256": "8fd7638fca79d2479286821f55573445f1acb4fc28a5efd801cec8a40cb53209"
+      },
+      "bytes": 5057,
+      "published_target": null,
+      "wip13_named_original_matches": [],
+      "attribution": "Actual child custody verifier_sha256 provides version binding where present.",
+      "reuse": "New named child verifier version; preserve separately, not substituted for historical core verifier."
+    }
+  ],
+  "limitations": [
+    "No helper source bodies opened for this audit; only exact bytes hashed.",
+    "Published equality authenticates helper bytes, not execution time. Ordinary verifier historical use is root attestation; missing raw helper hash is not invented.",
+    "No exhaustive archive rebuild; only named target hash/size checked."
+  ]
+}

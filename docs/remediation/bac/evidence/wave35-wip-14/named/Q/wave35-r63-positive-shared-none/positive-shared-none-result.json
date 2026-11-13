@@ -1,0 +1,25 @@
+{
+  "name": "positive-shared-none",
+  "exit_code": 1,
+  "seconds": 8.613959550857544,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-none]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r63-positive-shared-none/positive-shared-none.log",
+  "sha256": "3b14c008415a6595f324378eee0fff3f558a86b193907a054f1720c122242781",
+  "candidate_tree": "0025129671a00923ade12102ea179dae472d0e8b",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "a6b953b886ace18d2d0f06168497f6d09110fe43ce2fb234c62ab4d2c063028f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

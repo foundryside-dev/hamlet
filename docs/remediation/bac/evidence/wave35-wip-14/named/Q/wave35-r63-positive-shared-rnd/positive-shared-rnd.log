@@ -1,0 +1,86 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py F            [100%]
+
+=================================== FAILURES ===================================
+_____ test_selected_family_learns_saves_restores_and_continues[shared-rnd] _____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
+        source, inputs = _run(compiled, family, scope)
+        for batch in (1, 2, 3):
+            _cycle(source, batch)
+        saved_bank = _bank(source)
+        if family in TRAINABLE:
+            assert _updates(saved_bank, family, scope) > 0, "real service must have updated Adam"
+        else:
+            assert _updates(saved_bank, family, scope) == 0
+        state = source.completed((1, 2, 3))
+        runtime_state = source.runtime.checkpoint_state()
+        restored = identity._restore(
+            compiled,
+            state,
+            identity.IDS,
+            runtime_state=runtime_state,
+            component_ledger=source.ledger,
+            component_state=source.component_state(),
+            **inputs,
+        )
+        identity._same(_bank(restored), saved_bank)
+        assert restored.ledger == source.ledger and state["kind"] == "COMPLETED"
+        assert restored.env.world_phase == source.env.world_phase == "released-completed"
+        source.control_horizon = restored.control_horizon = 1
+        source_reset = source.reset(4, retired_world_ids=())
+        source_observation = source_reset[1].observation.detach().clone()
+        source_masks = source.current_masks.detach().clone()
+        source_binding = (source_reset[1].accepted.world_ids, source_reset[1].accepted.world_episode_seqs)
+        source_ticks = (source.ledger.vector_ticks, source.env.global_tick)
+        restored_reset = restored.reset(4, retired_world_ids=())
+        for name, left, right in (
+            ("accepted world IDs", source_binding[0], restored_reset[1].accepted.world_ids),
+            ("accepted episode sequences", source_binding[1], restored_reset[1].accepted.world_episode_seqs),
+            ("observation", source_observation, restored_reset[1].observation),
+            ("action masks", source_masks, restored.current_masks),
+            ("ledger tick", source_ticks[0], restored.ledger.vector_ticks),
+            ("ENV tick", source_ticks[1], restored.env.global_tick),
+        ):
+>           _same_reset_field(name, left, right)
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'observation'
+left = tensor([[ 1.0000,  0.7143,  0.8571,  0.0000,  0.0000,  1.0000,  1.0000,  0.0000,
+          1.0000,  1.0000,  0.0000,  ...  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])
+right = tensor([[ 1.0000,  0.5714,  0.4286,  0.0000,  0.0000,  1.0000,  1.0000,  0.0000,
+          1.0000,  1.0000,  0.0000,  ...  1.0000,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])
+
+    def _same_reset_field(name, left, right):
+        if (
+            isinstance(left, torch.Tensor)
+            and isinstance(right, torch.Tensor)
+            and left.dtype == right.dtype
+            and left.device == right.device
+            and left.shape == right.shape
+            and not torch.equal(left, right)
+        ):
+            index = tuple(torch.nonzero(left != right, as_tuple=False)[0].tolist())
+>           pytest.fail(f"fourth reset {name}{index}: {left[index].item()!r} != {right[index].item()!r}")
+E           Failed: fourth reset observation(0, 1): 0.7142857313156128 != 0.5714285969734192
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:76: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-rnd]
+============================== 1 failed in 3.72s ===============================

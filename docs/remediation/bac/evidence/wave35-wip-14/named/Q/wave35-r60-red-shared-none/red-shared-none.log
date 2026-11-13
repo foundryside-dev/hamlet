@@ -1,0 +1,73 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py F            [100%]
+
+=================================== FAILURES ===================================
+____ test_selected_family_learns_saves_restores_and_continues[shared-none] _____
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", SCOPES)
+    def test_selected_family_learns_saves_restores_and_continues(compiled, family, scope):
+>       source, inputs = _run(compiled, family, scope)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_bank_rng_custody.py:20: in _run
+    inputs = identity._selected_inputs(compiled, family=family, scope=scope)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def _selected_inputs(compiled, *, family, scope):
+        from townlet.config.bac_options import BaCOptions
+        from townlet.config.drive_as_code import IntrinsicStrategyConfig
+        from townlet.config.training_v2_config import TrainingV2Config
+    
+        selected = compiled.get_level("L0_test")
+        drive = selected.drive.intrinsic.model_dump()
+        drive.update(strategy=family, base_weight=0.0 if family == "none" else 0.4, apply_modifiers=[])
+        training = selected.training.model_dump()
+        training["replay_buffer"]["batch_size"] = 2
+        training["intrinsic"]["rnd"].update(feature_dim=4, learning_rate=0.001)
+        training["intrinsic"].update(initial_weight=0.4, survival_window=10, min_survival_fraction=0.01)
+        training["intrinsic"]["annealing"].update(min_weight=0.01, threshold=100.0, decay_rate=0.9)
+        training["training_loop"]["max_steps_per_episode"] = 20
+        options = {
+            "curiosity_scope": {"scope": scope, "seed_policy": "legacy_shared_v1" if scope == "shared" else "world_id_derived_v1"},
+            "provider_parameter_source": "training",
+            "providers": {
+                "rnd": {"service_mode": "paced_fifo", "max_updates_per_tick": 1, "max_pending_rows": 4, "overflow_policy": "drop_oldest"},
+                "count_based": {"quantization_width": 0.125, "max_entries": 4},
+                "icm": {
+                    "feature_dim": 4,
+                    "hidden_dim": 8,
+                    "learning_rate": 0.001,
+                    "inverse_weight": 0.8,
+                    "forward_weight": 0.2,
+                    "training_batch_size": 2,
+                    "max_pending_transitions": 4,
+                },
+            },
+        }
+>       training["bac_options"] = BaCOptions.model_validate(options).model_dump()
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for BaCOptions
+E       providers.rnd
+E         Extra inputs are not permitted [type=extra_forbidden, input_value={'service_mode': 'paced_f..._policy': 'drop_oldest'}, input_type=dict]
+E           For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:108: ValidationError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_selected_family_learns_saves_restores_and_continues[shared-none]
+============================== 1 failed in 3.15s ===============================

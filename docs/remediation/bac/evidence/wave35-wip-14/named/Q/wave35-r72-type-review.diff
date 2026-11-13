@@ -1,0 +1,24 @@
+diff --git a/src/townlet/exploration/curiosity_checkpoint.py b/src/townlet/exploration/curiosity_checkpoint.py
+index 44a9465d..5288830b 100644
+--- a/src/townlet/exploration/curiosity_checkpoint.py
++++ b/src/townlet/exploration/curiosity_checkpoint.py
+@@ -516,7 +516,10 @@ def validate_archived_native(
+     lineage: RNGOperation,
+ ) -> None:
+     """Actual shared provider validation under separately disposable ambient custody."""
++    from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
++    from townlet.exploration.icm import ICMExploration
+     from townlet.exploration.provider_factory import make_backend
++    from townlet.exploration.rnd import RNDExploration
+ 
+     policy = ResolvedExplorationPolicy.from_dict(source["policy"])
+     source_descriptor = WorldCuriosityDescriptor.from_dict(source["descriptor"])
+@@ -536,6 +539,8 @@ def validate_archived_native(
+         )
+         payload = source["shared_backend"]
+         if policy.strategy in ("rnd", "adaptive_rnd", "icm"):
++            if not isinstance(provider, (RNDExploration, AdaptiveIntrinsicExploration, ICMExploration)):
++                raise ValueError("trainable archive requires a native restore configuration provider")
+             provider = provider.with_restore_configuration(payload["native"])
+         validate_native(provider, payload["native"], policy=policy, descriptor=source_descriptor)
+         provider.load_state(owned(payload["native"]))

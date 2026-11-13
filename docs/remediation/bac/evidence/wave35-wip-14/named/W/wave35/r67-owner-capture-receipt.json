@@ -1,0 +1,19 @@
+{
+  "candidate_tree": "04af55dcf99559c949b16af6fa92effd30b54f6f",
+  "manifest_sha256": "f256db6b0a8759ef5a15501fe1a637f4f8d62c09dc224e999ec47eb4aa29f102",
+  "new_owned": "16PASS32.315819s",
+  "independent_astra": "SAME16PASS27.910327s; not additive distinct case count",
+  "bootstrap": "56PASS45.185444s",
+  "owner_binding_domain": "135PASS2SKIP26.562740s; CUDA remains unqualified",
+  "source_custody": "Every named runtime814source573config13artifact/controller-workers/import/index/14registryMAIN1 verified",
+  "spawn_custody": "All12 actual children verified separately:3newowned+3bootstrap+3independent+3oldowner; no inferred child pass",
+  "review": {
+    "path": "wave35-preparation/T18e-OWNER-ATOMIC-CAPTURE-INDEPENDENT-REVIEW.md",
+    "sha256": "bbebfb836a639dd5e48c98d8e474e231e1f5627a613386b395e54f24739e4ad0",
+    "SPEC": "PASS",
+    "QUALITY": "PASS",
+    "blocking_findings": 0
+  },
+  "source": "WS1361 SHA433b3563457fbf68d26d47d73dc375c1382e0cc77d0987a4c9d4f62f3cdfcce3; oldsnapshotunchanged,28additive lines",
+  "scope": "Bounded CPU atomic owner capture producer qualified. Full shared/BANK/CP/parent/runner/global/final acceptance remain open. Partial CP/BANK test adoption preserved but not coherent/integrated. No source publication yet."
+}

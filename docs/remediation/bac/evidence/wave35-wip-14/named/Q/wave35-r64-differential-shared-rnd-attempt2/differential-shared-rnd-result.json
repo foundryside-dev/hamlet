@@ -1,0 +1,25 @@
+{
+  "name": "differential-shared-rnd",
+  "exit_code": 0,
+  "seconds": 57.72098422050476,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_bank_equal_authentic_input_continues_exactly[shared-rnd]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r64-differential-shared-rnd-attempt2/differential-shared-rnd.log",
+  "sha256": "8153b04177b85dd7bee4709ec4f07e084c111ced77eec754f51964341998dd87",
+  "candidate_tree": "3f4eda577080aeffb26a6530b33d32b1e689e246",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "f108b228ebbaf029925d9519023a932690a326b475be8ac49e9cd4c9d49772ae",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

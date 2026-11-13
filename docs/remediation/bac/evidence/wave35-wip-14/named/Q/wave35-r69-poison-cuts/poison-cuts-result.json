@@ -1,0 +1,31 @@
+{
+  "name": "poison-cuts",
+  "exit_code": 0,
+  "seconds": 25.86922860145569,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_restore_uncertainty_poisons_only_its_isolated_process",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_install_exit_completion_failure_quarantines_assigned_candidate",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r69-poison-cuts"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-poison-cuts/poison-cuts.log",
+  "sha256": "dd73deeccfaa9728ac8c36d4319a75f5bd61f9e2b2b7a0b88624fe417f5756fe",
+  "candidate_tree": "96dfd3408b764d1e203fff29094ffd49f064f8c1",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "a91b44e1c848e694b50949492de63c2d1c7d9d5114787d277d50c27015ecbb25",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

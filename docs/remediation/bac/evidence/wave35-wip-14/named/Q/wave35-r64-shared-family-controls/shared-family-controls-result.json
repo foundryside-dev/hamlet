@@ -1,0 +1,27 @@
+{
+  "name": "shared-family-controls",
+  "exit_code": 0,
+  "seconds": 15.419203281402588,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_bank_rng_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-k",
+    "shared and (selected_family_learns or learned_bank_equal) and not none and not rnd"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r64-shared-family-controls/shared-family-controls.log",
+  "sha256": "3d3c31fe54b69f2f11769feeb3bbb4d39b679401aebaa30db74cf968c5e79f89",
+  "candidate_tree": "3f4eda577080aeffb26a6530b33d32b1e689e246",
+  "base_commit": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "manifest_sha256": "f108b228ebbaf029925d9519023a932690a326b475be8ac49e9cd4c9d49772ae",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

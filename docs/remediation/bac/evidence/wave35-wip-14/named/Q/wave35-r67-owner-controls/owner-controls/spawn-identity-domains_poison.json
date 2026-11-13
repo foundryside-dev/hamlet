@@ -1,0 +1,17 @@
+{
+  "candidate_tree": "04af55dcf99559c949b16af6fa92effd30b54f6f",
+  "debug": true,
+  "imports": {
+    "rnd": "/workspace/hamlet/src/townlet/exploration/rnd.py",
+    "rng_custody": "/workspace/hamlet/src/townlet/exploration/rng_custody.py",
+    "world_curiosity_state": "/workspace/hamlet/src/townlet/exploration/world_curiosity_state.py"
+  },
+  "interop_threads": 5,
+  "manifest_sha256": "f256db6b0a8759ef5a15501fe1a637f4f8d62c09dc224e999ec47eb4aa29f102",
+  "module": "/workspace/hamlet/src/townlet/__init__.py",
+  "pid": 19402,
+  "sha": "1ccc9982cc402bcbe328974962cd8ecb8e12d7b6",
+  "threads": 1,
+  "torch": "2.11.0+cu130",
+  "worker": "domains_poison"
+}

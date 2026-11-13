@@ -1,0 +1,13 @@
+{
+  "path": "docs/remediation/bac/EVIDENCE-PROCESS.md",
+  "before_sha256": "cbf4e48bcbbfe4618168719add930d1a35c3eef49683da3037e5f7f5d9a3ca97",
+  "approved_sha256": "95c787200b0a7f3f4cceaf0cad2b899fcfb9f2053a3ff0fbffd17856f4d3f07d",
+  "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/r72-docs/EVIDENCE-PROCESS.md",
+  "review": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/WIP14-TOOLING-IMPLEMENTATION-REVIEW.md",
+  "review_sha256": "c15efdaab2c7bd7f9502184a9fd9e56f8d6e4f910de9f0e8f57a0f6e1b97e466",
+  "producer": "bac_checkpoint14_tooling; gpt-6-sol high",
+  "reviewer": "bac_astra_checkpoint14_tool_review; gpt-6-astra medium",
+  "integration_owner": "root",
+  "publication_tree_so_far": "7cf433f7d47736f9da0b0ebddc2bb1d310b9a699",
+  "previous_document_integration_sha256": "584549df49e20763822eb912cca1d5e1bc604545f5ec3ce8f755107412df6df4"
+}

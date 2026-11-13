@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r72-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r72-archive-native-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "archive-native-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_learned_shared_archive_source_precedes_private_target",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_archive_validation_uses_source_policy_and_target_model_init",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

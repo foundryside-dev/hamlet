@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r67-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r67-causal-green",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "causal-green",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_world_rng_capture.py::test_atomic_capture_one_serializer_same_parameters_and_detached_gradients",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

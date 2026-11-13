@@ -1,0 +1,48 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r69-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r69-custody-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "custody-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_quarantined_bank_can_recover_from_healthy_saved_payload",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_peer_work_stales_prepared_bank_without_changing_its_revision",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_capture_keeps_native_and_gradients_under_one_exclusion",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_reentry_and_peer_callback_refuse_before_nested_native_work",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_final_accepted_callback_cannot_launder_stale_currency",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_allocation_refusal_precedes_disposable_owner_work",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_early_refusal_or_late_candidate_failure_preserves_original",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_attachment_targets_final_published_parameters",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_capture_blocks_peer_thread_until_both_capture_parts_finish",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_restore_preserves_all_ambient_states_and_next_draws",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_restore_tokens_authenticate_destination_and_are_single_use",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_membership_change_stales_bank_token_without_native_work",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_offside_cohort_stays_alive_through_gc_and_token_install",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_managed_owner_rejects_wrong_and_expired_lineage_before_callback",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_final_currency_follows_callbacks_and_runtime_allocations",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_domain_admission_precedes_actual_bank_lock",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_idle_registration_reentry_reauthenticates_destination",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_final_parent_callback_cannot_refresh_currency_after_peer_work",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_early_and_late_offside_failures_keep_correct_candidate_health",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_failed_final_currency_releases_unissued_preparation_and_allows_retry",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r69-custody-controls"
+      ]
+    }
+  ]
+}

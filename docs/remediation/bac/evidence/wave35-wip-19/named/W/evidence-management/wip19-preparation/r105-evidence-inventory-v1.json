@@ -1,0 +1,2612 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2917,
+      "lineage": [
+        "Hash-only helper identity; body not inspected"
+      ],
+      "path": "bac_source_identity.py",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 2917,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt"
+          },
+          {
+            "bytes": 2917,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt"
+          },
+          {
+            "bytes": 2917,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt"
+          },
+          {
+            "bytes": 2917,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 6277,
+      "lineage": [
+        "Hash-only helper identity; body not inspected"
+      ],
+      "path": "capture_wave14_round.py",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 6277,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt"
+          },
+          {
+            "bytes": 6277,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt"
+          },
+          {
+            "bytes": 6277,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt"
+          },
+          {
+            "bytes": 6277,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 2043,
+      "lineage": [
+        "Hash-only helper identity; body not inspected"
+      ],
+      "path": "run_bac_packet_checks_locked.py",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 2043,
+            "manifest": {
+              "bytes": 619867,
+              "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+              "root": "R",
+              "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt"
+          },
+          {
+            "bytes": 2043,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt"
+          },
+          {
+            "bytes": 2043,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt"
+          },
+          {
+            "bytes": 2043,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt"
+          },
+          {
+            "bytes": 2043,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 4596,
+      "lineage": [
+        "Hash-only helper identity; body not inspected"
+      ],
+      "path": "verify_bac_failed_run.py",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 4596,
+            "manifest": {
+              "bytes": 619867,
+              "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+              "root": "R",
+              "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt"
+          },
+          {
+            "bytes": 4596,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt"
+          },
+          {
+            "bytes": 4596,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt"
+          },
+          {
+            "bytes": 4596,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt"
+          },
+          {
+            "bytes": 4596,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+    },
+    {
+      "bytes": 3032,
+      "lineage": [
+        "Hash-only helper identity; body not inspected"
+      ],
+      "path": "verify_bac_run.py",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 3032,
+            "manifest": {
+              "bytes": 619867,
+              "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+              "root": "R",
+              "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt"
+          },
+          {
+            "bytes": 3032,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt"
+          },
+          {
+            "bytes": 3032,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt"
+          },
+          {
+            "bytes": 3032,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt"
+          },
+          {
+            "bytes": 3032,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 2532,
+      "lineage": [
+        "Hash-only helper identity; body not inspected"
+      ],
+      "path": "verify_bac_static_run.py",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 2532,
+            "manifest": {
+              "bytes": 619867,
+              "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+              "root": "R",
+              "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt"
+          },
+          {
+            "bytes": 2532,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt"
+          },
+          {
+            "bytes": 2532,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt"
+          },
+          {
+            "bytes": 2532,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt"
+          },
+          {
+            "bytes": 2532,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+    },
+    {
+      "bytes": 4951,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-capture.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "efa1b88a919a989107f667d604c1110419a172463fab2a425f113c60dc1b9ea1"
+    },
+    {
+      "bytes": 641,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-collection-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "74ef0c3c9d67214198dcd70be67245b1b17849bd6d72f852ac856bb62dba9046"
+    },
+    {
+      "bytes": 781,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-collection-harness.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "0a45ae5aa64cf568b7e4c6fd622cee19b734fba69e94338f0e3158e35e38737e"
+    },
+    {
+      "bytes": 620,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-collection-spec.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "ada06c752e18b38b326e645d38f19fe5ac279f71636668d019bd901b66959133"
+    },
+    {
+      "bytes": 641,
+      "lineage": [
+        "Complete descendants of wave35-r105-collection"
+      ],
+      "path": "wave35-r105-collection/collection-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "74ef0c3c9d67214198dcd70be67245b1b17849bd6d72f852ac856bb62dba9046"
+    },
+    {
+      "bytes": 859,
+      "lineage": [
+        "Complete descendants of wave35-r105-collection"
+      ],
+      "path": "wave35-r105-collection/collection-result.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "74d8d21761964ddaa40ee1f8946485b72397c772fe33f23c83fa2557cfda574b"
+    },
+    {
+      "bytes": 6818,
+      "lineage": [
+        "Complete descendants of wave35-r105-collection"
+      ],
+      "path": "wave35-r105-collection/collection.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "34c3305c08f88018e5999a35819540ea1186f04d45f8d94cf404fce1b7de9118"
+    },
+    {
+      "bytes": 246,
+      "lineage": [
+        "Complete descendants of wave35-r105-collection"
+      ],
+      "path": "wave35-r105-collection/collection/identity-controller.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39"
+    },
+    {
+      "bytes": 648,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-healthy-controls-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "9b5db5543613103fc2293c0d744b33cbdcc1cdef1e6337d53d87ddba5cec903c"
+    },
+    {
+      "bytes": 1066,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-healthy-controls-harness.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "1c79ad4ca0e641e7a662640facd1383d930ac767fe98332877a320b1d5b0ca49"
+    },
+    {
+      "bytes": 906,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-healthy-controls-spec.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "a303835fb78070310746714e4a867c1386c34da6c7b214bea5c3a80c157199ae"
+    },
+    {
+      "bytes": 648,
+      "lineage": [
+        "Complete descendants of wave35-r105-healthy-controls"
+      ],
+      "path": "wave35-r105-healthy-controls/healthy-controls-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "9b5db5543613103fc2293c0d744b33cbdcc1cdef1e6337d53d87ddba5cec903c"
+    },
+    {
+      "bytes": 1148,
+      "lineage": [
+        "Complete descendants of wave35-r105-healthy-controls"
+      ],
+      "path": "wave35-r105-healthy-controls/healthy-controls-result.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "66b9a50e5e5a9d5c46eda7b023cdf6faceea88bc264dac0a362f33322f46ce24"
+    },
+    {
+      "bytes": 579,
+      "lineage": [
+        "Complete descendants of wave35-r105-healthy-controls"
+      ],
+      "path": "wave35-r105-healthy-controls/healthy-controls.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588"
+    },
+    {
+      "bytes": 246,
+      "lineage": [
+        "Complete descendants of wave35-r105-healthy-controls"
+      ],
+      "path": "wave35-r105-healthy-controls/healthy-controls/identity-controller.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39"
+    },
+    {
+      "bytes": 959,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-invocation-red-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "7947936afff2b4a00ab5f74d4677ee01af7896161667ea334c8a68e691659ef3"
+    },
+    {
+      "bytes": 1866,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-invocation-red-harness.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "d407e4c831ab063f53328ffe74bb81f1964d8b2e446069882866e92ac47b881f"
+    },
+    {
+      "bytes": 1756,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-invocation-red-spec.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "bfe3467b12229abeea1a32cf9cb1b973178cc360aab6b6c191a9eaeb3d488dd3"
+    },
+    {
+      "bytes": 2454,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red-failure-index.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "befb589cee8e72b01fecd4ed5620981ce7cae7263f7fbed7a171f44312c86e0e"
+    },
+    {
+      "bytes": 959,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red-negative-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "7947936afff2b4a00ab5f74d4677ee01af7896161667ea334c8a68e691659ef3"
+    },
+    {
+      "bytes": 1972,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red-result.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "180d0792e84c0704e09e5a400d7d0d84769ab5d0a76a69b9310edd7014b280e1"
+    },
+    {
+      "bytes": 8886,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "6e99c713b0d9d3283e548919eea16310b13fa87566ca3ac70087dae1b6f799ac"
+    },
+    {
+      "bytes": 1000,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-0578ec4c91c41d03.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "341ef14126d1cb95b8896811e637853ec1eeecddb8ff8c01142a657c22f11764"
+    },
+    {
+      "bytes": 980,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-08b7133b437c809f.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "cfcd9aff89eda36d6a57d3e3d56ad4de90cd907f4c96a1a2770afd7c3752a46d"
+    },
+    {
+      "bytes": 1019,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-3b5318258a9bbb64.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "9cb17170f43f8e81b895dda0ef54a087cfc95c73b827bb54ef65f058106e1cdb"
+    },
+    {
+      "bytes": 1048,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-51d618d2abc40cf4.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "ea6cd39b00002b1c7398472f03216fe503e1af46f51351fac7b4024ef1b2274f"
+    },
+    {
+      "bytes": 1056,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-698d8919b55c24cf.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "820821d908a57c83b6e17abfb2f06b3cd25985beb46af22ae260f9982691fe17"
+    },
+    {
+      "bytes": 1028,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-a8acd53513aba7a9.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "9e85250e1d366aaca11052dfb4d193283fc7d64f026ee5554c8339e8f39cde0a"
+    },
+    {
+      "bytes": 1042,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-c46908c9f221e955.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "8c77907984ebc428b925a53c2a699d9797ac5d7f890b43342d0f687abaf66d07"
+    },
+    {
+      "bytes": 1043,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-cf9994f4ec61264a.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "e653fce83227dbc70eefb9e52ead805f2419e6c6a79d3f4f9c29dcb51675c667"
+    },
+    {
+      "bytes": 730,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/failure-controller-dedb52a2d2b51b09.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "46034f72cbd02a3f206921fa75f3aaddfc1e01edeba97ea7065665daf47db0b9"
+    },
+    {
+      "bytes": 246,
+      "lineage": [
+        "Complete descendants of wave35-r105-invocation-red"
+      ],
+      "path": "wave35-r105-invocation-red/invocation-red/identity-controller.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39"
+    },
+    {
+      "bytes": 707,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-owned-spec.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "f79655444aa9ac4878b4b9e264837d1eee8890a68da5f57138d36f4d0cedcdcf"
+    },
+    {
+      "bytes": 994,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-static-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772"
+    },
+    {
+      "bytes": 1346,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-static-harness.log",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "a71b352c2d66d5f48684fc5830f77b84b998147ce94b2f6f20fa0a22096513fd"
+    },
+    {
+      "bytes": 632,
+      "lineage": [
+        "Complete closed R105 qualification namespace"
+      ],
+      "path": "wave35-r105-static-spec.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "8bac6da4fb15a70dfd2d21b354146ee3129164b0a3a1be0f777b79eaca310b17"
+    },
+    {
+      "bytes": 721,
+      "lineage": [
+        "Complete descendants of wave35-r105-static"
+      ],
+      "path": "wave35-r105-static/black-test-result.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "354c004da386e9ab5cc67c62331dfdef93f1412c69a7da98c1b4ecd01d3c29b9"
+    },
+    {
+      "bytes": 55,
+      "lineage": [
+        "Complete descendants of wave35-r105-static"
+      ],
+      "path": "wave35-r105-static/black-test.log",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 55,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave10/qualification/wave10-r0-test-style/black-test.log"
+          },
+          {
+            "bytes": 55,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave10/qualification/wave10-r0-test-style/black-test.log"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 717,
+      "lineage": [
+        "Complete descendants of wave35-r105-static"
+      ],
+      "path": "wave35-r105-static/ruff-test-result.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "b817850efce66f5f5477fbcdf8c2c2d0eb813c28678aeab6ec4ec3cf0e46e7d2"
+    },
+    {
+      "bytes": 19,
+      "lineage": [
+        "Complete descendants of wave35-r105-static"
+      ],
+      "path": "wave35-r105-static/ruff-test.log",
+      "publication": {
+        "action": "reuse-existing",
+        "verified_objects": [
+          {
+            "bytes": 19,
+            "manifest": {
+              "bytes": 619867,
+              "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+              "root": "R",
+              "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log"
+          },
+          {
+            "bytes": 19,
+            "manifest": {
+              "bytes": 372697,
+              "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+              "root": "R",
+              "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log"
+          },
+          {
+            "bytes": 19,
+            "manifest": {
+              "bytes": 227482,
+              "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+              "root": "R",
+              "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log"
+          },
+          {
+            "bytes": 19,
+            "manifest": {
+              "bytes": 527701,
+              "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+              "root": "R",
+              "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log"
+          },
+          {
+            "bytes": 19,
+            "manifest": {
+              "bytes": 361683,
+              "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+              "root": "R",
+              "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+            },
+            "path": "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log"
+          }
+        ]
+      },
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 994,
+      "lineage": [
+        "Complete descendants of wave35-r105-static"
+      ],
+      "path": "wave35-r105-static/static-custody.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "Q",
+      "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772"
+    },
+    {
+      "bytes": 4220,
+      "lineage": [
+        "Root-adopted incremental upkeep procedure"
+      ],
+      "path": "evidence-management/wip19-preparation/ONGOING-EVIDENCE-HANDOFF-v1.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "71e3d2621866d506e881bf6d5889b95df4e9af727e767f2b1f6a764343a3c075"
+    },
+    {
+      "bytes": 6050,
+      "lineage": [
+        "Exact7054f6a3 tests-only report frozen; mutable report excluded"
+      ],
+      "path": "evidence-management/wip19-preparation/R105-TESTS-ONLY-REPORT-SNAPSHOT.txt",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "7054f6a3e31c881dfd86842d99bea16724c9736fca3366762ef0ec409618878a"
+    },
+    {
+      "bytes": 9075,
+      "lineage": [
+        "Immutable predecessor component; no repeated past audit"
+      ],
+      "path": "evidence-management/wip19-preparation/r103-r104-history-component-v1.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "ee6330ff4a3de6d96f67ff2ea1576622d1e5df6f1608d467195d283d09cf5901"
+    },
+    {
+      "bytes": 2638,
+      "lineage": [
+        "Root bounded-input/process adoption; not programme acceptance"
+      ],
+      "path": "evidence-management/wip19-preparation/r103-r104-root-input-adoption-and-review-supplement-v1.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "dbd718697004793fb251430b7c7e27529d8bd7268a970a3745fe5d064a8e7008"
+    },
+    {
+      "bytes": 2333,
+      "lineage": [
+        "Append-only review history supplement"
+      ],
+      "path": "evidence-management/wip19-preparation/r104-completed-review-history-supplement-v1.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "0b7b2389590dc5e315f9f5d9642e1754228d3bb7a82117ca8e6db394c0773da0"
+    },
+    {
+      "bytes": 107096,
+      "lineage": [
+        "Inert full-index binary diff from manifest base to candidate; exact five changed paths, including core test; not a source read or execution copy"
+      ],
+      "path": "evidence-management/wip19-preparation/r105-owned-candidate.patch",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "ca53a264a2498f00eace2b9e80857c1099c9069094b58fdab13cd534284ca62a"
+    },
+    {
+      "bytes": 2773,
+      "lineage": [
+        "Root bounded-input/process adoption; not programme acceptance"
+      ],
+      "path": "evidence-management/wip19-preparation/r99-r102-root-input-adoption-v1.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "023ee4cdd5bad84437554c21e712a7433e964979f8fd9397f249b508baaaa224"
+    },
+    {
+      "bytes": 13234,
+      "lineage": [
+        "Completed R104 source-review sequence supplement; preserve historical verdict"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-ADJUDICATION.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "363458ddf4f62e1add22c2199be5b214cdb8f09fefcd5c120a77a837eb3a02f8"
+    },
+    {
+      "bytes": 10158,
+      "lineage": [
+        "Completed R104 source-review sequence supplement; preserve historical verdict"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX5-IMPLEMENTATION-REVIEW.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "0a8dd26f5e704097dbbdfe9002b25fba193b362df951143ff85f4b341634ab17"
+    },
+    {
+      "bytes": 4465,
+      "lineage": [
+        "Named R105 tests-only causal dependency; no implementation/tool-body read"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1-REVIEW.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "71b14345eacc6a319772b33ed6043ff377e7e55da34b5a2d06277a6bf5fe6496"
+    },
+    {
+      "bytes": 19817,
+      "lineage": [
+        "Named R105 tests-only causal dependency; no implementation/tool-body read"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "e18de5be6abaa11c1e2ba14929a917ca547c2e41b349dd9102c2ea49cf55c723"
+    },
+    {
+      "bytes": 16919,
+      "lineage": [
+        "Named R105 tests-only causal dependency; no implementation/tool-body read"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "168205f55695cc0833a6a1b90bd6d9c5e7953ed89c21ad039861aaf4d695f7a8"
+    },
+    {
+      "bytes": 8588,
+      "lineage": [
+        "Named R105 tests-only causal dependency; no implementation/tool-body read"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-IMPLEMENTATION-MAP.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "3ba4a090904925006de901f154b41153d8e70cdfa24ad2e761acd8d94edd9f71"
+    },
+    {
+      "bytes": 8043,
+      "lineage": [
+        "Named R105 tests-only causal dependency; no implementation/tool-body read"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-INDEPENDENT-REVIEW.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "21e81894bc0ccf611e4caab372492e4bb085911ce93837f4a2a1bb3b0d045872"
+    },
+    {
+      "bytes": 13627,
+      "lineage": [
+        "Named R105 tests-only causal dependency; no implementation/tool-body read"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-TESTS-ONLY.diff",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "73be274ebfc2d21319579739c19a61934edb39e1123f390ddef51e6a5015a001"
+    },
+    {
+      "bytes": 13434,
+      "lineage": [
+        "Completed R104 source-review sequence supplement; preserve historical verdict"
+      ],
+      "path": "wave35-preparation/T18e-R0-CUDA-REPLAY-PREFIX-OTHERMODEL-VERIFICATION.md",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "f07232b54c4c3c6d3e65078d093ac01b408188324cd3134b8176343d06bcd947"
+    },
+    {
+      "bytes": 1879,
+      "lineage": [
+        "Named preceding tests-only authorization"
+      ],
+      "path": "wave35/r104-core-invocation-tests-grant.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "52616d9cc9ed4a65bc457de6d4dca102bb7eb1706562adadaef4ce1741259ad2"
+    },
+    {
+      "bytes": 204142,
+      "lineage": [
+        "R105 tests-only source manifest",
+        "Closed R105 source/check/production-baton metadata; baton does not imply R106 execution"
+      ],
+      "path": "wave35/r105-candidate.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+    },
+    {
+      "bytes": 1139,
+      "lineage": [
+        "Closed R105 source/check/production-baton metadata; baton does not imply R106 execution"
+      ],
+      "path": "wave35/r105-core-production-grant.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "92356eebf7237fc05a844729c386e9af1d3f32696eb78ad1a4356c318e2657ff"
+    },
+    {
+      "bytes": 5350,
+      "lineage": [
+        "Closed R105 source/check/production-baton metadata; baton does not imply R106 execution"
+      ],
+      "path": "wave35/r105-core-tests-disposition.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "39ec104b8f76467fe5ffc50df5f5e920a1bf86a6adf200875859fb2f6c21d9ea"
+    },
+    {
+      "bytes": 3130,
+      "lineage": [
+        "R105 resource preflight",
+        "Closed R105 source/check/production-baton metadata; baton does not imply R106 execution"
+      ],
+      "path": "wave35/r105-fixture-resource-preflight.json",
+      "publication": {
+        "action": "new-or-unmatched-bytes",
+        "note": "Future authenticated full catalog selection determines final reuse."
+      },
+      "root": "W",
+      "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+    }
+  ],
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Absolute UTC starts/ends absent from original result JSON; not inferred.",
+          "actual_worker_count": null,
+          "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+          "candidate_manifest": {
+            "bytes": 204142,
+            "path": "wave35/r105-candidate.json",
+            "root": "W",
+            "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+          },
+          "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "counts": null,
+          "custody_records": [
+            {
+              "bytes": 641,
+              "path": "wave35-r105-collection-custody.json",
+              "root": "Q",
+              "sha256": "74ef0c3c9d67214198dcd70be67245b1b17849bd6d72f852ac856bb62dba9046"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r105-collection/collection-custody.json",
+              "root": "Q",
+              "sha256": "74ef0c3c9d67214198dcd70be67245b1b17849bd6d72f852ac856bb62dba9046"
+            }
+          ],
+          "custody_unavailable_reason": "Actual topology/worker declarations require root reconciliation from retained witnesses, not harness setting inference.",
+          "descendants": [
+            {
+              "path": "wave35-r105-collection/collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r105-collection/collection/identity-controller.json",
+              "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39",
+              "type": "file"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r105-collection/collection-custody.json",
+              "sha256": "74ef0c3c9d67214198dcd70be67245b1b17849bd6d72f852ac856bb62dba9046",
+              "type": "file"
+            },
+            {
+              "bytes": 859,
+              "path": "wave35-r105-collection/collection-result.json",
+              "sha256": "74d8d21761964ddaa40ee1f8946485b72397c772fe33f23c83fa2557cfda574b",
+              "type": "file"
+            },
+            {
+              "bytes": 6818,
+              "path": "wave35-r105-collection/collection.log",
+              "sha256": "34c3305c08f88018e5999a35819540ea1186f04d45f8d94cf404fce1b7de9118",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.637660264968872,
+          "ended_at": null,
+          "environment": {
+            "profile": "Actual recorded preflight",
+            "source": {
+              "bytes": 3130,
+              "path": "wave35/r105-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+            }
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r105-collection--collection",
+          "log_paths": [
+            {
+              "bytes": 6818,
+              "path": "wave35-r105-collection/collection.log",
+              "root": "Q",
+              "sha256": "34c3305c08f88018e5999a35819540ea1186f04d45f8d94cf404fce1b7de9118"
+            }
+          ],
+          "path": "wave35-r105-collection",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r105-collection/collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39"
+            }
+          ],
+          "process_topology": null,
+          "record": {
+            "bytes": 859,
+            "path": "wave35-r105-collection/collection-result.json",
+            "root": "Q",
+            "sha256": "74d8d21761964ddaa40ee1f8946485b72397c772fe33f23c83fa2557cfda574b"
+          },
+          "record_id": "collection",
+          "result": {
+            "bytes": 859,
+            "path": "wave35-r105-collection/collection-result.json",
+            "root": "Q",
+            "sha256": "74d8d21761964ddaa40ee1f8946485b72397c772fe33f23c83fa2557cfda574b"
+          },
+          "spec": {
+            "bytes": 620,
+            "path": "wave35-r105-collection-spec.json",
+            "root": "Q",
+            "sha256": "ada06c752e18b38b326e645d38f19fe5ac279f71636668d019bd901b66959133"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r105-collection--collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-only evidence, no implementation acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r105-collection--collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Absolute UTC starts/ends absent from original result JSON; not inferred.",
+          "actual_worker_count": null,
+          "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+          "candidate_manifest": {
+            "bytes": 204142,
+            "path": "wave35/r105-candidate.json",
+            "root": "W",
+            "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+          },
+          "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 3,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 648,
+              "path": "wave35-r105-healthy-controls-custody.json",
+              "root": "Q",
+              "sha256": "9b5db5543613103fc2293c0d744b33cbdcc1cdef1e6337d53d87ddba5cec903c"
+            },
+            {
+              "bytes": 648,
+              "path": "wave35-r105-healthy-controls/healthy-controls-custody.json",
+              "root": "Q",
+              "sha256": "9b5db5543613103fc2293c0d744b33cbdcc1cdef1e6337d53d87ddba5cec903c"
+            }
+          ],
+          "custody_unavailable_reason": "Actual topology/worker declarations require root reconciliation from retained witnesses, not harness setting inference.",
+          "descendants": [
+            {
+              "path": "wave35-r105-healthy-controls/healthy-controls",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r105-healthy-controls/healthy-controls/identity-controller.json",
+              "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39",
+              "type": "file"
+            },
+            {
+              "bytes": 648,
+              "path": "wave35-r105-healthy-controls/healthy-controls-custody.json",
+              "sha256": "9b5db5543613103fc2293c0d744b33cbdcc1cdef1e6337d53d87ddba5cec903c",
+              "type": "file"
+            },
+            {
+              "bytes": 1148,
+              "path": "wave35-r105-healthy-controls/healthy-controls-result.json",
+              "sha256": "66b9a50e5e5a9d5c46eda7b023cdf6faceea88bc264dac0a362f33322f46ce24",
+              "type": "file"
+            },
+            {
+              "bytes": 579,
+              "path": "wave35-r105-healthy-controls/healthy-controls.log",
+              "sha256": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 3.9490649700164795,
+          "ended_at": null,
+          "environment": {
+            "profile": "Actual recorded preflight",
+            "source": {
+              "bytes": 3130,
+              "path": "wave35/r105-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+            }
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r105-healthy-controls--healthy-controls",
+          "log_paths": [
+            {
+              "bytes": 579,
+              "path": "wave35-r105-healthy-controls/healthy-controls.log",
+              "root": "Q",
+              "sha256": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588"
+            }
+          ],
+          "path": "wave35-r105-healthy-controls",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r105-healthy-controls/healthy-controls/identity-controller.json",
+              "root": "Q",
+              "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39"
+            }
+          ],
+          "process_topology": null,
+          "record": {
+            "bytes": 1148,
+            "path": "wave35-r105-healthy-controls/healthy-controls-result.json",
+            "root": "Q",
+            "sha256": "66b9a50e5e5a9d5c46eda7b023cdf6faceea88bc264dac0a362f33322f46ce24"
+          },
+          "record_id": "healthy-controls",
+          "result": {
+            "bytes": 1148,
+            "path": "wave35-r105-healthy-controls/healthy-controls-result.json",
+            "root": "Q",
+            "sha256": "66b9a50e5e5a9d5c46eda7b023cdf6faceea88bc264dac0a362f33322f46ce24"
+          },
+          "spec": {
+            "bytes": 906,
+            "path": "wave35-r105-healthy-controls-spec.json",
+            "root": "Q",
+            "sha256": "a303835fb78070310746714e4a867c1386c34da6c7b214bea5c3a80c157199ae"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r105-healthy-controls--healthy-controls",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-only evidence, no implementation acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r105-healthy-controls--healthy-controls"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Absolute UTC starts/ends absent from original result JSON; not inferred.",
+          "actual_worker_count": null,
+          "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+          "candidate_manifest": {
+            "bytes": 204142,
+            "path": "wave35/r105-candidate.json",
+            "root": "W",
+            "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+          },
+          "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_required_api",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_historical_result_preserves_real_token_and_retirement",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_lifecycle_refusals_leave_completed_result_stable",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_entry_failure_has_no_outcome_or_reuse",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_issuance_rejects_forged_arguments_without_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unissued_subclass_and_copy_refuse",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_wrong_thread_refuses_before_held_locks",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unused_handle_does_not_pin_owner",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_completed_handle_releases_execution_references",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 9,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 959,
+              "path": "wave35-r105-invocation-red-custody.json",
+              "root": "Q",
+              "sha256": "7947936afff2b4a00ab5f74d4677ee01af7896161667ea334c8a68e691659ef3"
+            },
+            {
+              "bytes": 959,
+              "path": "wave35-r105-invocation-red/invocation-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "7947936afff2b4a00ab5f74d4677ee01af7896161667ea334c8a68e691659ef3"
+            }
+          ],
+          "custody_unavailable_reason": "Actual topology/worker declarations require root reconciliation from retained witnesses, not harness setting inference.",
+          "descendants": [
+            {
+              "path": "wave35-r105-invocation-red/invocation-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 1000,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-0578ec4c91c41d03.json",
+              "sha256": "341ef14126d1cb95b8896811e637853ec1eeecddb8ff8c01142a657c22f11764",
+              "type": "file"
+            },
+            {
+              "bytes": 980,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-08b7133b437c809f.json",
+              "sha256": "cfcd9aff89eda36d6a57d3e3d56ad4de90cd907f4c96a1a2770afd7c3752a46d",
+              "type": "file"
+            },
+            {
+              "bytes": 1019,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-3b5318258a9bbb64.json",
+              "sha256": "9cb17170f43f8e81b895dda0ef54a087cfc95c73b827bb54ef65f058106e1cdb",
+              "type": "file"
+            },
+            {
+              "bytes": 1048,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-51d618d2abc40cf4.json",
+              "sha256": "ea6cd39b00002b1c7398472f03216fe503e1af46f51351fac7b4024ef1b2274f",
+              "type": "file"
+            },
+            {
+              "bytes": 1056,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-698d8919b55c24cf.json",
+              "sha256": "820821d908a57c83b6e17abfb2f06b3cd25985beb46af22ae260f9982691fe17",
+              "type": "file"
+            },
+            {
+              "bytes": 1028,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-a8acd53513aba7a9.json",
+              "sha256": "9e85250e1d366aaca11052dfb4d193283fc7d64f026ee5554c8339e8f39cde0a",
+              "type": "file"
+            },
+            {
+              "bytes": 1042,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-c46908c9f221e955.json",
+              "sha256": "8c77907984ebc428b925a53c2a699d9797ac5d7f890b43342d0f687abaf66d07",
+              "type": "file"
+            },
+            {
+              "bytes": 1043,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-cf9994f4ec61264a.json",
+              "sha256": "e653fce83227dbc70eefb9e52ead805f2419e6c6a79d3f4f9c29dcb51675c667",
+              "type": "file"
+            },
+            {
+              "bytes": 730,
+              "path": "wave35-r105-invocation-red/invocation-red/failure-controller-dedb52a2d2b51b09.json",
+              "sha256": "46034f72cbd02a3f206921fa75f3aaddfc1e01edeba97ea7065665daf47db0b9",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r105-invocation-red/invocation-red/identity-controller.json",
+              "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39",
+              "type": "file"
+            },
+            {
+              "bytes": 2454,
+              "path": "wave35-r105-invocation-red/invocation-red-failure-index.json",
+              "sha256": "befb589cee8e72b01fecd4ed5620981ce7cae7263f7fbed7a171f44312c86e0e",
+              "type": "file"
+            },
+            {
+              "bytes": 959,
+              "path": "wave35-r105-invocation-red/invocation-red-negative-custody.json",
+              "sha256": "7947936afff2b4a00ab5f74d4677ee01af7896161667ea334c8a68e691659ef3",
+              "type": "file"
+            },
+            {
+              "bytes": 1972,
+              "path": "wave35-r105-invocation-red/invocation-red-result.json",
+              "sha256": "180d0792e84c0704e09e5a400d7d0d84769ab5d0a76a69b9310edd7014b280e1",
+              "type": "file"
+            },
+            {
+              "bytes": 8886,
+              "path": "wave35-r105-invocation-red/invocation-red.log",
+              "sha256": "6e99c713b0d9d3283e548919eea16310b13fa87566ca3ac70087dae1b6f799ac",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 3.8778412342071533,
+          "ended_at": null,
+          "environment": {
+            "profile": "Actual recorded preflight",
+            "source": {
+              "bytes": 3130,
+              "path": "wave35/r105-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+            }
+          },
+          "exit_code": 1,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r105-invocation-red--invocation-red",
+          "log_paths": [
+            {
+              "bytes": 8886,
+              "path": "wave35-r105-invocation-red/invocation-red.log",
+              "root": "Q",
+              "sha256": "6e99c713b0d9d3283e548919eea16310b13fa87566ca3ac70087dae1b6f799ac"
+            }
+          ],
+          "path": "wave35-r105-invocation-red",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_required_api",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_historical_result_preserves_real_token_and_retirement",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_lifecycle_refusals_leave_completed_result_stable",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_entry_failure_has_no_outcome_or_reuse",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_issuance_rejects_forged_arguments_without_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unissued_subclass_and_copy_refuse",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_wrong_thread_refuses_before_held_locks",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unused_handle_does_not_pin_owner",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_completed_handle_releases_execution_references",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r105-invocation-red/invocation-red/identity-controller.json",
+              "root": "Q",
+              "sha256": "e1a799c462a74188235b961140c2d64080183ca793195cfcadac853ec4556b39"
+            }
+          ],
+          "process_topology": null,
+          "record": {
+            "bytes": 1972,
+            "path": "wave35-r105-invocation-red/invocation-red-result.json",
+            "root": "Q",
+            "sha256": "180d0792e84c0704e09e5a400d7d0d84769ab5d0a76a69b9310edd7014b280e1"
+          },
+          "record_id": "invocation-red",
+          "result": {
+            "bytes": 1972,
+            "path": "wave35-r105-invocation-red/invocation-red-result.json",
+            "root": "Q",
+            "sha256": "180d0792e84c0704e09e5a400d7d0d84769ab5d0a76a69b9310edd7014b280e1"
+          },
+          "spec": {
+            "bytes": 1756,
+            "path": "wave35-r105-invocation-red-spec.json",
+            "root": "Q",
+            "sha256": "bfe3467b12229abeea1a32cf9cb1b973178cc360aab6b6c191a9eaeb3d488dd3"
+          },
+          "started_at": null,
+          "status": "FAILED"
+        }
+      ],
+      "check": "wave35-r105-invocation-red--invocation-red",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-only evidence, no implementation acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r105-invocation-red--invocation-red"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Absolute UTC starts/ends absent from original result JSON; not inferred.",
+          "actual_worker_count": null,
+          "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+          "candidate_manifest": {
+            "bytes": 204142,
+            "path": "wave35/r105-candidate.json",
+            "root": "W",
+            "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+          },
+          "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+          "command": null,
+          "counts": null,
+          "custody_records": [],
+          "custody_unavailable_reason": "Actual topology/worker declarations require root reconciliation from retained witnesses, not harness setting inference.",
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r105-owned-spec.json",
+              "sha256": "f79655444aa9ac4878b4b9e264837d1eee8890a68da5f57138d36f4d0cedcdcf",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Actual recorded preflight",
+            "source": {
+              "bytes": 3130,
+              "path": "wave35/r105-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+            }
+          },
+          "exit_code": null,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r105-owned--owned",
+          "log_paths": [],
+          "path": "wave35-r105-owned-spec.json",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r105-owned"
+          ],
+          "process_custody": [],
+          "process_topology": null,
+          "record": {
+            "bytes": 707,
+            "path": "wave35-r105-owned-spec.json",
+            "root": "Q",
+            "sha256": "f79655444aa9ac4878b4b9e264837d1eee8890a68da5f57138d36f4d0cedcdcf"
+          },
+          "record_id": "owned",
+          "spec": {
+            "bytes": 707,
+            "path": "wave35-r105-owned-spec.json",
+            "root": "Q",
+            "sha256": "f79655444aa9ac4878b4b9e264837d1eee8890a68da5f57138d36f4d0cedcdcf"
+          },
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Generated owned curriculum template; absent result/output directory. No execution inferred."
+        }
+      ],
+      "check": "wave35-r105-owned--owned",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-only evidence, no implementation acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r105-owned--owned"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Absolute UTC starts/ends absent from original result JSON; not inferred.",
+          "actual_worker_count": null,
+          "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+          "candidate_manifest": {
+            "bytes": 204142,
+            "path": "wave35/r105-candidate.json",
+            "root": "W",
+            "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+          },
+          "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+          ],
+          "counts": null,
+          "custody_records": [
+            {
+              "bytes": 994,
+              "path": "wave35-r105-static-custody.json",
+              "root": "Q",
+              "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772"
+            },
+            {
+              "bytes": 994,
+              "path": "wave35-r105-static/static-custody.json",
+              "root": "Q",
+              "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772"
+            }
+          ],
+          "custody_unavailable_reason": "Actual topology/worker declarations require root reconciliation from retained witnesses, not harness setting inference.",
+          "descendants": [
+            {
+              "bytes": 721,
+              "path": "wave35-r105-static/black-test-result.json",
+              "sha256": "354c004da386e9ab5cc67c62331dfdef93f1412c69a7da98c1b4ecd01d3c29b9",
+              "type": "file"
+            },
+            {
+              "bytes": 55,
+              "path": "wave35-r105-static/black-test.log",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+              "type": "file"
+            },
+            {
+              "bytes": 717,
+              "path": "wave35-r105-static/ruff-test-result.json",
+              "sha256": "b817850efce66f5f5477fbcdf8c2c2d0eb813c28678aeab6ec4ec3cf0e46e7d2",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r105-static/ruff-test.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 994,
+              "path": "wave35-r105-static/static-custody.json",
+              "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 0.04872703552246094,
+          "ended_at": null,
+          "environment": {
+            "profile": "Actual recorded preflight",
+            "source": {
+              "bytes": 3130,
+              "path": "wave35/r105-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+            }
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r105-static--ruff-test",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "wave35-r105-static/ruff-test.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "path": "wave35-r105-static",
+          "planned_args": [
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+          ],
+          "process_custody": [],
+          "process_topology": null,
+          "record": {
+            "bytes": 717,
+            "path": "wave35-r105-static/ruff-test-result.json",
+            "root": "Q",
+            "sha256": "b817850efce66f5f5477fbcdf8c2c2d0eb813c28678aeab6ec4ec3cf0e46e7d2"
+          },
+          "record_id": "ruff-test",
+          "result": {
+            "bytes": 717,
+            "path": "wave35-r105-static/ruff-test-result.json",
+            "root": "Q",
+            "sha256": "b817850efce66f5f5477fbcdf8c2c2d0eb813c28678aeab6ec4ec3cf0e46e7d2"
+          },
+          "spec": {
+            "bytes": 632,
+            "path": "wave35-r105-static-spec.json",
+            "root": "Q",
+            "sha256": "8bac6da4fb15a70dfd2d21b354146ee3129164b0a3a1be0f777b79eaca310b17"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r105-static--ruff-test",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-only evidence, no implementation acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2532,
+          "path": "verify_bac_static_run.py",
+          "root": "Q",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r105-static--ruff-test"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Absolute UTC starts/ends absent from original result JSON; not inferred.",
+          "actual_worker_count": null,
+          "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+          "candidate_manifest": {
+            "bytes": 204142,
+            "path": "wave35/r105-candidate.json",
+            "root": "W",
+            "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+          },
+          "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+          ],
+          "counts": null,
+          "custody_records": [
+            {
+              "bytes": 994,
+              "path": "wave35-r105-static-custody.json",
+              "root": "Q",
+              "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772"
+            },
+            {
+              "bytes": 994,
+              "path": "wave35-r105-static/static-custody.json",
+              "root": "Q",
+              "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772"
+            }
+          ],
+          "custody_unavailable_reason": "Actual topology/worker declarations require root reconciliation from retained witnesses, not harness setting inference.",
+          "descendants": [
+            {
+              "bytes": 721,
+              "path": "wave35-r105-static/black-test-result.json",
+              "sha256": "354c004da386e9ab5cc67c62331dfdef93f1412c69a7da98c1b4ecd01d3c29b9",
+              "type": "file"
+            },
+            {
+              "bytes": 55,
+              "path": "wave35-r105-static/black-test.log",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+              "type": "file"
+            },
+            {
+              "bytes": 717,
+              "path": "wave35-r105-static/ruff-test-result.json",
+              "sha256": "b817850efce66f5f5477fbcdf8c2c2d0eb813c28678aeab6ec4ec3cf0e46e7d2",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r105-static/ruff-test.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 994,
+              "path": "wave35-r105-static/static-custody.json",
+              "sha256": "558f590256b28242a65603c44c878cbf6559ea04a63f80f10ec7894e5e820772",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 1.0003666877746582,
+          "ended_at": null,
+          "environment": {
+            "profile": "Actual recorded preflight",
+            "source": {
+              "bytes": 3130,
+              "path": "wave35/r105-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+            }
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r105-static--black-test",
+          "log_paths": [
+            {
+              "bytes": 55,
+              "path": "wave35-r105-static/black-test.log",
+              "root": "Q",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+            }
+          ],
+          "path": "wave35-r105-static",
+          "planned_args": [
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+          ],
+          "process_custody": [],
+          "process_topology": null,
+          "record": {
+            "bytes": 721,
+            "path": "wave35-r105-static/black-test-result.json",
+            "root": "Q",
+            "sha256": "354c004da386e9ab5cc67c62331dfdef93f1412c69a7da98c1b4ecd01d3c29b9"
+          },
+          "record_id": "black-test",
+          "result": {
+            "bytes": 721,
+            "path": "wave35-r105-static/black-test-result.json",
+            "root": "Q",
+            "sha256": "354c004da386e9ab5cc67c62331dfdef93f1412c69a7da98c1b4ecd01d3c29b9"
+          },
+          "spec": {
+            "bytes": 632,
+            "path": "wave35-r105-static-spec.json",
+            "root": "Q",
+            "sha256": "8bac6da4fb15a70dfd2d21b354146ee3129164b0a3a1be0f777b79eaca310b17"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r105-static--black-test",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-only evidence, no implementation acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2532,
+          "path": "verify_bac_static_run.py",
+          "root": "Q",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r105-static--black-test"
+    }
+  ],
+  "dependencies": [
+    {
+      "bytes": 2043,
+      "path": "run_bac_packet_checks_locked.py",
+      "prior_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "required_by": [
+        "wave35-r105-collection--collection",
+        "wave35-r105-healthy-controls--healthy-controls",
+        "wave35-r105-invocation-red--invocation-red",
+        "wave35-r105-static--ruff-test",
+        "wave35-r105-static--black-test"
+      ],
+      "role": "metadata-attributed helper closure; final reconciliation pending",
+      "root": "Q",
+      "same_bytes_as_prior": true,
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 6277,
+      "path": "capture_wave14_round.py",
+      "prior_sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "required_by": [
+        "wave35-r105-collection--collection",
+        "wave35-r105-healthy-controls--healthy-controls",
+        "wave35-r105-invocation-red--invocation-red",
+        "wave35-r105-static--ruff-test",
+        "wave35-r105-static--black-test"
+      ],
+      "role": "metadata-attributed helper closure; final reconciliation pending",
+      "root": "Q",
+      "same_bytes_as_prior": true,
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 3032,
+      "path": "verify_bac_run.py",
+      "prior_sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+      "required_by": [
+        "wave35-r105-collection--collection",
+        "wave35-r105-healthy-controls--healthy-controls"
+      ],
+      "role": "metadata-attributed helper closure; final reconciliation pending",
+      "root": "Q",
+      "same_bytes_as_prior": true,
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 2917,
+      "path": "bac_source_identity.py",
+      "prior_sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "required_by": [
+        "wave35-r105-collection--collection",
+        "wave35-r105-healthy-controls--healthy-controls",
+        "wave35-r105-invocation-red--invocation-red"
+      ],
+      "role": "metadata-attributed helper closure; final reconciliation pending",
+      "root": "Q",
+      "same_bytes_as_prior": true,
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 4596,
+      "path": "verify_bac_failed_run.py",
+      "prior_sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56",
+      "required_by": [
+        "wave35-r105-invocation-red--invocation-red"
+      ],
+      "role": "metadata-attributed helper closure; final reconciliation pending",
+      "root": "Q",
+      "same_bytes_as_prior": true,
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+    },
+    {
+      "bytes": 2532,
+      "path": "verify_bac_static_run.py",
+      "prior_sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+      "required_by": [
+        "wave35-r105-static--ruff-test",
+        "wave35-r105-static--black-test"
+      ],
+      "role": "metadata-attributed helper closure; final reconciliation pending",
+      "root": "Q",
+      "same_bytes_as_prior": true,
+      "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+    }
+  ],
+  "descendant_directories": [
+    {
+      "path": "wave35-r105-collection/collection",
+      "root": "Q"
+    },
+    {
+      "path": "wave35-r105-healthy-controls/healthy-controls",
+      "root": "Q"
+    },
+    {
+      "path": "wave35-r105-invocation-red/invocation-red",
+      "root": "Q"
+    }
+  ],
+  "gaps": [
+    "Active/unsealed R106 excluded. No future implementation result or acceptance inferred from production baton.",
+    "Actual checkpoint terminal/contract/subject/terminal review/receipt remain future explicit.",
+    "Missing original absolute UTC starts/ends remain null; durations retained.",
+    "Process topology/actual workers and helper required-by closure need root reconciliation; no implementation/tool bodies inspected.",
+    "Execution-subtree bindings and authenticated full catalog selection remain future; inert patch preserves five changed paths only.",
+    "Required replay clone-stability P2 remains open independently of core tests; no A/B/hardware/producer-child acceptance."
+  ],
+  "interval": [
+    105,
+    105
+  ],
+  "interval_entries": [
+    {
+      "kind": "support",
+      "path": "wave35-r105-capture.log",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "attempt-directory",
+      "path": "wave35-r105-collection",
+      "round": 105,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-collection-custody.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-collection-harness.log",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-collection-spec.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "attempt-directory",
+      "path": "wave35-r105-healthy-controls",
+      "round": 105,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-healthy-controls-custody.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-healthy-controls-harness.log",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-healthy-controls-spec.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "attempt-directory",
+      "path": "wave35-r105-invocation-red",
+      "round": 105,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-invocation-red-custody.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-invocation-red-harness.log",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-invocation-red-spec.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-owned-spec.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "attempt-directory",
+      "path": "wave35-r105-static",
+      "round": 105,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-static-custody.json",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-static-harness.log",
+      "round": 105,
+      "status": "RECORDED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r105-static-spec.json",
+      "round": 105,
+      "status": "RECORDED"
+    }
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_component": {
+    "bytes": 9075,
+    "path": "evidence-management/wip19-preparation/r103-r104-history-component-v1.json",
+    "root": "W",
+    "sha256": "ee6330ff4a3de6d96f67ff2ea1576622d1e5df6f1608d467195d283d09cf5901"
+  },
+  "retained_outcomes": {
+    "collected": 76,
+    "custody": "Root verified PASS",
+    "healthy_controls_passed": 3,
+    "intended_missing_API_failures": 9,
+    "owned_curriculum_template": "UNRUN",
+    "replay_clone_stability_P2": "OPEN; R104 F2 source PASS superseded",
+    "source_state": "Core production unchanged at tests-only freeze; R106 excluded",
+    "static": "Ruff/Black PASS"
+  },
+  "review_history_supplement": {
+    "bytes": 2333,
+    "path": "evidence-management/wip19-preparation/r104-completed-review-history-supplement-v1.json",
+    "root": "W",
+    "sha256": "0b7b2389590dc5e315f9f5d9642e1754228d3bb7a82117ca8e6db394c0773da0"
+  },
+  "roots": {
+    "Q": "/workspace/bac-review-2026-11-01/qualification",
+    "R": "/workspace/hamlet",
+    "W": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades"
+  },
+  "round_source_bindings": [
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204142,
+        "path": "wave35/r105-candidate.json",
+        "root": "W",
+        "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+      },
+      "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+      "check_ids": [
+        "wave35-r105-collection--collection",
+        "wave35-r105-healthy-controls--healthy-controls",
+        "wave35-r105-invocation-red--invocation-red",
+        "wave35-r105-owned--owned",
+        "wave35-r105-static--ruff-test",
+        "wave35-r105-static--black-test"
+      ],
+      "preflight": {
+        "bytes": 3130,
+        "path": "wave35/r105-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+      },
+      "round": 105,
+      "source_inventories": {
+        "W35-R0-CUDA-CORE": [
+          {
+            "lines": 821,
+            "path": "src/townlet/exploration/rng_custody.py",
+            "present": true,
+            "sha256": "0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477"
+          },
+          {
+            "lines": 1681,
+            "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "present": true,
+            "sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38"
+          }
+        ],
+        "W35-R0-CUDA-FLAT-PER-A": [
+          {
+            "lines": 842,
+            "path": "src/townlet/training/replay_contract.py",
+            "present": true,
+            "sha256": "3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c"
+          },
+          {
+            "lines": 816,
+            "path": "src/townlet/training/replay_buffer.py",
+            "present": true,
+            "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+          },
+          {
+            "lines": 1310,
+            "path": "src/townlet/training/prioritized_replay_buffer.py",
+            "present": true,
+            "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+          }
+        ]
+      },
+      "source_patch": {
+        "bytes": 107096,
+        "path": "evidence-management/wip19-preparation/r105-owned-candidate.patch",
+        "root": "W",
+        "sha256": "ca53a264a2498f00eace2b9e80857c1099c9069094b58fdab13cd534284ca62a"
+      }
+    }
+  ],
+  "schema": "bac-closed-interval-evidence-inventory-v1",
+  "status": "METADATA PREPARATION ONLY; NO TERMINAL SEAL"
+}

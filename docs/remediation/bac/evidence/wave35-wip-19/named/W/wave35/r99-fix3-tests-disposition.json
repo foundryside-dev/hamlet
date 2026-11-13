@@ -1,0 +1,34 @@
+{
+  "time": "2026-11-13T17:31:49.843896+00:00",
+  "candidate_tree": "f9b5f592bbc3763d6172574857b074bf978ae68a",
+  "manifest_sha256": "942400ad11c9cc6414b5ad0f9cd2c4358d7e6ef91ff6532970a359e0fe2ba92e",
+  "collection": 393,
+  "preserved_prior_nodes": 129,
+  "positive_passes": 30,
+  "intended_red": 178,
+  "errors": 0,
+  "skips": 0,
+  "warnings": 0,
+  "new_b_blocked_unrun": 56,
+  "checks": {
+    "fix3-positive-controls": {
+      "custody_path": "/workspace/bac-review-2026-11-01/qualification/wave35-r99-fix3-positive-controls-custody.json",
+      "custody_sha256": "c16874332cddee00d18eda40fe975883a707d995ece5bd7dfecbdb64cbd943d2",
+      "log_sha256": "d3cbba4bcbe861f3b2f1b557e57c9e3e3a2ceed379b91bb584cfa4f52aeb9574",
+      "summary": "============================== 10 passed in 0.23s =============================="
+    },
+    "fix3-raw-reachable": {
+      "custody_path": "/workspace/bac-review-2026-11-01/qualification/wave35-r99-fix3-raw-reachable-custody.json",
+      "custody_sha256": "dfbb58256686280d30c43aff6623cd171dbf356183e115081b4bef705803c9dc",
+      "log_sha256": "5a3c76e67f7f57d778d9fbcfea54205f4155b1240fc8a7daffea44ab2283dbdb",
+      "summary": "======================== 117 failed, 12 passed in 5.15s ========================"
+    },
+    "fix3-other-reachable": {
+      "custody_path": "/workspace/bac-review-2026-11-01/qualification/wave35-r99-fix3-other-reachable-custody.json",
+      "custody_sha256": "7013b7ae594ec980c069e9e5060bdaf2dad8bfadfe0ab12d0a47e71f7960dee5",
+      "log_sha256": "a81818b8199ff3a1a940106f000347f375d2fadef14a83394f235162109334d7",
+      "summary": "========================= 61 failed, 8 passed in 2.72s ========================="
+    }
+  },
+  "disposition": "Causal structural prefix RED established against unchanged R98 production. Production fix3 may proceed; no A/B/hardware/package acceptance."
+}

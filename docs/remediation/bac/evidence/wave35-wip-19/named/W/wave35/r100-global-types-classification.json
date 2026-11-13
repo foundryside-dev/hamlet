@@ -1,0 +1,30 @@
+{
+  "tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+  "status": "FAIL",
+  "counts": {
+    "src/townlet/training/replay_contract.py": 1,
+    "src/townlet/oracle/driver.py": 6,
+    "src/townlet/population/vectorized.py": 9
+  },
+  "errors": [
+    "src/townlet/training/replay_contract.py:421: error: \"AmbientRNGDomain\" has no attribute \"device_invocation\"; maybe \"device_operation\"?  [attr-defined]",
+    "src/townlet/oracle/driver.py:98: error: Missing named argument \"world_roster\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "src/townlet/oracle/driver.py:98: error: Missing named argument \"training_seed\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "src/townlet/oracle/driver.py:98: error: Missing named argument \"lane_world_ids\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "src/townlet/oracle/driver.py:115: error: Missing named argument \"reservation\" for \"reset\" of \"VectorizedHamletEnv\"  [call-arg]",
+    "src/townlet/oracle/driver.py:128: error: Missing named argument \"vector_step\" for \"step\" of \"VectorizedHamletEnv\"  [call-arg]",
+    "src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type \"Tensor\", variable has type \"WorldRecord\")  [assignment]",
+    "src/townlet/population/vectorized.py:698: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:698: error: Missing named argument \"lineage\" for \"prepare_serialized\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:699: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:699: error: Missing named argument \"lineage\" for \"prepare_archived_import\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:701: error: Missing named argument \"lineage\" for \"prepare_serialized\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:702: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"ReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"PrioritizedReplayBuffer\"  [call-arg]"
+  ],
+  "log_sha256": "0986075807e82922f0e98f4b27cc78a6f0e37e866aaba37ade653c25597925e2",
+  "custody_path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-global-mypy-custody.json",
+  "disposition": "Same16 required remaining integration errors as WIP18:1missingB API,6oracle,9POPlineage. No additional shared-validator type regression detected. Not a passing global gate."
+}

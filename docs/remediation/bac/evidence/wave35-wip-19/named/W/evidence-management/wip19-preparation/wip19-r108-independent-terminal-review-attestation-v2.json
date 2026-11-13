@@ -1,0 +1,145 @@
+{
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "checkpoint_id": "wave35-wip-19",
+  "series": "wave35",
+  "interval": [
+    99,
+    108
+  ],
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_wip19_terminal",
+  "metadata_author": "/root/bac_astra_replay_fix4_resume_review",
+  "independence_evidence": {
+    "producer": "/root",
+    "reviewer": "/root/bac_astra_wip19_terminal",
+    "statement": "Fresh independent reviewer; did not author application source/tests, producing evidence, contract, subject, receipt inputs or reviewed documents. Personally performed read-only retained-evidence JSON/hash/Git-object checks; authored only original and linked V2 terminal reports/attestations. No application execution or source review."
+  },
+  "disposition": "PASS FOR BOUNDED WIP EVIDENCE ONLY",
+  "source_disposition": "Bounded R106 initial core approval and R108 clone-stability P2 source PASS retained; no whole A/B acceptance.",
+  "qualification_subject": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-qualification-subject-v2.json",
+    "sha256": "100d215a0ff820b47b6e898bbb7e3e2f4d82fd6139fd9497cc859ef0e4510f7b",
+    "bytes": 19577
+  },
+  "candidate_manifest": {
+    "bytes": 204196,
+    "path": "wave35/r108-candidate.json",
+    "root": "W",
+    "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce"
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip19-checkpoint-contract.json",
+    "sha256": "07e0f971c25e88f6da573a2eb4a333bc66cb00d6589b166a01fd07e0eec0e131",
+    "bytes": 6035
+  },
+  "review_input": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r99-r108-complete-receipt-input-v6.json",
+    "sha256": "710e6e2d52b6c09095cbf882ba0aa0739d76f379458a4f81d04f0332777b307b",
+    "bytes": 3185204
+  },
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "review_report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP19-TERMINAL-REVIEW-V2.md",
+    "sha256": "15cc728bb14d3f6a551f8ed560e3bcb0c3a168f9a27aeb9f339451576577d747",
+    "bytes": 13045
+  },
+  "scope": "Finite R99\u2013R108 WIP durability checkpoint. Five disjoint R108 runtime groups qualify 507 bounded assertions. R106 core 76 remains separate exact-candidate evidence. Bounded core source and clone-stability P2 dispositions are retained; no complete A/B, package, hardware or programme acceptance.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "reviewed_documents": [
+    {
+      "root": "R",
+      "path": "README.md",
+      "bytes": 32210,
+      "sha256": "efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/STATUS.md",
+      "bytes": 98514,
+      "sha256": "52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "bytes": 8979,
+      "sha256": "9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "bytes": 44999,
+      "sha256": "553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab"
+    }
+  ],
+  "findings": [],
+  "verified": {
+    "direct_unique_refs": 1245,
+    "interval_top_level_entries": 343,
+    "checks": 106,
+    "executed_result_records": 96,
+    "passed_checks": 84,
+    "failed_checks": 12,
+    "unrun_templates": 10,
+    "descendant_entry_comparisons_including_repeated_shared_directory": 1705,
+    "source_guards": 818,
+    "approved_guarded_document_deltas": 2,
+    "configs": 573,
+    "protected_artifacts": 13,
+    "execution_scope_blobs": 1503,
+    "recoverable_full_base_patches": 10,
+    "existing_r106_child_bindings": 10,
+    "r106_separate_passed": 76,
+    "r108_qualifying_checks": 5,
+    "r108_unique_passed": 507,
+    "r108_collected": 836,
+    "r108_focused_unrun": 329,
+    "actual_xdist_workers": 0,
+    "explicit_dependencies": 170,
+    "named_W_R_artifact_refs_in_dependency_closure": 161
+  },
+  "limitations": [
+    "Retained evidence review; no independent application rerun or implementation review.",
+    "Absolute execution UTC timestamps unavailable; not inferred.",
+    "Per-job custody summaries and controller records are not raw traces or signed in-memory execution attestations. R108 controller records lack PID/literal attempt_id; job/spec/result/source/custody relationships retained.",
+    "R106 child witnesses lack literal attempt_id; actual exact job/spec/result/controller/child/parent source and PID linkage checked.",
+    "Root final receipt, selection/assembly, prospective links, staged scope, publication and remote CI remain pending."
+  ],
+  "required_next": [
+    "Qualify new invocation own-phase outcomes, fork refusal, lifecycle/state/lifetime and real-thread numeric-alias controls against the adopted protocol.",
+    "Implement and independently qualify the finite strict-verifier additions, including reference/invocation phase-pair comparison, before new child executions.",
+    "Activate reviewed B local contracts and execute applicable public producer behavior and all ten producer poison children.",
+    "Complete actual parent/outer-consumer and recurrent integration with owner/device reachability and cross-interface evidence.",
+    "Run applicable real CUDA one-/two-device scenarios on available hardware; offered server access and GPU count remain unknown.",
+    "Resolve current repository type/CI failures from actual source evidence; retain historical global16 observation without inferring a current count.",
+    "Complete required runner/environment, learning/legal-action, checkpoint/resume/reproducibility, full/default, coverage\u226570%, slow, fresh independent design/implementation reviews and exact final remote CI gates."
+  ],
+  "supersedes": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-independent-terminal-review-attestation-v1.json",
+    "sha256": "23474d7fa913cc7bdb6db3196193cbf73d93f25e727e6fb8fd86772abb180109",
+    "bytes": 5853
+  },
+  "supersedes_report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP19-TERMINAL-REVIEW.md",
+    "sha256": "0c15bc2e58570f486328bca845661c5c230d55e0eef617841786f05c446d8bfe",
+    "bytes": 10670
+  },
+  "supersedes_reason": "Linked corrected v6 input/v2 subject closes metadata dependency-role and explicit selection-closure defect; prior v5 verdict is superseded for final selection. Substantive evidence bytes unchanged.",
+  "resolved_findings": [
+    {
+      "found_by": "/root",
+      "issue": "26 dependency refs lacked role/required_by; named artifact inventory alone did not select intended metadata. Initial reviewer check covered check.required_dependencies only.",
+      "resolution": "Independently verified corrected v6/v2 delta, all170 dependency role/actual-check relationships and complete161 named W/R selection closure; no substantive evidence changed."
+    }
+  ]
+}

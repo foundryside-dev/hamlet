@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import gc
 import hashlib
 import importlib
 import inspect
@@ -16,9 +17,10 @@ import signal
 import threading
 import time
 import weakref
+from contextlib import AbstractContextManager
 from pathlib import Path
-from types import MappingProxyType
-from typing import Any
+from types import MappingProxyType, TracebackType
+from typing import Any, Literal, get_type_hints
 
 import numpy as np
 import pytest
@@ -428,6 +430,276 @@ def test_subset_cpu_path_never_queries_cuda(domain: Any, monkeypatch: pytest.Mon
     with domain.device_operation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=()):
         pass
     domain.unregister(participant=participant)
+
+
+def test_device_invocation_required_api() -> None:
+    # Catches a missing/optional factory input or a context exposing new lineage.
+    invocation_type = getattr(custody, "RNGDeviceInvocation")
+    factory = getattr(custody.AmbientRNGDomain, "device_invocation")
+    parameters = list(inspect.signature(factory).parameters.values())[1:]
+    assert tuple(parameter.name for parameter in parameters) == ("participant", "operation_kind", "lineage", "cuda_devices")
+    assert all(parameter.kind is inspect.Parameter.KEYWORD_ONLY for parameter in parameters)
+    assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
+    assert get_type_hints(factory) == {
+        "participant": custody.RNGParticipant,
+        "operation_kind": str,
+        "lineage": custody.RNGOperation | None,
+        "cuda_devices": tuple[int, ...],
+        "return": invocation_type,
+    }
+    assert issubclass(invocation_type, AbstractContextManager)
+    for name in ("__enter__", "completion_failed"):
+        assert tuple(inspect.signature(getattr(invocation_type, name)).parameters) == ("self",)
+    assert get_type_hints(invocation_type.__enter__) == {"return": custody.RNGOperation}
+    assert get_type_hints(invocation_type.completion_failed) == {"return": bool}
+    exit_parameters = list(inspect.signature(invocation_type.__exit__).parameters.values())[1:]
+    assert tuple(parameter.name for parameter in exit_parameters) == ("exc_type", "exc_value", "traceback")
+    assert all(parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD for parameter in exit_parameters)
+    assert all(parameter.default is inspect.Parameter.empty for parameter in exit_parameters)
+    assert get_type_hints(invocation_type.__exit__) == {
+        "exc_type": type[BaseException] | None,
+        "exc_value": BaseException | None,
+        "traceback": TracebackType | None,
+        "return": Literal[False],
+    }
+    with pytest.raises(TypeError):
+        invocation_type()
+
+
+def test_device_invocation_historical_result_preserves_real_token_and_retirement(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches receipt reads depending on a live operation/member or taking locks.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+    owner = Owner()
+    participant = register(domain, owner, ())
+    try:
+        before = (domain.status(), domain._currency)
+        invocation = factory(participant=participant, operation_kind="prepare", lineage=None, cuda_devices=())
+        assert (domain.status(), domain._currency) == before
+        with owner.lock:
+            operation = invocation.__enter__()
+            try:
+                assert type(operation) is custody.RNGOperation
+                token = domain.current_token(participant=participant, operation=operation)
+                domain.validate_current(token=token, operation=operation)
+            finally:
+                exit_result = invocation.__exit__(None, None, None)
+            assert exit_result is False
+            assert invocation.completion_failed() is False
+        with pytest.raises(ValueError, match="expired"):
+            domain.current_token(participant=participant, operation=operation)
+        validate_token(domain, participant, token)
+        assert invocation.completion_failed() is False
+    finally:
+        domain.unregister(participant=participant)
+    probe = LockProbe(domain._lock)
+    monkeypatch.setattr(domain, "_lock", probe)
+    with owner.lock:
+        assert invocation.completion_failed() is False
+        assert invocation.completion_failed() is False
+    assert probe.calls == [0]
+
+
+def test_device_invocation_lifecycle_refusals_leave_completed_result_stable(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches premature False, reuse, suppression, or a refusal mutating the state.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+    owner = Owner()
+    participant = register(domain, owner, ())
+    try:
+        invocation = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+        with pytest.raises(RuntimeError):
+            invocation.completion_failed()
+        with pytest.raises(RuntimeError):
+            invocation.__exit__(None, None, None)
+        with invocation:
+            with pytest.raises(RuntimeError):
+                invocation.completion_failed()
+            with pytest.raises(RuntimeError):
+                invocation.__enter__()
+        for action in (invocation.__enter__, lambda: invocation.__exit__(None, None, None)):
+            with pytest.raises(RuntimeError):
+                action()
+        assert invocation.completion_failed() is False
+    finally:
+        domain.unregister(participant=participant)
+
+
+def test_device_invocation_entry_failure_has_no_outcome_or_reuse(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches admission at issuance only, or entry refusal publishing False.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+    owner = Owner()
+    participant = register(domain, owner, ())
+    invocation = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+    domain.unregister(participant=participant)
+    with pytest.raises(ValueError):
+        with invocation:
+            pytest.fail("retired participant reached invocation body")
+    with pytest.raises(RuntimeError):
+        invocation.completion_failed()
+    with pytest.raises(RuntimeError):
+        invocation.__enter__()
+    with pytest.raises(RuntimeError):
+        invocation.__exit__(None, None, None)
+
+
+def test_device_invocation_issuance_rejects_forged_arguments_without_cuda(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches issuance accepting unissued identities or mutable/malformed inputs.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+    owner = Owner()
+    participant = register(domain, owner, ())
+    try:
+        valid = {"participant": participant, "operation_kind": "ordinary", "lineage": None, "cuda_devices": ()}
+        bad_arguments = (
+            ("participant", object.__new__(custody.RNGParticipant)),
+            ("participant", object()),
+            ("operation_kind", ""),
+            ("operation_kind", 1),
+            ("lineage", object.__new__(custody.RNGOperation)),
+            ("cuda_devices", []),
+            ("cuda_devices", (True,)),
+            ("cuda_devices", (-1,)),
+            ("cuda_devices", (1, 0)),
+            ("cuda_devices", (0, 0)),
+        )
+        before = (domain.status(), domain._currency)
+        for name, value in bad_arguments:
+            arguments = {**valid, name: value}
+            with pytest.raises(ValueError):
+                factory(**arguments)
+        assert (domain.status(), domain._currency) == before
+    finally:
+        domain.unregister(participant=participant)
+
+
+def test_device_invocation_unissued_subclass_and_copy_refuse(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches lookalike/copy authority and public attributes forging a receipt.
+    invocation_type = getattr(custody, "RNGDeviceInvocation")
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    owner = Owner()
+    participant = register(domain, owner, ())
+
+    class InvocationSubclass(invocation_type):
+        pass
+
+    try:
+        invocation = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+        for copier in (copy.copy, copy.deepcopy, pickle.dumps):
+            with pytest.raises(TypeError):
+                copier(invocation)
+        with pytest.raises(TypeError):
+            invocation.__init__()
+        with pytest.raises(AttributeError):
+            invocation.result = False
+        for forged in (object.__new__(invocation_type), object.__new__(InvocationSubclass)):
+            for action in (forged.__enter__, lambda: forged.__exit__(None, None, None), forged.completion_failed):
+                with pytest.raises(ValueError):
+                    action()
+        with invocation:
+            pass
+        assert invocation.completion_failed() is False
+    finally:
+        domain.unregister(participant=participant)
+
+
+def test_device_invocation_wrong_thread_refuses_before_held_locks(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches authentic methods waiting for exclusion before thread authentication.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+    owner = Owner()
+    participant = register(domain, owner, ())
+    threads: list[threading.Thread] = []
+    errors: list[BaseException] = []
+    refusals: list[bool] = []
+    try:
+        invocation = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+
+        def check_wrong_thread() -> None:
+            done = threading.Event()
+
+            def call_methods() -> None:
+                try:
+                    for action in (invocation.__enter__, lambda: invocation.__exit__(None, None, None), invocation.completion_failed):
+                        with pytest.raises(ValueError):
+                            action()
+                except BaseException as error:
+                    errors.append(error)
+                finally:
+                    done.set()
+
+            thread = threading.Thread(target=call_methods)
+            threads.append(thread)
+            thread.start()
+            refusals.append(done.wait(2))
+
+        with domain._lock, owner.lock:
+            check_wrong_thread()
+            with invocation:
+                check_wrong_thread()
+            check_wrong_thread()
+        assert invocation.completion_failed() is False
+    finally:
+        for thread in threads:
+            thread.join(5)
+        domain.unregister(participant=participant)
+    assert all(not thread.is_alive() for thread in threads)
+    assert refusals == [True, True, True]
+    assert not errors
+
+
+def test_device_invocation_unused_handle_does_not_pin_owner(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches eager admission/owner pinning at handle construction.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+    owner = Owner()
+    reference = weakref.ref(owner)
+    participant = register(domain, owner, ())
+    invocation = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+    del owner
+    gc.collect()
+    assert reference() is None
+    domain.status()
+    with pytest.raises(ValueError):
+        invocation.__enter__()
+    with pytest.raises(RuntimeError):
+        invocation.completion_failed()
+
+
+def test_device_invocation_completed_handle_releases_execution_references(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Catches a completed handle retaining its generator, owner, lineage or error.
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    factory = domain.device_invocation
+
+    class BodyError(RuntimeError):
+        pass
+
+    def complete() -> tuple[Any, Any, Any, Any]:
+        owner = Owner()
+        participant = register(domain, owner, ())
+        invocation = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+        error = BodyError("body-only failure is not a completion failure")
+        try:
+            with invocation as operation:
+                raise error
+        except BodyError as outward:
+            assert outward is error
+        else:
+            pytest.fail("invocation suppressed body exception")
+        domain.unregister(participant=participant)
+        return invocation, weakref.ref(owner), weakref.ref(operation), weakref.ref(error)
+
+    invocation, owner_reference, operation_reference, error_reference = complete()
+    gc.collect()
+    assert invocation.completion_failed() is False
+    assert owner_reference() is None
+    assert operation_reference() is None
+    assert error_reference() is None
+    invocation_reference = weakref.ref(invocation)
+    del invocation
+    gc.collect()
+    assert invocation_reference() is None
 
 
 def test_actual_gate_blocks_other_thread_and_cross_thread_capability(domain: Any) -> None:

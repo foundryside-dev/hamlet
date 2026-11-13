@@ -1,0 +1,44 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r108-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-classifier-all",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "classifier-all",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[native]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[primitives]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[alias]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-numeric]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-bool]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[scalar]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-subclass]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[mapping]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[list-subclass]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[key]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[kind]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[count]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[proxy]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-object]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-structured]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-subclass]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-scalar]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[cycle]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[ordered-items]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-detach]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-attribute]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

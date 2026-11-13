@@ -1,0 +1,35 @@
+{
+  "schema": "bac-checkpoint-operational-notes-v1",
+  "checkpoint": "wave35-wip-19",
+  "selector_attempts": [
+    {
+      "attempt": 1,
+      "status": "FAILED",
+      "reason": "Interval classification labels invalid; no output/assembly; exact failed receipt and failure record retained."
+    },
+    {
+      "attempt": 2,
+      "status": "PASSED",
+      "plan_sha256": "9b470996d63ff2d5473188592d2a6cba74ab7f4897691cb1b54cd35d868763dc"
+    }
+  ],
+  "metadata_corrections": [
+    "Old index provenance now immutable WIP18 bytes.",
+    "Actual process role/import-thread refs and explicit named dependency closure corrected.",
+    "81 attempt entries and262 diagnostic support entries derive unchanged authoritative attempts. Fresh terminal V3 review binds corrected v7/subjectv3; older reviews remain superseded provenance."
+  ],
+  "root_publication_check_attempts": [
+    "Initial root link check correctly found selection-plan.json not yet copied by root; no navigation records written. Root then explicitly copied exact reviewed plan; assembly writes content objects only."
+  ],
+  "exclusive_creation_collision": "Metadata author v5 exclusive open refused existing root file before any write; no overwrite.",
+  "environment_restart": "Source and HEAD verified unchanged; no new checkout or cancellation.",
+  "remote_prior_sha": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "remote_prior_check": "git ls-remote existing branch returned exact SHA before publication, exit0.",
+  "future_preseal_checklist": [
+    "Derive interval kinds/statuses from authoritative attempts.",
+    "Verify process-custody roles and actual import/thread records.",
+    "Verify every named metadata dependency role/required_by and explicit selection closure; artifact_inputs alone is not selection.",
+    "Check unchanged selector schema before independent terminal review; preserve finite corrections as linked versions."
+  ],
+  "remaining": "Invocation protocols/B/integration/hardware/global gates remain open; WIP19 remote/CI still pending."
+}

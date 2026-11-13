@@ -1,0 +1,170 @@
+{
+  "author": "/root/bac_astra_replay_fix4_resume_review",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_manifest": {
+    "bytes": 204188,
+    "path": "wave35/r106-candidate.json",
+    "root": "W",
+    "sha256": "12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970"
+  },
+  "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+  "component_id": "wave35-next-checkpoint-r106-core-history",
+  "draft_metadata_only": true,
+  "existing_children_scope": "Ten exact current-source existing core children with generic/strict custody, not new invocation own-phase/alias/fork/state closure.",
+  "historical_rounds": [
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204188,
+        "path": "wave35/r106-candidate.json",
+        "root": "W",
+        "sha256": "12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970"
+      },
+      "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+      "check_ids": [
+        "wave35-r106-collection--collection",
+        "wave35-r106-core-current--core-current",
+        "wave35-r106-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+        "wave35-r106-cuda-core-inherited-pid--cuda-core-inherited-pid",
+        "wave35-r106-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+        "wave35-r106-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+        "wave35-r106-cuda-core-local-completion-single--cuda-core-local-completion-single",
+        "wave35-r106-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+        "wave35-r106-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+        "wave35-r106-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+        "wave35-r106-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+        "wave35-r106-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+        "wave35-r106-owned--owned",
+        "wave35-r106-static--ruff-core-test",
+        "wave35-r106-static--black-core-test",
+        "wave35-r106-static--no-defaults",
+        "wave35-r106-types--owned-mypy"
+      ],
+      "preflight": {
+        "bytes": 3130,
+        "path": "wave35/r106-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "0e58aa3a57b27dc0b5233a62ca2a71de3b7a1b426bc07da6409621e8971078ee"
+      },
+      "round": 106,
+      "source_delta": {
+        "from_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+        "patch": {
+          "bytes": 9723,
+          "path": "evidence-management/wip19-preparation/r105-to-r106-candidate.patch",
+          "root": "W",
+          "sha256": "8acb05418b802e9fc61a2979941a2ce7416344309f6000445970f93ed2af13c5"
+        },
+        "preceding_base_patch": {
+          "bytes": 107096,
+          "path": "evidence-management/wip19-preparation/r105-owned-candidate.patch",
+          "root": "W",
+          "sha256": "ca53a264a2498f00eace2b9e80857c1099c9069094b58fdab13cd534284ca62a"
+        },
+        "to_tree": "ab46784efc86bab95b031494529e06871a12f1ff"
+      },
+      "source_inventories": {
+        "W35-R0-CUDA-CORE": [
+          {
+            "lines": 948,
+            "path": "src/townlet/exploration/rng_custody.py",
+            "present": true,
+            "sha256": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e"
+          },
+          {
+            "lines": 1681,
+            "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "present": true,
+            "sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38"
+          }
+        ],
+        "W35-R0-CUDA-FLAT-PER-A": [
+          {
+            "lines": 842,
+            "path": "src/townlet/training/replay_contract.py",
+            "present": true,
+            "sha256": "3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c"
+          },
+          {
+            "lines": 816,
+            "path": "src/townlet/training/replay_buffer.py",
+            "present": true,
+            "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+          },
+          {
+            "lines": 1310,
+            "path": "src/townlet/training/prioritized_replay_buffer.py",
+            "present": true,
+            "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+          }
+        ]
+      }
+    }
+  ],
+  "interval_start": 106,
+  "inventory_authorities": [
+    {
+      "bytes": 517301,
+      "path": "evidence-management/wip19-preparation/r106-evidence-inventory-v1.json",
+      "root": "W",
+      "sha256": "207a5e8d876e682a49d9dea4dd8ad0c01b87d600abec30588e9566fa3cec484d"
+    }
+  ],
+  "mutable_alias_handling": "Exact final0f3453e8 and source-stagee7f9fe10 snapshots retained; mutable report excluded.",
+  "overlap_accounting": "66 nonisolated plus10 existing isolated yields76 unique R106 cases. Collection and historical repeats add no passing cases.24 custody records are evidence records, not24 tests.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_component": {
+    "bytes": 6109,
+    "path": "evidence-management/wip19-preparation/r105-history-component-v1.json",
+    "root": "W",
+    "sha256": "97ea229bbebcb5eeeecc4d7c88b928ea411a62130f81b83dd57010b1761bb176"
+  },
+  "provenance_limits": "Metadata/hash processing only, opaque inert source delta; no implementation/tool-body reading, application execution, source/index mutation, selector or assembly.",
+  "remaining_required_work": [
+    "Active R107 excluded; next tests-only grant retained as authorization, not execution.",
+    "New invocation own-phase/alias/fork/state protocols remain unqualified; existing ten child PASS must not substitute.",
+    "Core final source review not yet supplied; no future verdict inferred.",
+    "Final checkpoint contract/subject/terminal review/receipt, execution-subtree bindings and authenticated catalog selection remain future.",
+    "Original absolute execution start/end missing; null facts and actual durations retained.",
+    "Final topology/worker declarations and complete helper closure remain root reconciliation. Strict child hashes are tied to exact spec/result; absent literal attempt IDs not fabricated.",
+    "Required clone-stability P2/pre-B repair remains open; no producer/B/hardware/programme acceptance."
+  ],
+  "report_snapshots": [
+    {
+      "bytes": 15410,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SOURCE-STAGE-REPORT.md",
+      "root": "W",
+      "sha256": "e7f9fe10456cf6a2b4b7613d7a27a7dbfc697dde53f69b364d828acd4110d1a1"
+    },
+    {
+      "bytes": 22410,
+      "path": "evidence-management/wip19-preparation/R106-FINAL-REPORT-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "0f3453e817e4af6fb2167354e3fa80f19243777e227ce2cf104cab138c423116"
+    }
+  ],
+  "retained_outcomes": {
+    "collected": 76,
+    "existing_isolated_passed": 10,
+    "global_types": "No rerun; historical global result not rebound",
+    "new_invocation_protocols": "Own-phase/alias/fork/state protocols still owed; ten existing children do not close them",
+    "nonisolated_passed": 66,
+    "owned_curriculum_template": "UNRUN",
+    "owned_four_mypy": "PASS; missing device_invocation integration error removed",
+    "replay_clone_stability": "Required pre-B P2 repair remains open",
+    "root_custody_records": 24,
+    "strict_existing_child_bindings": 10,
+    "style_defaults": "Ruff/Black/default600 PASS",
+    "unique_passed": 76
+  },
+  "root_disposition": null,
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Closed R106 core source/check history only. R107 and future review verdict excluded.",
+  "series": "wave35",
+  "status": "FROZEN HISTORICAL COMPONENT PROPOSAL; ROOT REVIEW AND ACCEPTANCE REQUIRED",
+  "terminal_historical_round": 106
+}

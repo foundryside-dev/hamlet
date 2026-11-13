@@ -1,0 +1,28 @@
+FIX5 author static-only checks, existing /workspace/hamlet checkout. No application execution/import/collection.
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix5-uv-cache uv run --no-sync black tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All done! ✨ 🍰 ✨
+1 file left unchanged.
+
+$ .venv/bin/ruff check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All checks passed!
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix5-uv-cache uv run --no-sync black --check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+
+$ sha256sum src/townlet/training/replay_contract.py src/townlet/training/historical_checkpoint.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+cd7a913f53fac09f3d8a4edc403fcedce85e4cee84007a361ecaf4298eef272b  src/townlet/training/replay_contract.py
+74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4  src/townlet/training/historical_checkpoint.py
+d178bb0a40340292e3b06328438ec2d825378d9464df8bf600873d3c7e2fce9b  tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+
+$ wc -l src/townlet/training/replay_contract.py src/townlet/training/historical_checkpoint.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+822 src/townlet/training/replay_contract.py
+675 src/townlet/training/historical_checkpoint.py
+2204 tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+3701 total
+
+Static preservation: SHA256 of exact first2045 test lines =75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04; entire R102 body untouched. Node counts are source predictions, not pytest collection results.

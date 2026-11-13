@@ -1,0 +1,44 @@
+# BAC replay prefix repair — fix5 bounded slice
+
+Read this first: these are the current requirements. Four prior fix rounds improved the implementation but left two material boundaries in the existing F1/F2 findings. You are the fresh implementer for round5/5, not a new design programme. Root owns integration and all application execution. Continue the existing checkout `/workspace/hamlet`, branch `project-recovery-bac-2026-11-01`; HEAD is `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`.
+
+## Scope and stage
+
+**TESTS ONLY FIRST. All production stays frozen until root establishes causal RED/controls and grants a production baton.** This is a genuine smaller responsibility slice: shared key/archive planning and its tests, with the actual archive helper available as a read-only supplier. Do not read either replay-family implementation body. Their key-prefix calls and original validation/error order are already established by the source reviews/capsules; those files remain byte-frozen and are outside this repair grant.
+
+| Admitted implementation body | Current lines / ceiling | Current SHA256 | Access |
+|---|---:|---|---|
+| src/townlet/training/replay_contract.py |822 /950|cd7a913f53fac09f3d8a4edc403fcedce85e4cee84007a361ecaf4298eef272b|Read; production frozen until baton|
+| src/townlet/training/historical_checkpoint.py |675 /675|74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4|Read only; no edit grant|
+| tests/test_townlet/regressions/bac/test_replay_cuda_producer.py |2045 /2300|75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04|Tests-first writes|
+
+Actual3542, projected3925 in3 bodies, hard5 implementation files/5000 source lines per agent. No extra code body, helper extraction, compressed code, test deletion or hidden source copy. Request a concrete reslice before exceeding any ceiling. Current grant `../wave35/r102-a-implementation-fix5-grant.json`, SHA256 `c31486bb437ddcec7840f6ee9a7ae88b62e4a35caadd3a4b78af635a901a06d7`. The old four-body A read packet is retired before test growth; future review uses this smaller packet plus source-verified family interface facts. This grants no omission of earlier interfaces or tests.
+
+R102 candidate tree `0dc5a95de19925148917d884a3554d90221d7d26`, manifest SHA256 `2bc01fc5f8815bb83048835a9af16cec484c7458bde9c3e6ad5f6337c61bc6b0`. Both excluded families remain flat816 SHA256 `683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d` and PER1310 SHA256 `7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29`. Root verifies them; do not open their bodies.
+
+## Findings and binding contracts
+
+Read the sealed fresh Astra review `T18e-R0-CUDA-FLAT-PER-A-FIX4-IMPLEMENTATION-REVIEW.md`, SHA256 `e89ace6b49d1fc4f4d058f73cd4e52e31532cb4512a5ccc12e7f74052615388a`. This independently completed the review interrupted by an environment restart; source and evidence were unchanged. SPEC/QUALITY remain CHANGES REQUIRED. Read the previous F1/F2 definition in `T18e-R0-CUDA-FLAT-PER-A-FIX3-IMPLEMENTATION-REVIEW.md` (`a428ac8c...`), plus the adopted I5 prefix matrix and its five-interpretation review (`dc3eeff9...`, `98c04e41...`). These are the source of requirements, not just the latest witnesses.
+
+- **F1:** equal-cardinality keys containing a known ordinary unexpected string and an opaque key still prove schema refusal. `unknown=True` must not admit unused values/installed archives/destination merely because an unrelated key needs protected evaluation/rendering. Preserve all reached key/diagnostic sources, earlier record effects, original family order/error rendering and genuinely possible opaque continuation. Do not execute Tensor sorting/representation/comparison during planning or narrow accepted Mapping/subclass inputs.
+- **F2:** ordinary `archived_row_count=5` against the archive state's exact declared count4 guarantees refusal before digest/later records/rows. Fix the actual declared-count relationship across supported archive kinds; do not special-case the literal5/4 witness. Preserve initial mapping clones, reward→approval short-circuit, archive-state validation, count guard/comparison, digest operand and possible continuation in real order. Count fields are exact integer metadata on the successful validation path, not Tensor reduction results. Preserve reached nonplain operator coverage and fixed-diagnostic negatives. Do not add new type policy, perform data-dependent reductions/digest during planning, fabricate authority, or skip constructor work.
+
+The helper is readable in this slice so you can reconcile its actual count/semantic contract instead of relying on an incomplete prose boundary. The source-fact capsules `T18e-R0-CUDA-ARCHIVE-{PREFIX,SEMANTIC-FIELD,COUNT-RESULT,CONSTANT-IMPORT}-FACTS.md` remain useful pointers, not substitutes for source. Do not merely patch the newest sample; explain how the repaired predicates cover the original finite key/count boundary and where genuine unknown continuation remains. If a necessary change belongs in the helper, request root's concrete write grant before editing it; no implicit extra file authority.
+
+Preserve all prior I1–I4/I6 and tested I5 repairs: accepted Mapping traversal, full DTO clone-source inventory, protected diagnostics, issuer-held inventory, owner reentry ordering, family-specific row/component/mask order, earlier-effect retention and exact original real-validation behavior. `ReplayPrefix` is planning bookkeeping, not publication or RNG authority. No planned DTO escapes. Core invocation API and production CUDA leaf activation are still absent and must not be faked.
+
+## Tests and freeze protocol
+
+Preserve all497 existing nodes and ten isolated poison-child protocols. Add finite paired flat/PER tests and positive controls for the remaining classes. Existing tests supply actual family fixtures without requiring body reads. Include otherwise valid continuation state so a later unrelated refusal cannot mask the defect. A count-mismatch fixture should establish the actual helper refusal and show that later digest/operator work is untouched; do not count a setup/fixture error as causal RED. Keep genuine opaque-success continuation controls.
+
+Root runs collection/import/fixture checks, then focused RED and controls at frozen tests-only bytes. You may run admitted formatting/static checks only; no application import, pytest or helper execution. Report precise new node IDs and categories: intended reachable RED, already-PASS controls, upfront B-dependent public UNRUN. Distinguish a pure-plan assertion from a later public assertion blocked on B. After root's production baton, fix source, provide exact static commands/output and an inert R102→fixed diff, then freeze for root verification and fresh scoped review. Do not edit after announcing a freeze.
+
+Same detailed report: `T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md`, current sealed SHA256 `8bde6b44e68a7a41836dc80f29555ab85b60a40ca67362c58bcf3b50776ea634`. Read the recent FIX4/R102 sections and relevant prior attempts; do not consume the entire project plan. Preserve these exact report bytes in an inert R102 final-report snapshot (use a distinct filename if an earlier source-stage snapshot exists), then append your stages. Return concise status/hash/counts/concerns; detailed evidence belongs in the report. No commits/pushes by the worker.
+
+## Evidence and closure limits
+
+Root R102 checks `../wave35/r102-root-checks.json`, SHA256 `66bdee5942fae695bcb4f989181a446f8a7fd578b4f207aaee5566b48f399ee1`:497 collected,292 unique reachablePASS in disjoint10+129+69+24+16+4+40; zero errors/skips/warnings. Owned4 Ruff/Black and unchanged defaults600 pass. Owned3 mypy retains1 missing `AmbientRNGDomain.device_invocation`; global R100 has16 required integration errors (that1, oracle6, population9). No ignore/shim/fallback/ratchet or whitelist waiver.
+
+205 focused nodes remain unrun at R102, including100 new B-dependent public cases and ten children. Core invocation/outcome, B activation, actual producer/parent completion, recurrent integration, real CUDA hardware and whole-programme gates remain owed. Package accounting stays28 qualified/38 remaining/66 total. Fresh other-model adversarial verification of the final fixed production remains mandatory after Astra-authored changes; source review alone is not qualification.
+
+Follow AGENTS.md, including no backwards compatibility. No capability removal, degradation or consolidation without owner approval; internal repair must preserve supported behavior. No new branch/worktree/checkout/source execution copy, deletion of backups, test cancellation, spending/access/deployment, unrelated work or subagents. One integration owner/coherent candidate. This is the final fix-loop round: root must adjudicate any remaining material findings at the cap and route load-bearing work explicitly; nothing may be silently parked as optional to claim closure.

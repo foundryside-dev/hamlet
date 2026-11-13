@@ -1,0 +1,25 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "at": "2026-11-13T19:36:14.716735+00:00",
+  "actor": "/root",
+  "worker": "/root/bac_astra_replay_prefix_fix5",
+  "stage": "PRODUCTION ONLY - B0 clone-stability prerequisite",
+  "prerequisite": {
+    "path": "wave35/r107-clone-tests-disposition.json",
+    "sha256": "dc6469e00ce647893cca278c8e6a3c10aa145e83035ff1b213312cf67f922383"
+  },
+  "ruling_sha256": "e41b2487ecd426545c7fad798dba3fc3124a00485795a82f34df363ba62f9a77",
+  "write_scope": [
+    "src/townlet/training/replay_contract.py"
+  ],
+  "frozen_tests_sha256": "d639ebaac4a0e24d313ef5d8d46202f17a32077e111f99905fa110fab4cbdac0",
+  "budget": {
+    "shared": 1000,
+    "helper_readonly": 675,
+    "test": 2600,
+    "total": 4275,
+    "files": 3
+  },
+  "requirements": "Wholebothgraphclone-stabilitygate beforepostcloneproof; exactOrderedDictopaque/nativeTensoremptynativeinstancedict; preserveacceptedruntime/plainnegativeprecision/allpriorcontracts; no subclass-specifictrust/defaults/ratchet relaxation",
+  "limits": "No appimports/runtime orsourcechangesoutsidegrant; helper/families/core/testsfrozen. Allowedownedstaticchecks only, rootqualifiedappchecks afterfreeze. No newbodies/branch/worktree/copies/subagents/commits."
+}

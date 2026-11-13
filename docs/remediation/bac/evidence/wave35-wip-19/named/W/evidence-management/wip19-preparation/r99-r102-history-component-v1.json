@@ -1,0 +1,375 @@
+{
+  "author": "/root/bac_astra_replay_fix4_resume_review",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_manifest": {
+    "bytes": 203565,
+    "path": "wave35/r102-candidate.json",
+    "root": "W",
+    "sha256": "2bc01fc5f8815bb83048835a9af16cec484c7458bde9c3e6ad5f6337c61bc6b0"
+  },
+  "candidate_tree": "0dc5a95de19925148917d884a3554d90221d7d26",
+  "component_id": "wave35-next-checkpoint-r99-r102-staged-history",
+  "draft_metadata_only": true,
+  "historical_rounds": [
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 203416,
+        "path": "wave35/r99-candidate.json",
+        "root": "W",
+        "sha256": "942400ad11c9cc6414b5ad0f9cd2c4358d7e6ef91ff6532970a359e0fe2ba92e"
+      },
+      "candidate_tree": "f9b5f592bbc3763d6172574857b074bf978ae68a",
+      "check_ids": [
+        "wave35-r99-collection--collection",
+        "wave35-r99-fix3-other-reachable--fix3-other-reachable",
+        "wave35-r99-fix3-positive-controls--fix3-positive-controls",
+        "wave35-r99-fix3-raw-reachable--fix3-raw-reachable",
+        "wave35-r99-owned--owned",
+        "wave35-r99-static--ruff-owned",
+        "wave35-r99-static--black-owned"
+      ],
+      "owned_source_inventory": [
+        {
+          "lines": 689,
+          "path": "src/townlet/training/replay_contract.py",
+          "present": true,
+          "sha256": "6bf839271ed030ba7787dca24cd9305dfef4d8ae382b67b300906b66ca495265"
+        },
+        {
+          "lines": 807,
+          "path": "src/townlet/training/replay_buffer.py",
+          "present": true,
+          "sha256": "752f9690da797edd4acbdda04e2a85e60aa6c19875cb8eb6956de3805e657270"
+        },
+        {
+          "lines": 1260,
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "present": true,
+          "sha256": "225bb6582a6d53bac3ce6ab5bed3e481a26fe3e904e272af14b9657d2746ca4c"
+        },
+        {
+          "lines": 1945,
+          "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+          "present": true,
+          "sha256": "8b641d7df6c9dd8f2570d3f30ed13c8f8356a2033f4f569b37fa81a7207ed2d7"
+        }
+      ],
+      "preflight": {
+        "bytes": 3063,
+        "path": "wave35/r99-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "4fccebc3ea805e83f97b61c8e283780a09ebd16148f3d36cbe27e8c906b45f4c"
+      },
+      "round": 99,
+      "source_patch": {
+        "bytes": 14186,
+        "path": "evidence-management/wip19-preparation/r99-owned-candidate.patch",
+        "root": "W",
+        "sha256": "293796000e23fcd9d94fb66536acc366fff37e2b5577715f63d2a3c6abfec58d"
+      }
+    },
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 203565,
+        "path": "wave35/r100-candidate.json",
+        "root": "W",
+        "sha256": "59d925fcef3c60cff1da69b01edd297b968588fd15320a8c33807ffa7d64e4ca"
+      },
+      "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+      "check_ids": [
+        "wave35-r100-collection--collection",
+        "wave35-r100-fix3-other-reachable--fix3-other-reachable",
+        "wave35-r100-fix3-positive-controls--fix3-positive-controls",
+        "wave35-r100-fix3-raw-reachable--fix3-raw-reachable",
+        "wave35-r100-global-mypy--global-mypy",
+        "wave35-r100-owned--owned",
+        "wave35-r100-owned-types--owned-mypy",
+        "wave35-r100-reachable-controls--reachable-controls",
+        "wave35-r100-static--ruff-owned",
+        "wave35-r100-static--black-owned",
+        "wave35-r100-static--no-defaults"
+      ],
+      "owned_source_inventory": [
+        {
+          "lines": 799,
+          "path": "src/townlet/training/replay_contract.py",
+          "present": true,
+          "sha256": "f4b4c02e35df0e72a57987a5768dc32e0462c582d440f219c476c6b1fa68f63e"
+        },
+        {
+          "lines": 817,
+          "path": "src/townlet/training/replay_buffer.py",
+          "present": true,
+          "sha256": "7521a532ef7eda914138efefdc23743a34abd95747bd6c67397fb6d7e3894ad3"
+        },
+        {
+          "lines": 1311,
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "present": true,
+          "sha256": "9206411c38990efccb0284d504222be162bf460448369fb8b3a1d1326728487e"
+        },
+        {
+          "lines": 1945,
+          "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+          "present": true,
+          "sha256": "a03cf0833addc329b3e3347a2f04ff0113757a3311fd910aed915eb6102eb3b3"
+        }
+      ],
+      "preflight": {
+        "bytes": 3062,
+        "path": "wave35/r100-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "664a87cb5e53de50470a1a94e21917362c64fda9ac8ddeb7a25a13a4956f2186"
+      },
+      "round": 100,
+      "source_patch": {
+        "bytes": 77010,
+        "path": "evidence-management/wip19-preparation/r100-owned-candidate.patch",
+        "root": "W",
+        "sha256": "c5067c2fdc8ef451255da9fdd31702312bbc6aa010d5b9e400c60c576d8d18ce"
+      }
+    },
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 203565,
+        "path": "wave35/r101-candidate.json",
+        "root": "W",
+        "sha256": "c28f79712a9cf5757edbeb206b074153d05c844d2b3e6d59e9fe0c31d62cddc9"
+      },
+      "candidate_tree": "e2c139289acd4c55f70e270f199c1d1f48e42e63",
+      "check_ids": [
+        "wave35-r101-collection--collection",
+        "wave35-r101-fix4-fixtures--fix4-fixtures",
+        "wave35-r101-fix4-positive-controls--fix4-positive-controls",
+        "wave35-r101-fix4-reachable-red--fix4-reachable-red",
+        "wave35-r101-owned--owned",
+        "wave35-r101-static--ruff-owned",
+        "wave35-r101-static--black-owned"
+      ],
+      "owned_source_inventory": [
+        {
+          "lines": 799,
+          "path": "src/townlet/training/replay_contract.py",
+          "present": true,
+          "sha256": "f4b4c02e35df0e72a57987a5768dc32e0462c582d440f219c476c6b1fa68f63e"
+        },
+        {
+          "lines": 817,
+          "path": "src/townlet/training/replay_buffer.py",
+          "present": true,
+          "sha256": "7521a532ef7eda914138efefdc23743a34abd95747bd6c67397fb6d7e3894ad3"
+        },
+        {
+          "lines": 1311,
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "present": true,
+          "sha256": "9206411c38990efccb0284d504222be162bf460448369fb8b3a1d1326728487e"
+        },
+        {
+          "lines": 2045,
+          "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+          "present": true,
+          "sha256": "75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04"
+        }
+      ],
+      "preflight": {
+        "bytes": 3062,
+        "path": "wave35/r101-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "f6fb7a1f02a4b2284f9711ed11f342308a5324d85a14d6bf2c5023a95a9272f9"
+      },
+      "round": 101,
+      "source_patch": {
+        "bytes": 82218,
+        "path": "evidence-management/wip19-preparation/r101-owned-candidate.patch",
+        "root": "W",
+        "sha256": "fe3ce2f521eaa606582056937b2c565c5eedaa086c03cf92f7a337f36d47eb5e"
+      }
+    },
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 203565,
+        "path": "wave35/r102-candidate.json",
+        "root": "W",
+        "sha256": "2bc01fc5f8815bb83048835a9af16cec484c7458bde9c3e6ad5f6337c61bc6b0"
+      },
+      "candidate_tree": "0dc5a95de19925148917d884a3554d90221d7d26",
+      "check_ids": [
+        "wave35-r102-collection--collection",
+        "wave35-r102-fix3-other-reachable--fix3-other-reachable",
+        "wave35-r102-fix3-positive-controls--fix3-positive-controls",
+        "wave35-r102-fix3-raw-reachable--fix3-raw-reachable",
+        "wave35-r102-fix4-fixtures--fix4-fixtures",
+        "wave35-r102-fix4-positive-controls--fix4-positive-controls",
+        "wave35-r102-fix4-reachable-red--fix4-reachable-red",
+        "wave35-r102-owned--owned",
+        "wave35-r102-owned-types--owned-mypy",
+        "wave35-r102-reachable-controls--reachable-controls",
+        "wave35-r102-static--ruff-owned",
+        "wave35-r102-static--black-owned",
+        "wave35-r102-static--no-defaults"
+      ],
+      "owned_source_inventory": [
+        {
+          "lines": 822,
+          "path": "src/townlet/training/replay_contract.py",
+          "present": true,
+          "sha256": "cd7a913f53fac09f3d8a4edc403fcedce85e4cee84007a361ecaf4298eef272b"
+        },
+        {
+          "lines": 816,
+          "path": "src/townlet/training/replay_buffer.py",
+          "present": true,
+          "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+        },
+        {
+          "lines": 1310,
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "present": true,
+          "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+        },
+        {
+          "lines": 2045,
+          "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+          "present": true,
+          "sha256": "75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04"
+        }
+      ],
+      "preflight": {
+        "bytes": 3062,
+        "path": "wave35/r102-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "d7c63ac133266ae82791da0b16d51a0383557125738cf5000435a4fa7376ae4d"
+      },
+      "round": 102,
+      "source_patch": {
+        "bytes": 83386,
+        "path": "evidence-management/wip19-preparation/r102-owned-candidate.patch",
+        "root": "W",
+        "sha256": "0eb5051c141cf644420ab2403b397fddb15a0fc0c6bfa390dd0457e0553d3408"
+      }
+    }
+  ],
+  "interval_start": 99,
+  "inventory_authorities": [
+    {
+      "bytes": 857334,
+      "path": "evidence-management/wip19-preparation/r99-r102-evidence-inventory-v1.json",
+      "root": "W",
+      "sha256": "b9997783ba276f0a84032431d40a99659eb9b6e69efbfbc24273650c8e603161"
+    }
+  ],
+  "inventory_rules": [
+    "Complete observed Q/wave35-r99-* through r102-* top-level namespace and recursive descendants including directories.",
+    "Distinct command results retain distinct check and attempt IDs. No overlap summed across rounds.",
+    "No old object blob copied; reuse bytes hash-verified against named published paths.",
+    "Mutable current report excluded; R99/R100/R101/R102 SOURCE and FINAL frozen snapshots retained."
+  ],
+  "mutable_alias_handling": "Current REPORT.md not authoritative and not included. Exact R102 FINAL snapshot must equal known 8bde6b44 seal.",
+  "overlap_accounting": "R99 178 failures/30 actual passes includes two superseded prepare oracles; no retrospective rewriting. R100232 and R102292 are separate same-node repetitions, not added. R10120 controls/40 RED and R102 repair coverage are causal history, not additional unique programme coverage.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "producer_children": "Ten isolated producer children remain UNRUN; child-verifier history is reused by reference through WIP18, not executed again.",
+  "provenance_limits": "Metadata ingestion and hashes only, no application/helper source bodies read or executed, no final selector/assembly, no Git mutations.",
+  "remaining_required_work": [
+    "Actual future terminal/checkpoint contract, frozen qualification subject, final interval, final terminal review and receipt are intentionally not selected; R103/FIX5 excluded.",
+    "Absolute UTC execution start/end absent from result records: retained as null, elapsed seconds preserved; file mtimes are not evidence.",
+    "Process topology and actual worker declarations remain null pending root reconciliation with retained controller/custody witnesses; planned harness workers is not xdist worker evidence.",
+    "Helper hashes match prior published identities where indicated. Final check-to-helper closure and required_by attribution need root review; this task did not inspect or execute helper bodies.",
+    "Published reuse verified for matching WIP14\u2013WIP18 object metadata; final authenticated catalog/baseline reconciliation including WIP13 belongs to the future selector.",
+    "No explicit per-round execution-subtree record found in the closed round namespace; candidate manifests and owned-four full-index patches retained. Future terminal execution-subtree bindings remain required.",
+    "Captured patches preserve only four changed owned paths against each recorded base, not an executable checkout or full new source export.",
+    "UNRUN templates are generated curriculum specs, distinct from the 205 unrun R102 focused producer nodes. The latter are reported by root checks, not represented as executed attempt results.",
+    "FIX4 source review was authored by this same agent and is not independent review of this metadata component; final other-model adversarial source gate remains owed."
+  ],
+  "report_snapshots": [
+    {
+      "bytes": 84145,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R99-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "efda33205d23cced75e9e3872943ae2a9092e4367f3ce523e90c8a17af4d9160"
+    },
+    {
+      "bytes": 94334,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R100-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "1e644587cf1da79759c3c180155177e7fd555de3c91cd55a85724c49d24e3c15"
+    },
+    {
+      "bytes": 101655,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R101-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "c7d9e3526773a2243400f7459b7eea056a7bf5ae90dbbee27959a9440c76840c"
+    },
+    {
+      "bytes": 115325,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R102-FINAL-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "8bde6b44e68a7a41836dc80f29555ab85b60a40ca67362c58bcf3b50776ea634"
+    },
+    {
+      "bytes": 108534,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R102-SOURCE-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "1be4497ef0ec75a359a2fb1a0f4ef19516022b89da7985a0ac95bee2277d6e85"
+    }
+  ],
+  "retained_outcomes": {
+    "99": {
+      "actual_failed": 178,
+      "actual_passed": 30,
+      "collected": 393,
+      "new_B_blocked_unrun": 56,
+      "remaining_usable_bounded_passes": 28,
+      "superseded_positive_oracles": 2
+    },
+    "100": {
+      "collected": 393,
+      "focused_unrun": 161,
+      "global_mypy_errors": 16,
+      "owned_mypy_errors": 1,
+      "unique_reachable_passed": 232
+    },
+    "101": {
+      "causal_failed": 40,
+      "collected": 497,
+      "fixture_positive_passed": 20,
+      "new_public_B_unrun": 44
+    },
+    "102": {
+      "collected": 497,
+      "focused_unrun": 205,
+      "owned_mypy_errors": 1,
+      "source_review": "CHANGES REQUIRED; F1/F2 NOT FULLY ADDRESSED",
+      "unique_reachable_passed": 292
+    }
+  },
+  "root_disposition": null,
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Closed R99\u2013R102 staged source/causal-check history only. Future checkpoint terminal unspecified; R103/FIX5 excluded. No A/B/package acceptance.",
+  "series": "wave35",
+  "source_review_scope": "Both reviews CHANGES REQUIRED; same-model FIX4 review does not close final other-model gate.",
+  "source_reviews": [
+    {
+      "bytes": 10514,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX3-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "a428ac8cff86065eb31870d3961dd240b1e9a9e3b29111a047206f12aca9f756"
+    },
+    {
+      "bytes": 10965,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX4-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "e89ace6b49d1fc4f4d058f73cd4e52e31532cb4512a5ccc12e7f74052615388a"
+    }
+  ],
+  "status": "FROZEN HISTORICAL COMPONENT PROPOSAL; ROOT REVIEW AND ACCEPTANCE REQUIRED",
+  "terminal_historical_round": 102
+}

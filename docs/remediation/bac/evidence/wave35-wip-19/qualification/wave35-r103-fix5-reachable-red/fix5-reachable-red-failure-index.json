@@ -1,0 +1,305 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+  "unique_node_phase_failures": 72,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "Use -v to get more diff",
+      "count": 72,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-archive-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-later-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-archive-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-archive-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-later-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-later-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-top-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-top-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-prioritized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-later-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-archive-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-top-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-top-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-standard-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-prioritized-flat]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

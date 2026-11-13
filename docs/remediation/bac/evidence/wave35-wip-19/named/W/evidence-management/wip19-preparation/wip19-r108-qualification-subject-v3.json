@@ -1,0 +1,476 @@
+{
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_manifest": {
+    "bytes": 204196,
+    "path": "wave35/r108-candidate.json",
+    "root": "W",
+    "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce"
+  },
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "checkpoint_id": "wave35-wip-19",
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip19-checkpoint-contract.json",
+    "sha256": "07e0f971c25e88f6da573a2eb4a333bc66cb00d6589b166a01fd07e0eec0e131",
+    "bytes": 6035
+  },
+  "document_review_status": {
+    "application": {
+      "bytes": 1585,
+      "path": "evidence-management/wip19-preparation/wip19-document-application-v1.json",
+      "root": "W",
+      "sha256": "7ba70ee256d74f04895f6bca51d958cb41bf3a29f2520245f3dc8e695afa35b3"
+    },
+    "equivalence": {
+      "bytes": 422507,
+      "path": "evidence-management/wip19-preparation/wip19-preassembly-source-equivalence-v1.json",
+      "root": "W",
+      "sha256": "9305bb7b2e5e8a43bb652375beb21591539d7976c5c8abcb349ead07d8b21e29"
+    },
+    "proposal": {
+      "bytes": 19359,
+      "path": "wave35-preparation/T18e-R0-WIP19-DOCUMENTATION-PROPOSAL-V3.md",
+      "root": "W",
+      "sha256": "6c93f909dbfbf3ddcdcf07f74f584c03f2f378d6270cb85d51a5b5839e1bc048"
+    },
+    "review": {
+      "bytes": 8257,
+      "path": "wave35-preparation/T18e-R0-WIP19-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+      "root": "W",
+      "sha256": "7178f7e8b739e8691a4526a1a86660f4509824d3ad01ec1df2047e74d17f3c6d"
+    },
+    "scope": "Four exact independently reviewed document deltas applied;1503 tracked execution-scope blobs equal R108. Future WIP19 archive links must resolve before publication."
+  },
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+    "tests": "f078592253395277d54dc837ee931522ebae20b0"
+  },
+  "interval": [
+    99,
+    108
+  ],
+  "no_source_execution_after_document_application": "No application execution after reviewed document application; executed source/test/config/script/ratchet identities remain unchanged. Workspace restart preserved source; source equivalence is separately hash verified.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "pending_inputs": [
+    "Independent terminal evidence review/attestation, final receipt seal, qualified selection/assembly, prospective links and staged source equivalence, authorized commit/push and exact remote/CI verification."
+  ],
+  "preassembly_source_equivalence": {
+    "bytes": 422507,
+    "path": "evidence-management/wip19-preparation/wip19-preassembly-source-equivalence-v1.json",
+    "root": "W",
+    "sha256": "9305bb7b2e5e8a43bb652375beb21591539d7976c5c8abcb349ead07d8b21e29"
+  },
+  "qualifying_checks": [
+    {
+      "check": "wave35-r108-causal-plans--causal-plans",
+      "custody_records": [
+        {
+          "bytes": 644,
+          "path": "wave35-r108-causal-plans-custody.json",
+          "root": "Q",
+          "sha256": "bc34ef4e365fca8a9308b5d1f21f9a11a5cca4488c67ad8d2774a888afbb7607"
+        },
+        {
+          "bytes": 644,
+          "path": "wave35-r108-causal-plans/causal-plans-custody.json",
+          "root": "Q",
+          "sha256": "bc34ef4e365fca8a9308b5d1f21f9a11a5cca4488c67ad8d2774a888afbb7607"
+        }
+      ],
+      "passed": 8,
+      "process_custody": [
+        {
+          "bytes": 246,
+          "path": "wave35-r108-causal-plans/causal-plans/identity-controller.json",
+          "role": "controller",
+          "root": "Q",
+          "sha256": "341c4528c16d05d31568ec8496556579d50a81e66b5e85ec90ce8297013ed866"
+        },
+        {
+          "bytes": 644,
+          "path": "wave35-r108-causal-plans/causal-plans-custody.json",
+          "role": "import_thread_debug",
+          "root": "Q",
+          "sha256": "bc34ef4e365fca8a9308b5d1f21f9a11a5cca4488c67ad8d2774a888afbb7607"
+        }
+      ],
+      "result": {
+        "bytes": 1879,
+        "path": "wave35-r108-causal-plans/causal-plans-result.json",
+        "root": "Q",
+        "sha256": "a179218b02865043c02a40c5a73db9f74e4404646ac8633bdbe868ddd5a67a4c"
+      },
+      "terminal_attempt": "wave35-r108-causal-plans--causal-plans"
+    },
+    {
+      "check": "wave35-r108-classifier-all--classifier-all",
+      "custody_records": [
+        {
+          "bytes": 646,
+          "path": "wave35-r108-classifier-all-custody.json",
+          "root": "Q",
+          "sha256": "5ac9298f6c3dd685180ce4a23b87c7c17d2b4d9781ca6a79a0109b77a0dfa0ca"
+        },
+        {
+          "bytes": 646,
+          "path": "wave35-r108-classifier-all/classifier-all-custody.json",
+          "root": "Q",
+          "sha256": "5ac9298f6c3dd685180ce4a23b87c7c17d2b4d9781ca6a79a0109b77a0dfa0ca"
+        }
+      ],
+      "passed": 21,
+      "process_custody": [
+        {
+          "bytes": 246,
+          "path": "wave35-r108-classifier-all/classifier-all/identity-controller.json",
+          "role": "controller",
+          "root": "Q",
+          "sha256": "341c4528c16d05d31568ec8496556579d50a81e66b5e85ec90ce8297013ed866"
+        },
+        {
+          "bytes": 646,
+          "path": "wave35-r108-classifier-all/classifier-all-custody.json",
+          "role": "import_thread_debug",
+          "root": "Q",
+          "sha256": "5ac9298f6c3dd685180ce4a23b87c7c17d2b4d9781ca6a79a0109b77a0dfa0ca"
+        }
+      ],
+      "result": {
+        "bytes": 3377,
+        "path": "wave35-r108-classifier-all/classifier-all-result.json",
+        "root": "Q",
+        "sha256": "422c55a48b618b3cb9738710d17087878821196ba4e227cc1f03833b9fe006f0"
+      },
+      "terminal_attempt": "wave35-r108-classifier-all--classifier-all"
+    },
+    {
+      "check": "wave35-r108-clone-fixtures--clone-fixtures",
+      "custody_records": [
+        {
+          "bytes": 644,
+          "path": "wave35-r108-clone-fixtures-custody.json",
+          "root": "Q",
+          "sha256": "250006eb82ff9ec2c3e9a7024cfabf7a358dc4a7ac86e9722621b73a74d7c192"
+        },
+        {
+          "bytes": 644,
+          "path": "wave35-r108-clone-fixtures/clone-fixtures-custody.json",
+          "root": "Q",
+          "sha256": "250006eb82ff9ec2c3e9a7024cfabf7a358dc4a7ac86e9722621b73a74d7c192"
+        }
+      ],
+      "passed": 8,
+      "process_custody": [
+        {
+          "bytes": 246,
+          "path": "wave35-r108-clone-fixtures/clone-fixtures/identity-controller.json",
+          "role": "controller",
+          "root": "Q",
+          "sha256": "341c4528c16d05d31568ec8496556579d50a81e66b5e85ec90ce8297013ed866"
+        },
+        {
+          "bytes": 644,
+          "path": "wave35-r108-clone-fixtures/clone-fixtures-custody.json",
+          "role": "import_thread_debug",
+          "root": "Q",
+          "sha256": "250006eb82ff9ec2c3e9a7024cfabf7a358dc4a7ac86e9722621b73a74d7c192"
+        }
+      ],
+      "result": {
+        "bytes": 1879,
+        "path": "wave35-r108-clone-fixtures/clone-fixtures-result.json",
+        "root": "Q",
+        "sha256": "ec97b632bd74c7a88890e6e321a7502eb507f5762afbbfb337ff3cc84d2616ba"
+      },
+      "terminal_attempt": "wave35-r108-clone-fixtures--clone-fixtures"
+    },
+    {
+      "check": "wave35-r108-native-controls--native-controls",
+      "custody_records": [
+        {
+          "bytes": 646,
+          "path": "wave35-r108-native-controls-custody.json",
+          "root": "Q",
+          "sha256": "27dd1c5f8b5391a376b78d85a48bdc4e64902eeda51533b1924b0a1b9fcd7067"
+        },
+        {
+          "bytes": 646,
+          "path": "wave35-r108-native-controls/native-controls-custody.json",
+          "root": "Q",
+          "sha256": "27dd1c5f8b5391a376b78d85a48bdc4e64902eeda51533b1924b0a1b9fcd7067"
+        }
+      ],
+      "passed": 34,
+      "process_custody": [
+        {
+          "bytes": 246,
+          "path": "wave35-r108-native-controls/native-controls/identity-controller.json",
+          "role": "controller",
+          "root": "Q",
+          "sha256": "341c4528c16d05d31568ec8496556579d50a81e66b5e85ec90ce8297013ed866"
+        },
+        {
+          "bytes": 646,
+          "path": "wave35-r108-native-controls/native-controls-custody.json",
+          "role": "import_thread_debug",
+          "root": "Q",
+          "sha256": "27dd1c5f8b5391a376b78d85a48bdc4e64902eeda51533b1924b0a1b9fcd7067"
+        }
+      ],
+      "result": {
+        "bytes": 5447,
+        "path": "wave35-r108-native-controls/native-controls-result.json",
+        "root": "Q",
+        "sha256": "e2bb9543fef2c76c13213e58cb0e913ef65bbc75593b8ac7153abc241c1cbcbf"
+      },
+      "terminal_attempt": "wave35-r108-native-controls--native-controls"
+    },
+    {
+      "check": "wave35-r108-prior-reachable--prior-reachable",
+      "custody_records": [
+        {
+          "bytes": 648,
+          "path": "wave35-r108-prior-reachable-custody.json",
+          "root": "Q",
+          "sha256": "d986c5a985684cfef9d86faeb0c01916ccfdd43d2d7a0ab9fa68d39af7e813d4"
+        },
+        {
+          "bytes": 648,
+          "path": "wave35-r108-prior-reachable/prior-reachable-custody.json",
+          "root": "Q",
+          "sha256": "d986c5a985684cfef9d86faeb0c01916ccfdd43d2d7a0ab9fa68d39af7e813d4"
+        }
+      ],
+      "passed": 436,
+      "process_custody": [
+        {
+          "bytes": 246,
+          "path": "wave35-r108-prior-reachable/prior-reachable/identity-controller.json",
+          "role": "controller",
+          "root": "Q",
+          "sha256": "341c4528c16d05d31568ec8496556579d50a81e66b5e85ec90ce8297013ed866"
+        },
+        {
+          "bytes": 648,
+          "path": "wave35-r108-prior-reachable/prior-reachable-custody.json",
+          "role": "import_thread_debug",
+          "root": "Q",
+          "sha256": "d986c5a985684cfef9d86faeb0c01916ccfdd43d2d7a0ab9fa68d39af7e813d4"
+        }
+      ],
+      "result": {
+        "bytes": 60641,
+        "path": "wave35-r108-prior-reachable/prior-reachable-result.json",
+        "root": "Q",
+        "sha256": "9c4a69013e13b24cf10337010637351f944aab90d1ff84179145153bcc6da869"
+      },
+      "terminal_attempt": "wave35-r108-prior-reachable--prior-reachable"
+    }
+  ],
+  "required_next": [
+    "Qualify new invocation own-phase outcomes, fork refusal, lifecycle/state/lifetime and real-thread numeric-alias controls against the adopted protocol.",
+    "Implement and independently qualify the finite strict-verifier additions, including reference/invocation phase-pair comparison, before new child executions.",
+    "Activate reviewed B local contracts and execute applicable public producer behavior and all ten producer poison children.",
+    "Complete actual parent/outer-consumer and recurrent integration with owner/device reachability and cross-interface evidence.",
+    "Run applicable real CUDA one-/two-device scenarios on available hardware; offered server access and GPU count remain unknown.",
+    "Resolve current repository type/CI failures from actual source evidence; retain historical global16 observation without inferring a current count.",
+    "Complete required runner/environment, learning/legal-action, checkpoint/resume/reproducibility, full/default, coverage\u226570%, slow, fresh independent design/implementation reviews and exact final remote CI gates."
+  ],
+  "root_adoption": {
+    "component_adoptions": [
+      {
+        "bytes": 2773,
+        "path": "evidence-management/wip19-preparation/r99-r102-root-input-adoption-v1.json",
+        "root": "W",
+        "sha256": "023ee4cdd5bad84437554c21e712a7433e964979f8fd9397f249b508baaaa224"
+      },
+      {
+        "bytes": 2638,
+        "path": "evidence-management/wip19-preparation/r103-r104-root-input-adoption-and-review-supplement-v1.json",
+        "root": "W",
+        "sha256": "dbd718697004793fb251430b7c7e27529d8bd7268a970a3745fe5d064a8e7008"
+      },
+      {
+        "bytes": 3218,
+        "path": "evidence-management/wip19-preparation/r105-r106-root-input-adoption-v1.json",
+        "root": "W",
+        "sha256": "5d246fd506bd5d9d33a5fb2010718a095c91995da04a0c23badc4c60befd9935"
+      },
+      {
+        "bytes": 2144,
+        "path": "evidence-management/wip19-preparation/r107-r108-root-component-adoption-v1.json",
+        "root": "W",
+        "sha256": "2d90c5a1bb6920259c9f54208917a8e420c89734d1547d4ccab8d93918f1153e"
+      }
+    ],
+    "contract_adoption": {
+      "root": "W",
+      "path": "evidence-management/wip19-preparation/wip19-root-contract-adoption-v1.json",
+      "sha256": "9a41ef1ed54374a0cb5447782f04b09b04c4a2424c4eedd20d7ab92f82cc9a71",
+      "bytes": 1001
+    },
+    "independence": "Root reports reserved reviewer confirmed independence before workspace restart. This proposal does not fabricate the future hash-bound terminal attestation.",
+    "metadata_author": "/root/bac_astra_replay_fix4_resume_review",
+    "producer": "/root",
+    "proposed_reviewer": "/root/bac_astra_wip19_terminal",
+    "subject_freeze": "Root freezes these exact bytes after independent input rehash; terminal reviewer did not author source, tests, metadata or documents."
+  },
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "scope": "Finite R99\u2013R108 WIP durability checkpoint. Five disjoint R108 runtime groups qualify 507 bounded assertions. R106 core 76 remains separate exact-candidate evidence. Bounded core source and clone-stability P2 dispositions are retained; no complete A/B, package, hardware or programme acceptance.",
+  "series": "wave35",
+  "source_delta_archive": {
+    "bytes": 13152,
+    "path": "evidence-management/wip19-preparation/wip19-r99-r108-full-base-source-deltas-v1.json",
+    "root": "W",
+    "sha256": "60c4d537b8fbceea415a3361810cdec9b20a81ac0bafea43e0b492c49ec5c1bf"
+  },
+  "source_review": {
+    "core_r106_disposition": {
+      "bytes": 958,
+      "path": "wave35/r106-core-source-stage-disposition.json",
+      "root": "W",
+      "sha256": "b341e6f109adfc9b4787fcf0b5ba02028771aa68fdefb1e98513a219c1d795c3"
+    },
+    "core_r106_review": {
+      "bytes": 10095,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "841eb6bc15a15161a970fb306d427f36c6a3b167d9c73fc73e16ab22b0a8789f"
+    },
+    "historical_sequence": {
+      "bytes": 2333,
+      "path": "evidence-management/wip19-preparation/r104-completed-review-history-supplement-v1.json",
+      "root": "W",
+      "sha256": "0b7b2389590dc5e315f9f5d9642e1754228d3bb7a82117ca8e6db394c0773da0"
+    },
+    "r108": {
+      "disposition": "SPEC/QUALITY PASS; clone-stability P2 addressed under adopted profile",
+      "linked_supplement": {
+        "bytes": 2309,
+        "path": "evidence-management/wip19-preparation/r108-final-source-review-supplement-v1.json",
+        "root": "W",
+        "sha256": "bdf1a18402f0157c9accf440226a4debc7d50cc174add1980eebfaeb8fec8b1d"
+      },
+      "review": {
+        "bytes": 12359,
+        "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-OTHERMODEL-REVIEW.md",
+        "root": "W",
+        "sha256": "eaf6b4b20eb37d4bbc7056d91d04c0c0d4d34fedbf61c060a32d7fc1f7345213"
+      },
+      "root_disposition": {
+        "bytes": 1510,
+        "path": "wave35/r108-clone-source-disposition.json",
+        "root": "W",
+        "sha256": "7e346a979a340db855a68f9357ee5ff7b9213563f51d3f8d71f1533c0dd5668b"
+      }
+    }
+  },
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "supersedes": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-qualification-subject-v2.json",
+    "sha256": "100d215a0ff820b47b6e898bbb7e3e2f4d82fd6139fd9497cc859ef0e4510f7b",
+    "bytes": 19577
+  },
+  "supersedes_reason": "Bind metadata-corrected receipt v4 with actual custody roles; earlier proposal preserved.",
+  "supporting_reviews": [
+    {
+      "bytes": 12359,
+      "disposition": "SPEC/QUALITY PASS; concrete P2 addressed",
+      "independence_basis": "Review prose identifies independent Codex review of Astra-authored repair; root supplied and adopted exact review. Terminal evidence independence attestation still pending.",
+      "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-OTHERMODEL-REVIEW.md",
+      "role": "bounded_source",
+      "root": "W",
+      "root_disposition": {
+        "bytes": 1510,
+        "path": "wave35/r108-clone-source-disposition.json",
+        "root": "W",
+        "sha256": "7e346a979a340db855a68f9357ee5ff7b9213563f51d3f8d71f1533c0dd5668b"
+      },
+      "scope": "Adopted trusted ordinary native profile; exact R108 clone-stability prerequisite, not terminal evidence review",
+      "sha256": "eaf6b4b20eb37d4bbc7056d91d04c0c0d4d34fedbf61c060a32d7fc1f7345213"
+    },
+    {
+      "application": {
+        "bytes": 1585,
+        "path": "evidence-management/wip19-preparation/wip19-document-application-v1.json",
+        "root": "W",
+        "sha256": "7ba70ee256d74f04895f6bca51d958cb41bf3a29f2520245f3dc8e695afa35b3"
+      },
+      "bytes": 8257,
+      "disposition": "SPEC/QUALITY PASS for four exact applied deltas; not terminal evidence approval",
+      "path": "wave35-preparation/T18e-R0-WIP19-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+      "reviewed_documents": [
+        {
+          "bytes": 32210,
+          "path": "README.md",
+          "root": "R",
+          "sha256": "efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3"
+        },
+        {
+          "bytes": 98514,
+          "path": "docs/remediation/bac/STATUS.md",
+          "root": "R",
+          "sha256": "52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe"
+        },
+        {
+          "bytes": 8979,
+          "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+          "root": "R",
+          "sha256": "9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad"
+        },
+        {
+          "bytes": 44999,
+          "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+          "root": "R",
+          "sha256": "553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab"
+        }
+      ],
+      "role": "documentation",
+      "root": "W",
+      "sha256": "7178f7e8b739e8691a4526a1a86660f4509824d3ad01ec1df2047e74d17f3c6d"
+    }
+  ],
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r99-r108-complete-receipt-input-v7.json",
+    "sha256": "b850fbd1af5ec3848841dc7fc0ff052212e58ce9313ca96aa066b81f79ecec3c",
+    "bytes": 3285731
+  },
+  "root_input_integrity": {
+    "unique_direct_refs_rehashed": 1241,
+    "mismatches": 0,
+    "scope": "Integrity/source freeze only; not terminal evidence review."
+  },
+  "metadata_selection_correction": {
+    "prior_input": {
+      "root": "W",
+      "path": "evidence-management/wip19-preparation/wip19-r99-r108-complete-receipt-input-v5.json",
+      "sha256": "cdf61fd915d79bdf749b64051f4bd8db56445eca16692df740584f250fb32b86",
+      "bytes": 2580849
+    },
+    "prior_dependency_count": 34,
+    "current_dependency_count": 170,
+    "scope": "Root preseal structural audit found missing roles/relationships on26 refs and incomplete explicit selection closure. Corrected from existing immutable artifact inventory using per-round relationships where available, otherwise finite interval context. No selector attempted and no application rerun."
+  },
+  "review_delta": "Only interval-entry schema classification normalized from existing attempt_index and selector-failure/prior-input provenance added. Full validator accepted in-memory correction; current independent delta review remains required.",
+  "interval_classification_correction": {
+    "failure": {
+      "root": "W",
+      "path": "evidence-management/wip19-preparation/wip19-selection-attempt-1-failure.json",
+      "sha256": "a9e2b1feb290d8f3994aebcd14e819b9ef6636f99f876d56e87276b2621e5d4d",
+      "bytes": 1263
+    },
+    "changed_entries": 343,
+    "attempt_entries": 81,
+    "support_entries": 262,
+    "scope": "Exact343 namespace paths, rounds, attempt_index, actual results, source, custody, documents, qualification flags and acceptance scope unchanged. Support DIAGNOSTIC means recorded metadata only, not runtime success."
+  }
+}

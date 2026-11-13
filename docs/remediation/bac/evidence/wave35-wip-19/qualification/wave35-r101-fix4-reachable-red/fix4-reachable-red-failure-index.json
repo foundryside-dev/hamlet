@@ -1,0 +1,177 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "e2c139289acd4c55f70e270f199c1d1f48e42e63",
+  "unique_node_phase_failures": 40,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "Use -v to get more diff",
+      "count": 40,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-approval_reference-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-approval-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-approval-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-reward-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-count-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-approval_reference-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-reward_semantics-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-reward_semantics-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-top-key-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-reward-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-count-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-reward_semantics-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-source_digest-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-archive-key-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-top-key-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-reward-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-approval_reference-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-archive-key-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-archive-key-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-approval-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-key-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-source_digest-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-reward-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-reward-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-count-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-approval_reference-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-top-key-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-source_digest-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-source_digest-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-key-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-archive-key-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-reward-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-count-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-top-key-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-approval-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-reward-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-reward-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-key-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-reward_semantics-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-key-flat]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

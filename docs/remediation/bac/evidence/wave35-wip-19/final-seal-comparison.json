@@ -1,0 +1,43 @@
+{
+  "schema": "bac-final-seal-comparison-v1",
+  "input": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r99-r108-complete-receipt-input-v7.json",
+    "sha256": "b850fbd1af5ec3848841dc7fc0ff052212e58ce9313ca96aa066b81f79ecec3c",
+    "bytes": 3285731
+  },
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-qualification-subject-v3.json",
+    "sha256": "071f307bc82aceb61174290d54e29e409d109428af7cd9e5556c81d212fe7ca7",
+    "bytes": 20214
+  },
+  "attestation": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-independent-terminal-review-attestation-v3.json",
+    "sha256": "ab1036a1e52ac7810ec02fb56c0c2be34efa12c13ccf81f412fb9d688514a52d",
+    "bytes": 7984
+  },
+  "receipt": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-terminal-receipt-final-v2.json",
+    "sha256": "2ca2621c5630af3db417fd4f1ca28b90d5cd2751feedf9c615a1ef1ab7265e9d",
+    "bytes": 3324463
+  },
+  "unchanged_fields": [
+    "attempt_index",
+    "interval_entries",
+    "candidate_manifest",
+    "candidate_tree",
+    "base_commit",
+    "documents",
+    "component_receipts",
+    "execution_subtrees",
+    "required_next",
+    "package_accounting",
+    "supporting_reviews",
+    "scope"
+  ],
+  "dependency_delta": "Six exact superseded review/seal provenance refs added; original172 dependency refs unchanged.",
+  "root_seal": "Current V3 independent review attached; no substantive source/runtime/document/acceptance change."
+}

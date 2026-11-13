@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 76 items / 10 deselected / 66 selected
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py .......... [ 15%]
+........................................................                 [100%]
+
+====================== 66 passed, 10 deselected in 0.66s =======================

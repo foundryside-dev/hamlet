@@ -1,0 +1,51 @@
+{
+  "schema": "bac-cap-load-bearing-ruling-v1",
+  "at": "2026-11-13T19:13:14.046237+00:00",
+  "actor": "/root",
+  "finding": "P2 archive clone-effect stability can omit actually reached devices",
+  "disposition": "CONFIRMED REQUIRED PRE-B DEPENDENCY; NO PARKING, NO SCOPE REDUCTION",
+  "sources": [
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-REPLAY-PREFIX-OTHERMODEL-VERIFICATION.md",
+      "sha256": "f07232b54c4c3c6d3e65078d093ac01b408188324cd3134b8176343d06bcd947",
+      "bytes": 13434
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-ADJUDICATION.md",
+      "sha256": "363458ddf4f62e1add22c2199be5b214cdb8f09fefcd5c120a77a837eb3a02f8",
+      "bytes": 13234
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-DESIGN-REVIEW.md",
+      "sha256": "2cf9b33553bc0896ab16e13e709446645d17683b656cc33851d196e0852a46a9",
+      "bytes": 7523
+    }
+  ],
+  "ruling": "At A fixround5 cap, carry one structural pre-B repair forward: classify both entire initial clone graphs before any post-clone refusal deduction. Preserve current accepted inputs and realhelper. Opaque effects yield possiblecontinuation, not runtime rejection. Core invocation implementation is independent and continues first.",
+  "adopted_clarifications": [
+    "Exact OrderedDict is opaque; no extra precision classifier for its per-instance methods in this finite repair.",
+    "Exact torch.Tensor requires trusted native instance-dictionary access proving an empty instance dictionary before the ordinary native Tensor stability classification; any instance attributes make it opaque. No user hook is called to inspect this.",
+    "Exact built-in dict/list/tuple recurse through all children; exact primitives and ordinary object-free numeric/bool ndarray are stable. All other types are opaque. Active recursion cycles are opaque.",
+    "Ordinary trusted native runtime remains the existing profile; no arbitrary global monkeypatch certification is added.",
+    "Use classifier-only no-protocol-work assertions where necessary; preserve the separately adopted metadata inventory traversal contract without falsely claiming arbitrary Mapping protocols never execute."
+  ],
+  "oracle_correction": "Preserve historical PASS and all existing node identities. Existing Tensor-subclass archive fixtures cannot prove clone stability: retain them as opaque continuation controls; add native plain graph negative/positive controls. Required plain metadata refusal precision is retained.",
+  "finite_acceptance": "Five finite categories in adjudication, plus exactOrderedDict items and nativeTensor instance-detach override opaque representatives; causal sourceformats/sibling clone-repair helper positives and plan RED before implementation. Fresh bounded independent fixedsource verification.",
+  "prospective_packet": {
+    "files": [
+      "src/townlet/training/replay_contract.py",
+      "src/townlet/training/historical_checkpoint.py",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+    ],
+    "ceilings": [
+      1000,
+      675,
+      2600
+    ],
+    "total": 4275,
+    "helper": "read-only",
+    "source_write_grant": false
+  },
+  "remaining": "Application runtime/Bchildren/parent/recurrent/hardware/fullgates remain required. Old scopedF2PASS superseded; other-model check remains CHANGESREQUIRED until repaired.",
+  "cost_if_wrong": "Conservative opaque classification may inventory extra possible sources for custom protocols; it must not reject inputs or omit reachable work. Actual new source/tests still independently reviewed; no user-visible capability waiver."
+}

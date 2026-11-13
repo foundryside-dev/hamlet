@@ -1,0 +1,29 @@
+{
+  "name": "classifier-controls",
+  "exit_code": 0,
+  "seconds": 4.831013202667236,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[native]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[primitives]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[alias]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-numeric]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-bool]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-classifier-controls/classifier-controls.log",
+  "sha256": "ae88049f2af2ea4b19556ca40dcffeb38e5e63bcf50229dee90492b725ebd23f",
+  "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "manifest_sha256": "476a3d330ed146784df934150a92bf6350bb7b7ad9ebedf5bf3c04d1182819d8",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

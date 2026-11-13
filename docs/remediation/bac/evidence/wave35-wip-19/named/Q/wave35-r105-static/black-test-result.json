@@ -1,0 +1,18 @@
+{
+  "name": "black-test",
+  "exit_code": 0,
+  "seconds": 1.0003666877746582,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r105-static/black-test.log",
+  "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+  "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "manifest_sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

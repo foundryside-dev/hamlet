@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-13T19:43:24.776126+00:00",
+  "initial_metadata_attempt": "Assertion failed when419selectors were mistakenfor436parameterizednodes. No runtimeappselectionexecuted. Collection/static/types specs had alreadybeencreated correctly andtheirchecksproceeded.",
+  "repair": "Expandedbarefunctionselectors against immutableR104collection; allgroupcountsverified,507unique runtime nodes. No appsourcechange or testrerun.",
+  "expanded_groups": {
+    "fix3-positive-controls": 10,
+    "fix3-raw-reachable": 129,
+    "fix3-other-reachable": 69,
+    "reachable-controls": 24,
+    "fix4-fixtures": 16,
+    "fix4-positive-controls": 4,
+    "fix4-reachable-red": 40,
+    "fix5-fixtures": 28,
+    "fix5-positive-controls": 44,
+    "fix5-reachable-red": 72
+  }
+}

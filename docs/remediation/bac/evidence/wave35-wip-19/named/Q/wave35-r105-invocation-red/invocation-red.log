@@ -1,0 +1,134 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 9 items
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py FFFFFFFFF  [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_device_invocation_required_api ______________________
+
+    def test_device_invocation_required_api() -> None:
+        # Catches a missing/optional factory input or a context exposing new lineage.
+>       invocation_type = getattr(custody, "RNGDeviceInvocation")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'townlet.exploration.rng_custody' has no attribute 'RNGDeviceInvocation'
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:437: AttributeError
+_ test_device_invocation_historical_result_preserves_real_token_and_retirement _
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0cc7bb0>
+
+    def test_device_invocation_historical_result_preserves_real_token_and_retirement(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches receipt reads depending on a live operation/member or taking locks.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:472: AttributeError
+___ test_device_invocation_lifecycle_refusals_leave_completed_result_stable ____
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0bd1cd0>
+
+    def test_device_invocation_lifecycle_refusals_leave_completed_result_stable(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches premature False, reuse, suppression, or a refusal mutating the state.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:506: AttributeError
+_________ test_device_invocation_entry_failure_has_no_outcome_or_reuse _________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0bb1c70>
+
+    def test_device_invocation_entry_failure_has_no_outcome_or_reuse(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches admission at issuance only, or entry refusal publishing False.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:531: AttributeError
+____ test_device_invocation_issuance_rejects_forged_arguments_without_cuda _____
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0a32be0>
+
+    def test_device_invocation_issuance_rejects_forged_arguments_without_cuda(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches issuance accepting unissued identities or mutable/malformed inputs.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:550: AttributeError
+___________ test_device_invocation_unissued_subclass_and_copy_refuse ___________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0a33570>
+
+    def test_device_invocation_unissued_subclass_and_copy_refuse(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches lookalike/copy authority and public attributes forging a receipt.
+>       invocation_type = getattr(custody, "RNGDeviceInvocation")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'townlet.exploration.rng_custody' has no attribute 'RNGDeviceInvocation'
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:579: AttributeError
+________ test_device_invocation_wrong_thread_refuses_before_held_locks _________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0a03850>
+
+    def test_device_invocation_wrong_thread_refuses_before_held_locks(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches authentic methods waiting for exclusion before thread authentication.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:610: AttributeError
+___________ test_device_invocation_unused_handle_does_not_pin_owner ____________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0a03b50>
+
+    def test_device_invocation_unused_handle_does_not_pin_owner(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches eager admission/owner pinning at handle construction.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:655: AttributeError
+____ test_device_invocation_completed_handle_releases_execution_references _____
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0ae8140>
+
+    def test_device_invocation_completed_handle_releases_execution_references(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Catches a completed handle retaining its generator, owner, lineage or error.
+        monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+>       factory = domain.device_invocation
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:673: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_required_api
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_historical_result_preserves_real_token_and_retirement
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_lifecycle_refusals_leave_completed_result_stable
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_entry_failure_has_no_outcome_or_reuse
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_issuance_rejects_forged_arguments_without_cuda
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unissued_subclass_and_copy_refuse
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_wrong_thread_refuses_before_held_locks
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unused_handle_does_not_pin_owner
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_completed_handle_releases_execution_references
+============================== 9 failed in 0.30s ===============================

@@ -1,0 +1,39 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "at": "2026-11-13T19:02:34.654823+00:00",
+  "actor": "/root",
+  "worker": "/root/bac_core_invocation_impl",
+  "stage": "TESTS ONLY",
+  "base": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "predecessor_candidate": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+  "source_review": {
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX5-IMPLEMENTATION-REVIEW.md",
+    "sha256": "0a8dd26f5e704097dbbdfe9002b25fba193b362df951143ff85f4b341634ab17",
+    "disposition": "Bounded SPEC/QUALITY PASS; F1/F2 source addressed. Opaque protocol continuation boundary is existing adopted contract, no new scope reduction."
+  },
+  "read_scope": {
+    "src/townlet/exploration/rng_custody.py": {
+      "sha256": "0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477",
+      "ceiling": 1250
+    },
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py": {
+      "sha256": "b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e",
+      "ceiling": 2000
+    }
+  },
+  "write_scope": [
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "requirements": "Adopted DESIGN-FIX1 and IMPLEMENTATION-MAP; minimal nonpoison API/LIFETIME/AUTH controls; missing API lookup inside tests. Preserve prior nodes and empty production manifest assertion. No isolated child/fork protocol changes in this first stage.",
+  "hold": "Freeze source/test/report before root capture/collection, healthy control and decisive missing-API RED; no production edit or application execution by worker.",
+  "remaining": "Other-model fixed-source adversarial verification, B activation/runtime/children/parents/recurrent and real CUDA plus full gates remain owed.",
+  "hard_budget": {
+    "files": 5,
+    "lines": 5000
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

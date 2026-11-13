@@ -1,0 +1,7 @@
+{
+  "time": "2026-11-13T17:22:23.364767+00:00",
+  "parent_grant": "wave35/r98-a-implementation-fix3-grant.json",
+  "change": "Test ceiling1800 ->1950, production740/830/1290 unchanged; fourbody4810<5000. Preserve readable paired controls, no compression/test removal/extra body.",
+  "reason": "Approved structural matrix needs archive/row/component/mask continuation pairs; original129 nodes and10 child identities retained.",
+  "phase": "Tests-first only; production remains frozen until root baton."
+}

@@ -1,0 +1,14 @@
+{
+  "time": "2026-11-13T18:43:09.003118+00:00",
+  "round": "implementationfix5/5",
+  "parent": "wave35/r102-a-implementation-fix5-grant.json",
+  "stage": "Production baton afterR103causalRED/controls",
+  "write_source": "src/townlet/training/replay_contract.py",
+  "projected_lines": 950,
+  "read_only_supplier": "src/townlet/training/historical_checkpoint.py",
+  "frozen_test_sha256": "d178bb0a40340292e3b06328438ec2d825378d9464df8bf600873d3c7e2fce9b",
+  "forbidden": "No family/helper/test edits absent separate root grant; no extra bodyread, fakeBauthority, capacity removal, test removal/compression, defaults waiver, branch/worktree/copy/delegation.",
+  "packet": "shared950/helper675/test2300=3925/3",
+  "basis": "Reviewe89ace6b F1/F2; actualhelpercountcontract and genuineunknown-continuationcontrols. Fix classes, not literalwitnesses.",
+  "execution": "Rootowns all application checks/capture. Authorstaticallowed; freeze and report exactdelta beforeR104."
+}

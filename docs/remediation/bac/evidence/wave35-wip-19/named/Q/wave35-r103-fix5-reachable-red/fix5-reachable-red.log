@@ -1,0 +1,2775 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 72 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FFFFFFFF [ 11%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF         [100%]
+
+=================================== FAILURES ===================================
+__ test_archive_declared_count_boundaries[validate-plan-above-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'above', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08766aacf0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[validate-plan-above-standard-per] ___
+
+family = 'per', kind = 'standard', case = 'above', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876747ed0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-above-prioritized-flat] _
+
+family = 'flat', kind = 'prioritized', case = 'above', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876519590>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-above-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'above', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08766ce520>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-above-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'above', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08766cda70>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-above-sequential-per] __
+
+family = 'per', kind = 'sequential', case = 'above', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876376330>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-below-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'below', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764f5bf0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[validate-plan-below-standard-per] ___
+
+family = 'per', kind = 'standard', case = 'below', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764f7350>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-below-prioritized-flat] _
+
+family = 'flat', kind = 'prioritized', case = 'below', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08766bb850>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-below-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'below', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876338350>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-below-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'below', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f087652fb60>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-below-sequential-per] __
+
+family = 'per', kind = 'sequential', case = 'below', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763347d0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[validate-plan-zero-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'zero', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764bfa10>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[validate-plan-zero-standard-per] ____
+
+family = 'per', kind = 'standard', case = 'zero', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764bd9b0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-zero-prioritized-flat] __
+
+family = 'flat', kind = 'prioritized', case = 'zero', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763264e0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-zero-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'zero', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876323410>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-zero-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'zero', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876323b90>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (3,)) == (None, ())
+E         
+E         At index 1 diff: (3,) != ()
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-zero-sequential-per] ___
+
+family = 'per', kind = 'sequential', case = 'zero', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876486200>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (3,)) == (None, ())
+E         
+E         At index 1 diff: (3,) != ()
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-digest-standard-flat] __
+
+family = 'flat', kind = 'standard', case = 'digest', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764854f0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (1, 2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-digest-standard-per] ___
+
+family = 'per', kind = 'standard', case = 'digest', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f087656bb10>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (1, 2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-digest-prioritized-flat] _
+
+family = 'flat', kind = 'prioritized', case = 'digest', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876426990>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (1, 2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-digest-prioritized-per] _
+
+family = 'per', kind = 'prioritized', case = 'digest', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f087631a3c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (1, 2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-digest-sequential-flat] _
+
+family = 'flat', kind = 'sequential', case = 'digest', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763016d0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (1, 2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-digest-sequential-per] __
+
+family = 'per', kind = 'sequential', case = 'digest', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876379450>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (1, 2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-later-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876370f30>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 1 diff: (0, 2, 3) != (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[validate-plan-later-standard-per] ___
+
+family = 'per', kind = 'standard', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763701a0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 1 diff: (0, 2, 3) != (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-later-prioritized-flat] _
+
+family = 'flat', kind = 'prioritized', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876314600>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 1 diff: (0, 2, 3) != (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-later-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876315010>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 1 diff: (0, 2, 3) != (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[validate-plan-later-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763c38c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 1 diff: (0, 2, 3) != (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[validate-plan-later-sequential-per] __
+
+family = 'per', kind = 'sequential', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763c3850>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 1 diff: (0, 2, 3) != (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-above-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'above', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f6dd0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-above-standard-per] ____
+
+family = 'per', kind = 'standard', case = 'above', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f6890>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[prepare-plan-above-prioritized-flat] __
+
+family = 'flat', kind = 'prioritized', case = 'above', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f4980>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-above-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'above', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f7e70>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-above-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'above', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f7a80>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-above-sequential-per] ___
+
+family = 'per', kind = 'sequential', case = 'above', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f7700>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-below-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'below', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f69e0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-below-standard-per] ____
+
+family = 'per', kind = 'standard', case = 'below', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f7380>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[prepare-plan-below-prioritized-flat] __
+
+family = 'flat', kind = 'prioritized', case = 'below', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f4520>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-below-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'below', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f7230>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-below-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'below', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763154e0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-below-sequential-per] ___
+
+family = 'per', kind = 'sequential', case = 'below', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876315da0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-zero-standard-flat] ____
+
+family = 'flat', kind = 'standard', case = 'zero', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876315e80>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+____ test_archive_declared_count_boundaries[prepare-plan-zero-standard-per] ____
+
+family = 'per', kind = 'standard', case = 'zero', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876315f60>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-flat] __
+
+family = 'flat', kind = 'prioritized', case = 'zero', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763160b0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-per] ___
+
+family = 'per', kind = 'prioritized', case = 'zero', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763152b0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-zero-sequential-flat] ___
+
+family = 'flat', kind = 'sequential', case = 'zero', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876677ee0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ndex=4), (3,)) == (None, ())
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-zero-sequential-per] ___
+
+family = 'per', kind = 'sequential', case = 'zero', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08763716a0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ndex=4), (3,)) == (None, ())
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-digest-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'digest', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876373700>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-digest-standard-per] ___
+
+family = 'per', kind = 'standard', case = 'digest', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764d8600>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-flat] _
+
+family = 'flat', kind = 'prioritized', case = 'digest', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764d84b0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'digest', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764d8910>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[prepare-plan-digest-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'digest', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f6f20>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-digest-sequential-per] __
+
+family = 'per', kind = 'sequential', case = 'digest', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f4130>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-later-standard-flat] ___
+
+family = 'flat', kind = 'standard', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08762f63c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+___ test_archive_declared_count_boundaries[prepare-plan-later-standard-per] ____
+
+family = 'per', kind = 'standard', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564e50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+_ test_archive_declared_count_boundaries[prepare-plan-later-prioritized-flat] __
+
+family = 'flat', kind = 'prioritized', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876567a10>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-later-prioritized-per] __
+
+family = 'per', kind = 'prioritized', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876567000>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-later-sequential-flat] __
+
+family = 'flat', kind = 'sequential', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876566820>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+__ test_archive_declared_count_boundaries[prepare-plan-later-sequential-per] ___
+
+family = 'per', kind = 'sequential', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876567310>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        continuation = case in ("match", "clone", "mapping")
+        devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (0, 2, 3)) == (None, (0, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2121: AssertionError
+________ test_equal_cardinality_key_boundaries[validate-plan-top-flat] _________
+
+family = 'flat', case = 'top', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564ad0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_________ test_equal_cardinality_key_boundaries[validate-plan-top-per] _________
+
+family = 'per', case = 'top', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564ec0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+______ test_equal_cardinality_key_boundaries[validate-plan-archive-flat] _______
+
+family = 'flat', case = 'archive', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876565780>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_______ test_equal_cardinality_key_boundaries[validate-plan-archive-per] _______
+
+family = 'per', case = 'archive', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564980>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (2, 3)) == (None, (2,))
+E         
+E         At index 1 diff: (2, 3) != (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_______ test_equal_cardinality_key_boundaries[validate-plan-later-flat] ________
+
+family = 'flat', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08764dbe00>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (1, 2))
+E         
+E         At index 1 diff: (1, 2, 3) != (1, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+________ test_equal_cardinality_key_boundaries[validate-plan-later-per] ________
+
+family = 'per', case = 'later', route = 'validate-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08766ca820>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       assert (None, (1, 2, 3)) == (None, (1, 2))
+E         
+E         At index 1 diff: (1, 2, 3) != (1, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_________ test_equal_cardinality_key_boundaries[prepare-plan-top-flat] _________
+
+family = 'flat', case = 'top', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564670>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_________ test_equal_cardinality_key_boundaries[prepare-plan-top-per] __________
+
+family = 'per', case = 'top', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564750>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_______ test_equal_cardinality_key_boundaries[prepare-plan-archive-flat] _______
+
+family = 'flat', case = 'archive', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876567bd0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+_______ test_equal_cardinality_key_boundaries[prepare-plan-archive-per] ________
+
+family = 'per', case = 'archive', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f08765665f0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...ex=4), (2, 3)) == (None, (2,))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+________ test_equal_cardinality_key_boundaries[prepare-plan-later-flat] ________
+
+family = 'flat', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876564e50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (1, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+________ test_equal_cardinality_key_boundaries[prepare-plan-later-per] _________
+
+family = 'per', case = 'later', route = 'prepare-plan'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f0876567e70>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+        incoming["historical_archives"] = [record]
+        top = case in ("top", "opaque-top")
+        target = incoming if top else record
+        fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+        continuation = case.startswith("opaque-")
+        if continuation:
+            target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+            devices = (2, 3)
+        else:
+            cardinality = len(target)
+            for field in fields:
+                target.pop(field)
+            target["unexpected"] = None
+            target[_CUDAData(torch.tensor(1), 2)] = None
+            assert len(target) == cardinality
+            devices = (2,)
+            if case == "later":
+                incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+                devices = (1, 2)
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+>       assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+E       AssertionError: assert (device(type=...4), (1, 2, 3)) == (None, (1, 2))
+E         
+E         At index 0 diff: device(type='cuda', index=4) != None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2188: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-standard-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-prioritized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-top-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-top-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-archive-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-archive-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-later-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-later-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-top-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-top-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-archive-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-archive-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-later-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-later-per]
+============================== 72 failed in 3.95s ==============================

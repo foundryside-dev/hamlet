@@ -1,0 +1,44 @@
+{
+  "schema": "bac-final-seal-comparison-v1",
+  "input": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r99-r108-complete-receipt-input-v6.json",
+    "sha256": "710e6e2d52b6c09095cbf882ba0aa0739d76f379458a4f81d04f0332777b307b",
+    "bytes": 3185204
+  },
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-qualification-subject-v2.json",
+    "sha256": "100d215a0ff820b47b6e898bbb7e3e2f4d82fd6139fd9497cc859ef0e4510f7b",
+    "bytes": 19577
+  },
+  "attestation": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-independent-terminal-review-attestation-v2.json",
+    "sha256": "1e7c2948f4ef14892aefb4c22b8816429e758b21df1f7cadbcf33c8ee48104e6",
+    "bytes": 7117
+  },
+  "receipt": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-terminal-receipt-final-v1.json",
+    "sha256": "87f0245ff2e1c0c2014ef08ac8d542cae55b8ab9ea2f76a9e0ee8bcdf76e1639",
+    "bytes": 3199401
+  },
+  "unchanged_fields": [
+    "attempt_index",
+    "interval_entries",
+    "candidate_manifest",
+    "candidate_tree",
+    "base_commit",
+    "documents",
+    "component_receipts",
+    "execution_subtrees",
+    "required_next",
+    "package_accounting",
+    "supporting_reviews",
+    "scope"
+  ],
+  "dependency_delta": "Only two exact superseded review references from the current attestation added; original170 unchanged.",
+  "review_delta": "Current independent V2 terminal review/attestation attached to frozen subject v2; v1 review preserved as superseded.",
+  "root_seal": "Evidence selection only; substantive runtime/source/doc/acceptance scope unchanged."
+}

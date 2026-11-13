@@ -1,0 +1,301 @@
+{
+  "schema": "bac-execution-subtree-metadata-v1",
+  "status": "EXACT CAPTURED TREE OBJECT IDENTITIES; NO NEW EXECUTION",
+  "interval": [
+    99,
+    108
+  ],
+  "rounds": [
+    {
+      "round": 99,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r99-candidate.json",
+        "sha256": "942400ad11c9cc6414b5ad0f9cd2c4358d7e6ef91ff6532970a359e0fe2ba92e",
+        "bytes": 203416
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "f9b5f592bbc3763d6172574857b074bf978ae68a",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "ac43971770acfc44dc4b4df51c8ba518e187c7a8",
+        "tests": "43b121b43ffb079b4a7275250d7b0bb98b39e4ca"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "f9b5f592bbc3763d6172574857b074bf978ae68a:.defaults-ratchet",
+        "f9b5f592bbc3763d6172574857b074bf978ae68a:configs",
+        "f9b5f592bbc3763d6172574857b074bf978ae68a:scripts",
+        "f9b5f592bbc3763d6172574857b074bf978ae68a:src",
+        "f9b5f592bbc3763d6172574857b074bf978ae68a:tests"
+      ]
+    },
+    {
+      "round": 100,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r100-candidate.json",
+        "sha256": "59d925fcef3c60cff1da69b01edd297b968588fd15320a8c33807ffa7d64e4ca",
+        "bytes": 203565
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "e7a64c570723934413871ef0012f7afa7809431e",
+        "tests": "52c54b9d3b114333f4435c3f9eb4b42ec8fd1d99"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "0b17ef1e48a6efc6e52bc814812439d4035e5447:.defaults-ratchet",
+        "0b17ef1e48a6efc6e52bc814812439d4035e5447:configs",
+        "0b17ef1e48a6efc6e52bc814812439d4035e5447:scripts",
+        "0b17ef1e48a6efc6e52bc814812439d4035e5447:src",
+        "0b17ef1e48a6efc6e52bc814812439d4035e5447:tests"
+      ]
+    },
+    {
+      "round": 101,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r101-candidate.json",
+        "sha256": "c28f79712a9cf5757edbeb206b074153d05c844d2b3e6d59e9fe0c31d62cddc9",
+        "bytes": 203565
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "e2c139289acd4c55f70e270f199c1d1f48e42e63",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "e7a64c570723934413871ef0012f7afa7809431e",
+        "tests": "228502da8abfab93641b198a7db3ea9713489f07"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "e2c139289acd4c55f70e270f199c1d1f48e42e63:.defaults-ratchet",
+        "e2c139289acd4c55f70e270f199c1d1f48e42e63:configs",
+        "e2c139289acd4c55f70e270f199c1d1f48e42e63:scripts",
+        "e2c139289acd4c55f70e270f199c1d1f48e42e63:src",
+        "e2c139289acd4c55f70e270f199c1d1f48e42e63:tests"
+      ]
+    },
+    {
+      "round": 102,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r102-candidate.json",
+        "sha256": "2bc01fc5f8815bb83048835a9af16cec484c7458bde9c3e6ad5f6337c61bc6b0",
+        "bytes": 203565
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "0dc5a95de19925148917d884a3554d90221d7d26",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "3acebd49e73f728658b5d16a5e93c976e7530267",
+        "tests": "228502da8abfab93641b198a7db3ea9713489f07"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "0dc5a95de19925148917d884a3554d90221d7d26:.defaults-ratchet",
+        "0dc5a95de19925148917d884a3554d90221d7d26:configs",
+        "0dc5a95de19925148917d884a3554d90221d7d26:scripts",
+        "0dc5a95de19925148917d884a3554d90221d7d26:src",
+        "0dc5a95de19925148917d884a3554d90221d7d26:tests"
+      ]
+    },
+    {
+      "round": 103,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r103-candidate.json",
+        "sha256": "2114749486f2d3a25afa1eb8447e5c2d37c656df3ba28e32e8e6fd55617a3cfa",
+        "bytes": 204073
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "3acebd49e73f728658b5d16a5e93c976e7530267",
+        "tests": "21b93363c1b55e07146e4ef6ad0d4a18d3e72b75"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0:.defaults-ratchet",
+        "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0:configs",
+        "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0:scripts",
+        "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0:src",
+        "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0:tests"
+      ]
+    },
+    {
+      "round": 104,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r104-candidate.json",
+        "sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a",
+        "bytes": 204073
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "64259182388d71e2b23afccf63f1a1808f8656b7",
+        "tests": "21b93363c1b55e07146e4ef6ad0d4a18d3e72b75"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "e206288d4f6eee330e3fcb8114a47af3002eecb1:.defaults-ratchet",
+        "e206288d4f6eee330e3fcb8114a47af3002eecb1:configs",
+        "e206288d4f6eee330e3fcb8114a47af3002eecb1:scripts",
+        "e206288d4f6eee330e3fcb8114a47af3002eecb1:src",
+        "e206288d4f6eee330e3fcb8114a47af3002eecb1:tests"
+      ]
+    },
+    {
+      "round": 105,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r105-candidate.json",
+        "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9",
+        "bytes": 204142
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "64259182388d71e2b23afccf63f1a1808f8656b7",
+        "tests": "51ed104767babd1b8e69ae1da6755880bbd3f659"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7:.defaults-ratchet",
+        "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7:configs",
+        "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7:scripts",
+        "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7:src",
+        "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7:tests"
+      ]
+    },
+    {
+      "round": 106,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r106-candidate.json",
+        "sha256": "12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970",
+        "bytes": 204188
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "51bc90cc082e2c0fe2bc164bbc8d64c689436d84",
+        "tests": "51ed104767babd1b8e69ae1da6755880bbd3f659"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "ab46784efc86bab95b031494529e06871a12f1ff:.defaults-ratchet",
+        "ab46784efc86bab95b031494529e06871a12f1ff:configs",
+        "ab46784efc86bab95b031494529e06871a12f1ff:scripts",
+        "ab46784efc86bab95b031494529e06871a12f1ff:src",
+        "ab46784efc86bab95b031494529e06871a12f1ff:tests"
+      ]
+    },
+    {
+      "round": 107,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r107-candidate.json",
+        "sha256": "476a3d330ed146784df934150a92bf6350bb7b7ad9ebedf5bf3c04d1182819d8",
+        "bytes": 204196
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "51bc90cc082e2c0fe2bc164bbc8d64c689436d84",
+        "tests": "f078592253395277d54dc837ee931522ebae20b0"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "423a4677794feb995959a7a8abde9784255db57c:.defaults-ratchet",
+        "423a4677794feb995959a7a8abde9784255db57c:configs",
+        "423a4677794feb995959a7a8abde9784255db57c:scripts",
+        "423a4677794feb995959a7a8abde9784255db57c:src",
+        "423a4677794feb995959a7a8abde9784255db57c:tests"
+      ]
+    },
+    {
+      "round": 108,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r108-candidate.json",
+        "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce",
+        "bytes": 204196
+      },
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+      "execution_subtrees": {
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+        "tests": "f078592253395277d54dc837ee931522ebae20b0"
+      },
+      "metadata_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "fa1c6804fcff475f5652e5f5f357468e2d931c0d:.defaults-ratchet",
+        "fa1c6804fcff475f5652e5f5f357468e2d931c0d:configs",
+        "fa1c6804fcff475f5652e5f5f357468e2d931c0d:scripts",
+        "fa1c6804fcff475f5652e5f5f357468e2d931c0d:src",
+        "fa1c6804fcff475f5652e5f5f357468e2d931c0d:tests"
+      ]
+    }
+  ],
+  "basis": "Read-only git object-id resolution against each hash-bound captured candidate tree. No file bodies read, no checkout/index writes; execution attribution remains original result/custody records."
+}

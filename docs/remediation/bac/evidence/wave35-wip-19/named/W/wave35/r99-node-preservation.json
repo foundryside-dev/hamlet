@@ -1,0 +1,19 @@
+{
+  "old": 129,
+  "new": 393,
+  "new_only": 264,
+  "missing": [],
+  "preserved_children": [
+    "test_isolated_producer_poison[flat_local_single]",
+    "test_isolated_producer_poison[flat_local_distinct]",
+    "test_isolated_producer_poison[flat_local_same]",
+    "test_isolated_producer_poison[flat_admitted_single]",
+    "test_isolated_producer_poison[flat_admitted_same]",
+    "test_isolated_producer_poison[per_local_single]",
+    "test_isolated_producer_poison[per_local_distinct]",
+    "test_isolated_producer_poison[per_local_same]",
+    "test_isolated_producer_poison[per_admitted_single]",
+    "test_isolated_producer_poison[per_admitted_same]"
+  ],
+  "initial_metadata_parser_attempt": "Assumed nodeid lines, assertion failed before any app command; actual collector uses Function tree. Corrected parser reads existing exact log; no collection rerun."
+}

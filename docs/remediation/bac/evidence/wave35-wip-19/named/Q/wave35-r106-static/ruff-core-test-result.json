@@ -1,0 +1,19 @@
+{
+  "name": "ruff-core-test",
+  "exit_code": 0,
+  "seconds": 0.05924725532531738,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "src/townlet/exploration/rng_custody.py",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r106-static/ruff-core-test.log",
+  "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "manifest_sha256": "12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

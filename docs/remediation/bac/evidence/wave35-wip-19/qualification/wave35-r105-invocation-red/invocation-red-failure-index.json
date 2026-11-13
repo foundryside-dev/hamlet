@@ -1,0 +1,59 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+  "unique_node_phase_failures": 9,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?",
+      "count": 7,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unused_handle_does_not_pin_owner",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_historical_result_preserves_real_token_and_retirement",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_lifecycle_refusals_leave_completed_result_stable",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_entry_failure_has_no_outcome_or_reuse",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_wrong_thread_refuses_before_held_locks",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_completed_handle_releases_execution_references",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_issuance_rejects_forged_arguments_without_cuda",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: module 'townlet.exploration.rng_custody' has no attribute 'RNGDeviceInvocation'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_required_api",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unissued_subclass_and_copy_refuse",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

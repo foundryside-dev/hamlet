@@ -1,0 +1,60 @@
+{
+  "schema": "bac-source-fix-grant-v1",
+  "time": "2026-11-13T17:16:44.583264+00:00",
+  "round": "implementation fix3/5",
+  "owner": "/root/bac_cuda_flat_per_producer_a",
+  "phase": "TESTS FIRST; production remains frozen until root causal RED and controls",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "source_candidate_before_fix": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "matrix": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-I5-PREFIX-MATRIX.md",
+    "sha256": "dc3eeff946fd1876dda2829361981f26d4d517a00289c9e54a22e9f5be69cf18",
+    "bytes": 14750
+  },
+  "matrix_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-I5-PREFIX-MATRIX-REVIEW.md",
+    "sha256": "98c04e41299a13f2fdd7c90fe5bc18e3f3fa9f719ca2f653cddc8a98e3c413fe",
+    "bytes": 6144
+  },
+  "supplier": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-PREFIX-FACTS.md",
+    "sha256": "98fc3b06f2e13f2e42452a3d5bb409f27be0d581fc1cc8fb66e65590f172f68a",
+    "bytes": 3447
+  },
+  "root_disposition": "Adopt approved structural prefix matrix, including all five binding interpretations from independent review. I5 remains material/open until actual source and executable verification.",
+  "budget": [
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "projected_lines": 740,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    },
+    {
+      "path": "src/townlet/training/replay_buffer.py",
+      "projected_lines": 830,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    },
+    {
+      "path": "src/townlet/training/prioritized_replay_buffer.py",
+      "projected_lines": 1290,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "projected_lines": 1800,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    }
+  ],
+  "total_budget": 4660,
+  "hard_limit": "5 implementation files/5000 source lines, actual packet4",
+  "future_arithmetic_correction": {
+    "B": "core1250 + shared740 + flat830 + PER1290 + activationtest650 =4760/5",
+    "D": "core1250 + shared740 + recurrent2250 + test700 =4940/4",
+    "ruling": "These explicit projections replace matrix prose suggesting both4960. Future source growth requires remeasurement/reslice before hard limit; no future body grant implied."
+  },
+  "capability_scope": "Internal sharing of metadata predicates preserves all supported inputs, ordering, diagnostics and current consumers; no capability removal/degradation/consolidation authorized. No compatibility shims/fallbacks.",
+  "tests": "Preserve129 existing nodes and10 child identities. Finite refusal/first-effect matrix, actual CPU owners and public error/state/revision controls; actual B-dependent execution remains deferred, no fake authority. Root owns app runtime/capture/independent review.",
+  "publication": "WIP18 source/evidence committed/pushed/remoteverified; no permission needed to continue authorized implementation."
+}

@@ -1,0 +1,67 @@
+# WIP19 independent terminal evidence review V2 — R99–R108
+
+**PASS FOR BOUNDED WIP EVIDENCE ONLY.** No unresolved material integrity defect found in the corrected frozen subject and review input identified below. This is finite retained-evidence/source-custody/qualification-scope review, not another application source review, independent application rerun, whole A/B acceptance, package acceptance or publication approval.
+
+Producer: `/root`. Metadata author: `/root/bac_astra_replay_fix4_resume_review`. Reviewer: `/root/bac_astra_wip19_terminal`. I am a fresh independent reviewer and authored none of the application source/tests, producing evidence, contract, subject, receipt inputs or reviewed documents. I personally performed the read-only JSON/hash/Git-object checks described here and authored only the original and linked V2 terminal reports/attestations. Reviewer continuity survived the workspace restart; review began only after root supplied the exact sealed contract and frozen subject. No application/helper execution, checkout/worktree creation, source edits, Git mutation, selector/assembly or publication occurred.
+
+## Exact review boundary
+
+- Contract `W/wave35/wip19-checkpoint-contract.json`: 6035 bytes, SHA-256 `07e0f971c25e88f6da573a2eb4a333bc66cb00d6589b166a01fd07e0eec0e131`.
+- Root contract adoption `EP/wip19-root-contract-adoption-v1.json`: 1001 bytes, `9a41ef1ed54374a0cb5447782f04b09b04c4a2424c4eedd20d7ab92f82cc9a71`.
+- Frozen subject `EP/wip19-r108-qualification-subject-v2.json`: 19577 bytes, `100d215a0ff820b47b6e898bbb7e3e2f4d82fd6139fd9497cc859ef0e4510f7b`.
+- Review input `EP/wip19-r99-r108-complete-receipt-input-v6.json`: 3185204 bytes, `710e6e2d52b6c09095cbf882ba0aa0739d76f379458a4f81d04f0332777b307b`.
+- Candidate `W/wave35/r108-candidate.json`: 204196 bytes, `27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce`.
+- Executed candidate tree `fa1c6804fcff475f5652e5f5f357468e2d931c0d`, base commit `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`.
+
+Here W is `.superpowers/sdd/2026-11-01-bac-remediation-upgrades`, EP is W/evidence-management/wip19-preparation, and Q is `/workspace/bac-review-2026-11-01/qualification`.
+
+## Linked correction and supersession
+
+This V2 report and attestation supersede the original terminal report `P/T18e-R0-WIP19-TERMINAL-REVIEW.md` (SHA-256 `0c15bc2e58570f486328bca845661c5c230d55e0eef617841786f05c446d8bfe`) and v1 attestation (`23474d7fa913cc7bdb6db3196193cbf73d93f25e727e6fb8fd86772abb180109`) for final selection. Those originals remain immutable provenance of review against v5/v1. Root's hold arrived immediately after their exclusive creation; they must not be used as the current terminal approval.
+
+Root identified a concrete metadata defect: 26 of the original 34 dependency references lacked required role/required_by fields, and artifact_inputs was only an inventory, leaving intended named evidence outside explicit selection closure. My initial check verified check.required_dependencies relationships, not all metadata dependency shape; this did not detect that defect. Root corrected it through linked input v6 and subject v2 without changing application evidence. I independently compared the complete JSON deltas: input changes are limited to dependencies, supersedes, supersedes_reason and metadata_selection_correction; subject changes are limited to supersedes, terminal_review_input, metadata_selection_correction and review_delta. All attempts, qualification flags, source/document identities, patches and underlying evidence are byte-identical, so the substantive checks below remain applicable without rerunning them.
+
+I rehashed the corrected input/subject and their 1245 distinct direct references successfully. All 170 dependencies now have nonempty roles and required_by lists containing only actual finite-interval check IDs. Seven executed-check helpers and one direct static command preserve their prior role/relationships. The remaining 162 entries expressly denote nonexecuted named evidence/document/source provenance. All 161 W/R artifact inventory references are present in explicit dependency closure, along with retained prior input; none are missing. Single-round metadata references link the corresponding round's actual checks. Interval-wide documents/design/review context links finite interval checks without claiming those documents executed in those processes. This correction closes the reported metadata gap; it does not extend runtime scope or constitute selector success.
+
+## Personally checked integrity and attribution
+
+I rehashed 1245 distinct rooted path/hash references across the frozen subject and review input, with no size/hash mismatch. The six named WIP13–WIP18 catalog manifest/plan pairs also match their sealed hashes and predecessor sequence; R99 follows terminal R98. This is bounded chain metadata checking, not recursive requalification of previous checkpoints. Five required historical components retain their own candidate identities and closed scope.
+
+The observed Q top-level R99–R108 set equals all 343 declared interval entries. For every executed attempt I compared descendant files/directories with its declared inventory, including hashes and sizes. The 1705 descendant-entry comparisons include deliberate repetition for the shared R106 child directory and are not a unique artifact count. All 106 check identities and terminal pointers are distinct/consistent: 84 PASSED, 12 FAILED and 10 UNRUN. The 96 executed result records agree with declared command, exit, duration, candidate/base/manifest and log hash. PASSED records have zero exit; unrun templates retain null exit/start/end/count/duration and explicit reasons. Capture logs remain nonqualifying with unavailable original exit/times rather than fabricated execution facts. The failed 419-selector versus 436-node metadata assertion and its correction remain recorded separately.
+
+Required helper references have matching hash-bound dependency entries naming their checks in required_by. Helper digests and previously published reuse bytes establish on-disk byte identity, not a signed in-memory execution attestation. No helper body was reviewed or executed.
+
+All ten round execution subtree identities match Git objects. All ten stored full-base patches exactly equal read-only `git diff --full-index --binary BASE CANDIDATE` byte streams. This establishes recoverable deltas relative to the retained base; I did not apply patches or create checkouts. All 1503 tracked source/test/config/script/ratchet blobs match both current file bytes and R108 Git objects; no unignored untracked file appears in that scope. HEAD remains the stated base. Candidate guards comprise 818 source entries, 573 configs and 13 protected artifacts. Configs/artifacts match; the only current source-guard differences are the approved STATUS and core-contract documents. Four reviewed document deltas are addressed below.
+
+## Qualification and process limits
+
+Five R108 terminal runtime groups have matching result/log/controller/per-job custody records, positive finite elapsed duration, actual zero xdist workers, and controller imports from `/workspace/hamlet/src/townlet/__init__.py` with one Torch thread. Their terminal commands enumerate disjoint exact node IDs: causal-plans 8, classifier-all 21, clone-fixtures 8, native-controls 34, prior-reachable 436. Their logs report those pass counts. The union is exactly 507 unique IDs, all present in the retained 836-node collection, leaving 329 unexecuted nodes. Collection itself is not runtime qualification.
+
+The import_thread_debug references are actual retained per-job custody summaries asserting source/index/import/thread/fixture PASS, paired with controller witnesses. Those summaries are not raw import traces or a complete memory/provenance attestation. R108 controller records lack PID and literal attempt_id; linkage rests on exact job-specific paths, result/spec command and source identity plus custody job/count/duration agreement. Identical controller bytes across jobs are expected for the shared source/profile and do not independently identify separate OS processes. Absolute UTC start/end times are unavailable and remain null; no times were inferred from filesystem metadata. This is retained evidence review, not independent observation of the original execution.
+
+R106's 76 passes remain separate exact-candidate evidence: 66 core-current plus ten existing isolated controls on `ab46784efc86bab95b031494529e06871a12f1ff`. I checked all ten existing child bindings: job/case-specific spec/result/controller/child/parent hashes agree with strict custody; actual child PID/PPID agree with parent process/queued PID and recorded parent PID; child debug/thread/source/manifest identities and successful parent observation agree. The historical witnesses lack literal attempt_id. Their declared null is retained, and job/spec/result/source/PID linkage supplies the actual evidence without inventing that field. The shared output directory does not substitute one child's witness for another. These are CPU controls, not real CUDA evidence or new invocation own-phase/fork/state/alias coverage. They are not added to the R108 507.
+
+The ten UNRUN curriculum templates are distinct from the 329 unrun focused producer nodes, which include ten producer poison children. Neither collection nor a planned command closes producer/B activation.
+
+## Historical failures, source dispositions and documents
+
+All 12 failed checks remain selected. R99's 178 failures and 30 passes are retained; its two invalid prepare-positive oracles are superseded rather than erased. R101's 40 and R103's 72 causal failures, R105's nine invocation failures, R107's 108 causal failures and its passing controls remain historical evidence. R104's actual 436-pass observation is retained while its 84 plan oracles are later superseded for contract qualification. R100 global mypy's 16 errors remain a historical observation, with failed owned-type attempts retained; bounded later owned/public checks do not establish a new global error count or a green repository gate.
+
+The initial R106 core source approval remains bounded with second-phase qualification open. The independent R108 clone-stability source review and root disposition record concrete P2 addressed under the adopted trusted ordinary native profile. That disposition does not claim arbitrary ambient dispatch/global monkeypatch/concurrent mutation support or arbitrary cyclic constructor qualification. I checked the source review metadata and exact bytes; I did not repeat application implementation review.
+
+I read the independent ground-truth documentation review and verified all four applied document bytes against its approvals, the frozen subject/input and application record. The candidate's before-document bytes also equal the named immutable historical aliases:
+
+| Document | Bytes | SHA-256 |
+| --- | ---: | --- |
+| README.md | 32210 | efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3 |
+| docs/remediation/bac/STATUS.md | 98514 | 52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe |
+| docs/remediation/bac/EVIDENCE-INDEX.md | 8979 | 9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad |
+| docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md | 44999 | 553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab |
+
+Supporting source/document reviews are not terminal-review substitutes. This fresh attestation binds the separately frozen subject without a circular self-hash. The input's pending review fields are intentional: root must produce a final receipt embedding this review and compare it to the frozen subject. The frozen subject's explanatory supersedes_reason mentions corrected v4, while its authoritative terminal_review_input now correctly binds v6; that historical wording does not change the exact reviewed identity.
+
+## Remaining gates and root work
+
+Original accounting stays 28 qualified / 38 remaining / 66 total. New invocation own-phase/fork/state/lifetime/real-thread numeric-alias qualification and strict-verifier extensions remain open; existing children do not satisfy the new protocol. B local-contract activation, public producer behavior, ten producer children, actual outer-parent/recurrent integration and owner/device reachability remain open. Real applicable CUDA one-/two-device proof is unrun. Repository types/CI, required runner/environment, learning/legal-action, checkpoint/resume/reproducibility, full/default, coverage ≥70%, slow, fresh independent reviews and exact final remote CI remain required.
+
+Root still owns final receipt sealing, selection/assembly, input/reuse rehash, exclusive materialization, prospective WIP19 link resolution, authoritative record/chain/index, staged source equivalence, authorized commit/push and exact remote/CI verification. Nothing here certifies those future actions or waives a failure. A change to these sealed inputs requires a linked new seal and renewed relevant review.

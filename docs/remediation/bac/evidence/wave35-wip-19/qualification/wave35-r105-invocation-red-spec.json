@@ -1,0 +1,32 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r105-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r105-invocation-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "invocation-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_required_api",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_historical_result_preserves_real_token_and_retirement",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_lifecycle_refusals_leave_completed_result_stable",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_entry_failure_has_no_outcome_or_reuse",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_issuance_rejects_forged_arguments_without_cuda",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unissued_subclass_and_copy_refuse",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_wrong_thread_refuses_before_held_locks",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_unused_handle_does_not_pin_owner",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_completed_handle_releases_execution_references",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

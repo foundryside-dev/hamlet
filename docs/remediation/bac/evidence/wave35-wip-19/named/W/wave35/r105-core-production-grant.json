@@ -1,0 +1,22 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "actor": "/root",
+  "worker": "/root/bac_core_invocation_impl",
+  "stage": "PRODUCTION IMPLEMENTATION",
+  "prerequisite": {
+    "path": "wave35/r105-core-tests-disposition.json",
+    "sha256": "39ec104b8f76467fe5ffc50df5f5e920a1bf86a6adf200875859fb2f6c21d9ea"
+  },
+  "write_scope": [
+    "src/townlet/exploration/rng_custody.py"
+  ],
+  "test_frozen_sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38",
+  "read_budget": {
+    "core_ceiling": 1250,
+    "test_ceiling": 2000,
+    "files": 2
+  },
+  "requirements": "Adopted DESIGN-FIX1 and IMPLEMENTATION-MAP, implement exactopaque invocation/lifecycle/historicalownphasecompletion withoutactivatingproductionleafmanifest. Preserve existing APIs/operation semantics.",
+  "execution": "Only authorized staticformat/style checks byworker; rootapplicationchecks onfrozenbytes. No child/verifier/test edits withoutseparategrant.",
+  "limits": "No extraimplementationbodies, branches/worktrees/checkout/copies/delegation/commits. Prefixclone-stability repair is separateloadbearingpre-Bdependency, notimplicitgrant."
+}

@@ -1,0 +1,263 @@
+{
+  "author": "/root/bac_astra_replay_fix4_resume_review",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_manifest": {
+    "bytes": 204196,
+    "path": "wave35/r108-candidate.json",
+    "root": "W",
+    "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce"
+  },
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "component_id": "wave35-wip19-r107-r108-clone-stability-history",
+  "draft_metadata_only": true,
+  "historical_rounds": [
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204196,
+        "path": "wave35/r107-candidate.json",
+        "root": "W",
+        "sha256": "476a3d330ed146784df934150a92bf6350bb7b7ad9ebedf5bf3c04d1182819d8"
+      },
+      "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+      "check_ids": [
+        "wave35-r107-causal-plan-red--causal-plan-red",
+        "wave35-r107-classifier-controls--classifier-controls",
+        "wave35-r107-classifier-red--classifier-red",
+        "wave35-r107-clone-fixtures--clone-fixtures",
+        "wave35-r107-collection--collection",
+        "wave35-r107-native-controls--native-controls",
+        "wave35-r107-owned--owned",
+        "wave35-r107-prior-plan-red--prior-plan-red",
+        "wave35-r107-static--ruff-test",
+        "wave35-r107-static--black-test"
+      ],
+      "preflight": {
+        "bytes": 3130,
+        "path": "wave35/r107-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "7d85a1aed17374c7f59b9bfbc1e989ba3d8c2352cd0cb147ff6df22fb86d0534"
+      },
+      "round": 107,
+      "source_delta": {
+        "from_candidate": {
+          "bytes": 204188,
+          "path": "wave35/r106-candidate.json",
+          "root": "W",
+          "sha256": "12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970"
+        },
+        "patch": {
+          "bytes": 19403,
+          "path": "evidence-management/wip19-preparation/r106-to-r107-candidate.patch",
+          "root": "W",
+          "sha256": "95c0c4d0325013594227968fcc29ad75bfe11194d970d5d20dd6dc99a4005b38"
+        },
+        "to_tree": "423a4677794feb995959a7a8abde9784255db57c"
+      },
+      "source_inventories": {
+        "W35-R0-CUDA-CORE": [
+          {
+            "lines": 948,
+            "path": "src/townlet/exploration/rng_custody.py",
+            "present": true,
+            "sha256": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e"
+          },
+          {
+            "lines": 1681,
+            "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "present": true,
+            "sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38"
+          }
+        ],
+        "W35-R0-CUDA-FLAT-PER-A": [
+          {
+            "lines": 842,
+            "path": "src/townlet/training/replay_contract.py",
+            "present": true,
+            "sha256": "3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c"
+          },
+          {
+            "lines": 816,
+            "path": "src/townlet/training/replay_buffer.py",
+            "present": true,
+            "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+          },
+          {
+            "lines": 1310,
+            "path": "src/townlet/training/prioritized_replay_buffer.py",
+            "present": true,
+            "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+          }
+        ]
+      }
+    },
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204196,
+        "path": "wave35/r108-candidate.json",
+        "root": "W",
+        "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce"
+      },
+      "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+      "check_ids": [
+        "wave35-r108-causal-plans--causal-plans",
+        "wave35-r108-classifier-all--classifier-all",
+        "wave35-r108-clone-fixtures--clone-fixtures",
+        "wave35-r108-collection--collection",
+        "wave35-r108-native-controls--native-controls",
+        "wave35-r108-owned--owned",
+        "wave35-r108-prior-reachable--prior-reachable",
+        "wave35-r108-static--ruff-owned",
+        "wave35-r108-static--black-owned",
+        "wave35-r108-static--no-defaults",
+        "wave35-r108-types--owned-mypy",
+        "wave35-r108-types--public-types"
+      ],
+      "preflight": {
+        "bytes": 3129,
+        "path": "wave35/r108-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "2a07cf50cecdc172dfb7df91906807fff679a201ab10ba1e0e4115d77affeb98"
+      },
+      "round": 108,
+      "source_delta": {
+        "from_candidate": {
+          "bytes": 204196,
+          "path": "wave35/r107-candidate.json",
+          "root": "W",
+          "sha256": "476a3d330ed146784df934150a92bf6350bb7b7ad9ebedf5bf3c04d1182819d8"
+        },
+        "patch": {
+          "bytes": 3365,
+          "path": "evidence-management/wip19-preparation/r107-to-r108-candidate.patch",
+          "root": "W",
+          "sha256": "5e9581b1ba8bdb3b661814b88ac1cd52098f2e9ea8b14ea066ecd74724b6785b"
+        },
+        "to_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d"
+      },
+      "source_inventories": {
+        "W35-R0-CUDA-CORE": [
+          {
+            "lines": 948,
+            "path": "src/townlet/exploration/rng_custody.py",
+            "present": true,
+            "sha256": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e"
+          },
+          {
+            "lines": 1681,
+            "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "present": true,
+            "sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38"
+          }
+        ],
+        "W35-R0-CUDA-FLAT-PER-A": [
+          {
+            "lines": 881,
+            "path": "src/townlet/training/replay_contract.py",
+            "present": true,
+            "sha256": "8c0251c3c46e9c296e7b3bb5afcf2f6cdce8083fa22666c5a662be454a9a12f4"
+          },
+          {
+            "lines": 816,
+            "path": "src/townlet/training/replay_buffer.py",
+            "present": true,
+            "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+          },
+          {
+            "lines": 1310,
+            "path": "src/townlet/training/prioritized_replay_buffer.py",
+            "present": true,
+            "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+          }
+        ]
+      }
+    }
+  ],
+  "interval_start": 107,
+  "inventory_authorities": [
+    {
+      "bytes": 532276,
+      "path": "evidence-management/wip19-preparation/r107-r108-evidence-inventory-v1.json",
+      "root": "W",
+      "sha256": "ff5b39d55b9bb7eb8b50deb1acb4043fe8ae3bc10e2d517d9253f7946600007b"
+    }
+  ],
+  "overlap_accounting": "R104436 actualPASS retained but84 plan oracles superseded. R10747PASS/108RED causal history not added to R108507. R10676 separate exact candidate.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_component": {
+    "bytes": 7974,
+    "path": "evidence-management/wip19-preparation/r106-history-component-v1.json",
+    "root": "W",
+    "sha256": "cdff3ef70e6c8384a4423aa698e9ba97ee714777391b804c285a4187f7f7a27d"
+  },
+  "provenance_limits": "Metadata/hash processing and opaque inert patch creation only; no application/helper execution, index/source writes, assembly/publication.",
+  "remaining_required_work": [
+    "R108 other-model source verdict pending; no acceptance inferred.",
+    "Reviewed checkpoint document bytes, contract, frozen terminal subject and terminal review/receipt remain root-owned pending inputs.",
+    "No R109 or active future work included.",
+    "Original absolute execution timestamps unavailable; elapsed times and custody retained.",
+    "New invocation own-phase/fork/state/alias and B/producer/parent/hardware/programme qualification remain owed."
+  ],
+  "report_snapshots": [
+    {
+      "bytes": 68150,
+      "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-IMPLEMENTATION-REPORT-R107-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "1d07e56dd52eeef6238c636fd5e12b806e1a45e2d272037590bee588f200ee85"
+    },
+    {
+      "bytes": 81497,
+      "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-IMPLEMENTATION-REPORT-R108-SOURCE-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "89f5cfd51ad76cecf495c2708f6976bd5b91efdcb5ec43943b9127c423f0839e"
+    },
+    {
+      "bytes": 89828,
+      "path": "evidence-management/wip19-preparation/R108-FINAL-CLONE-REPORT-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "0f778862e5fae5d879a87c3436a0780c1411bcc42b2f3b66e630c1307f93114a"
+    }
+  ],
+  "retained_outcomes": {
+    "r106_core": "76 remains separate exact-candidate evidence, never added to507",
+    "r107": {
+      "collected": 836,
+      "controls_passed": 47,
+      "historical_oracles": "84 historical R104 plan oracles superseded for contract qualification; original observed436 PASS unchanged",
+      "intended_red": 108,
+      "public_cases_unrun": 92,
+      "red_breakdown": {
+        "causal_plans": 8,
+        "classifier_opaque": 16,
+        "corrected_prior_oracles": 84
+      }
+    },
+    "r108": {
+      "collected": 836,
+      "disjoint_groups": {
+        "causal_plans": 8,
+        "classifier_all": 21,
+        "clone_fixtures": 8,
+        "native_controls": 34,
+        "prior_reachable": 436
+      },
+      "focused_unrun": 329,
+      "source_review": "Pending; no inferred verdict",
+      "style_defaults": "PASS/default600",
+      "typing": "Owned-four and extended public-consumer PASS",
+      "unique_reachable_passed": 507
+    },
+    "selector_correction": "419 selectors mistaken for436 nodes; pre-runtime metadata assertion corrected by immutable R104 collection expansion; no source change or test rerun"
+  },
+  "root_disposition": null,
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Closed R107\u2013R108 history only; source verdict pending, no acceptance. R106 core76 separate.",
+  "series": "wave35",
+  "status": "FROZEN HISTORICAL COMPONENT PROPOSAL; ROOT REVIEW AND ACCEPTANCE REQUIRED",
+  "terminal_historical_round": 108
+}

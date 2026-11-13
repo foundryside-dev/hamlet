@@ -1,0 +1,27 @@
+{
+  "name": "healthy-controls",
+  "exit_code": 0,
+  "seconds": 3.9490649700164795,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r105-healthy-controls/healthy-controls.log",
+  "sha256": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588",
+  "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "manifest_sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

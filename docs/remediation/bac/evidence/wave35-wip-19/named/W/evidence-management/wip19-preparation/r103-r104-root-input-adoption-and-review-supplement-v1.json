@@ -1,0 +1,51 @@
+{
+  "schema": "bac-root-historical-input-adoption-v1",
+  "at": "2026-11-13T19:03:37.463674+00:00",
+  "interval": [
+    103,
+    104
+  ],
+  "status": "ADOPTED AS BOUNDED HISTORICAL INPUT; LATER SOURCE REVIEW SUPPLEMENT",
+  "references": [
+    {
+      "path": "evidence-management/wip19-preparation/r103-r104-evidence-inventory-v1.json",
+      "sha256": "26dba9427beab0eb3d20a1c53ce6947e2101edfd2c1fb0ed17625fa39f43b536",
+      "bytes": 495867
+    },
+    {
+      "path": "evidence-management/wip19-preparation/r103-r104-history-component-v1.json",
+      "sha256": "ee6330ff4a3de6d96f67ff2ea1576622d1e5df6f1608d467195d283d09cf5901",
+      "bytes": 9075
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX5-IMPLEMENTATION-REVIEW.md",
+      "sha256": "0a8dd26f5e704097dbbdfe9002b25fba193b362df951143ff85f4b341634ab17",
+      "bytes": 10158
+    },
+    {
+      "path": "evidence-management/wip19-preparation/ONGOING-EVIDENCE-HANDOFF-v1.md",
+      "sha256": "71e3d2621866d506e881bf6d5889b95df4e9af727e767f2b1f6a764343a3c075",
+      "bytes": 4220
+    }
+  ],
+  "verification": {
+    "artifacts_rehashed": 236,
+    "closed_namespace_entries": 76
+  },
+  "source_review": "R104 scopedSPEC/QUALITYPASS,F1F2addressed, source-only; othermodelverificationpending. Noapplicationacceptance.",
+  "process_adoption": "Adopt incremental finite handoff alongside existing EVIDENCE-PROCESS; preserve each version, root owns terminalqualification/publication. No need to repeat closed prior qualification.",
+  "remaining": [
+    "Actual future checkpoint terminal, contract, frozen subject, terminal review and receipt remain unspecified. This component is not a terminal receipt.",
+    "Absolute UTC starts/ends absent: null with reasons, actual elapsed seconds retained.",
+    "Process topology/actual worker declarations and exact helper dependency closure/required_by remain future root reconciliation; no helper bodies inspected.",
+    "No per-round execution-subtree record in selected namespace; source manifests and inert four-path patches retained. Future terminal requires execution-subtree bindings.",
+    "Full authenticated catalog selection remains future; prepared-but-unpublished reuse is distinct from published object reuse.",
+    "R104 independent source review was running at cutoff; no verdict inferred or selected. Final other-model adversarial gate remains owed.",
+    "321 focused producer UNRUN at R104 includes ten children and differs from two generated unrun curriculum specs. No children or B activation qualified."
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

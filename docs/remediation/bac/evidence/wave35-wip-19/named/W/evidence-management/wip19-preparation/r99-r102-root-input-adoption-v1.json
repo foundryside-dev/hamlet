@@ -1,0 +1,45 @@
+{
+  "schema": "bac-root-historical-input-adoption-v1",
+  "observed_at": "2026-11-13T19:01:20.285942+00:00",
+  "producer": "/root/bac_astra_replay_fix4_resume_review",
+  "root": "/root",
+  "interval": [
+    99,
+    102
+  ],
+  "status": "ADOPTED AS BOUNDED HISTORICAL INPUT ONLY",
+  "references": [
+    {
+      "path": "evidence-management/wip19-preparation/r99-r102-evidence-inventory-v1.json",
+      "sha256": "b9997783ba276f0a84032431d40a99659eb9b6e69efbfbc24273650c8e603161",
+      "bytes": 857334
+    },
+    {
+      "path": "evidence-management/wip19-preparation/r99-r102-history-component-v1.json",
+      "sha256": "426c5d9b5e7a98bc7baa1328a3850d10b1392655a1b0d35370fc606e3a9f5ab2",
+      "bytes": 16020
+    }
+  ],
+  "verification": {
+    "artifacts_rehashed": 491,
+    "closed_namespace_entries": 120,
+    "published_reuse_targets_rehashed": true
+  },
+  "scope": "Preserve actual source/check history and failures. This adoption is not terminal qualification, application acceptance, source review, or publication authorization.",
+  "remaining": [
+    "Actual future terminal/checkpoint contract, frozen qualification subject, final interval, final terminal review and receipt are intentionally not selected; R103/FIX5 excluded.",
+    "Absolute UTC execution start/end absent from result records: retained as null, elapsed seconds preserved; file mtimes are not evidence.",
+    "Process topology and actual worker declarations remain null pending root reconciliation with retained controller/custody witnesses; planned harness workers is not xdist worker evidence.",
+    "Helper hashes match prior published identities where indicated. Final check-to-helper closure and required_by attribution need root review; this task did not inspect or execute helper bodies.",
+    "Published reuse verified for matching WIP14\u2013WIP18 object metadata; final authenticated catalog/baseline reconciliation including WIP13 belongs to the future selector.",
+    "No explicit per-round execution-subtree record found in the closed round namespace; candidate manifests and owned-four full-index patches retained. Future terminal execution-subtree bindings remain required.",
+    "Captured patches preserve only four changed owned paths against each recorded base, not an executable checkout or full new source export.",
+    "UNRUN templates are generated curriculum specs, distinct from the 205 unrun R102 focused producer nodes. The latter are reported by root checks, not represented as executed attempt results.",
+    "FIX4 source review was authored by this same agent and is not independent review of this metadata component; final other-model adversarial source gate remains owed."
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "schema": "bac-tests-first-causal-disposition-v1",
+  "at": "2026-11-13T19:36:14.715844+00:00",
+  "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+  "manifest_sha256": "476a3d330ed146784df934150a92bf6350bb7b7ad9ebedf5bf3c04d1182819d8",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "collected": 836,
+  "prior_nodes_retained": 757,
+  "positive_controls": {
+    "causal_helper": 8,
+    "native": 34,
+    "classifier_stable": 5
+  },
+  "intended_red": {
+    "causal_plans": 8,
+    "classifier_opaque": 16,
+    "corrected_prior_oracles": 84
+  },
+  "errors_skips_warnings": 0,
+  "static": "Ruff/Black PASS",
+  "custody": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-causal-plan-red-custody.json",
+      "sha256": "86ef29bf9b79b171a613d15aab00e8323a3c894e39ac99e7bb4c36bf793d1a90",
+      "result": {
+        "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 1,
+        "counts": {
+          "failed": 8,
+          "passed": 0,
+          "skipped": 0,
+          "errors": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "summary": "============================== 8 failed in 0.58s ===============================",
+        "wall_seconds": 6.661031723022461,
+        "source_guards": 818,
+        "process_identities": 1,
+        "configs": 573,
+        "artifacts": 13,
+        "registry": 14,
+        "available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "unique_node_phase_failures": 8,
+        "affected_files": 1,
+        "signature_groups": 1,
+        "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-classifier-controls-custody.json",
+      "sha256": "89870bee9f16187194ddae4b26064bd9a726d6b2eae3ef2c7f77731a2dd41a3c",
+      "result": {
+        "job": "classifier-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 5,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.831013202667236,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-classifier-red-custody.json",
+      "sha256": "a719867c28a2dabdf7d4da555a338c9382a7f4867d718ce867cc98341cc7747c",
+      "result": {
+        "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 1,
+        "counts": {
+          "failed": 16,
+          "passed": 0,
+          "skipped": 0,
+          "errors": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "summary": "============================== 16 failed in 1.47s ==============================",
+        "wall_seconds": 7.582146406173706,
+        "source_guards": 818,
+        "process_identities": 1,
+        "configs": 573,
+        "artifacts": 13,
+        "registry": 14,
+        "available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "unique_node_phase_failures": 16,
+        "affected_files": 1,
+        "signature_groups": 16,
+        "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-clone-fixtures-custody.json",
+      "sha256": "bd8bd00dc0c0d01e06be7547f01811eab6eef0c4326f218556c87f3881f0f271",
+      "result": {
+        "job": "clone-fixtures",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 8,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.668858051300049,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-collection-custody.json",
+      "sha256": "b94db625e20a21565b117f517b8016b45dcd72159a5875ef67becad4802c7783",
+      "result": {
+        "job": "collection",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.70009708404541,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-native-controls-custody.json",
+      "sha256": "fea042636f5324103942cac0092f315911a58c8bf14f229598ff4e82f7e2d371",
+      "result": {
+        "job": "native-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 34,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.615797281265259,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-prior-plan-red-custody.json",
+      "sha256": "ca12ff04a0f65ace3989b5cf5cb41e0d71686a3a7e578f67456da9869315afc2",
+      "result": {
+        "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "exit_code": 1,
+        "counts": {
+          "failed": 84,
+          "passed": 0,
+          "skipped": 0,
+          "errors": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "summary": "============================== 84 failed in 5.48s ==============================",
+        "wall_seconds": 10.162350416183472,
+        "source_guards": 818,
+        "process_identities": 1,
+        "configs": 573,
+        "artifacts": 13,
+        "registry": 14,
+        "available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "unique_node_phase_failures": 84,
+        "affected_files": 1,
+        "signature_groups": 1,
+        "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-static-custody.json",
+      "sha256": "8a4208ed40af57c90a3dfe55ecb11a22febdecb9cbbd31c89a3f87a2cffdac6c",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "ruff-test",
+            "exit_code": 0,
+            "seconds": 0.039899349212646484,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-static/ruff-test.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+          },
+          {
+            "name": "black-test",
+            "exit_code": 0,
+            "seconds": 0.8729333877563477,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-static/black-test.log",
+            "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+          }
+        ],
+        "all_passed": true,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    }
+  ],
+  "prior_oracle_disposition": {
+    "changed_nodes": 84,
+    "matched_explicit_R104_selected_nodeids": 84,
+    "meaning": "HistoricalR104436observedPASS retained, but these84planoracles assumedfixture-specificclonestability and are superseded forcontractqualification. They are not new failures of unchanged realfixtureexecution."
+  },
+  "public_cases_unrun": 92,
+  "scope": "Finiteclone-stabilityprerequisite; publicBactivation/hardware and coresecond-phasequalification remainowed."
+}

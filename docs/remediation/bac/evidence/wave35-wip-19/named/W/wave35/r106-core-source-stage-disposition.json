@@ -1,0 +1,20 @@
+{
+  "schema": "bac-bounded-source-stage-disposition-v1",
+  "at": "2026-11-13T19:23:39.610891+00:00",
+  "actor": "/root",
+  "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+  "review": {
+    "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-IMPLEMENTATION-REVIEW.md",
+    "sha256": "841eb6bc15a15161a970fb306d427f36c6a3b167d9c73fc73e16ab22b0a8789f"
+  },
+  "status": "INITIAL CORE IMPLEMENTATION SOURCE REVIEW APPROVED; QUALIFICATION OPEN",
+  "evidence": "R10676uniquePASS withstrict10existingchildcustody;owned4typing/default600/stylePASS",
+  "remaining": [
+    "Second-phase own-invocation nonempty/poison/nested/sibling/threadalias/state/fork tests and strictverifier extension",
+    "Actualproducerparentownerhandoff",
+    "Publicconsumerstatictyping",
+    "Pre-Bclone-stabilityP2",
+    "Produceractivation/runtime/realCUDA/fullprogrammechecks"
+  ],
+  "scope": "No fullcore/B/package acceptance and no publication or merge action"
+}

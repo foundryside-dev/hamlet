@@ -1,0 +1,52 @@
+{
+  "time": "2026-11-13T18:33:46.881028+00:00",
+  "round": "implementationfix5/5",
+  "base": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "0dc5a95de19925148917d884a3554d90221d7d26",
+  "review": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX4-IMPLEMENTATION-REVIEW.md",
+  "review_sha256": "e89ace6b49d1fc4f4d058f73cd4e52e31532cb4512a5ccc12e7f74052615388a",
+  "stage": "Freshhighermodel, TESTS ONLYFIRST; allproductionfrozen",
+  "reader_packet": [
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "projected_lines": 950,
+      "access": "fix5_production_frozen_until_root_baton"
+    },
+    {
+      "path": "src/townlet/training/historical_checkpoint.py",
+      "projected_lines": 675,
+      "access": "read_only_supplier_body_no_edit_grant"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "projected_lines": 2300,
+      "access": "fix5_tests_first"
+    }
+  ],
+  "total_projected": 3925,
+  "files": 3,
+  "retired_packet": [
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "projected_lines": 829,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    },
+    {
+      "path": "src/townlet/training/replay_buffer.py",
+      "projected_lines": 816,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    },
+    {
+      "path": "src/townlet/training/prioritized_replay_buffer.py",
+      "projected_lines": 1310,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "projected_lines": 2045,
+      "access": "implementation_fix3_structural_prefix_testsfirst_on_root_baton"
+    }
+  ],
+  "rationale": "Repair now confined to sharedkey/archiveplanner plus tests. Actualhelperbody exposes count/semantic contract; no flat/PER body reads or edits. Prior full4body reviewers must not read expandedtest beyond5000; new bounded3body reviewer required. This is a real responsibility split, no hidden body or discardedfinding/test.",
+  "future": "B1250+shared950+flat816+PER1310+test650=4976/5 usingcurrentfamilycounts; remeasurebeforegrant. D remainsrequiresreslice beforefuturegrant. Nofuturebodygrant."
+}

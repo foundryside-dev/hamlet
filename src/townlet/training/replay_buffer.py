@@ -22,6 +22,7 @@ from townlet.training.replay_contract import (
     PreparedReplay,
     ReplayBatch,
     ReplayCustody,
+    ReplayPrefix,
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
@@ -153,7 +154,7 @@ class ReplayBuffer(ReplayCustody):
     ) -> tuple[torch.device | None, tuple[object, ...]]:
         retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
         if route in ("push", "push_recorded"):
-            return self._push_inventory(route, args, kwargs, retained)
+            return self._push_inventory(route, args, kwargs, retained, size=self.size)
         if route == "readiness":
             return None, (self.legality_recorded,)
         if route == "serialize":
@@ -163,29 +164,9 @@ class ReplayBuffer(ReplayCustody):
         if route == "install_historical_archive":
             return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
         if route in ("validate_serialized", "prepare_serialized", "load_for_mode"):
-            state = self._replay_argument(args, kwargs, 0, "state")
-            if not isinstance(state, Mapping):
-                return None, ()
-            version = state.get("format_version")
-            if type(version) is not int:
-                return None, (version,)
-            if version == 4:
-                keys = _LEGACY_STATE_KEYS
-            elif version == REPLAY_BUFFER_FORMAT_VERSION:
-                keys = REPLAY_BUFFER_STATE_KEYS
-            else:
-                return None, (version,)
-            if any(not isinstance(key, str) for key in state) or set(state) != keys:
-                return None, tuple(state)
-            kind, capacity = state.get("replay_kind"), state.get("capacity")
-            if type(kind) is str and kind == REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
-                return None, ()
-            if route == "prepare_serialized":
-                values = (state, *retained, self._historical_archives)
-                if version != 4:
-                    return self._transport_target(state, "size", strict=True), values
-                return None, values
-            return None, (state,)
+            return self._transport_inventory(
+                self._replay_argument(args, kwargs, 0, "state"), route, kwargs.get("expected_obs_dim"), count_field="size"
+            )
         if route == "materialize_validated":
             state = self._replay_argument(args, kwargs, 0, "state")
             if not isinstance(state, _ValidatedReplayState):
@@ -266,6 +247,8 @@ class ReplayBuffer(ReplayCustody):
         rewards: RewardTensor,
         next_observations: torch.Tensor,
         dones: torch.Tensor,
+        *,
+        prefix: ReplayPrefix,
     ) -> int:
         if observations.ndim != 2 or observations.dtype != torch.float32 or observations.shape[1] < 1:
             raise ValueError("observations must be float32 [batch, obs_dim] with positive observation width")
@@ -281,8 +264,7 @@ class ReplayBuffer(ReplayCustody):
         ):
             if value.shape != (batch_size,) or value.dtype != dtype:
                 raise ValueError(f"{name} must have shape ({batch_size},) and dtype {dtype}")
-        if bool((actions < 0).any()):
-            raise ValueError("actions must be nonnegative")
+        prefix.require(lambda: not bool((actions < 0).any()), "actions must be nonnegative", (actions,))
         if self.observations is not None and obs_dim != self.observations.shape[1]:
             raise ValueError(f"observations obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]})")
         for name, tensor_value in (
@@ -297,8 +279,7 @@ class ReplayBuffer(ReplayCustody):
                 continue
             if name.startswith("rewards.") and (tensor_value.shape != (batch_size,) or tensor_value.dtype != torch.float32):
                 raise ValueError(f"{name} must have shape ({batch_size},) and dtype torch.float32")
-            if not bool(torch.isfinite(tensor_value).all()):
-                raise ValueError(f"{name} must contain only finite values")
+            prefix.require(lambda: bool(torch.isfinite(tensor_value).all()), f"{name} must contain only finite values", (tensor_value,))
         return batch_size
 
     @replay_local(mutation=True)
@@ -345,17 +326,13 @@ class ReplayBuffer(ReplayCustody):
         dones: torch.Tensor,
         masks: torch.Tensor | None,
     ) -> None:
-        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones)
-        action_dim = self.action_dim
+        prefix = ReplayPrefix(planning=False)
+        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones, prefix=prefix)
+        width = None
         if masks is not None:
-            validate_successor_masks(masks, dones, action_dim=masks.shape[1])
-            if action_dim is not None and masks.shape[1] != action_dim:
-                raise ValueError("successor action width differs from current buffer action vocabulary")
-            action_dim = masks.shape[1]
-            if bool((actions >= action_dim).any()):
-                raise ValueError("actions outside the declared action vocabulary")
-            if self.actions is not None and bool((self.actions[: self.size] >= action_dim).any()):
-                raise ValueError("existing unconstrained actions exceed the supplied action vocabulary")
+            prefix.masks(masks, dones, action_dim=masks.shape[1])
+            width = masks.shape[1]
+        action_dim = self._push_action_dim(actions, width, size=self.size, prefix=prefix)
         if batch_size == 0:
             return
         values = {
@@ -550,13 +527,17 @@ class ReplayBuffer(ReplayCustody):
         return state
 
     @staticmethod
-    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
+    def _require_tensor(
+        state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...], prefix: ReplayPrefix
+    ) -> torch.Tensor:
         value = state[field]
         if not isinstance(value, torch.Tensor) or value.dtype != dtype or tuple(value.shape) != shape:
             raise ValueError(f"Replay checkpoint {field} must be a tensor of shape {shape} and dtype {dtype}")
-        if dtype.is_floating_point and not bool(torch.isfinite(value).all()):
-            raise ValueError(f"Replay checkpoint {field} must contain only finite values")
-        return value.detach().clone()
+        if dtype.is_floating_point:
+            prefix.require(
+                lambda: bool(torch.isfinite(value).all()), f"Replay checkpoint {field} must contain only finite values", (value,)
+            )
+        return prefix.tensor(value)
 
     @staticmethod
     def _require_int(value: object, field: str, *, minimum: int, maximum: int) -> int:
@@ -564,29 +545,35 @@ class ReplayBuffer(ReplayCustody):
             raise ValueError(f"Replay checkpoint {field} must be an integer in [{minimum}, {maximum}]; got {value!r}")
         return value
 
-    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedReplayState:
+    def _serialized_validation(
+        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, prefix: ReplayPrefix
+    ) -> _ValidatedReplayState:
         if not isinstance(state, Mapping):
             raise ValueError("Replay buffer checkpoint payload must be a mapping")
         version = state.get("format_version")
         if type(version) is not int or version not in (4, REPLAY_BUFFER_FORMAT_VERSION):
+            prefix.scalar(version, lambda value: None)
             raise ValueError(f"Cannot load replay buffer checkpoint with format_version {version!r}")
         legacy = version == 4
         if legacy:
             expected_keys = _LEGACY_STATE_KEYS
         else:
             expected_keys = REPLAY_BUFFER_STATE_KEYS
+        prefix.keys(state, expected_keys)
         if set(state) != expected_keys:
             raise ValueError(
                 f"Replay checkpoint key set mismatch: missing={sorted(expected_keys - set(state))}, "
                 f"unknown={sorted(set(state) - expected_keys)}"
             )
-        if state["replay_kind"] != REPLAY_BUFFER_KIND:
+        kind = state["replay_kind"]
+        prefix.opaque(kind)
+        if kind != REPLAY_BUFFER_KIND:
             raise ValueError("Replay checkpoint replay_kind must be standard")
-        capacity = self._require_int(state["capacity"], "capacity", minimum=1, maximum=2**63 - 1)
+        capacity = prefix.scalar(state["capacity"], lambda value: self._require_int(value, "capacity", minimum=1, maximum=2**63 - 1))
         if capacity != self.capacity:
             raise ValueError(f"Replay checkpoint capacity is {capacity}; current capacity is {self.capacity}")
-        size = self._require_int(state["size"], "size", minimum=0, maximum=capacity)
-        position = self._require_int(state["position"], "position", minimum=0, maximum=capacity - 1)
+        size = prefix.scalar(state["size"], lambda value: self._require_int(value, "size", minimum=0, maximum=capacity))
+        position = prefix.scalar(state["position"], lambda value: self._require_int(value, "position", minimum=0, maximum=capacity - 1))
         if position != size % capacity:
             raise ValueError(f"Replay checkpoint position is {position}; expected {size % capacity} for size {size}")
         tensors: dict[str, Any] = dict.fromkeys(_STORAGE_FIELDS)
@@ -599,7 +586,7 @@ class ReplayBuffer(ReplayCustody):
                 raise ValueError("Replay checkpoint legality_mode is unsupported")
             action_dim = state["action_dim"]
             if mode == "recorded":
-                self._require_int(action_dim, "action_dim", minimum=1, maximum=2**63 - 1)
+                prefix.scalar(action_dim, lambda value: self._require_int(value, "action_dim", minimum=1, maximum=2**63 - 1))
                 if self.action_dim is not None and self.action_dim != action_dim:
                     raise ValueError("Replay checkpoint action_dim differs from current buffer vocabulary")
             elif action_dim is not None:
@@ -607,7 +594,7 @@ class ReplayBuffer(ReplayCustody):
             records = state["historical_archives"]
             if not isinstance(records, list):
                 raise ValueError("Replay checkpoint historical_archives must be a list")
-            archives = tuple(self._own_archive(history._archive_from_state(record)) for record in records)
+            archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
         if size == 0:
             names: tuple[str, ...]
             if legacy:
@@ -618,6 +605,9 @@ class ReplayBuffer(ReplayCustody):
                 raise ValueError("Empty replay checkpoint tensor fields must be null")
             if not legacy and (action_dim is not None or mode != "unconstrained"):
                 raise ValueError("Unallocated empty replay cannot claim a captured action vocabulary")
+            if legacy:
+                prefix.values.append(state)
+            prefix.finish()
             if legacy:
                 legacy_state = history._clone(state)
             return _ValidatedReplayState(
@@ -634,6 +624,7 @@ class ReplayBuffer(ReplayCustody):
         if not isinstance(observations, torch.Tensor) or observations.ndim != 2 or observations.shape[1] < 1:
             raise ValueError("Replay checkpoint observations must be [rows, obs_dim] with positive width")
         obs_dim = observations.shape[1]
+        prefix.opaque(expected_obs_dim)
         if expected_obs_dim is not None and obs_dim != expected_obs_dim:
             raise ValueError(f"Replay checkpoint obs_dim is {obs_dim}; expected current obs_dim {expected_obs_dim}")
         if self.observations is not None and self.observations.shape[1] != obs_dim:
@@ -652,38 +643,53 @@ class ReplayBuffer(ReplayCustody):
                 dtype = torch.float32
             if not legacy and name in _COMPONENTS and state[name] is None:
                 continue
-            tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape)
+            tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape, prefix=prefix)
             if tensors[name].device != observations.device:
                 raise ValueError("Replay checkpoint row tensor devices must agree")
-        if bool((tensors["actions"] < 0).any()):
-            raise ValueError("Replay checkpoint actions must be nonnegative")
+        prefix.require(
+            lambda: not bool((tensors["actions"] < 0).any()), "Replay checkpoint actions must be nonnegative", (tensors["actions"],)
+        )
         if not legacy:
             for name in _COMPONENTS:
-                present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,))
+                present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,), prefix=prefix)
                 value = tensors[name]
                 if present.device != observations.device:
                     raise ValueError("Replay checkpoint component presence devices must agree with rows")
                 if value is None:
-                    if bool(present.any()):
-                        raise ValueError(f"Replay checkpoint {name} omits recorded component values")
-                elif not bool(present.any()) or bool((value[~present] != 0).any()):
-                    raise ValueError(f"Replay checkpoint {name} has invalid absent-component placeholders")
+                    prefix.require(lambda: not bool(present.any()), f"Replay checkpoint {name} omits recorded component values", (present,))
+                else:
+                    prefix.require(
+                        lambda: bool(present.any()) and not bool((value[~present] != 0).any()),
+                        f"Replay checkpoint {name} has invalid absent-component placeholders",
+                        (present, value),
+                    )
                 tensors[f"{name}_present"] = present
-            recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,))
+            recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,), prefix=prefix)
             if recorded.device != observations.device:
                 raise ValueError("Replay checkpoint legality devices must agree with rows")
             tensors["legality_recorded"] = recorded
             if mode == "recorded":
                 assert action_dim is not None
-                masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, action_dim))
-                validate_successor_masks(masks, tensors["dones"], action_dim=action_dim)
-                if not bool(recorded.all()):
+                masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, action_dim), prefix=prefix)
+                prefix.masks(masks, tensors["dones"], action_dim=action_dim)
+                if not prefix.planning and not bool(recorded.all()):
                     raise HistoricalLegalityUnavailable("current replay contains unrecorded successor legality")
-                if bool((tensors["actions"] >= action_dim).any()):
-                    raise ValueError("Replay checkpoint actions exceed the declared vocabulary")
+                prefix.values.append(recorded)
+                prefix.require(
+                    lambda: not bool((tensors["actions"] >= action_dim).any()),
+                    "Replay checkpoint actions exceed the declared vocabulary",
+                    (tensors["actions"],),
+                )
                 tensors["next_action_masks"] = masks
-            elif state["next_action_masks"] is not None or bool(recorded.any()):
-                raise ValueError("Unconstrained replay cannot claim recorded masks or partial capture")
+            else:
+                if state["next_action_masks"] is not None:
+                    raise ValueError("Unconstrained replay cannot claim recorded masks or partial capture")
+                prefix.require(
+                    lambda: not bool(recorded.any()), "Unconstrained replay cannot claim recorded masks or partial capture", (recorded,)
+                )
+        if legacy:
+            prefix.values.append(state)
+        prefix.finish()
         if legacy:
             legacy_state = history._clone(state)
         return _ValidatedReplayState(
@@ -696,6 +702,9 @@ class ReplayBuffer(ReplayCustody):
             archives=archives,
             legacy_state=legacy_state,
         )
+
+    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedReplayState:
+        return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
 
     def _materialize_serialized(self, state: _ValidatedReplayState) -> _ReplayRestoreCandidate:
         if not isinstance(state, _ValidatedReplayState):

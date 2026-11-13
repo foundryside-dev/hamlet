@@ -26,6 +26,7 @@ from townlet.training.replay_contract import (
     PreparedReplay,
     ReplayBatch,
     ReplayCustody,
+    ReplayPrefix,
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
@@ -206,7 +207,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
     ) -> tuple[torch.device | None, tuple[object, ...]]:
         retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
         if route in ("push", "push_recorded"):
-            return self._push_inventory(route, args, kwargs, retained)
+            return self._push_inventory(route, args, kwargs, retained, size=self.size_current)
         if route == "declare_unconstrained_action_dim":
             width = kwargs.get("action_dim")
             return (self.device, (self.actions,)) if self.action_dim is None and type(width) is int and width > 0 else (None, ())
@@ -221,31 +222,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
         if route == "install_historical_archive":
             return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
         if route in ("validate_serialized", "prepare_serialized"):
-            state = self._replay_argument(args, kwargs, 0, "state")
-            if not isinstance(state, Mapping):
-                return None, ()
-            version = state.get("format_version")
-            if type(version) is not int:
-                return None, (version,)
-            if version == 4:
-                keys = _LEGACY_STATE_KEYS
-            elif version == 5:
-                keys = _CAPTURED_STATE_KEYS
-            elif version == PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
-                keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
-            else:
-                return None, (version,)
-            if any(not isinstance(key, str) for key in state) or set(state) != keys:
-                return None, tuple(state)
-            kind, capacity = state.get("replay_kind"), state.get("capacity")
-            if type(kind) is str and kind == PRIORITIZED_REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
-                return None, ()
-            if route == "prepare_serialized":
-                values = (state, *retained, self._historical_archives)
-                if version != 4:
-                    return self._transport_target(state, "size_current", strict=False), values
-                return None, values
-            return None, (state,)
+            return self._transport_inventory(
+                self._replay_argument(args, kwargs, 0, "state"), route, kwargs.get("expected_obs_dim"), count_field="size_current"
+            )
         if route == "materialize_validated":
             state = self._replay_argument(args, kwargs, 0, "state")
             if not isinstance(state, _ValidatedPrioritizedState):
@@ -321,13 +300,16 @@ class PrioritizedReplayBuffer(ReplayCustody):
         self._sampler = sampler
 
     @staticmethod
-    def _closed_mapping(value: object, keys: tuple[str, ...], field: str) -> Mapping[str, Any]:
+    def _closed_mapping(value: object, keys: tuple[str, ...], field: str, *, prefix: ReplayPrefix) -> Mapping[str, Any]:
+        if prefix.planning and isinstance(value, Mapping):
+            for key in value:
+                prefix.opaque(key)
         if not isinstance(value, Mapping) or set(value) != set(keys):
             raise ValueError(f"PER {field} has an invalid closed key set")
         return value
 
     @classmethod
-    def _restore_generator(cls, kind: str, raw: object) -> np.random.Generator:
+    def _restore_generator(cls, kind: str, raw: object, *, prefix: ReplayPrefix) -> np.random.Generator:
         """Validate known engine state, then install it on an off-side engine."""
         if type(kind) is not str or kind not in _BIT_GENERATORS:
             raise ValueError("PER sampling_rng bit_generator kind is unsupported")
@@ -338,7 +320,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
             keys = ("bit_generator", "state", "buffer", "buffer_pos", "has_uint32", "uinteger")
         else:
             keys = ("bit_generator", "state", "has_uint32", "uinteger")
-        state = cls._closed_mapping(raw, keys, "sampling_rng.state")
+        state = cls._closed_mapping(raw, keys, "sampling_rng.state", prefix=prefix)
         if type(state["bit_generator"]) is not str or state["bit_generator"] != kind:
             raise ValueError("PER sampling_rng engine kind disagrees with its state")
 
@@ -347,31 +329,38 @@ class PrioritizedReplayBuffer(ReplayCustody):
                 raise ValueError(f"PER sampling_rng {field} dtype/shape is invalid")
 
         if kind in ("PCG64", "PCG64DXSM"):
-            nested = cls._closed_mapping(state["state"], ("state", "inc"), "sampling_rng.state.state")
-            cls._require_int(nested["state"], "sampling_rng.state.state.state", minimum=0, maximum=2**128 - 1)
-            increment = cls._require_int(nested["inc"], "sampling_rng.state.state.inc", minimum=1, maximum=2**128 - 1)
+            nested = cls._closed_mapping(state["state"], ("state", "inc"), "sampling_rng.state.state", prefix=prefix)
+            prefix.scalar(
+                nested["state"], lambda value: cls._require_int(value, "sampling_rng.state.state.state", minimum=0, maximum=2**128 - 1)
+            )
+            increment = prefix.scalar(
+                nested["inc"], lambda value: cls._require_int(value, "sampling_rng.state.state.inc", minimum=1, maximum=2**128 - 1)
+            )
             if increment % 2 != 1:
                 raise ValueError("PER sampling_rng PCG increment must be odd")
         elif kind == "MT19937":
-            nested = cls._closed_mapping(state["state"], ("key", "pos"), "sampling_rng.state.state")
+            nested = cls._closed_mapping(state["state"], ("key", "pos"), "sampling_rng.state.state", prefix=prefix)
             array(nested["key"], np.dtype(np.uint32), (624,), "MT19937 key")
-            if not np.any(nested["key"]):
-                raise ValueError("PER sampling_rng MT19937 key cannot be all zero")
-            cls._require_int(nested["pos"], "sampling_rng.state.state.pos", minimum=0, maximum=624)
+            prefix.require(lambda: bool(np.any(nested["key"])), "PER sampling_rng MT19937 key cannot be all zero", (nested["key"],))
+            prefix.scalar(nested["pos"], lambda value: cls._require_int(value, "sampling_rng.state.state.pos", minimum=0, maximum=624))
         elif kind == "Philox":
-            nested = cls._closed_mapping(state["state"], ("counter", "key"), "sampling_rng.state.state")
+            nested = cls._closed_mapping(state["state"], ("counter", "key"), "sampling_rng.state.state", prefix=prefix)
             array(nested["counter"], np.dtype(np.uint64), (4,), "Philox counter")
             array(nested["key"], np.dtype(np.uint64), (2,), "Philox key")
             array(state["buffer"], np.dtype(np.uint64), (4,), "Philox buffer")
-            cls._require_int(state["buffer_pos"], "sampling_rng.state.buffer_pos", minimum=0, maximum=4)
+            prefix.scalar(state["buffer_pos"], lambda value: cls._require_int(value, "sampling_rng.state.buffer_pos", minimum=0, maximum=4))
         else:
-            nested = cls._closed_mapping(state["state"], ("state",), "sampling_rng.state.state")
+            nested = cls._closed_mapping(state["state"], ("state",), "sampling_rng.state.state", prefix=prefix)
             array(nested["state"], np.dtype(np.uint64), (4,), "SFC64 state")
         if kind != "MT19937":
-            cls._require_int(state["has_uint32"], "sampling_rng.state.has_uint32", minimum=0, maximum=1)
-            cls._require_int(state["uinteger"], "sampling_rng.state.uinteger", minimum=0, maximum=2**32 - 1)
+            prefix.scalar(state["has_uint32"], lambda value: cls._require_int(value, "sampling_rng.state.has_uint32", minimum=0, maximum=1))
+            prefix.scalar(
+                state["uinteger"], lambda value: cls._require_int(value, "sampling_rng.state.uinteger", minimum=0, maximum=2**32 - 1)
+            )
         # Zero is an explicit restore-only placeholder, immediately replaced by
         # the complete validated saved state. No draw uses this placeholder.
+        prefix.values.append(state)
+        prefix.finish()
         engine = _BIT_GENERATORS[kind](0)
         try:
             engine.state = copy.deepcopy(dict(state))
@@ -380,7 +369,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
         return np.random.Generator(engine)
 
     @classmethod
-    def _validate_sampler(cls, state: Mapping[str, Any]) -> _SamplerConfiguration:
+    def _sampler_validation(cls, state: Mapping[str, Any], *, prefix: ReplayPrefix) -> _SamplerConfiguration:
         mode, origin = state["sampling_mode"], state["sampling_origin"]
         if type(mode) is not str or mode not in per_sampling.WEIGHT_RULES:
             raise ValueError("PER sampling_mode is unsupported")
@@ -390,7 +379,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
             raise ValueError("PER sampling_objective_unit must be transition")
         if type(state["sampling_weight_rule"]) is not str or state["sampling_weight_rule"] != per_sampling.WEIGHT_RULES[mode]:
             raise ValueError("PER sampling_weight_rule contradicts sampling_mode")
-        descriptor = cls._closed_mapping(state["sampling_rng"], ("ownership", "bit_generator", "state"), "sampling_rng")
+        descriptor = cls._closed_mapping(state["sampling_rng"], ("ownership", "bit_generator", "state"), "sampling_rng", prefix=prefix)
         ownership = descriptor["ownership"]
         if type(ownership) is not str:
             raise ValueError("PER sampling_rng ownership must be a string")
@@ -406,10 +395,15 @@ class PrioritizedReplayBuffer(ReplayCustody):
         elif ownership == "owned_numpy_generator":
             if origin not in ("authored", "bac-options-v1"):
                 raise ValueError("PER owned Generator requires authored or bac-options-v1 origin")
-            rng = cls._restore_generator(descriptor["bit_generator"], descriptor["state"])
+            rng = cls._restore_generator(descriptor["bit_generator"], descriptor["state"], prefix=prefix)
         else:
             raise ValueError("PER sampling_rng ownership is unsupported")
+        prefix.finish()
         return _SamplerConfiguration(mode, origin, "transition", per_sampling.WEIGHT_RULES[mode], rng)
+
+    @classmethod
+    def _validate_sampler(cls, state: Mapping[str, Any]) -> _SamplerConfiguration:
+        return cls._sampler_validation(state, prefix=ReplayPrefix(planning=False))
 
     @staticmethod
     def _sampler_metadata(sampler: _SamplerConfiguration) -> dict[str, Any]:
@@ -482,6 +476,8 @@ class PrioritizedReplayBuffer(ReplayCustody):
         rewards: RewardTensor,
         next_observations: torch.Tensor,
         dones: torch.Tensor,
+        *,
+        prefix: ReplayPrefix,
     ) -> int:
         if observations.ndim != 2 or observations.dtype != torch.float32 or observations.shape[1] < 1:
             raise ValueError("observations must be 2D with dtype torch.float32 and positive observation width")
@@ -504,8 +500,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
             )
         if self.observations is not None and obs_dim != self.observations.shape[1]:
             raise ValueError(f"observations obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]})")
-        if bool((actions < 0).any()):
-            raise ValueError("actions must be nonnegative")
+        prefix.require(lambda: not bool((actions < 0).any()), "actions must be nonnegative", (actions,))
         for name, value in (
             ("observations", observations),
             ("next_observations", next_observations),
@@ -518,8 +513,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
                 continue
             if name.startswith("rewards.") and (value.shape != (batch_size,) or value.dtype != torch.float32):
                 raise ValueError(f"{name} must have shape ({batch_size},) and dtype torch.float32")
-            if not bool(torch.isfinite(value).all()):
-                raise ValueError(f"{name} must contain only finite values")
+            prefix.require(lambda: bool(torch.isfinite(value).all()), f"{name} must contain only finite values", (value,))
         return batch_size
 
     @replay_local(mutation=True)
@@ -574,23 +568,26 @@ class PrioritizedReplayBuffer(ReplayCustody):
             raise ValueError("PER max_priority must convert to a positive finite float32 insertion priority")
         return priority
 
+    def _push_commit_metadata(self, batch: int, *, prefix: ReplayPrefix) -> np.float32:
+        counter = self.next_unit_id
+        prefix.opaque(counter)
+        if counter > _MAX_UNIT_COUNTER - batch:
+            raise OverflowError("PER unit ID counter exhausted before insertion")
+        maximum = self.max_priority
+        prefix.opaque(maximum)
+        return self._insertion_priority(maximum)
+
     def _push(self, observations, actions, rewards, next_observations, dones, masks) -> None:
-        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones)
-        action_dim = self.action_dim
+        prefix = ReplayPrefix(planning=False)
+        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones, prefix=prefix)
+        width = None
         if masks is not None:
-            validate_successor_masks(masks, dones, action_dim=masks.shape[1])
-            if action_dim is not None and masks.shape[1] != action_dim:
-                raise ValueError("successor action width differs from current buffer action vocabulary")
-            action_dim = masks.shape[1]
-            if bool((actions >= action_dim).any()):
-                raise ValueError("actions outside the declared action vocabulary")
-            if self.actions is not None and bool((self.actions[: self.size_current] >= action_dim).any()):
-                raise ValueError("existing unconstrained actions exceed the supplied action vocabulary")
+            prefix.masks(masks, dones, action_dim=masks.shape[1])
+            width = masks.shape[1]
+        action_dim = self._push_action_dim(actions, width, size=self.size_current, prefix=prefix)
         if not batch_size:
             return
-        if self.next_unit_id > _MAX_UNIT_COUNTER - batch_size:
-            raise OverflowError("PER unit ID counter exhausted before insertion")
-        insertion_priority = self._insertion_priority(self.max_priority)
+        insertion_priority = self._push_commit_metadata(batch_size, prefix=prefix)
         values = {
             "observations": observations,
             "actions": actions,
@@ -907,7 +904,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
         return result
 
     @staticmethod
-    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
+    def _require_tensor(
+        state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...], prefix: ReplayPrefix
+    ) -> torch.Tensor:
         value = state[field]
         if not isinstance(value, torch.Tensor):
             raise ValueError(f"PER checkpoint {field} must be a tensor; got {type(value).__name__}. Regenerate the checkpoint.")
@@ -915,28 +914,41 @@ class PrioritizedReplayBuffer(ReplayCustody):
             raise ValueError(f"PER checkpoint {field} dtype is {value.dtype}; expected {dtype}. Regenerate the checkpoint.")
         if tuple(value.shape) != shape:
             raise ValueError(f"PER checkpoint {field} shape is {tuple(value.shape)}; expected {shape}. Regenerate the checkpoint.")
-        if dtype.is_floating_point and not bool(torch.isfinite(value).all()):
-            raise ValueError(f"PER checkpoint {field} must contain only finite values. Regenerate the checkpoint.")
-        return value.detach().clone()
+        if dtype.is_floating_point:
+            prefix.require(
+                lambda: bool(torch.isfinite(value).all()),
+                f"PER checkpoint {field} must contain only finite values. Regenerate the checkpoint.",
+                (value,),
+            )
+        return prefix.tensor(value)
 
     @classmethod
-    def _validate_identity(cls, state: Mapping[str, Any], capacity: int, size: int) -> tuple[np.ndarray, int]:
+    def _validate_identity(cls, state: Mapping[str, Any], capacity: int, size: int, *, prefix: ReplayPrefix) -> tuple[np.ndarray, int]:
         unit_ids = state["unit_ids"]
         if not isinstance(unit_ids, np.ndarray) or unit_ids.dtype != np.int64 or unit_ids.shape != (capacity,):
             raise ValueError("PER unit_ids must be a capacity-length int64 array")
-        counter = cls._require_int(state["next_unit_id"], "next_unit_id", minimum=0, maximum=_MAX_UNIT_COUNTER)
+        counter = prefix.scalar(
+            state["next_unit_id"], lambda value: cls._require_int(value, "next_unit_id", minimum=0, maximum=_MAX_UNIT_COUNTER)
+        )
         live = unit_ids[:size]
-        if np.any(live < 0) or np.any(live >= counter) or len(np.unique(live)) != size:
-            raise ValueError("PER live unit_ids must be unique nonnegative IDs strictly below next_unit_id")
-        if np.any(unit_ids[size:] != -1):
-            raise ValueError("PER inactive unit_ids must use -1")
+        prefix.require(
+            lambda: not (np.any(live < 0) or np.any(live >= counter) or len(np.unique(live)) != size),
+            "PER live unit_ids must be unique nonnegative IDs strictly below next_unit_id",
+            (unit_ids,),
+        )
+        prefix.require(lambda: not bool(np.any(unit_ids[size:] != -1)), "PER inactive unit_ids must use -1", (unit_ids,))
+        if prefix.planning:
+            return unit_ids, counter
         return unit_ids.copy(), counter
 
-    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedPrioritizedState:
+    def _serialized_validation(
+        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, prefix: ReplayPrefix
+    ) -> _ValidatedPrioritizedState:
         if not isinstance(state, Mapping):
             raise ValueError(f"Prioritized replay checkpoint payload must be a mapping; got {type(state).__name__}.")
         version = state.get("format_version")
         if type(version) is not int or version not in (4, 5, PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION):
+            prefix.scalar(version, lambda value: None)
             raise ValueError(f"Cannot load PER checkpoint with format_version {version!r}; supported format_version values are 4, 5 and 6.")
         legacy = version == 4
         if legacy:
@@ -945,25 +957,28 @@ class PrioritizedReplayBuffer(ReplayCustody):
             expected_keys = _CAPTURED_STATE_KEYS
         else:
             expected_keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
-        if state.get("replay_kind") != PRIORITIZED_REPLAY_BUFFER_KIND:
+        kind = state.get("replay_kind")
+        prefix.opaque(kind)
+        if kind != PRIORITIZED_REPLAY_BUFFER_KIND:
             raise ValueError(
                 f"PER checkpoint replay_kind is {state.get('replay_kind')!r}; expected 'prioritized'. Regenerate the checkpoint."
             )
+        prefix.keys(state, expected_keys)
         if set(state) != expected_keys:
             raise ValueError(
                 f"PER checkpoint key set mismatch: missing={sorted(expected_keys - set(state))}, "
                 f"unknown={sorted(set(state) - expected_keys)}. Regenerate the checkpoint."
             )
-        capacity = self._require_int(state["capacity"], "capacity", minimum=1, maximum=2**63 - 1)
+        capacity = prefix.scalar(state["capacity"], lambda value: self._require_int(value, "capacity", minimum=1, maximum=2**63 - 1))
         if capacity != self.capacity:
             raise ValueError(
                 f"PER checkpoint capacity is {capacity}; current capacity is {self.capacity}. "
                 "Regenerate the checkpoint for this configuration."
             )
-        alpha = self._require_float(state["alpha"], "alpha", minimum=0.0, maximum=1.0)
+        alpha = prefix.scalar(state["alpha"], lambda value: self._require_float(value, "alpha", minimum=0.0, maximum=1.0))
         if alpha != self.alpha:
             raise ValueError(f"PER checkpoint alpha is {alpha}; current alpha is {self.alpha}. Regenerate the checkpoint.")
-        initial = self._require_float(state["beta_initial"], "beta_initial", minimum=0.0, maximum=1.0)
+        initial = prefix.scalar(state["beta_initial"], lambda value: self._require_float(value, "beta_initial", minimum=0.0, maximum=1.0))
         if initial != self.beta_initial:
             raise ValueError(
                 f"PER checkpoint beta_initial is {initial}; current beta_initial is {self.beta_initial}. Regenerate the checkpoint."
@@ -975,11 +990,11 @@ class PrioritizedReplayBuffer(ReplayCustody):
             raise ValueError(
                 f"PER checkpoint beta_annealing is {annealing}; current beta_annealing is {self.beta_annealing}. Regenerate the checkpoint."
             )
-        beta = self._require_float(state["beta"], "beta", minimum=initial, maximum=1.0)
+        beta = prefix.scalar(state["beta"], lambda value: self._require_float(value, "beta", minimum=initial, maximum=1.0))
         if not annealing and beta != initial:
             raise ValueError("PER checkpoint beta must equal beta_initial when beta annealing is disabled. Regenerate the checkpoint.")
-        size = self._require_int(state["size_current"], "size_current", minimum=0, maximum=capacity)
-        position = self._require_int(state["position"], "position", minimum=0, maximum=capacity - 1)
+        size = prefix.scalar(state["size_current"], lambda value: self._require_int(value, "size_current", minimum=0, maximum=capacity))
+        position = prefix.scalar(state["position"], lambda value: self._require_int(value, "position", minimum=0, maximum=capacity - 1))
         if size < capacity and position != size:
             raise ValueError(f"PER checkpoint position is {position}; expected {size} before wrap. Regenerate the checkpoint.")
         priorities = state["priorities"]
@@ -991,17 +1006,28 @@ class PrioritizedReplayBuffer(ReplayCustody):
             raise ValueError(f"PER checkpoint priorities dtype is {priorities.dtype}; expected float32. Regenerate the checkpoint.")
         if priorities.shape != (capacity,):
             raise ValueError(f"PER checkpoint priorities shape is {priorities.shape}; expected {(capacity,)}. Regenerate the checkpoint.")
-        if not bool(np.isfinite(priorities).all()):
-            raise ValueError("PER checkpoint priorities must contain only finite values. Regenerate the checkpoint.")
-        if np.any(priorities[:size] <= 0) or np.any(priorities[size:] < 0):
-            raise ValueError("PER checkpoint priorities are outside the valid positive/zero ranges. Regenerate the checkpoint.")
-        maximum = self._require_float(state["max_priority"], "max_priority", minimum=0.0, maximum=float("inf"))
+        prefix.require(
+            lambda: bool(np.isfinite(priorities).all()),
+            "PER checkpoint priorities must contain only finite values. Regenerate the checkpoint.",
+            (priorities,),
+        )
+        prefix.require(
+            lambda: not (np.any(priorities[:size] <= 0) or np.any(priorities[size:] < 0)),
+            "PER checkpoint priorities are outside the valid positive/zero ranges. Regenerate the checkpoint.",
+            (priorities,),
+        )
+        maximum = prefix.scalar(
+            state["max_priority"], lambda value: self._require_float(value, "max_priority", minimum=0.0, maximum=float("inf"))
+        )
         if maximum <= 0:
             raise ValueError("PER checkpoint max_priority must be positive. Regenerate the checkpoint.")
         if not legacy:
             self._insertion_priority(maximum)
-        if size and maximum < float(priorities[:size].max()):
-            raise ValueError("PER checkpoint max_priority is below an active priority. Regenerate the checkpoint.")
+        prefix.require(
+            lambda: not (size and maximum < float(priorities[:size].max())),
+            "PER checkpoint max_priority is below an active priority. Regenerate the checkpoint.",
+            (priorities,),
+        )
         geometry: int | None = None
         mode = "unconstrained"
         archives: tuple[history.HistoricalReplayArchive, ...] = ()
@@ -1011,14 +1037,16 @@ class PrioritizedReplayBuffer(ReplayCustody):
                 raise ValueError("PER checkpoint legality_mode is unsupported")
             geometry = state["action_dim"]
             if mode == "recorded":
-                self._require_int(geometry, "action_dim", minimum=1, maximum=2**63 - 1)
+                prefix.scalar(geometry, lambda value: self._require_int(value, "action_dim", minimum=1, maximum=2**63 - 1))
                 if self.action_dim is not None and geometry != self.action_dim:
                     raise ValueError("PER checkpoint action_dim differs from current buffer vocabulary")
             elif geometry is not None:
                 raise ValueError("Unconstrained PER cannot claim an action width")
             if not isinstance(state["historical_archives"], list):
                 raise ValueError("PER checkpoint historical_archives must be a list")
-            archives = tuple(self._own_archive(history._archive_from_state(item)) for item in state["historical_archives"])
+            archives = tuple(
+                prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+            )
         tensors: dict[str, Any] = dict.fromkeys(_STORAGE_FIELDS)
         obs_dim = None
         if not size:
@@ -1038,6 +1066,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
             obs_dim = observations.shape[1]
             if obs_dim <= 0:
                 raise ValueError("PER checkpoint observations obs_dim must be positive. Regenerate the checkpoint.")
+            prefix.opaque(expected_obs_dim)
             if expected_obs_dim is not None and obs_dim != expected_obs_dim:
                 raise ValueError(
                     f"PER checkpoint obs_dim is {obs_dim}; expected current obs_dim {expected_obs_dim}. Regenerate the checkpoint."
@@ -1061,42 +1090,59 @@ class PrioritizedReplayBuffer(ReplayCustody):
                     dtype = torch.bool
                 else:
                     dtype = torch.float32
-                tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape)
+                tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape, prefix=prefix)
                 if not legacy and tensors[name].device != observations.device:
                     raise ValueError("PER checkpoint row tensor devices must agree")
             if not legacy:
-                if bool((tensors["actions"] < 0).any()):
-                    raise ValueError("PER checkpoint actions must be nonnegative")
+                prefix.require(
+                    lambda: not bool((tensors["actions"] < 0).any()), "PER checkpoint actions must be nonnegative", (tensors["actions"],)
+                )
                 for name in _COMPONENTS:
-                    present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,))
+                    present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,), prefix=prefix)
                     if present.device != observations.device:
                         raise ValueError("PER checkpoint presence devices must agree with rows")
                     value = tensors[name]
                     if value is None:
-                        if bool(present.any()):
-                            raise ValueError(f"PER checkpoint {name} omits recorded component values")
-                    elif not bool(present.any()) or bool((value[~present] != 0).any()):
-                        raise ValueError(f"PER checkpoint {name} has invalid absent-component placeholders")
+                        prefix.require(
+                            lambda: not bool(present.any()), f"PER checkpoint {name} omits recorded component values", (present,)
+                        )
+                    else:
+                        prefix.require(
+                            lambda: bool(present.any()) and not bool((value[~present] != 0).any()),
+                            f"PER checkpoint {name} has invalid absent-component placeholders",
+                            (present, value),
+                        )
                     tensors[f"{name}_present"] = present
-                recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,))
+                recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,), prefix=prefix)
                 if recorded.device != observations.device:
                     raise ValueError("PER checkpoint legality devices must agree with rows")
                 tensors["legality_recorded"] = recorded
                 if mode == "recorded":
                     assert geometry is not None
-                    masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, geometry))
-                    validate_successor_masks(masks, tensors["dones"], action_dim=geometry)
-                    if not bool(recorded.all()):
+                    masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, geometry), prefix=prefix)
+                    prefix.masks(masks, tensors["dones"], action_dim=geometry)
+                    if not prefix.planning and not bool(recorded.all()):
                         raise HistoricalLegalityUnavailable("current PER contains unrecorded successor legality")
-                    if bool((tensors["actions"] >= geometry).any()):
-                        raise ValueError("PER checkpoint actions exceed the declared vocabulary")
+                    prefix.values.append(recorded)
+                    prefix.require(
+                        lambda: not bool((tensors["actions"] >= geometry).any()),
+                        "PER checkpoint actions exceed the declared vocabulary",
+                        (tensors["actions"],),
+                    )
                     tensors["next_action_masks"] = masks
-                elif state["next_action_masks"] is not None or bool(recorded.any()):
-                    raise ValueError("Unconstrained PER cannot claim recorded masks or partial capture")
+                else:
+                    if state["next_action_masks"] is not None:
+                        raise ValueError("Unconstrained PER cannot claim recorded masks or partial capture")
+                    prefix.require(
+                        lambda: not bool(recorded.any()), "Unconstrained PER cannot claim recorded masks or partial capture", (recorded,)
+                    )
         if version == 6:
-            unit_ids, counter = self._validate_identity(state, capacity, size)
-            sampler = self._validate_sampler(state)
+            unit_ids, counter = self._validate_identity(state, capacity, size, prefix=prefix)
+            sampler = self._sampler_validation(state, prefix=prefix)
         else:
+            if legacy:
+                prefix.values.append(state)
+            prefix.finish()
             unit_ids = np.full(capacity, -1, dtype=np.int64)
             if legacy:
                 # This import starts fresh active replay under the current
@@ -1107,6 +1153,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
                 # explicit history boundary deterministically names live slots.
                 unit_ids[:size] = np.arange(size, dtype=np.int64)
                 counter, sampler = size, self._external_sampler("captured5-physical-slot-adapter")
+        prefix.finish()
         return _ValidatedPrioritizedState(
             **tensors,
             beta=beta,
@@ -1123,6 +1170,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
             next_unit_id=counter,
             sampler=sampler,
         )
+
+    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedPrioritizedState:
+        return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
 
     def _materialize_serialized(self, state: _ValidatedPrioritizedState) -> _PrioritizedRestoreCandidate:
         if not isinstance(state, _ValidatedPrioritizedState):

@@ -1,0 +1,26 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "source_guards": 818,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "owned-mypy",
+      "exit_code": 0,
+      "seconds": 2.9971063137054443,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-types/owned-mypy.log",
+      "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb"
+    },
+    {
+      "name": "public-types",
+      "exit_code": 0,
+      "seconds": 1.5615246295928955,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-types/public-types.log",
+      "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e"
+    }
+  ],
+  "all_passed": true,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

@@ -1,0 +1,254 @@
+{
+  "schema": "bac-root-bounded-check-record-v1",
+  "at": "2026-11-13T19:45:49.113851+00:00",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "manifest_sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce",
+  "collected": 836,
+  "prior_ids_retained": 757,
+  "unique_reachable_passed": 507,
+  "disjoint_groups": {
+    "prior-reachable": 436,
+    "clone-fixtures": 8,
+    "native-controls": 34,
+    "classifier-all": 21,
+    "causal-plans": 8
+  },
+  "errors_skips_warnings": 0,
+  "focused_unrun": 329,
+  "static": "Owned-four Ruff/Black PASS; unchanged defaults600 PASS",
+  "typing": "Owned-four core/shared/flat/PER mypy PASS; extended public consumer probe including RNGDeviceInvocation, AbstractContextManager[RNGOperation], bool getter and Literal[False] exit PASS",
+  "custody": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-causal-plans-custody.json",
+      "sha256": "bc34ef4e365fca8a9308b5d1f21f9a11a5cca4488c67ad8d2774a888afbb7607",
+      "result": {
+        "job": "causal-plans",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "exit_code": 0,
+        "counts": {
+          "passed": 8,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.7808191776275635,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-classifier-all-custody.json",
+      "sha256": "5ac9298f6c3dd685180ce4a23b87c7c17d2b4d9781ca6a79a0109b77a0dfa0ca",
+      "result": {
+        "job": "classifier-all",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "exit_code": 0,
+        "counts": {
+          "passed": 21,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.972363233566284,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-clone-fixtures-custody.json",
+      "sha256": "250006eb82ff9ec2c3e9a7024cfabf7a358dc4a7ac86e9722621b73a74d7c192",
+      "result": {
+        "job": "clone-fixtures",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "exit_code": 0,
+        "counts": {
+          "passed": 8,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.50257134437561,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-collection-custody.json",
+      "sha256": "16b9f7948955d75e5081d75eea67d16197e60a5d3ba53aacdd54b3a7e188412b",
+      "result": {
+        "job": "collection",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.103919744491577,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-native-controls-custody.json",
+      "sha256": "27dd1c5f8b5391a376b78d85a48bdc4e64902eeda51533b1924b0a1b9fcd7067",
+      "result": {
+        "job": "native-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "exit_code": 0,
+        "counts": {
+          "passed": 34,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.78594183921814,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-prior-reachable-custody.json",
+      "sha256": "d986c5a985684cfef9d86faeb0c01916ccfdd43d2d7a0ab9fa68d39af7e813d4",
+      "result": {
+        "job": "prior-reachable",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "exit_code": 0,
+        "counts": {
+          "passed": 436,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 7.885225057601929,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-static-custody.json",
+      "sha256": "a15a634f3e1d2268bfb89a0830f395f8a3f2f597dd23aa47f40d32b21501155b",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "ruff-owned",
+            "exit_code": 0,
+            "seconds": 0.06083083152770996,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+          },
+          {
+            "name": "black-owned",
+            "exit_code": 0,
+            "seconds": 1.8044013977050781,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-static/black-owned.log",
+            "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086"
+          },
+          {
+            "name": "no-defaults",
+            "exit_code": 0,
+            "seconds": 2.330538034439087,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-static/no-defaults.log",
+            "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+          }
+        ],
+        "all_passed": true,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-types-custody.json",
+      "sha256": "d37c70112a4290c29b681840870f083afbf288cfb13245f11b7c5cf6f14b4d10",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "owned-mypy",
+            "exit_code": 0,
+            "seconds": 2.9971063137054443,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-types/owned-mypy.log",
+            "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb"
+          },
+          {
+            "name": "public-types",
+            "exit_code": 0,
+            "seconds": 1.5615246295928955,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r108-types/public-types.log",
+            "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e"
+          }
+        ],
+        "all_passed": true,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    }
+  ],
+  "limits": [
+    "Other-model fixed-source SPEC/QUALITY review pending",
+    "329 focused producer nodes UNRUN including10 producerpoisonchildren; productionmanifest/Bactivation still absent",
+    "CoreR10676-case evidence is a separate exactcandidate component, not added to507 or relabeled as an R108 run",
+    "Newinvocation ownphase/fork/state/alias verification and actual producerparent/recurrent integration remain owed",
+    "No realCUDA or finalrepo/CI qualification implied"
+  ],
+  "disposition": "Root causal, preservation and native/opaque boundary checks PASS; scoped independent review pending"
+}

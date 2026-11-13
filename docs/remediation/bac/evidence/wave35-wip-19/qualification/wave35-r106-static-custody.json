@@ -1,0 +1,33 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+  "source_guards": 818,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "ruff-core-test",
+      "exit_code": 0,
+      "seconds": 0.05924725532531738,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r106-static/ruff-core-test.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "black-core-test",
+      "exit_code": 0,
+      "seconds": 1.1029720306396484,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r106-static/black-core-test.log",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+    },
+    {
+      "name": "no-defaults",
+      "exit_code": 0,
+      "seconds": 1.1983332633972168,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r106-static/no-defaults.log",
+      "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+    }
+  ],
+  "all_passed": true,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

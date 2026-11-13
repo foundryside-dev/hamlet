@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r107-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r107-classifier-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "classifier-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[native]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[primitives]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[alias]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-numeric]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-bool]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "author": "/root/bac_astra_replay_fix4_resume_review",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_manifest": {
+    "bytes": 204073,
+    "path": "wave35/r104-candidate.json",
+    "root": "W",
+    "sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a"
+  },
+  "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+  "component_id": "wave35-next-checkpoint-r103-r104-staged-history",
+  "draft_metadata_only": true,
+  "historical_rounds": [
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204073,
+        "path": "wave35/r103-candidate.json",
+        "root": "W",
+        "sha256": "2114749486f2d3a25afa1eb8447e5c2d37c656df3ba28e32e8e6fd55617a3cfa"
+      },
+      "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+      "check_ids": [
+        "wave35-r103-collection--collection",
+        "wave35-r103-fix5-fixtures--fix5-fixtures",
+        "wave35-r103-fix5-positive-controls--fix5-positive-controls",
+        "wave35-r103-fix5-reachable-red--fix5-reachable-red",
+        "wave35-r103-owned--owned",
+        "wave35-r103-static--ruff-owned",
+        "wave35-r103-static--black-owned"
+      ],
+      "owned_source_inventory": [
+        {
+          "lines": 822,
+          "path": "src/townlet/training/replay_contract.py",
+          "present": true,
+          "sha256": "cd7a913f53fac09f3d8a4edc403fcedce85e4cee84007a361ecaf4298eef272b"
+        },
+        {
+          "lines": 816,
+          "path": "src/townlet/training/replay_buffer.py",
+          "present": true,
+          "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+        },
+        {
+          "lines": 1310,
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "present": true,
+          "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+        }
+      ],
+      "preflight": {
+        "bytes": 3063,
+        "path": "wave35/r103-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "029b530ce8a03d8fea0f5d0246740eb7cc4b321820e7c73497cf8926cf21bf8c"
+      },
+      "round": 103,
+      "source_patch": {
+        "bytes": 91973,
+        "path": "evidence-management/wip19-preparation/r103-owned-candidate.patch",
+        "root": "W",
+        "sha256": "6d21b6ba9913942dc2f42fcc5465da06fd6a44cdf71d7b4e0fc62ec7654bdec9"
+      }
+    },
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204073,
+        "path": "wave35/r104-candidate.json",
+        "root": "W",
+        "sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a"
+      },
+      "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+      "check_ids": [
+        "wave35-r104-collection--collection",
+        "wave35-r104-fix3-other-reachable--fix3-other-reachable",
+        "wave35-r104-fix3-positive-controls--fix3-positive-controls",
+        "wave35-r104-fix3-raw-reachable--fix3-raw-reachable",
+        "wave35-r104-fix4-fixtures--fix4-fixtures",
+        "wave35-r104-fix4-positive-controls--fix4-positive-controls",
+        "wave35-r104-fix4-reachable-red--fix4-reachable-red",
+        "wave35-r104-fix5-fixtures--fix5-fixtures",
+        "wave35-r104-fix5-positive-controls--fix5-positive-controls",
+        "wave35-r104-fix5-reachable-red--fix5-reachable-red",
+        "wave35-r104-owned--owned",
+        "wave35-r104-owned-types--owned-mypy",
+        "wave35-r104-reachable-controls--reachable-controls",
+        "wave35-r104-static--ruff-owned",
+        "wave35-r104-static--black-owned",
+        "wave35-r104-static--no-defaults"
+      ],
+      "owned_source_inventory": [
+        {
+          "lines": 842,
+          "path": "src/townlet/training/replay_contract.py",
+          "present": true,
+          "sha256": "3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c"
+        },
+        {
+          "lines": 816,
+          "path": "src/townlet/training/replay_buffer.py",
+          "present": true,
+          "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+        },
+        {
+          "lines": 1310,
+          "path": "src/townlet/training/prioritized_replay_buffer.py",
+          "present": true,
+          "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+        }
+      ],
+      "preflight": {
+        "bytes": 3062,
+        "path": "wave35/r104-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "8ae7e0c249e1ffde0a01dc2b1657ebac3c4808a34c35fc72f15e7436acc8f491"
+      },
+      "round": 104,
+      "source_patch": {
+        "bytes": 93405,
+        "path": "evidence-management/wip19-preparation/r104-owned-candidate.patch",
+        "root": "W",
+        "sha256": "500c4bbb29df0aba53ba60f02d422f49369e038c4720393ca2121e61f7d15a56"
+      }
+    }
+  ],
+  "interval_start": 103,
+  "inventory_authorities": [
+    {
+      "bytes": 495867,
+      "path": "evidence-management/wip19-preparation/r103-r104-evidence-inventory-v1.json",
+      "root": "W",
+      "sha256": "26dba9427beab0eb3d20a1c53ce6947e2101edfd2c1fb0ed17625fa39f43b536"
+    }
+  ],
+  "mutable_alias_handling": "Current REPORT.md excluded; exact final snapshot ac27c696 retained inertly.",
+  "overlap_accounting": "R10328+44 controls then72 RED are causal history, not new distinct programme coverage. R104436 includes repeated R102292 plus144 new bounded cases; do not add prior totals. Collection757 is not executed PASS.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_component": {
+    "bytes": 16020,
+    "path": "evidence-management/wip19-preparation/r99-r102-history-component-v1.json",
+    "root": "W",
+    "sha256": "426c5d9b5e7a98bc7baa1328a3850d10b1392655a1b0d35370fc606e3a9f5ab2"
+  },
+  "producer_children": "Ten actual producer children remain UNRUN.",
+  "provenance_limits": "Only metadata, specs, results, hashes and inert artifacts; no new source/tool body reads, imports or execution, no selector/assembly or Git mutation.",
+  "remaining_required_work": [
+    "Actual future checkpoint terminal, contract, frozen subject, terminal review and receipt remain unspecified. This component is not a terminal receipt.",
+    "Absolute UTC starts/ends absent: null with reasons, actual elapsed seconds retained.",
+    "Process topology/actual worker declarations and exact helper dependency closure/required_by remain future root reconciliation; no helper bodies inspected.",
+    "No per-round execution-subtree record in selected namespace; source manifests and inert four-path patches retained. Future terminal requires execution-subtree bindings.",
+    "Full authenticated catalog selection remains future; prepared-but-unpublished reuse is distinct from published object reuse.",
+    "R104 independent source review was running at cutoff; no verdict inferred or selected. Final other-model adversarial gate remains owed.",
+    "321 focused producer UNRUN at R104 includes ten children and differs from two generated unrun curriculum specs. No children or B activation qualified."
+  ],
+  "report_snapshots": [
+    {
+      "bytes": 123882,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R103-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "a7bb3acfa3b798ad1a018272ca1d86931be82b377545398d2ea863c4ad63a283"
+    },
+    {
+      "bytes": 130878,
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R104-SOURCE-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "16ebe09b1ebd376bbbac82bc850744657e7da62d43be0f9cf9d65bd91c6911ce"
+    },
+    {
+      "bytes": 139124,
+      "path": "evidence-management/wip19-preparation/R104-FINAL-REPORT-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "ac27c6965cf7f5c4e3d5be0196db01f9a6ea3eb40d39f6941812789032c67aad"
+    }
+  ],
+  "retained_outcomes": {
+    "103": {
+      "collected": 757,
+      "fixtures_passed": 28,
+      "intended_failed": 72,
+      "new_public_B_unrun": 116,
+      "positive_plan_passed": 44
+    },
+    "104": {
+      "collected": 757,
+      "disjoint_selections": [
+        10,
+        129,
+        69,
+        24,
+        16,
+        4,
+        40,
+        28,
+        44,
+        72
+      ],
+      "focused_unrun": 321,
+      "global_types": "R100 historical16 errors not rerun/rebound",
+      "owned_mypy_errors": 1,
+      "source_review": "Pending at component cutoff; future verdict omitted",
+      "unique_reachable_passed": 436
+    }
+  },
+  "root_disposition": null,
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Closed R103\u2013R104 causal history only; future checkpoint and review verdict excluded. No A/B/package acceptance.",
+  "series": "wave35",
+  "source_review_scope": "R104 source review pending at cutoff; no future verdict inferred. FIX4 prior changes-required review retained as narrow causal dependency.",
+  "status": "FROZEN HISTORICAL COMPONENT PROPOSAL; ROOT REVIEW AND ACCEPTANCE REQUIRED",
+  "terminal_historical_round": 104
+}

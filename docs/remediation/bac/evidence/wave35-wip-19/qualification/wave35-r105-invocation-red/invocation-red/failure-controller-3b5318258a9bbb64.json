@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_entry_failure_has_no_outcome_or_reuse",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f25d0bf9400>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f25d0bb1c70>\n\n    def test_device_invocation_entry_failure_has_no_outcome_or_reuse(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:\n        # Catches admission at issuance only, or entry refusal publishing False.\n        monkeypatch.setattr(custody.torch, \"cuda\", NoCUDA())\n>       factory = domain.device_invocation\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?\n\ntests/test_townlet/regressions/bac/test_rng_cuda_admission.py:531: AttributeError",
+  "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7"
+}

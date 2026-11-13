@@ -1,0 +1,54 @@
+Fix3 author static transcript. No application imports, pytest or children.
+cwd: /workspace/hamlet
+
+Final source SHA256 / lines:
+f4b4c02e35df0e72a57987a5768dc32e0462c582d440f219c476c6b1fa68f63e 799 src/townlet/training/replay_contract.py
+7521a532ef7eda914138efefdc23743a34abd95747bd6c67397fb6d7e3894ad3 817 src/townlet/training/replay_buffer.py
+9206411c38990efccb0284d504222be162bf460448369fb8b3a1d1326728487e 1311 src/townlet/training/prioritized_replay_buffer.py
+a03cf0833addc329b3e3347a2f04ff0113757a3311fd910aed915eb6102eb3b3 1945 tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+Total4872 / granted4990, four bodies / hard5000 five.
+
+Each command below executed separately, after the last source/test change:
+$ UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black src/townlet/training/replay_contract.py
+$ UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black src/townlet/training/replay_buffer.py
+$ UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black src/townlet/training/prioritized_replay_buffer.py
+$ UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+Each exit0, identical output:
+All done! ✨ 🍰 ✨
+1 file left unchanged.
+
+$ .venv/bin/ruff check src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit0
+All checks passed!
+
+$ .venv/bin/python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet --quiet
+exit0
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(600 violation(s) whitelisted)
+Ratchet: 600 whitelisted violation(s), at the ceiling.
+
+$ .venv/bin/mypy src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py
+exit1
+src/townlet/training/replay_contract.py:421: error: "AmbientRNGDomain" has no attribute "device_invocation"; maybe "device_operation"?  [attr-defined]
+Found 1 error in 1 file (checked 3 source files)
+
+Earlier author-only intermediate checks are not final-source qualification:
+- Before formatting, Ruff reported14 E501 and one N818 on the moving code.
+  Normal Black formatting and the internal exception Error suffix corrected these.
+- A multi-file Black --diff preview aborted in multiprocessing SyncManager:
+  PermissionError: [Errno 1] Operation not permitted at socket.SO_REUSEADDR.
+  The pipeline's final counting command returned0; that was NOT Black PASS.
+  Separate single-file previews/formatting avoided multiprocessing and passed.
+- Earlier intermediate defaults600 passed; intermediate mypy reported only
+  the same missing B method (then at shared412). Final runs above supersede
+  these static observations for the exact frozen bytes.
+
+Combined inert R98/WIP18-to-fix3 patch:
+T18e-R0-CUDA-FLAT-PER-A-FIX3-R100.diff
+SHA256 b5585af90f485540fb082a9f22e6ba78ddbff11e213266360c1b6a6657050167
+Read-only git diff --no-ext-diff df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9
+restricted to the four named files; no index/worktree/branch/commit writes.
+4 files changed,657 insertions(+),209 deletions(-).

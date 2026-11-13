@@ -1,0 +1,17 @@
+{
+  "time": "2026-11-13T17:52:29.569514+00:00",
+  "r99_evidence_preserved": true,
+  "finding": "New positive prepare_serialized fixture marks only dones CUDA2, other rows CPU. Original actual raw validators clone the row then reject device disagreement before materialization; destination4 is not reachable. Its R99 target-inclusion PASS was not a valid positive oracle.",
+  "source_basis": {
+    "commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+    "flat": "replay_buffer.py:655-657 row clone then device agreement",
+    "per": "prioritized_replay_buffer.py:1064-1066 row clone then device agreement"
+  },
+  "ruling": "Author may correct only raw serialized positive fixtures by marking all actual tensor fields CUDA2 with identical values; keep all10 IDs and target4/source2 positive expectation. Push fixtures unchanged. No production invariant relaxed.",
+  "affected_nodes": [
+    "test_prefix_first_effect_inventory_controls[prepare_serialized-flat]",
+    "test_prefix_first_effect_inventory_controls[prepare_serialized-per]"
+  ],
+  "prior_result_disposition": "R99 actual30PASS/178FAIL immutable; of30PASS two prepare-positive oracles superseded,28 remain usable for their bounded assertions. Validation-only raw positive fixture also becomes consistent but retains valid earlier-source2 assertion. Not acceptance.",
+  "next": "Freeze corrected test with production at R100, collect and rerun corrected controls before full reachable matrix; independent review sees this original-source ruling and both bytes."
+}

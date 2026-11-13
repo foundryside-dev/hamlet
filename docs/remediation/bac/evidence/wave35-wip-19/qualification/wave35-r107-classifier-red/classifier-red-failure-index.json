@@ -1,0 +1,171 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+  "unique_node_phase_failures": 16,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac57781d10>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-subclass]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac574a9550>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[cycle]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576c7380>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-detach]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576392b0>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[scalar]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576e9040>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-subclass]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac573886b0>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[proxy]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576cd150>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-structured]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac5756c8a0>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[list-subclass]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576cc850>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-object]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac5756cc30>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[key]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576e9b80>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-scalar]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac574a8210>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[ordered-items]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac5778ac90>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-attribute]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac57625370>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[count]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac574d3890>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[kind]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac57637750>.unknown",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[mapping]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

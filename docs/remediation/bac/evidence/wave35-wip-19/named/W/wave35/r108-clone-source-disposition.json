@@ -1,0 +1,25 @@
+{
+  "schema": "bac-bounded-fixed-source-disposition-v1",
+  "at": "2026-11-13T19:52:02.149872+00:00",
+  "actor": "/root",
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "manifest_sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce",
+  "review": {
+    "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-OTHERMODEL-REVIEW.md",
+    "sha256": "eaf6b4b20eb37d4bbc7056d91d04c0c0d4d34fedbf61c060a32d7fc1f7345213"
+  },
+  "status": "CLONE-STABILITY P2 ADDRESSED; OTHER-MODEL FIXED-SOURCE GATE PASS FOR BOUNDED REPAIR",
+  "evidence": "R107 causal helper controls and missing-device RED; R108507 unique reachable PASS with exact custody, native/opaque preservation, owned guards and public consumer types",
+  "limits": [
+    "Adopted trusted ordinary native profile; no arbitrary ambient dispatch/global monkeypatch or concurrent external mutation claim",
+    "Classifier cycle handling does not qualify arbitrary cyclic input inventory or constructor behavior",
+    "329 focused producer nodes UNRUN, including10 producer children; production B activation remains absent",
+    "New invocation own-phase/fork/state/alias and producer parent/recurrent/hardware/repo/CI gates remain required"
+  ],
+  "publication_plan": "Prepare WIP19 durability interval R99\u2013R108; this source disposition is not terminal evidence qualification, publication, merge or package acceptance.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

@@ -1,0 +1,24 @@
+Author static-only transcript, existing /workspace/hamlet checkout. No application execution/import/collection.
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix4-uv-cache uv run --no-sync black tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+reformatted tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+All done! ✨ 🍰 ✨
+1 file reformatted.
+
+$ .venv/bin/ruff check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All checks passed!
+
+Added explicit public earlier-clone assertions, then final commands:
+$ UV_CACHE_DIR=/tmp/bac-a-fix4-uv-cache uv run --no-sync black --check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+$ .venv/bin/ruff check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All checks passed!
+$ sha256sum tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04  tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+$ wc -l tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+2045 tests/test_townlet/regressions/bac/test_replay_cuda_producer.py

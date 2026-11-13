@@ -1,0 +1,56 @@
+{
+  "adoption_records": [
+    {
+      "bytes": 2773,
+      "path": "evidence-management/wip19-preparation/r99-r102-root-input-adoption-v1.json",
+      "root": "W",
+      "sha256": "023ee4cdd5bad84437554c21e712a7433e964979f8fd9397f249b508baaaa224"
+    },
+    {
+      "bytes": 2638,
+      "path": "evidence-management/wip19-preparation/r103-r104-root-input-adoption-and-review-supplement-v1.json",
+      "root": "W",
+      "sha256": "dbd718697004793fb251430b7c7e27529d8bd7268a970a3745fe5d064a8e7008"
+    }
+  ],
+  "candidate_manifest": {
+    "bytes": 204073,
+    "path": "wave35/r104-candidate.json",
+    "root": "W",
+    "sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a"
+  },
+  "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+  "relation_to_r105": "R105 core invocation tests-only work does not repair or qualify the separate replay clone-stability finding.",
+  "schema": "bac-source-review-history-supplement-v1",
+  "scope": "Append-only historical supplement. Root adoption originally recorded initial source PASS; later contrary evidence retained without rewriting adoption or prior components. No acceptance.",
+  "sequence": [
+    {
+      "historical_disposition": "Scoped SPEC/QUALITY PASS, F1/F2 addressed; preserved unchanged.",
+      "reference": {
+        "bytes": 10158,
+        "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX5-IMPLEMENTATION-REVIEW.md",
+        "root": "W",
+        "sha256": "0a8dd26f5e704097dbbdfe9002b25fba193b362df951143ff85f4b341634ab17"
+      }
+    },
+    {
+      "disposition": "Other-model clone-stability under-inventory finding.",
+      "reference": {
+        "bytes": 13434,
+        "path": "wave35-preparation/T18e-R0-CUDA-REPLAY-PREFIX-OTHERMODEL-VERIFICATION.md",
+        "root": "W",
+        "sha256": "f07232b54c4c3c6d3e65078d093ac01b408188324cd3134b8176343d06bcd947"
+      }
+    },
+    {
+      "disposition": "Confirms material finding and supersedes prior F2 PASS; required P2 clone-stability correction remains open.",
+      "reference": {
+        "bytes": 13234,
+        "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-ADJUDICATION.md",
+        "root": "W",
+        "sha256": "363458ddf4f62e1add22c2199be5b214cdb8f09fefcd5c120a77a837eb3a02f8"
+      }
+    }
+  ],
+  "status": "COMPLETED REVIEW HISTORY; REQUIRED P2 OPEN"
+}

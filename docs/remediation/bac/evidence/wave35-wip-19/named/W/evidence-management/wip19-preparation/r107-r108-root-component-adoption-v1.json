@@ -1,0 +1,55 @@
+{
+  "schema": "bac-root-component-adoption-v1",
+  "producer": "/root",
+  "status": "ADOPTED AS BOUNDED HISTORICAL EVIDENCE",
+  "interval": [
+    107,
+    108
+  ],
+  "components": [
+    {
+      "root": "W",
+      "path": "evidence-management/wip19-preparation/r107-r108-history-component-v1.json",
+      "sha256": "dbba57c1e142c4f501a01a31b8a3197d5fa732079441d4f65bbb196705d4b9a1",
+      "bytes": 10322
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip19-preparation/r108-final-source-review-supplement-v1.json",
+      "sha256": "bdf1a18402f0157c9accf440226a4debc7d50cc174add1980eebfaeb8fec8b1d",
+      "bytes": 2309
+    }
+  ],
+  "checks": [
+    {
+      "root": "W",
+      "path": "wave35/r107-clone-tests-disposition.json",
+      "sha256": "dc6469e00ce647893cca278c8e6a3c10aa145e83035ff1b213312cf67f922383",
+      "bytes": 10469
+    },
+    {
+      "root": "W",
+      "path": "wave35/r108-root-checks.json",
+      "sha256": "500a588b4c6af705cf7f824b0bbc1d1953b67efe2cb0beb99a8d38672c959dec",
+      "bytes": 10459
+    },
+    {
+      "root": "W",
+      "path": "wave35/r108-clone-source-disposition.json",
+      "sha256": "7e346a979a340db855a68f9357ee5ff7b9213563f51d3f8d71f1533c0dd5668b",
+      "bytes": 1510
+    }
+  ],
+  "scope": "R107 47 passing controls and 108 causal failures retained; R108 507 unique reachable passing checks and 329 unrun focused nodes retained. Independent other-model review closes bounded clone-stability source P2; not full A/B, producer, package or hardware acceptance. R106 76 remains separate source-bound evidence.",
+  "accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "input_rehash": {
+    "checked": 1223,
+    "matched": 1222,
+    "expected_document_drift": "Draft v2 references old live EVIDENCE-INDEX.md; approved WIP19 document application changed it. v3 must use immutable historical bytes plus current reviewed document reference before sealing. No selector or assembly attempted."
+  },
+  "pending": "Complete draft reconciliation, root contract/subject seal, fresh independent terminal review, final receipt, assembly and exact publication/CI checks."
+}

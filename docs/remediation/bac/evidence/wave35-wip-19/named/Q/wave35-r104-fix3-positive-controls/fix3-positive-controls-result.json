@@ -1,0 +1,23 @@
+{
+  "name": "fix3-positive-controls",
+  "exit_code": 0,
+  "seconds": 5.139471530914307,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_prefix_first_effect_inventory_controls",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix3-positive-controls/fix3-positive-controls.log",
+  "sha256": "5271f15cba3336504a8d680db18c25bb9b190f3bdfc926f160f8dd6e6562e451",
+  "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "manifest_sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,204 @@
+{
+  "time": "2026-11-13T17:57:52.621856+00:00",
+  "tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+  "manifest_sha256": "59d925fcef3c60cff1da69b01edd297b968588fd15320a8c33807ffa7d64e4ca",
+  "collection": 393,
+  "unchanged_node_ids": true,
+  "unique_reachable_pass": 232,
+  "overlap": "Four disjoint selections10+129+69+24. PriorR99 results are different source, not additive.",
+  "static": "Owned4RuffBlack and unchangeddefaults600 PASS",
+  "owned_types": "FAIL1 missingAmbientRNGDomain.device_invocation shared421, explicit B dependency",
+  "remaining": "161 focused nodes unrun atR100, including56new B-dependent public cases and10 isolatedchildren. No A/B/hardware/package acceptance.",
+  "checks": {
+    "collection": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-collection-custody.json",
+      "sha256": "237c42b1a684a636ca3d68fdee66cd13426c547eb5b8cdbee13c68dbcc88df45",
+      "result": {
+        "job": "collection",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 9.051351308822632,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "static": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-static-custody.json",
+      "sha256": "5d1190b9e86f977a3c94e9e8f4f8a04647bb6523232440bb21e547a4c4a2a35f",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "ruff-owned",
+            "exit_code": 0,
+            "seconds": 0.0813913345336914,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+          },
+          {
+            "name": "black-owned",
+            "exit_code": 0,
+            "seconds": 2.047653913497925,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-static/black-owned.log",
+            "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086"
+          },
+          {
+            "name": "no-defaults",
+            "exit_code": 0,
+            "seconds": 1.466616153717041,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-static/no-defaults.log",
+            "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+          }
+        ],
+        "all_passed": true,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    },
+    "fix3-positive-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-fix3-positive-controls-custody.json",
+      "sha256": "a9b2bacbce30dd9123076c640feb52ce7b298231fd6cbe68431ae04a3b65991b",
+      "result": {
+        "job": "fix3-positive-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "exit_code": 0,
+        "counts": {
+          "passed": 10,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.9777891635894775,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix3-raw-reachable": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-fix3-raw-reachable-custody.json",
+      "sha256": "3fb6e8def4c464e4094001dce7e3bce08127f553f0e57633629e2913dce88b7c",
+      "result": {
+        "job": "fix3-raw-reachable",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "exit_code": 0,
+        "counts": {
+          "passed": 129,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 9.884138822555542,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix3-other-reachable": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-fix3-other-reachable-custody.json",
+      "sha256": "dfef8852d8003d6f3ee3b6069a4827d7d87345685c470938c1cc5ce3c1f4b1b0",
+      "result": {
+        "job": "fix3-other-reachable",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "exit_code": 0,
+        "counts": {
+          "passed": 69,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 9.465254306793213,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "reachable-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-reachable-controls-custody.json",
+      "sha256": "825461235d45a2a9ae3a9a7387398eb0fac92a0ba01e6cf9d48f46dc96398494",
+      "result": {
+        "job": "reachable-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "exit_code": 0,
+        "counts": {
+          "passed": 24,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.176996469497681,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "owned-types": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-owned-types-custody.json",
+      "sha256": "76a2c906dde36591e8a820206748eb8bbeb0d2432157bd9967597a91511311b4",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "owned-mypy",
+            "exit_code": 1,
+            "seconds": 32.47866463661194,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r100-owned-types/owned-mypy.log",
+            "sha256": "f5719b577cc368cc71657a61e2981129d210bebff850cd93b71633e5ac9d9017"
+          }
+        ],
+        "all_passed": false,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    }
+  }
+}

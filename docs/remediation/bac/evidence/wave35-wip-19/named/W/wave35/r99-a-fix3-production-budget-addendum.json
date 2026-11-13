@@ -1,0 +1,25 @@
+{
+  "time": "2026-11-13T17:38:05.880176+00:00",
+  "parent_grant": "wave35/r98-a-implementation-fix3-grant.json",
+  "before": [
+    740,
+    830,
+    1290,
+    1950
+  ],
+  "after": [
+    790,
+    860,
+    1390,
+    1950
+  ],
+  "total": 4990,
+  "hard_limit": 5000,
+  "files": 4,
+  "rationale": "Same approved structural predicates/effect recorder and real-validator plumbing; readable source, no compression/test removal/extra body. Measure actual formatted lines before every freeze. No capability removal or scope waiver.",
+  "future_projections": {
+    "B": "1250core+790shared+860flat+1390PER+650test=4940/5",
+    "D": "1250core+790shared+2250recurrent+700test=4990/4"
+  },
+  "future_grant": "No future body grant; remeasure/reslice if actual growth requires."
+}

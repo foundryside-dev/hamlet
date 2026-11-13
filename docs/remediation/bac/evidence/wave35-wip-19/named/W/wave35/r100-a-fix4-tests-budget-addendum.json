@@ -1,0 +1,21 @@
+{
+  "time": "2026-11-13T18:09:36.296249+00:00",
+  "parent": "wave35/r100-a-implementation-fix4-grant.json",
+  "stage": "TESTS ONLY; production remains exactR100",
+  "current_phase_ceilings": [
+    799,
+    817,
+    1311,
+    2073
+  ],
+  "current_phase_total": 5000,
+  "author_working_test_target": 2044,
+  "prospective_production": [
+    830,
+    816,
+    1310,
+    2044
+  ],
+  "prospective_total": 5000,
+  "ruling": "Do not lower frozen family guards below actual817/1311 before tests-only capture. Allow readable newtests now within actual4body5000. After causalRED, separate productionbaton may adopt author proposed net-1 family loop replacement; not authorized yet. No compression/removal/helperbody escape. If actual required source cannot fit, request legitimate packet reslice before exceeding5000."
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "bac-root-historical-input-adoption-v1",
+  "at": "2026-11-13T19:22:30.657066+00:00",
+  "root": "/root",
+  "status": "ADOPTED BOUNDED HISTORICAL INPUTS ONLY",
+  "components": [
+    {
+      "round": 105,
+      "references": [
+        {
+          "path": "evidence-management/wip19-preparation/r105-evidence-inventory-v1.json",
+          "sha256": "0cf1abe945be7dfd94546d86abe3576905078ec7dfc9c1cc48a4121928a6a660",
+          "bytes": 97339
+        },
+        {
+          "path": "evidence-management/wip19-preparation/r105-history-component-v1.json",
+          "sha256": "97ea229bbebcb5eeeecc4d7c88b928ea411a62130f81b83dd57010b1761bb176",
+          "bytes": 6109
+        }
+      ],
+      "artifacts_rehashed": 68,
+      "closed_namespace_entries": 18,
+      "gaps": [
+        "Active/unsealed R106 excluded. No future implementation result or acceptance inferred from production baton.",
+        "Actual checkpoint terminal/contract/subject/terminal review/receipt remain future explicit.",
+        "Missing original absolute UTC starts/ends remain null; durations retained.",
+        "Process topology/actual workers and helper required-by closure need root reconciliation; no implementation/tool bodies inspected.",
+        "Execution-subtree bindings and authenticated full catalog selection remain future; inert patch preserves five changed paths only.",
+        "Required replay clone-stability P2 remains open independently of core tests; no A/B/hardware/producer-child acceptance."
+      ]
+    },
+    {
+      "round": 106,
+      "references": [
+        {
+          "path": "evidence-management/wip19-preparation/r106-evidence-inventory-v1.json",
+          "sha256": "207a5e8d876e682a49d9dea4dd8ad0c01b87d600abec30588e9566fa3cec484d",
+          "bytes": 517301
+        },
+        {
+          "path": "evidence-management/wip19-preparation/r106-history-component-v1.json",
+          "sha256": "cdff3ef70e6c8384a4423aa698e9ba97ee714777391b804c285a4187f7f7a27d",
+          "bytes": 7974
+        }
+      ],
+      "artifacts_rehashed": 170,
+      "closed_namespace_entries": 60,
+      "gaps": [
+        "Active R107 excluded; next tests-only grant retained as authorization, not execution.",
+        "New invocation own-phase/alias/fork/state protocols remain unqualified; existing ten child PASS must not substitute.",
+        "Core final source review not yet supplied; no future verdict inferred.",
+        "Final checkpoint contract/subject/terminal review/receipt, execution-subtree bindings and authenticated catalog selection remain future.",
+        "Original absolute execution start/end missing; null facts and actual durations retained.",
+        "Final topology/worker declarations and complete helper closure remain root reconciliation. Strict child hashes are tied to exact spec/result; absent literal attempt IDs not fabricated.",
+        "Required clone-stability P2/pre-B repair remains open; no producer/B/hardware/programme acceptance."
+      ]
+    }
+  ],
+  "scope": "R105 causalRED and R106 bounded core regressions; no terminalqualification, fullcore/A/B/programme acceptance or publication.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

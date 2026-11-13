@@ -1,0 +1,129 @@
+# Invocation outcome — tests-only handoff
+
+Current stage: **CORE/TEST BYTES FROZEN; ROOT R106 BOUNDED CURRENT REGRESSION PASS; FRESH INDEPENDENT REVIEW OWED.** Root's 76 unique current nodes passed; new invocation outcome/isolated/fork/state/alias acceptance remains open. Historical stage records and actual supplier facts are retained below, with the attributed R106 evidence appended last. Immutable tests-only snapshot seal: `7054f6a3e31c881dfd86842d99bea16724c9736fca3366762ef0ec409618878a`; immutable source-stage report seal: `e7f9fe10456cf6a2b4b7613d7a27a7dbfc697dde53f69b364d828acd4110d1a1`.
+
+2026-11-13. Status: **TESTS AUTHORED; RUNTIME/RED UNEXECUTED; PRODUCTION FROZEN.** Worker `/root/bac_core_invocation_impl` acted under `wave35/r104-core-invocation-tests-grant.json` SHA256 `52616d9cc9ed4a65bc457de6d4dca102bb7eb1706562adadaef4ce1741259ad2`. Adopted DESIGN-FIX1 and bounded IMPLEMENTATION-MAP remain the requirements; this stage does not reopen the design.
+
+## Frozen bytes and budget
+
+- Writable test: `tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`, 1681 lines, SHA256 `ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38`.
+- Unchanged production: `src/townlet/exploration/rng_custody.py`, 821 lines, SHA256 `0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477`.
+- Two retained bodies total 2502 lines, below paired ceilings 1250/2000/3250 and hard ceiling five bodies/5000 lines. No other implementation body was read.
+- Baseline test SHA256 `b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e`; the HEAD test blob hashes identically. Inert diff: `T18e-R0-CUDA-INVOCATION-OUTCOME-TESTS-ONLY.diff`, from that baseline, 274 added / 2 replaced import lines. Existing test bodies and empty-production-manifest assertion are preserved.
+- Inert diff SHA256 `73be274ebfc2d21319579739c19a61934edb39e1123f390ddef51e6a5015a001`.
+
+## Exact proposed node map
+
+Every ID below has prefix `tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::`. These are authored node names, not a claim that collection succeeded.
+
+| Category | Node suffix | Observable break caught |
+| --- | --- | --- |
+| OUT-API-RED | `test_device_invocation_required_api` | Missing/optional factory inputs; wrong context/yield/exit/getter types; public construction. |
+| OUT-LIFETIME-RED | `test_device_invocation_historical_result_preserves_real_token_and_retirement` | Issuance currency change; replacement lineage; broken genuine token flow; receipt depending on active operation/membership or lock acquisition. |
+| OUT-AUTH-RED | `test_device_invocation_lifecycle_refusals_leave_completed_result_stable` | Premature False, duplicate enter/exit, reuse, or refusal corrupting a valid lifecycle/result. |
+| OUT-AUTH-RED | `test_device_invocation_entry_failure_has_no_outcome_or_reuse` | Participant retirement between issuance/entry bypasses admission, or failed entry publishes a result/reusable handle. |
+| OUT-AUTH-RED | `test_device_invocation_issuance_rejects_forged_arguments_without_cuda` | Unissued participant/lineage, malformed kind/inventory, or mutable inventory gains issuance authority. |
+| OUT-AUTH-RED | `test_device_invocation_unissued_subclass_and_copy_refuse` | Unissued/subclass/copy/serialization/attribute forgery or reinitialization gains authority. |
+| OUT-AUTH-RED | `test_device_invocation_wrong_thread_refuses_before_held_locks` | Wrong-thread enter/exit/getter waits for held real domain/owner exclusion, at issued/active/exited phases. |
+| OUT-LIFETIME-RED | `test_device_invocation_unused_handle_does_not_pin_owner` | Construction pins a weak lifetime owner; expired owner nevertheless permits entry/outcome. |
+| OUT-LIFETIME-RED | `test_device_invocation_completed_handle_releases_execution_references` | Completed body-error handle retains owner, operation, original error/generator/traceback cycle, or registry retains its weak key. |
+
+New public names are looked up inside test functions. The existing module import at collection remains unchanged. Factory lookups precede owner registration where applicable so the intended missing API failure does not leave a newly registered owner behind. Empty-inventory controls use NoCUDA; reference tests use real weak owners/operations/errors and collection; token controls use actual source-issued current tokens. Wrong-thread controls use real threads with finite waits while actual domain/owner locks are held. No fake PID or test-issued production contract is introduced.
+
+## Existing healthy CPU controls for root capture
+
+Same full prefix as above:
+
+- `test_existing_cpu_registration_and_completion_query_no_cuda` — preferred prerequisite healthy registration/completion control.
+- `test_subset_cpu_path_never_queries_cuda` — existing device-operation empty-inventory parity control.
+- `test_existing_released_prepare_install_currentness` — existing genuine token baseline.
+
+Root owns exact-byte capture, actual collection, healthy control execution, and decisive missing-API RED against the frozen core821. None was executed by this worker; no fixture or RED result is claimed here.
+
+## Static verification and execution boundary
+
+Fresh authorized checks on final test bytes:
+
+- `.venv/bin/ruff check tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`: exit 0, all checks passed.
+- `.venv/bin/black --check tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`: exit 0, one file unchanged.
+- `git diff --check -- tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`: exit 0.
+
+Preserved attempts: bare `ruff` was unavailable in PATH (exit127), then the repository `.venv/bin/ruff` found one import-order issue; its correction precedes the passing final checks. No application import, test collection, pytest, GPU operation, child/fork protocol execution, index mutation, commit, branch/worktree/copy, other source-body read, or delegation occurred. The report/diff are inert handoff artifacts requested by root.
+
+## Next grant boundary
+
+Production remains unchanged until root supplies fixture-healthy causal RED and a production-write grant. Separate later work still owes nonempty success/own-phase failures, same-object body/completion error identity, nested/sibling/token parity, deterministic thread-object alias controls, actual registry/state/reference and lock-path facts, isolated schedules and exact child/fork verifier admission. Public consumer typing and real parent-owner handoff remain root/separate-owner obligations. These nine controls do not claim CUDA hardware, producer integration, B activation, B6, or programme closure.
+
+## Production-only handoff
+
+Authorization: `wave35/r105-core-production-grant.json` SHA256 `92356eebf7237fc05a844729c386e9af1d3f32696eb78ad1a4356c318e2657ff`. Root's exact-byte prerequisite is `wave35/r105-core-tests-disposition.json` SHA256 `39ec104b8f76467fe5ffc50df5f5e920a1bf86a6adf200875859fb2f6c21d9ea`: candidate tree `dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7`, manifest `f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9`, 76 collected, three healthy CPU controls passed, nine new controls failed only at their initial missing API lookups, zero fixture errors. These are root-supplied dispositions, not worker-executed results.
+
+Before changing production, preserved `T18e-R0-CUDA-INVOCATION-OUTCOME-TESTS-ONLY-REPORT.md`, SHA256 `7054f6a3e31c881dfd86842d99bea16724c9736fca3366762ef0ec409618878a`. Only the authorized core implementation body changed during this stage. The test remains frozen at SHA256 `ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38`.
+
+Frozen core: 948 lines, SHA256 `ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e`. Paired core/test: 2629 lines, two retained bodies, within all stated ceilings. Exact inert diff against the unchanged core821 baseline is `T18e-R0-CUDA-INVOCATION-OUTCOME-CORE.diff`, SHA256 `920a105e28330dbf71d5fc34a56992c383ed3e1fdcbfb65d2498467fc29645b7`, 135 added / 8 replaced lines.
+
+### Actual registry, lifecycle and execution-reference facts
+
+- Public `RNGDeviceInvocation` at core59 is opaque and slotted. It supplies the exact `__enter__`, `__exit__ -> Literal[False]`, and `completion_failed -> bool` surface; context entry returns the genuine unchanged `RNGOperation`. Ordinary construction, reinitialization, copy/deepcopy and serialization share `_Opaque` refusals. Context-manager conformance follows its actual enter/exit methods; public consumer typing remains root-owned.
+- `AmbientRNGDomain._invocations` at core216 is `weakref.WeakKeyDictionary[RNGDeviceInvocation, _Invocation]`. Each `_Invocation` stores `thread: threading.Thread`, `state: str`, `participant: RNGParticipant | None`, `operation_kind: str | None`, `lineage: RNGOperation | None`, `cuda_devices: tuple[int, ...]`, `context: AbstractContextManager[RNGOperation] | None`, and `failed_completion: bool`. Values contain no handle/key reference.
+- Factory `device_invocation` at core675 checks actual domain PID, authentic participant, exact nonempty string kind, source-issued exact lineage identity when supplied, and immutable sorted/unique explicit inventory shape. It creates no operation/context and pins no owner, takes no exclusion, queries no CUDA, and changes no generation/revision/currency. Membership, entrypoint, poison, active-lineage, busy and runtime/inventory admission are repeated at real entry by the existing `_operation` path.
+- `_invocation_record` at core691 checks `_check_pid` before exact class/weak-registry lookup, then compares `record.thread is threading.current_thread()`. Wrong-thread/forged calls raise ValueError before lock/owner/CUDA access. Issuing-thread object identity is stored, rather than a numeric ID or cached numeric-ID check. PID provenance remains the existing immutable domain `_pid`, checked against actual `os.getpid()` on each public path.
+- States are `issued -> entering -> active -> exited`, or `entering -> entry_failed`. `_enter_invocation` marks entering before context creation/admission, active only after actual `_operation.__enter__` yields, and failed/cleared on every entry exception. Getter refuses every state except exited. Entry/exit misuse raises RuntimeError without modifying a valid result. Exit takes `record.context` into a local and clears the field before invoking it, so recursive exit refuses while state remains active and outcome unreadable; unconditional finally clears execution fields and seals exited before any outward error reaches the wrapper.
+- `_release_invocation` at core702 clears participant, kind, lineage, device tuple and context at failed entry or terminated active exit. Historical registry records retain only issuing thread, lifecycle and result, plus empty/None execution fields. No original exception, traceback, owner, operation or generator is an outcome field. The generator temporarily receives the record through its explicit `completion` argument; the record temporarily owns that generator context only during entry/active execution and releases it at termination. Registry weak-key collection remains independent of completed result lifetime.
+- `failed_completion` starts True (uncertified). Only successful return from this actual scope's `_complete` changes it to False, in `_finish`'s else clause at the call site. Errors/interruption before that success leave True. Sealing happens in `_exit_invocation`'s unconditional finally; internal faults continue outward. Getter does not inspect exception identity/structure, poison, reported failures, operation membership/currentness, or `_usable`.
+
+### Actual shared-operation and lock facts
+
+The only shared-operation addition is the required private `_operation(..., completion: _Invocation | None)` argument and matching `_finish(..., completion)` argument. Existing `operation` and `device_operation` wrappers pass explicit None; invocation entry passes its own private record. No new `_Operation` fields, public callback, duplicated operation algorithm, alternate draw authority, defaults, compatibility adapters or fallback paths were added.
+
+Nested completion still receives its admitted subset. Outermost completion still receives `tuple(sorted(record.devices))`, the existing final union including descendants. `_complete` itself is unchanged: the generic loop still stops at its first synchronization exception. `_finish` preserves poison/report/exception aggregation; its sole observation is successful completion certification before later reported-failure aggregation. No retry or second pass exists. Local completion and all-declared-device behavior are unchanged. Empty completion has no CUDA attribute access. Existing `_raise`, admission, local contracts and the empty production contract manifest are unchanged.
+
+There is no new lock acquisition, lock cache, ownership cache, or owner-lock path in issuance, authentication, historical getter, or release. Actual operation entry obtains the existing `_operation` real domain RLock; existing operation exit and `poison` retain their prior acquisitions and ordering. No owner exclusion is acquired by the new API. Producer custody through completion/read/transition remains the producer's obligation. Historical reads use only actual PID, exact handle issuance, issuing thread and exited-state checks, including after poison/member retirement; they neither acquire `_lock` nor call `_is_owned` or CUDA. Existing forwarding LockProbe therefore remains the relevant acquisition probe, but root's future guards must observe this actual invocation registry, its eight fields, and active generator `completion` argument/context reference before claiming expanded state coverage.
+
+### Exact static evidence on final core bytes
+
+All three commands exited zero; logs are retained beside this report:
+
+| Command | Actual output | Log SHA256 |
+| --- | --- | --- |
+| `.venv/bin/ruff check src/townlet/exploration/rng_custody.py` | `All checks passed!` | `82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18` (`...-CORE-RUFF.log`) |
+| `.venv/bin/black --check src/townlet/exploration/rng_custody.py` | `All done!` / `1 file would be left unchanged.` | `1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48` (`...-CORE-BLACK.log`) |
+| `.venv/bin/mypy src/townlet/exploration/rng_custody.py` | `Success: no issues found in 1 source file` | `5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e` (`...-CORE-MYPY.log`) |
+
+`git diff --check -- src/townlet/exploration/rng_custody.py` also exited zero. Earlier exploratory static command `.venv/bin/mypy --follow-imports=skip src/townlet/exploration/rng_custody.py` failed at unchanged `_resolve_cuda`'s `return device.index` (new line572), since skipping torch typing makes that attribute Any. Plain configured mypy then passed, with no source change, type ignore, weakened annotation, altered default or suppression. The failed static attempt is preserved here and is not relabeled as a pass.
+
+No application execution/import, pytest, child/fork runtime, test/verifier edit, other implementation-body read, index mutation, commit, branch/worktree/source copy, or delegation occurred in production stage. The explicitly authorized inert tests-only report snapshot is the sole copied artifact. Root must now independently review/qualify these exact bytes. Expanded nonpoison/isolated schedules, exact child/fork protocol mapping/verifier review, direct state and lock observations, public consumer typing/default guards, clone-stability P2 before B dependency, actual parent-owner handoff, real hardware and broader package obligations remain open.
+
+## Root R106 qualification handoff — metadata-only append
+
+2026-11-13. Attribution: **all execution in this section was performed and qualified by root**, not this implementation worker. Worker read only supplied metadata/specs/logs and preserved the exact prior source-stage report as `T18e-R0-CUDA-INVOCATION-OUTCOME-SOURCE-STAGE-REPORT.md`, SHA256 `e7f9fe10456cf6a2b4b7613d7a27a7dbfc697dde53f69b364d828acd4110d1a1`, before this append. Core/test bytes remain frozen at their production-stage hashes above.
+
+Authoritative aggregate: `wave35/r106-root-checks.json`, SHA256 `803d831ae57fbc8fd46963be58ee095301895beb6c4fcc88fb572aa6a4b05570`. It binds base `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`, tree `ab46784efc86bab95b031494529e06871a12f1ff`, and manifest SHA256 `12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970`.
+
+For the following references, Q means `/workspace/bac-review-2026-11-01/qualification/`. Exact argv tails shown below run under root's qualified interpreter/harness; the immutable job specs carry their full source/manifest/output bindings.
+
+### Current-node collection and runtime
+
+Collection argv tail: `-m pytest tests/test_townlet/regressions/bac/test_rng_cuda_admission.py --no-cov -p no:cacheprovider -p no:benchmark -p bac_source_identity -q --collect-only`. Spec `Q/wave35-r106-collection-spec.json`, SHA256 `5c6696af53ef3a11400754f08a2bf378ce118fe1fb21c02ea6589de3c0116d0e`; output `Q/wave35-r106-collection/collection.log`, SHA256 `68a1f3bccb420eeaa4898e6b720b487b88dd76db951456220a61e9e575f4bdd3`: `76 tests collected in 0.04s`. Root reports IDs unchanged from R105. Custody `Q/wave35-r106-collection-custody.json`, SHA256 `4a43282b8f1ad2e256ee42a86e8ca409118345e0ac19dfac93dc9fa0e747335a`, exit0 and source/index/import/thread/fixture custody PASS.
+
+Nonisolated argv tail: `-m pytest tests/test_townlet/regressions/bac/test_rng_cuda_admission.py -k 'not test_isolated' --no-cov -p no:cacheprovider -p no:benchmark -p bac_source_identity -q`. Spec `Q/wave35-r106-core-current-spec.json`, SHA256 `48ace495865274380c59fd8afc80711680c90780b5295f60c05bd0e7f12dcccf`; output `Q/wave35-r106-core-current/core-current.log`, SHA256 `af7f011f98278e516d7e324c2aefc76b27da1bec5fb72733e332296bd255e9cc`: `66 passed, 10 deselected in 0.66s`. Custody `Q/wave35-r106-core-current-custody.json`, SHA256 `0721c0ec52591bd7012e960c4982433585c2a6ddaaeb132b2f29c0d35073cadc`, exit0, no warnings/skips/xfails/xpasses, source/index/import/thread/fixture custody PASS.
+
+Existing isolated selection: `Q/wave35-r106-existing-child-selection.json`, SHA256 `b2c0ef4b4380dad9aa25e8c20156424f24169580de750b20a37ab68b24aba047`, names the ten existing cases: bootstrap failure, inherited PID gates, local completion duplicate parent, local completion multiple body, local completion single, operation body completion, poison ready healthy only, poison ready qualified, poison unknown ready, and runtime query failure. Root reports one pass in each, with both generic and strict spawn-child custody PASS. The authoritative aggregate contains each exact `Q/wave35-r106-<case>-spec.json` binding, result hashes, generic custody hash, strict spawn custody hash, actual PID/PPID correlations, and inherited admission/local guard records. These are the same ten existing isolated nodes deselected by the 66-node run, so the disjoint total is **76 unique passed nodes**, not 86 and not a new outcome-child qualification.
+
+### Root style/defaults and owned typing
+
+Static spec `Q/wave35-r106-static-spec.json`, SHA256 `dc24b29e7dc922a324b15353f660c365004c227d377a8043042d324fbab2cc9e`; custody `Q/wave35-r106-static-custody.json`, SHA256 `9a0e6511a58ae1a285b6be6bd14b99dab5a1f56ba11ee1a18e5eff819ab870cd`. All three actual exits were zero:
+
+| Exact argv tail | Output reference and SHA256 | Actual output |
+| --- | --- | --- |
+| `-m ruff check src/townlet/exploration/rng_custody.py tests/test_townlet/regressions/bac/test_rng_cuda_admission.py` | `Q/wave35-r106-static/ruff-core-test.log`, `82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18` | `All checks passed!` |
+| `-m black --check src/townlet/exploration/rng_custody.py tests/test_townlet/regressions/bac/test_rng_cuda_admission.py` | `Q/wave35-r106-static/black-core-test.log`, `b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c` | `2 files would be left unchanged.` |
+| `scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet --quiet` | `Q/wave35-r106-static/no-defaults.log`, `28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0` | `No defaults detected. Clean.` / `Ratchet: 600 whitelisted violation(s), at the ceiling.` |
+
+Owned typing argv tail: `-m mypy src/townlet/exploration/rng_custody.py src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py --follow-imports=silent`. Spec `Q/wave35-r106-types-spec.json`, SHA256 `995e5923fdf5a1685d7c3b043275056fa89c0d5f7b0f0de669b2a905d68606cc`; output `Q/wave35-r106-types/owned-mypy.log`, SHA256 `71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb`: `Success: no issues found in 4 source files`, exit0. Custody `Q/wave35-r106-types-custody.json`, SHA256 `ff0eb81434fbd4ee7c32f7df0028dc0c979982c66ea32013cc117b4672ba7bff`. This is root-owned four-file static evidence; this worker read no replay implementation body. Historical global mypy16 at R100 is not a new global result.
+
+### Review and later-phase boundary
+
+R106 establishes bounded current core regression PASS on frozen bytes. It does **not** qualify the new invocation outcome's nonempty completion-failure attribution, same-object body/sync exception distinction, nested/sibling receipt immutability, invocation inherited-PID actions, direct invocation-registry/generator state coverage, or numeric-ID/thread-object alias schedule. The old ten children exercised their existing protocols, and the old inherited guard trial set remains admission/local only. New invocation child/fork cases still require exact reviewed role/trial maps, verifier admission, causal schedules and execution; direct state/lock probes must be extended to the actual new fields before expanded claims.
+
+Fresh independent source/test review remains owed. Public consumer typing beyond the supplied owned-file check remains open. Required archive clone-stability P2 remains a pre-B dependency. Production leaf manifest remains empty; producer runtime/children, designated parent-outcome consumer and owner-lock handoff, recurrent integration, real CUDA hardware, B6 and full package/programme gates remain open. This metadata-only append adds no source/test edit, application execution, implementation-body read, delegation or acceptance waiver.

@@ -2,7 +2,17 @@
 
 Checkpoint publication, bounded component qualification and whole-programme acceptance are separate. The [evidence process](EVIDENCE-PROCESS.md) governs additions; historical evidence is preserved.
 
-## Current checkpoint: WIP18 / R98 — work in progress
+## Current checkpoint: WIP19 / R108 — work in progress
+
+The [manifest](evidence/wave35-wip-19.json) and [selection plan](evidence/wave35-wip-19/selection-plan.json) record the finite R99–R108 interval, ending at executed candidate `fa1c6804fcff475f5652e5f5f357468e2d931c0d`, base `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`, candidate-manifest SHA256 `27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce`. Execution identity and publication identity are distinct; publication does not turn bounded component evidence into full programme acceptance.
+
+R106's independently source-approved initial invocation implementation has 76 exact-candidate PASS. R108 separately records 507 distinct reachable PASS, 836 collected and 329 UNRUN, with owned typing/style/defaults600 and the extended public invocation type probe PASS. The clone repair's other-model fixed-source SPEC/QUALITY review passes: concrete P2 is addressed under the adopted ordinary native runtime profile; full A/B qualification remains open. Global mypy16 remains historical, not a new global check. These are bounded source/custody results; the two candidates' counts are not summed. The archive preserves failed, interrupted and unrun interval attempts.
+
+Core own-invocation failure/fork/state/alias qualification, production local-contract activation, ten producer poison children, actual parent handoff and recurrent integration remain open. Tooling protocol reviews or synthetic controls do not qualify those application paths. Real CUDA and final repository/coverage/slow/learning/review/CI gates remain required. **28 qualified / 38 remaining / 66 original packages** is unchanged.
+
+WIP18 remote is reported at `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`: Config PASS, Lint FAIL with 16 known errors, Tests FAIL in the fast suite. Test-log retrieval was unavailable; no detailed cause or equivalence with local typing errors is inferred. Publication identity and CI are verified separately; this checkpoint makes no successful-current-CI or full-BAC acceptance claim.
+
+## Historical checkpoint: WIP18 / R98
 
 The [manifest](evidence/wave35-wip-18.json) and [selection plan](evidence/wave35-wip-18/selection-plan.json) preserve the finite R90–R98 interval. R98 executed candidate is `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, base `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, candidate-manifest SHA-256 `02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1`. Publication documentation/evidence changes are distinct from the executed application identity.
 

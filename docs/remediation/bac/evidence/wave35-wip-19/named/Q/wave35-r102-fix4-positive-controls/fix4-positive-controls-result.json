@@ -1,0 +1,26 @@
+{
+  "name": "fix4-positive-controls",
+  "exit_code": 0,
+  "seconds": 4.962888240814209,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-success-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-success-per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-success-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-success-per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r102-fix4-positive-controls/fix4-positive-controls.log",
+  "sha256": "9cff9de859cb9746c20e2430b85ea695e13d6d725ad3ec019e464038f672ea38",
+  "candidate_tree": "0dc5a95de19925148917d884a3554d90221d7d26",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "manifest_sha256": "2bc01fc5f8815bb83048835a9af16cec484c7458bde9c3e6ad5f6337c61bc6b0",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

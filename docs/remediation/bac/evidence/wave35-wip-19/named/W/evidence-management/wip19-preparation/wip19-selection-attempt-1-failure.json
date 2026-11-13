@@ -1,0 +1,23 @@
+{
+  "schema": "bac-selection-attempt-v1",
+  "status": "FAILED",
+  "exit_code": 1,
+  "receipt": {
+    "root": "W",
+    "path": "evidence-management/wip19-preparation/wip19-r108-terminal-receipt-final-v1.json",
+    "sha256": "87f0245ff2e1c0c2014ef08ac8d542cae55b8ab9ea2f76a9e0ee8bcdf76e1639",
+    "bytes": 3199401
+  },
+  "tool": {
+    "root": "W",
+    "path": "evidence-management/bac_checkpoint_contract.py",
+    "sha256": "6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3",
+    "bytes": 38500
+  },
+  "operation": "plan; non-draft",
+  "output_requested": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip19-selection-plan-v1.json",
+  "output_created": false,
+  "failure": "ValueError: entry role/status required",
+  "cause": "Input interval labels attempt-directory and RECORDED are not admitted by unchanged selector. UNRUN template files must be classified from actual attempt_index as attempts; shared-directory status must derive all actual statuses.",
+  "resolution": "Finite metadata normalization from unchanged authoritative attempt_index; full existing validate_receipt passed on proposed in-memory correction before new seal. No helper/application edit, application execution or assembly."
+}

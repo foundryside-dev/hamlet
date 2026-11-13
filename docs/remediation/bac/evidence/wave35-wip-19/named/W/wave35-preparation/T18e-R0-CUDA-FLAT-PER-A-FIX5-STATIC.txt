@@ -1,0 +1,37 @@
+FIX5 author static-only production checks, existing /workspace/hamlet checkout.
+No application execution, import probe, helper execution, collection or pytest.
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix5-uv-cache uv run --no-sync black src/townlet/training/replay_contract.py
+exit 0
+reformatted src/townlet/training/replay_contract.py
+All done! ✨ 🍰 ✨
+1 file reformatted.
+
+$ .venv/bin/ruff check src/townlet/training/replay_contract.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All checks passed!
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix5-uv-cache uv run --no-sync black --check src/townlet/training/replay_contract.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All done! ✨ 🍰 ✨
+2 files would be left unchanged.
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix5-uv-cache uv run --no-sync mypy src/townlet/training/replay_contract.py --follow-imports=silent
+exit 1
+src/townlet/training/replay_contract.py:464: error: "AmbientRNGDomain" has no attribute "device_invocation"; maybe "device_operation"?  [attr-defined]
+Found 1 error in 1 file (checked 1 source file)
+
+$ sha256sum src/townlet/training/replay_contract.py src/townlet/training/historical_checkpoint.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c  src/townlet/training/replay_contract.py
+74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4  src/townlet/training/historical_checkpoint.py
+d178bb0a40340292e3b06328438ec2d825378d9464df8bf600873d3c7e2fce9b  tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+
+$ wc -l src/townlet/training/replay_contract.py src/townlet/training/historical_checkpoint.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+842 src/townlet/training/replay_contract.py
+675 src/townlet/training/historical_checkpoint.py
+2204 tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+3721 total
+
+$ git diff 0dc5a95de19925148917d884a3554d90221d7d26 -- src/townlet/training/replay_contract.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py > .superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX5-R104.diff
+exit 0
+Read-only Git diff into inert evidence; no Git mutation or executable source copy.

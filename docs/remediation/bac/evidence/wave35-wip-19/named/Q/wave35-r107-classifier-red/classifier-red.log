@@ -1,0 +1,1758 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 16 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FFFFFFFF [ 50%]
+FFFFFFFF                                                                 [100%]
+
+=================================== FAILURES ===================================
+_______________ test_archive_clone_graph_classification[scalar] ________________
+
+case = 'scalar'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac57638ec0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('scalar' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576392b0>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+___________ test_archive_clone_graph_classification[tensor-subclass] ___________
+
+case = 'tensor-subclass'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac57782210>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('tensor-subclass' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac57781d10>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+_______________ test_archive_clone_graph_classification[mapping] _______________
+
+case = 'mapping'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac57637ed0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('mapping' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac57637750>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+____________ test_archive_clone_graph_classification[list-subclass] ____________
+
+case = 'list-subclass'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac5756c9d0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('list-subclass' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac5756c8a0>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+_________________ test_archive_clone_graph_classification[key] _________________
+
+case = 'key'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac5756c2b0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('key' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac5756cc30>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+________________ test_archive_clone_graph_classification[kind] _________________
+
+case = 'kind'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac574d3ad0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('kind' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac574d3890>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+________________ test_archive_clone_graph_classification[count] ________________
+
+case = 'count'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac57625d00>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('count' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac57625370>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+________________ test_archive_clone_graph_classification[proxy] ________________
+
+case = 'proxy'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac57388050>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('proxy' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac573886b0>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+____________ test_archive_clone_graph_classification[numpy-object] _____________
+
+case = 'numpy-object'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac576cc950>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('numpy-object' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576cc850>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+__________ test_archive_clone_graph_classification[numpy-structured] ___________
+
+case = 'numpy-structured'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac576cd250>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('numpy-structured' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576cd150>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+___________ test_archive_clone_graph_classification[numpy-subclass] ____________
+
+case = 'numpy-subclass'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac576e9220>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('numpy-subclass' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576e9040>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+____________ test_archive_clone_graph_classification[numpy-scalar] _____________
+
+case = 'numpy-scalar'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac576e9d60>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('numpy-scalar' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576e9b80>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+________________ test_archive_clone_graph_classification[cycle] ________________
+
+case = 'cycle'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac574a99b0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('cycle' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac574a9550>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+____________ test_archive_clone_graph_classification[ordered-items] ____________
+
+case = 'ordered-items'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac574a84b0>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('ordered-items' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac574a8210>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+____________ test_archive_clone_graph_classification[tensor-detach] ____________
+
+case = 'tensor-detach'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac57653e10>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('tensor-detach' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac576c7380>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+__________ test_archive_clone_graph_classification[tensor-attribute] ___________
+
+case = 'tensor-attribute'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac5778bd10>
+
+    @pytest.mark.parametrize(
+        "case",
+        [
+            "native",
+            "primitives",
+            "alias",
+            "numpy-numeric",
+            "numpy-bool",
+            "scalar",
+            "tensor-subclass",
+            "mapping",
+            "list-subclass",
+            "key",
+            "kind",
+            "count",
+            "proxy",
+            "numpy-object",
+            "numpy-structured",
+            "numpy-subclass",
+            "numpy-scalar",
+            "cycle",
+            "ordered-items",
+            "tensor-detach",
+            "tensor-attribute",
+        ],
+    )
+    def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+        record = _native_archive_record("standard", 4)
+        state = record["original_state"]
+        calls: list[str] = []
+    
+        def unexpected(*args: Any, **kwargs: Any) -> Any:
+            calls.append(case)
+            raise AssertionError("Clone classification invoked an opaque protocol")
+    
+        class CloneScalar(int):
+            __deepcopy__ = unexpected
+    
+        class ProtocolMapping(dict):
+            items = unexpected
+    
+        class ProtocolList(list):
+            __iter__ = unexpected
+    
+        class ProtocolArray(np.ndarray):
+            __deepcopy__ = unexpected
+    
+        if case == "primitives":
+            state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+        elif case == "alias":
+            leaf = [1, {"value": torch.ones(1)}]
+            state["aliases"] = [leaf, leaf]
+        elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+            values = {
+                "numpy-numeric": np.ones(2, dtype=np.float32),
+                "numpy-bool": np.ones(2, dtype=np.bool_),
+                "numpy-object": np.array([CloneScalar(1)], dtype=object),
+                "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+                "numpy-subclass": np.ones(2).view(ProtocolArray),
+                "numpy-scalar": np.int64(1),
+            }
+            state["array"] = values[case]
+        elif case == "scalar":
+            record["source_formats"]["replay"] = CloneScalar(4)
+        elif case == "tensor-subclass":
+            state["observations"] = _CUDAData(state["observations"], 2)
+        elif case == "mapping":
+            record["original_state"] = ProtocolMapping(state)
+        elif case == "list-subclass":
+            state["nested"] = ProtocolList([1])
+        elif case == "key":
+            state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+        elif case == "kind":
+            state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+        elif case == "count":
+            state["size"] = _ArchiveCountOnClone(5)
+        elif case == "proxy":
+            record["original_state"] = MappingProxyType(state)
+        elif case == "cycle":
+            state["cycle"] = state
+        elif case == "ordered-items":
+            ordered = OrderedDict(state)
+            ordered.items = unexpected
+            assert type(ordered) is OrderedDict
+            record["original_state"] = ordered
+        elif case in ("tensor-detach", "tensor-attribute"):
+            tensor = state["observations"]
+            assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+            if case == "tensor-detach":
+                tensor.detach = unexpected
+            else:
+                tensor.harmless = 1
+        record["reward_semantics"] = "wrong"
+        prefix = ReplayPrefix(planning=True)
+        simulated_cuda.events.clear()
+        with pytest.raises(_ReplayPrefixStopError):
+            prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+        assert calls == [] and simulated_cuda.events == []
+>       assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+E       AssertionError: assert False is ('tensor-attribute' not in ('native', 'primitives', 'alias', 'numpy-numeric', 'numpy-bool'))
+E        +  where False = <townlet.training.replay_contract.ReplayPrefix object at 0x7fac5778ac90>.unknown
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2464: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[scalar]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-subclass]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[mapping]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[list-subclass]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[key]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[kind]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[count]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[proxy]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-object]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-structured]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-subclass]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-scalar]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[cycle]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[ordered-items]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-detach]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-attribute]
+============================== 16 failed in 1.47s ==============================

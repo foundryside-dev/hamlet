@@ -1,0 +1,143 @@
+{
+  "author": "/root/bac_astra_replay_fix4_resume_review",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_manifest": {
+    "bytes": 204142,
+    "path": "wave35/r105-candidate.json",
+    "root": "W",
+    "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+  },
+  "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+  "component_id": "wave35-next-checkpoint-r105-core-tests-only-history",
+  "draft_metadata_only": true,
+  "historical_rounds": [
+    {
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_manifest": {
+        "bytes": 204142,
+        "path": "wave35/r105-candidate.json",
+        "root": "W",
+        "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9"
+      },
+      "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+      "check_ids": [
+        "wave35-r105-collection--collection",
+        "wave35-r105-healthy-controls--healthy-controls",
+        "wave35-r105-invocation-red--invocation-red",
+        "wave35-r105-owned--owned",
+        "wave35-r105-static--ruff-test",
+        "wave35-r105-static--black-test"
+      ],
+      "preflight": {
+        "bytes": 3130,
+        "path": "wave35/r105-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "73ac98c9c73d252c4b5e0e6bbabcf74dd9da2c5ca7fccc34b8e6b394a6ea6c8e"
+      },
+      "round": 105,
+      "source_inventories": {
+        "W35-R0-CUDA-CORE": [
+          {
+            "lines": 821,
+            "path": "src/townlet/exploration/rng_custody.py",
+            "present": true,
+            "sha256": "0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477"
+          },
+          {
+            "lines": 1681,
+            "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "present": true,
+            "sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38"
+          }
+        ],
+        "W35-R0-CUDA-FLAT-PER-A": [
+          {
+            "lines": 842,
+            "path": "src/townlet/training/replay_contract.py",
+            "present": true,
+            "sha256": "3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c"
+          },
+          {
+            "lines": 816,
+            "path": "src/townlet/training/replay_buffer.py",
+            "present": true,
+            "sha256": "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d"
+          },
+          {
+            "lines": 1310,
+            "path": "src/townlet/training/prioritized_replay_buffer.py",
+            "present": true,
+            "sha256": "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29"
+          }
+        ]
+      },
+      "source_patch": {
+        "bytes": 107096,
+        "path": "evidence-management/wip19-preparation/r105-owned-candidate.patch",
+        "root": "W",
+        "sha256": "ca53a264a2498f00eace2b9e80857c1099c9069094b58fdab13cd534284ca62a"
+      }
+    }
+  ],
+  "interval_start": 105,
+  "inventory_authorities": [
+    {
+      "bytes": 97339,
+      "path": "evidence-management/wip19-preparation/r105-evidence-inventory-v1.json",
+      "root": "W",
+      "sha256": "0cf1abe945be7dfd94546d86abe3576905078ec7dfc9c1cc48a4121928a6a660"
+    }
+  ],
+  "mutable_alias_handling": "Mutable implementation report excluded; exact7054f6a3 tests-only bytes frozen.",
+  "overlap_accounting": "Three healthy controls and nine causal failures belong to R105. Collection76 is not76 passes. Do not add historical repeated controls to programme coverage.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_component": {
+    "bytes": 9075,
+    "path": "evidence-management/wip19-preparation/r103-r104-history-component-v1.json",
+    "root": "W",
+    "sha256": "ee6330ff4a3de6d96f67ff2ea1576622d1e5df6f1608d467195d283d09cf5901"
+  },
+  "provenance_limits": "Metadata/hash processing only; five-path Git diff redirected to inert patch without source inspection; no source/index mutation, imports, application execution, selector or assembly.",
+  "remaining_required_work": [
+    "Active/unsealed R106 excluded. No future implementation result or acceptance inferred from production baton.",
+    "Actual checkpoint terminal/contract/subject/terminal review/receipt remain future explicit.",
+    "Missing original absolute UTC starts/ends remain null; durations retained.",
+    "Process topology/actual workers and helper required-by closure need root reconciliation; no implementation/tool bodies inspected.",
+    "Execution-subtree bindings and authenticated full catalog selection remain future; inert patch preserves five changed paths only.",
+    "Required replay clone-stability P2 remains open independently of core tests; no A/B/hardware/producer-child acceptance."
+  ],
+  "report_snapshots": [
+    {
+      "bytes": 6050,
+      "path": "evidence-management/wip19-preparation/R105-TESTS-ONLY-REPORT-SNAPSHOT.txt",
+      "root": "W",
+      "sha256": "7054f6a3e31c881dfd86842d99bea16724c9736fca3366762ef0ec409618878a"
+    }
+  ],
+  "retained_outcomes": {
+    "collected": 76,
+    "custody": "Root verified PASS",
+    "healthy_controls_passed": 3,
+    "intended_missing_API_failures": 9,
+    "owned_curriculum_template": "UNRUN",
+    "replay_clone_stability_P2": "OPEN; R104 F2 source PASS superseded",
+    "source_state": "Core production unchanged at tests-only freeze; R106 excluded",
+    "static": "Ruff/Black PASS"
+  },
+  "review_history_supplement": {
+    "bytes": 2333,
+    "path": "evidence-management/wip19-preparation/r104-completed-review-history-supplement-v1.json",
+    "root": "W",
+    "sha256": "0b7b2389590dc5e315f9f5d9642e1754228d3bb7a82117ca8e6db394c0773da0"
+  },
+  "root_disposition": null,
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "R105 tests-only causal history and append-only completed R104 review supplement; active R106 excluded. No application acceptance.",
+  "series": "wave35",
+  "status": "FROZEN HISTORICAL COMPONENT PROPOSAL; ROOT REVIEW AND ACCEPTANCE REQUIRED",
+  "terminal_historical_round": 105
+}

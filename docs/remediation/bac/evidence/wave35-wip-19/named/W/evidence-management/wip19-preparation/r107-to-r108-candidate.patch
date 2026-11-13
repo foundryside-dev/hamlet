@@ -1,0 +1,68 @@
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index 535b1892de026d3ba1a644c441c5fc00d40cc8bf..b5f946c83fda84189af120a56933d6b5ba3b9b66 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -47,6 +47,39 @@ class _ReplayPrefixStopError(Exception):
+     """Internal planning stop; never a validation or publication result."""
+ 
+ 
++def _archive_clone_stable(value: object, active: set[int]) -> bool:
++    """Certify an ordinary clone graph without invoking its clone protocols."""
++    value_type = type(value)
++    if any(value_type is scalar for scalar in (type(None), bool, int, float, str, bytes)):
++        return True
++    if value_type is Tensor:
++        # Exact native tensors can still carry per-instance detach overrides.
++        # Base access avoids user lookup; any instance state makes this opaque.
++        try:
++            attributes = object.__getattribute__(value, "__dict__")
++        except (AttributeError, TypeError):
++            return False
++        return type(attributes) is dict and not attributes
++    if value_type is np.ndarray:
++        dtype = cast(npt.NDArray[Any], value).dtype
++        return not dtype.hasobject and dtype.kind in "biufc"
++    if not any(value_type is container for container in (dict, list, tuple)):
++        return False  # Includes OrderedDict, Mapping views and all subclasses.
++    identity = id(value)
++    if identity in active:
++        return False
++    active.add(identity)
++    try:
++        if value_type is dict:
++            return all(
++                _archive_clone_stable(key, active) and _archive_clone_stable(item, active)
++                for key, item in cast(dict[object, object], value).items()
++            )
++        return all(_archive_clone_stable(item, active) for item in cast(list[object] | tuple[object, ...], value))
++    finally:
++        active.remove(identity)
++
++
+ class ReplayPrefix:
+     """Run real validation, or record its possible effects without value work."""
+ 
+@@ -106,7 +139,13 @@ class ReplayPrefix:
+         self.keys(record, keys)
+         if set(record) != keys:
+             raise _ReplayPrefixStopError
+-        self.values.extend((record["source_formats"], record["original_state"]))
++        clone_inputs = (record["source_formats"], record["original_state"])
++        self.values.extend(clone_inputs)
++        # Either entire clone graph can affect later metadata before validation.
++        # Opaque cloning preserves possible continuation, never runtime refusal.
++        if not all(_archive_clone_stable(value, set()) for value in clone_inputs):
++            self.unknown = True
++            raise _ReplayPrefixStopError
+         for field, expected in (("reward_semantics", REWARD_SEMANTICS), ("approval_reference", APPROVAL_REFERENCE)):
+             value = record[field]
+             self.opaque(value)
+@@ -116,7 +155,7 @@ class ReplayPrefix:
+         count = record["archived_row_count"]
+         if type(count) is not int or count < 0:
+             raise _ReplayPrefixStopError
+-        state = record["original_state"]
++        state = clone_inputs[1]
+         if isinstance(state, Mapping):
+             # _clone consumes items, normalizing Mapping inputs while cloning
+             # their keys and values. Only exact string keys preserve this view;

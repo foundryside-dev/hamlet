@@ -1,0 +1,16 @@
+{
+  "cases": [
+    "cuda-core-bootstrap-failure",
+    "cuda-core-inherited-pid",
+    "cuda-core-local-completion-duplicate-parent",
+    "cuda-core-local-completion-multiple-body",
+    "cuda-core-local-completion-single",
+    "cuda-core-operation-body-completion",
+    "cuda-core-poison-ready-healthy-only",
+    "cuda-core-poison-ready-qualified",
+    "cuda-core-poison-unknown-ready",
+    "cuda-core-runtime-query-failure"
+  ],
+  "scope": "Existing ten isolated roles on changed shared core; no new invocation child/fork outcome qualification claimed",
+  "workers_per_spec": 1
+}

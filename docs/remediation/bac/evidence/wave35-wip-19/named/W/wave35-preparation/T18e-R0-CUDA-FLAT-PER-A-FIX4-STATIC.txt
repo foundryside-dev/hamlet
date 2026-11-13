@@ -1,0 +1,52 @@
+FIX4 author static transcript; cwd=/workspace/hamlet. No application imports/collection/tests.
+
+$ wc -l src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+After required family replacements, before shared growth:
+799 / 816 / 1310 / 2045 =4970.
+Final: 822 / 816 / 1310 / 2045 =4993.
+
+$ .venv/bin/ruff check src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit0
+All checks passed!
+
+$ UV_CACHE_DIR=/tmp/bac-a-fix4-uv-cache uv run --no-sync black --check src/townlet/training/replay_contract.py
+exit0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+$ UV_CACHE_DIR=/tmp/bac-a-fix4-uv-cache uv run --no-sync black --check src/townlet/training/replay_buffer.py
+exit0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+$ UV_CACHE_DIR=/tmp/bac-a-fix4-uv-cache uv run --no-sync black --check src/townlet/training/prioritized_replay_buffer.py
+exit0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+$ UV_CACHE_DIR=/tmp/bac-a-fix4-uv-cache uv run --no-sync black --check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+
+$ .venv/bin/mypy src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py --follow-imports=silent
+Initial exit1:
+src/townlet/training/replay_contract.py:444: error: "AmbientRNGDomain" has no attribute "device_invocation"; maybe "device_operation"?  [attr-defined]
+src/townlet/training/replay_buffer.py:562: error: Argument 1 to "keys" of "ReplayPrefix" has incompatible type "Mapping[str, Any]"; expected "Mapping[object, object]"  [arg-type]
+src/townlet/training/prioritized_replay_buffer.py:966: error: Argument 1 to "keys" of "ReplayPrefix" has incompatible type "Mapping[str, Any]"; expected "Mapping[object, object]"  [arg-type]
+Found 3 errors in 3 files (checked 3 source files)
+
+Corrected keys annotation to Mapping[Any, object] to accept invariant Mapping key parameter. No ignore/fallback added.
+Repeated identical Ruff-owned and shared Black-check commands above: exit0 with identical outputs.
+Repeated identical owned mypy command above, final exit1:
+src/townlet/training/replay_contract.py:444: error: "AmbientRNGDomain" has no attribute "device_invocation"; maybe "device_operation"?  [attr-defined]
+Found 1 error in 1 file (checked 3 source files)
+
+$ git diff 0b17ef1e48a6efc6e52bc814812439d4035e5447 -- src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py > .superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX4-R102.diff
+exit0, empty stdout. Inert owned-four diff only; no Git write or executable source copy.
+$ git diff --stat 0b17ef1e48a6efc6e52bc814812439d4035e5447 -- src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+4 files changed, 127 insertions(+), 6 deletions(-)
+
+Final hashes:
+cd7a913f53fac09f3d8a4edc403fcedce85e4cee84007a361ecaf4298eef272b  src/townlet/training/replay_contract.py
+683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d  src/townlet/training/replay_buffer.py
+7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29  src/townlet/training/prioritized_replay_buffer.py
+75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04  tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+28098d47ae3d7b0d805d7968a6d7bf16f2b5687d3ee0681f8ec74d2818250eec  T18e-R0-CUDA-FLAT-PER-A-FIX4-R102.diff

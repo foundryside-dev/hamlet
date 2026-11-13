@@ -1,0 +1,49 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r104-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix5-fixtures",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix5-fixtures",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[above-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[above-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[above-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[below-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[below-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[below-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[zero-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[zero-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[zero-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[digest-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[digest-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[digest-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[later-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[later-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[later-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[match-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[match-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[match-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[clone-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[clone-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[clone-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[mapping-standard]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[mapping-prioritized]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_fixture[mapping-sequential]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_opaque_key_fixture[top-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_opaque_key_fixture[top-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_opaque_key_fixture[archive-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_opaque_key_fixture[archive-per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

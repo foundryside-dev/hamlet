@@ -1,0 +1,1420 @@
+diff --git a/src/townlet/training/prioritized_replay_buffer.py b/src/townlet/training/prioritized_replay_buffer.py
+index 147016cb7e8acfeae3bc0b29390dc25aaa263397..276360e64df8be0d39c5ef79b3b53637a0b68664 100644
+--- a/src/townlet/training/prioritized_replay_buffer.py
++++ b/src/townlet/training/prioritized_replay_buffer.py
+@@ -26,6 +26,7 @@ from townlet.training.replay_contract import (
+     PreparedReplay,
+     ReplayBatch,
+     ReplayCustody,
++    ReplayPrefix,
+     ReplayReadiness,
+     ReplayRequest,
+     SamplingReceipt,
+@@ -206,7 +207,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+     ) -> tuple[torch.device | None, tuple[object, ...]]:
+         retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
+         if route in ("push", "push_recorded"):
+-            return self._push_inventory(route, args, kwargs, retained)
++            return self._push_inventory(route, args, kwargs, retained, size=self.size_current)
+         if route == "declare_unconstrained_action_dim":
+             width = kwargs.get("action_dim")
+             return (self.device, (self.actions,)) if self.action_dim is None and type(width) is int and width > 0 else (None, ())
+@@ -221,31 +222,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         if route == "install_historical_archive":
+             return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
+         if route in ("validate_serialized", "prepare_serialized"):
+-            state = self._replay_argument(args, kwargs, 0, "state")
+-            if not isinstance(state, Mapping):
+-                return None, ()
+-            version = state.get("format_version")
+-            if type(version) is not int:
+-                return None, (version,)
+-            if version == 4:
+-                keys = _LEGACY_STATE_KEYS
+-            elif version == 5:
+-                keys = _CAPTURED_STATE_KEYS
+-            elif version == PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
+-                keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
+-            else:
+-                return None, (version,)
+-            if any(not isinstance(key, str) for key in state) or set(state) != keys:
+-                return None, tuple(state)
+-            kind, capacity = state.get("replay_kind"), state.get("capacity")
+-            if type(kind) is str and kind == PRIORITIZED_REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
+-                return None, ()
+-            if route == "prepare_serialized":
+-                values = (state, *retained, self._historical_archives)
+-                if version != 4:
+-                    return self._transport_target(state, "size_current", strict=False), values
+-                return None, values
+-            return None, (state,)
++            return self._transport_inventory(
++                self._replay_argument(args, kwargs, 0, "state"), route, kwargs.get("expected_obs_dim"), count_field="size_current"
++            )
+         if route == "materialize_validated":
+             state = self._replay_argument(args, kwargs, 0, "state")
+             if not isinstance(state, _ValidatedPrioritizedState):
+@@ -321,13 +300,16 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         self._sampler = sampler
+ 
+     @staticmethod
+-    def _closed_mapping(value: object, keys: tuple[str, ...], field: str) -> Mapping[str, Any]:
++    def _closed_mapping(value: object, keys: tuple[str, ...], field: str, *, prefix: ReplayPrefix) -> Mapping[str, Any]:
++        if prefix.planning and isinstance(value, Mapping):
++            for key in value:
++                prefix.opaque(key)
+         if not isinstance(value, Mapping) or set(value) != set(keys):
+             raise ValueError(f"PER {field} has an invalid closed key set")
+         return value
+ 
+     @classmethod
+-    def _restore_generator(cls, kind: str, raw: object) -> np.random.Generator:
++    def _restore_generator(cls, kind: str, raw: object, *, prefix: ReplayPrefix) -> np.random.Generator:
+         """Validate known engine state, then install it on an off-side engine."""
+         if type(kind) is not str or kind not in _BIT_GENERATORS:
+             raise ValueError("PER sampling_rng bit_generator kind is unsupported")
+@@ -338,7 +320,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             keys = ("bit_generator", "state", "buffer", "buffer_pos", "has_uint32", "uinteger")
+         else:
+             keys = ("bit_generator", "state", "has_uint32", "uinteger")
+-        state = cls._closed_mapping(raw, keys, "sampling_rng.state")
++        state = cls._closed_mapping(raw, keys, "sampling_rng.state", prefix=prefix)
+         if type(state["bit_generator"]) is not str or state["bit_generator"] != kind:
+             raise ValueError("PER sampling_rng engine kind disagrees with its state")
+ 
+@@ -347,31 +329,38 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 raise ValueError(f"PER sampling_rng {field} dtype/shape is invalid")
+ 
+         if kind in ("PCG64", "PCG64DXSM"):
+-            nested = cls._closed_mapping(state["state"], ("state", "inc"), "sampling_rng.state.state")
+-            cls._require_int(nested["state"], "sampling_rng.state.state.state", minimum=0, maximum=2**128 - 1)
+-            increment = cls._require_int(nested["inc"], "sampling_rng.state.state.inc", minimum=1, maximum=2**128 - 1)
++            nested = cls._closed_mapping(state["state"], ("state", "inc"), "sampling_rng.state.state", prefix=prefix)
++            prefix.scalar(
++                nested["state"], lambda value: cls._require_int(value, "sampling_rng.state.state.state", minimum=0, maximum=2**128 - 1)
++            )
++            increment = prefix.scalar(
++                nested["inc"], lambda value: cls._require_int(value, "sampling_rng.state.state.inc", minimum=1, maximum=2**128 - 1)
++            )
+             if increment % 2 != 1:
+                 raise ValueError("PER sampling_rng PCG increment must be odd")
+         elif kind == "MT19937":
+-            nested = cls._closed_mapping(state["state"], ("key", "pos"), "sampling_rng.state.state")
++            nested = cls._closed_mapping(state["state"], ("key", "pos"), "sampling_rng.state.state", prefix=prefix)
+             array(nested["key"], np.dtype(np.uint32), (624,), "MT19937 key")
+-            if not np.any(nested["key"]):
+-                raise ValueError("PER sampling_rng MT19937 key cannot be all zero")
+-            cls._require_int(nested["pos"], "sampling_rng.state.state.pos", minimum=0, maximum=624)
++            prefix.require(lambda: bool(np.any(nested["key"])), "PER sampling_rng MT19937 key cannot be all zero", (nested["key"],))
++            prefix.scalar(nested["pos"], lambda value: cls._require_int(value, "sampling_rng.state.state.pos", minimum=0, maximum=624))
+         elif kind == "Philox":
+-            nested = cls._closed_mapping(state["state"], ("counter", "key"), "sampling_rng.state.state")
++            nested = cls._closed_mapping(state["state"], ("counter", "key"), "sampling_rng.state.state", prefix=prefix)
+             array(nested["counter"], np.dtype(np.uint64), (4,), "Philox counter")
+             array(nested["key"], np.dtype(np.uint64), (2,), "Philox key")
+             array(state["buffer"], np.dtype(np.uint64), (4,), "Philox buffer")
+-            cls._require_int(state["buffer_pos"], "sampling_rng.state.buffer_pos", minimum=0, maximum=4)
++            prefix.scalar(state["buffer_pos"], lambda value: cls._require_int(value, "sampling_rng.state.buffer_pos", minimum=0, maximum=4))
+         else:
+-            nested = cls._closed_mapping(state["state"], ("state",), "sampling_rng.state.state")
++            nested = cls._closed_mapping(state["state"], ("state",), "sampling_rng.state.state", prefix=prefix)
+             array(nested["state"], np.dtype(np.uint64), (4,), "SFC64 state")
+         if kind != "MT19937":
+-            cls._require_int(state["has_uint32"], "sampling_rng.state.has_uint32", minimum=0, maximum=1)
+-            cls._require_int(state["uinteger"], "sampling_rng.state.uinteger", minimum=0, maximum=2**32 - 1)
++            prefix.scalar(state["has_uint32"], lambda value: cls._require_int(value, "sampling_rng.state.has_uint32", minimum=0, maximum=1))
++            prefix.scalar(
++                state["uinteger"], lambda value: cls._require_int(value, "sampling_rng.state.uinteger", minimum=0, maximum=2**32 - 1)
++            )
+         # Zero is an explicit restore-only placeholder, immediately replaced by
+         # the complete validated saved state. No draw uses this placeholder.
++        prefix.values.append(state)
++        prefix.finish()
+         engine = _BIT_GENERATORS[kind](0)
+         try:
+             engine.state = copy.deepcopy(dict(state))
+@@ -380,7 +369,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         return np.random.Generator(engine)
+ 
+     @classmethod
+-    def _validate_sampler(cls, state: Mapping[str, Any]) -> _SamplerConfiguration:
++    def _sampler_validation(cls, state: Mapping[str, Any], *, prefix: ReplayPrefix) -> _SamplerConfiguration:
+         mode, origin = state["sampling_mode"], state["sampling_origin"]
+         if type(mode) is not str or mode not in per_sampling.WEIGHT_RULES:
+             raise ValueError("PER sampling_mode is unsupported")
+@@ -390,7 +379,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             raise ValueError("PER sampling_objective_unit must be transition")
+         if type(state["sampling_weight_rule"]) is not str or state["sampling_weight_rule"] != per_sampling.WEIGHT_RULES[mode]:
+             raise ValueError("PER sampling_weight_rule contradicts sampling_mode")
+-        descriptor = cls._closed_mapping(state["sampling_rng"], ("ownership", "bit_generator", "state"), "sampling_rng")
++        descriptor = cls._closed_mapping(state["sampling_rng"], ("ownership", "bit_generator", "state"), "sampling_rng", prefix=prefix)
+         ownership = descriptor["ownership"]
+         if type(ownership) is not str:
+             raise ValueError("PER sampling_rng ownership must be a string")
+@@ -406,11 +395,16 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         elif ownership == "owned_numpy_generator":
+             if origin not in ("authored", "bac-options-v1"):
+                 raise ValueError("PER owned Generator requires authored or bac-options-v1 origin")
+-            rng = cls._restore_generator(descriptor["bit_generator"], descriptor["state"])
++            rng = cls._restore_generator(descriptor["bit_generator"], descriptor["state"], prefix=prefix)
+         else:
+             raise ValueError("PER sampling_rng ownership is unsupported")
++        prefix.finish()
+         return _SamplerConfiguration(mode, origin, "transition", per_sampling.WEIGHT_RULES[mode], rng)
+ 
++    @classmethod
++    def _validate_sampler(cls, state: Mapping[str, Any]) -> _SamplerConfiguration:
++        return cls._sampler_validation(state, prefix=ReplayPrefix(planning=False))
++
+     @staticmethod
+     def _sampler_metadata(sampler: _SamplerConfiguration) -> dict[str, Any]:
+         descriptor: dict[str, Any] = {"ownership": "numpy_global_legacy", "bit_generator": None, "state": None}
+@@ -482,6 +476,8 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         rewards: RewardTensor,
+         next_observations: torch.Tensor,
+         dones: torch.Tensor,
++        *,
++        prefix: ReplayPrefix,
+     ) -> int:
+         if observations.ndim != 2 or observations.dtype != torch.float32 or observations.shape[1] < 1:
+             raise ValueError("observations must be 2D with dtype torch.float32 and positive observation width")
+@@ -504,8 +500,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             )
+         if self.observations is not None and obs_dim != self.observations.shape[1]:
+             raise ValueError(f"observations obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]})")
+-        if bool((actions < 0).any()):
+-            raise ValueError("actions must be nonnegative")
++        prefix.require(lambda: not bool((actions < 0).any()), "actions must be nonnegative", (actions,))
+         for name, value in (
+             ("observations", observations),
+             ("next_observations", next_observations),
+@@ -518,8 +513,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 continue
+             if name.startswith("rewards.") and (value.shape != (batch_size,) or value.dtype != torch.float32):
+                 raise ValueError(f"{name} must have shape ({batch_size},) and dtype torch.float32")
+-            if not bool(torch.isfinite(value).all()):
+-                raise ValueError(f"{name} must contain only finite values")
++            prefix.require(lambda: bool(torch.isfinite(value).all()), f"{name} must contain only finite values", (value,))
+         return batch_size
+ 
+     @replay_local(mutation=True)
+@@ -574,23 +568,26 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             raise ValueError("PER max_priority must convert to a positive finite float32 insertion priority")
+         return priority
+ 
++    def _push_commit_metadata(self, batch: int, *, prefix: ReplayPrefix) -> np.float32:
++        counter = self.next_unit_id
++        prefix.opaque(counter)
++        if counter > _MAX_UNIT_COUNTER - batch:
++            raise OverflowError("PER unit ID counter exhausted before insertion")
++        maximum = self.max_priority
++        prefix.opaque(maximum)
++        return self._insertion_priority(maximum)
++
+     def _push(self, observations, actions, rewards, next_observations, dones, masks) -> None:
+-        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones)
+-        action_dim = self.action_dim
++        prefix = ReplayPrefix(planning=False)
++        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones, prefix=prefix)
++        width = None
+         if masks is not None:
+-            validate_successor_masks(masks, dones, action_dim=masks.shape[1])
+-            if action_dim is not None and masks.shape[1] != action_dim:
+-                raise ValueError("successor action width differs from current buffer action vocabulary")
+-            action_dim = masks.shape[1]
+-            if bool((actions >= action_dim).any()):
+-                raise ValueError("actions outside the declared action vocabulary")
+-            if self.actions is not None and bool((self.actions[: self.size_current] >= action_dim).any()):
+-                raise ValueError("existing unconstrained actions exceed the supplied action vocabulary")
++            prefix.masks(masks, dones, action_dim=masks.shape[1])
++            width = masks.shape[1]
++        action_dim = self._push_action_dim(actions, width, size=self.size_current, prefix=prefix)
+         if not batch_size:
+             return
+-        if self.next_unit_id > _MAX_UNIT_COUNTER - batch_size:
+-            raise OverflowError("PER unit ID counter exhausted before insertion")
+-        insertion_priority = self._insertion_priority(self.max_priority)
++        insertion_priority = self._push_commit_metadata(batch_size, prefix=prefix)
+         values = {
+             "observations": observations,
+             "actions": actions,
+@@ -907,7 +904,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         return result
+ 
+     @staticmethod
+-    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
++    def _require_tensor(
++        state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...], prefix: ReplayPrefix
++    ) -> torch.Tensor:
+         value = state[field]
+         if not isinstance(value, torch.Tensor):
+             raise ValueError(f"PER checkpoint {field} must be a tensor; got {type(value).__name__}. Regenerate the checkpoint.")
+@@ -915,28 +914,41 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             raise ValueError(f"PER checkpoint {field} dtype is {value.dtype}; expected {dtype}. Regenerate the checkpoint.")
+         if tuple(value.shape) != shape:
+             raise ValueError(f"PER checkpoint {field} shape is {tuple(value.shape)}; expected {shape}. Regenerate the checkpoint.")
+-        if dtype.is_floating_point and not bool(torch.isfinite(value).all()):
+-            raise ValueError(f"PER checkpoint {field} must contain only finite values. Regenerate the checkpoint.")
+-        return value.detach().clone()
++        if dtype.is_floating_point:
++            prefix.require(
++                lambda: bool(torch.isfinite(value).all()),
++                f"PER checkpoint {field} must contain only finite values. Regenerate the checkpoint.",
++                (value,),
++            )
++        return prefix.tensor(value)
+ 
+     @classmethod
+-    def _validate_identity(cls, state: Mapping[str, Any], capacity: int, size: int) -> tuple[np.ndarray, int]:
++    def _validate_identity(cls, state: Mapping[str, Any], capacity: int, size: int, *, prefix: ReplayPrefix) -> tuple[np.ndarray, int]:
+         unit_ids = state["unit_ids"]
+         if not isinstance(unit_ids, np.ndarray) or unit_ids.dtype != np.int64 or unit_ids.shape != (capacity,):
+             raise ValueError("PER unit_ids must be a capacity-length int64 array")
+-        counter = cls._require_int(state["next_unit_id"], "next_unit_id", minimum=0, maximum=_MAX_UNIT_COUNTER)
++        counter = prefix.scalar(
++            state["next_unit_id"], lambda value: cls._require_int(value, "next_unit_id", minimum=0, maximum=_MAX_UNIT_COUNTER)
++        )
+         live = unit_ids[:size]
+-        if np.any(live < 0) or np.any(live >= counter) or len(np.unique(live)) != size:
+-            raise ValueError("PER live unit_ids must be unique nonnegative IDs strictly below next_unit_id")
+-        if np.any(unit_ids[size:] != -1):
+-            raise ValueError("PER inactive unit_ids must use -1")
++        prefix.require(
++            lambda: not (np.any(live < 0) or np.any(live >= counter) or len(np.unique(live)) != size),
++            "PER live unit_ids must be unique nonnegative IDs strictly below next_unit_id",
++            (unit_ids,),
++        )
++        prefix.require(lambda: not bool(np.any(unit_ids[size:] != -1)), "PER inactive unit_ids must use -1", (unit_ids,))
++        if prefix.planning:
++            return unit_ids, counter
+         return unit_ids.copy(), counter
+ 
+-    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedPrioritizedState:
++    def _serialized_validation(
++        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, prefix: ReplayPrefix
++    ) -> _ValidatedPrioritizedState:
+         if not isinstance(state, Mapping):
+             raise ValueError(f"Prioritized replay checkpoint payload must be a mapping; got {type(state).__name__}.")
+         version = state.get("format_version")
+         if type(version) is not int or version not in (4, 5, PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION):
++            prefix.scalar(version, lambda value: None)
+             raise ValueError(f"Cannot load PER checkpoint with format_version {version!r}; supported format_version values are 4, 5 and 6.")
+         legacy = version == 4
+         if legacy:
+@@ -945,25 +957,29 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             expected_keys = _CAPTURED_STATE_KEYS
+         else:
+             expected_keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
+-        if state.get("replay_kind") != PRIORITIZED_REPLAY_BUFFER_KIND:
++        kind = state.get("replay_kind")
++        prefix.opaque(kind)
++        if kind != PRIORITIZED_REPLAY_BUFFER_KIND:
+             raise ValueError(
+                 f"PER checkpoint replay_kind is {state.get('replay_kind')!r}; expected 'prioritized'. Regenerate the checkpoint."
+             )
++        for key in state:
++            prefix.opaque(key)
+         if set(state) != expected_keys:
+             raise ValueError(
+                 f"PER checkpoint key set mismatch: missing={sorted(expected_keys - set(state))}, "
+                 f"unknown={sorted(set(state) - expected_keys)}. Regenerate the checkpoint."
+             )
+-        capacity = self._require_int(state["capacity"], "capacity", minimum=1, maximum=2**63 - 1)
++        capacity = prefix.scalar(state["capacity"], lambda value: self._require_int(value, "capacity", minimum=1, maximum=2**63 - 1))
+         if capacity != self.capacity:
+             raise ValueError(
+                 f"PER checkpoint capacity is {capacity}; current capacity is {self.capacity}. "
+                 "Regenerate the checkpoint for this configuration."
+             )
+-        alpha = self._require_float(state["alpha"], "alpha", minimum=0.0, maximum=1.0)
++        alpha = prefix.scalar(state["alpha"], lambda value: self._require_float(value, "alpha", minimum=0.0, maximum=1.0))
+         if alpha != self.alpha:
+             raise ValueError(f"PER checkpoint alpha is {alpha}; current alpha is {self.alpha}. Regenerate the checkpoint.")
+-        initial = self._require_float(state["beta_initial"], "beta_initial", minimum=0.0, maximum=1.0)
++        initial = prefix.scalar(state["beta_initial"], lambda value: self._require_float(value, "beta_initial", minimum=0.0, maximum=1.0))
+         if initial != self.beta_initial:
+             raise ValueError(
+                 f"PER checkpoint beta_initial is {initial}; current beta_initial is {self.beta_initial}. Regenerate the checkpoint."
+@@ -975,11 +991,11 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             raise ValueError(
+                 f"PER checkpoint beta_annealing is {annealing}; current beta_annealing is {self.beta_annealing}. Regenerate the checkpoint."
+             )
+-        beta = self._require_float(state["beta"], "beta", minimum=initial, maximum=1.0)
++        beta = prefix.scalar(state["beta"], lambda value: self._require_float(value, "beta", minimum=initial, maximum=1.0))
+         if not annealing and beta != initial:
+             raise ValueError("PER checkpoint beta must equal beta_initial when beta annealing is disabled. Regenerate the checkpoint.")
+-        size = self._require_int(state["size_current"], "size_current", minimum=0, maximum=capacity)
+-        position = self._require_int(state["position"], "position", minimum=0, maximum=capacity - 1)
++        size = prefix.scalar(state["size_current"], lambda value: self._require_int(value, "size_current", minimum=0, maximum=capacity))
++        position = prefix.scalar(state["position"], lambda value: self._require_int(value, "position", minimum=0, maximum=capacity - 1))
+         if size < capacity and position != size:
+             raise ValueError(f"PER checkpoint position is {position}; expected {size} before wrap. Regenerate the checkpoint.")
+         priorities = state["priorities"]
+@@ -991,17 +1007,28 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             raise ValueError(f"PER checkpoint priorities dtype is {priorities.dtype}; expected float32. Regenerate the checkpoint.")
+         if priorities.shape != (capacity,):
+             raise ValueError(f"PER checkpoint priorities shape is {priorities.shape}; expected {(capacity,)}. Regenerate the checkpoint.")
+-        if not bool(np.isfinite(priorities).all()):
+-            raise ValueError("PER checkpoint priorities must contain only finite values. Regenerate the checkpoint.")
+-        if np.any(priorities[:size] <= 0) or np.any(priorities[size:] < 0):
+-            raise ValueError("PER checkpoint priorities are outside the valid positive/zero ranges. Regenerate the checkpoint.")
+-        maximum = self._require_float(state["max_priority"], "max_priority", minimum=0.0, maximum=float("inf"))
++        prefix.require(
++            lambda: bool(np.isfinite(priorities).all()),
++            "PER checkpoint priorities must contain only finite values. Regenerate the checkpoint.",
++            (priorities,),
++        )
++        prefix.require(
++            lambda: not (np.any(priorities[:size] <= 0) or np.any(priorities[size:] < 0)),
++            "PER checkpoint priorities are outside the valid positive/zero ranges. Regenerate the checkpoint.",
++            (priorities,),
++        )
++        maximum = prefix.scalar(
++            state["max_priority"], lambda value: self._require_float(value, "max_priority", minimum=0.0, maximum=float("inf"))
++        )
+         if maximum <= 0:
+             raise ValueError("PER checkpoint max_priority must be positive. Regenerate the checkpoint.")
+         if not legacy:
+             self._insertion_priority(maximum)
+-        if size and maximum < float(priorities[:size].max()):
+-            raise ValueError("PER checkpoint max_priority is below an active priority. Regenerate the checkpoint.")
++        prefix.require(
++            lambda: not (size and maximum < float(priorities[:size].max())),
++            "PER checkpoint max_priority is below an active priority. Regenerate the checkpoint.",
++            (priorities,),
++        )
+         geometry: int | None = None
+         mode = "unconstrained"
+         archives: tuple[history.HistoricalReplayArchive, ...] = ()
+@@ -1011,14 +1038,16 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 raise ValueError("PER checkpoint legality_mode is unsupported")
+             geometry = state["action_dim"]
+             if mode == "recorded":
+-                self._require_int(geometry, "action_dim", minimum=1, maximum=2**63 - 1)
++                prefix.scalar(geometry, lambda value: self._require_int(value, "action_dim", minimum=1, maximum=2**63 - 1))
+                 if self.action_dim is not None and geometry != self.action_dim:
+                     raise ValueError("PER checkpoint action_dim differs from current buffer vocabulary")
+             elif geometry is not None:
+                 raise ValueError("Unconstrained PER cannot claim an action width")
+             if not isinstance(state["historical_archives"], list):
+                 raise ValueError("PER checkpoint historical_archives must be a list")
+-            archives = tuple(self._own_archive(history._archive_from_state(item)) for item in state["historical_archives"])
++            archives = tuple(
++                prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
++            )
+         tensors: dict[str, Any] = dict.fromkeys(_STORAGE_FIELDS)
+         obs_dim = None
+         if not size:
+@@ -1038,6 +1067,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             obs_dim = observations.shape[1]
+             if obs_dim <= 0:
+                 raise ValueError("PER checkpoint observations obs_dim must be positive. Regenerate the checkpoint.")
++            prefix.opaque(expected_obs_dim)
+             if expected_obs_dim is not None and obs_dim != expected_obs_dim:
+                 raise ValueError(
+                     f"PER checkpoint obs_dim is {obs_dim}; expected current obs_dim {expected_obs_dim}. Regenerate the checkpoint."
+@@ -1061,42 +1091,59 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                     dtype = torch.bool
+                 else:
+                     dtype = torch.float32
+-                tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape)
++                tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape, prefix=prefix)
+                 if not legacy and tensors[name].device != observations.device:
+                     raise ValueError("PER checkpoint row tensor devices must agree")
+             if not legacy:
+-                if bool((tensors["actions"] < 0).any()):
+-                    raise ValueError("PER checkpoint actions must be nonnegative")
++                prefix.require(
++                    lambda: not bool((tensors["actions"] < 0).any()), "PER checkpoint actions must be nonnegative", (tensors["actions"],)
++                )
+                 for name in _COMPONENTS:
+-                    present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,))
++                    present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,), prefix=prefix)
+                     if present.device != observations.device:
+                         raise ValueError("PER checkpoint presence devices must agree with rows")
+                     value = tensors[name]
+                     if value is None:
+-                        if bool(present.any()):
+-                            raise ValueError(f"PER checkpoint {name} omits recorded component values")
+-                    elif not bool(present.any()) or bool((value[~present] != 0).any()):
+-                        raise ValueError(f"PER checkpoint {name} has invalid absent-component placeholders")
++                        prefix.require(
++                            lambda: not bool(present.any()), f"PER checkpoint {name} omits recorded component values", (present,)
++                        )
++                    else:
++                        prefix.require(
++                            lambda: bool(present.any()) and not bool((value[~present] != 0).any()),
++                            f"PER checkpoint {name} has invalid absent-component placeholders",
++                            (present, value),
++                        )
+                     tensors[f"{name}_present"] = present
+-                recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,))
++                recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,), prefix=prefix)
+                 if recorded.device != observations.device:
+                     raise ValueError("PER checkpoint legality devices must agree with rows")
+                 tensors["legality_recorded"] = recorded
+                 if mode == "recorded":
+                     assert geometry is not None
+-                    masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, geometry))
+-                    validate_successor_masks(masks, tensors["dones"], action_dim=geometry)
+-                    if not bool(recorded.all()):
++                    masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, geometry), prefix=prefix)
++                    prefix.masks(masks, tensors["dones"], action_dim=geometry)
++                    if not prefix.planning and not bool(recorded.all()):
+                         raise HistoricalLegalityUnavailable("current PER contains unrecorded successor legality")
+-                    if bool((tensors["actions"] >= geometry).any()):
+-                        raise ValueError("PER checkpoint actions exceed the declared vocabulary")
++                    prefix.values.append(recorded)
++                    prefix.require(
++                        lambda: not bool((tensors["actions"] >= geometry).any()),
++                        "PER checkpoint actions exceed the declared vocabulary",
++                        (tensors["actions"],),
++                    )
+                     tensors["next_action_masks"] = masks
+-                elif state["next_action_masks"] is not None or bool(recorded.any()):
+-                    raise ValueError("Unconstrained PER cannot claim recorded masks or partial capture")
++                else:
++                    if state["next_action_masks"] is not None:
++                        raise ValueError("Unconstrained PER cannot claim recorded masks or partial capture")
++                    prefix.require(
++                        lambda: not bool(recorded.any()), "Unconstrained PER cannot claim recorded masks or partial capture", (recorded,)
++                    )
+         if version == 6:
+-            unit_ids, counter = self._validate_identity(state, capacity, size)
+-            sampler = self._validate_sampler(state)
++            unit_ids, counter = self._validate_identity(state, capacity, size, prefix=prefix)
++            sampler = self._sampler_validation(state, prefix=prefix)
+         else:
++            if legacy:
++                prefix.values.append(state)
++            prefix.finish()
+             unit_ids = np.full(capacity, -1, dtype=np.int64)
+             if legacy:
+                 # This import starts fresh active replay under the current
+@@ -1107,6 +1154,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 # explicit history boundary deterministically names live slots.
+                 unit_ids[:size] = np.arange(size, dtype=np.int64)
+                 counter, sampler = size, self._external_sampler("captured5-physical-slot-adapter")
++        prefix.finish()
+         return _ValidatedPrioritizedState(
+             **tensors,
+             beta=beta,
+@@ -1124,6 +1172,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             sampler=sampler,
+         )
+ 
++    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedPrioritizedState:
++        return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
++
+     def _materialize_serialized(self, state: _ValidatedPrioritizedState) -> _PrioritizedRestoreCandidate:
+         if not isinstance(state, _ValidatedPrioritizedState):
+             raise ValueError("PER materialization requires validated replay state")
+diff --git a/src/townlet/training/replay_buffer.py b/src/townlet/training/replay_buffer.py
+index dd807b0d5e3db6a71c4658d165bb235eae19b89f..458b5067cf796b57c4cafeb6019d1a50a9c91608 100644
+--- a/src/townlet/training/replay_buffer.py
++++ b/src/townlet/training/replay_buffer.py
+@@ -22,6 +22,7 @@ from townlet.training.replay_contract import (
+     PreparedReplay,
+     ReplayBatch,
+     ReplayCustody,
++    ReplayPrefix,
+     ReplayReadiness,
+     ReplayRequest,
+     SamplingReceipt,
+@@ -153,7 +154,7 @@ class ReplayBuffer(ReplayCustody):
+     ) -> tuple[torch.device | None, tuple[object, ...]]:
+         retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
+         if route in ("push", "push_recorded"):
+-            return self._push_inventory(route, args, kwargs, retained)
++            return self._push_inventory(route, args, kwargs, retained, size=self.size)
+         if route == "readiness":
+             return None, (self.legality_recorded,)
+         if route == "serialize":
+@@ -163,29 +164,9 @@ class ReplayBuffer(ReplayCustody):
+         if route == "install_historical_archive":
+             return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
+         if route in ("validate_serialized", "prepare_serialized", "load_for_mode"):
+-            state = self._replay_argument(args, kwargs, 0, "state")
+-            if not isinstance(state, Mapping):
+-                return None, ()
+-            version = state.get("format_version")
+-            if type(version) is not int:
+-                return None, (version,)
+-            if version == 4:
+-                keys = _LEGACY_STATE_KEYS
+-            elif version == REPLAY_BUFFER_FORMAT_VERSION:
+-                keys = REPLAY_BUFFER_STATE_KEYS
+-            else:
+-                return None, (version,)
+-            if any(not isinstance(key, str) for key in state) or set(state) != keys:
+-                return None, tuple(state)
+-            kind, capacity = state.get("replay_kind"), state.get("capacity")
+-            if type(kind) is str and kind == REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
+-                return None, ()
+-            if route == "prepare_serialized":
+-                values = (state, *retained, self._historical_archives)
+-                if version != 4:
+-                    return self._transport_target(state, "size", strict=True), values
+-                return None, values
+-            return None, (state,)
++            return self._transport_inventory(
++                self._replay_argument(args, kwargs, 0, "state"), route, kwargs.get("expected_obs_dim"), count_field="size"
++            )
+         if route == "materialize_validated":
+             state = self._replay_argument(args, kwargs, 0, "state")
+             if not isinstance(state, _ValidatedReplayState):
+@@ -266,6 +247,8 @@ class ReplayBuffer(ReplayCustody):
+         rewards: RewardTensor,
+         next_observations: torch.Tensor,
+         dones: torch.Tensor,
++        *,
++        prefix: ReplayPrefix,
+     ) -> int:
+         if observations.ndim != 2 or observations.dtype != torch.float32 or observations.shape[1] < 1:
+             raise ValueError("observations must be float32 [batch, obs_dim] with positive observation width")
+@@ -281,8 +264,7 @@ class ReplayBuffer(ReplayCustody):
+         ):
+             if value.shape != (batch_size,) or value.dtype != dtype:
+                 raise ValueError(f"{name} must have shape ({batch_size},) and dtype {dtype}")
+-        if bool((actions < 0).any()):
+-            raise ValueError("actions must be nonnegative")
++        prefix.require(lambda: not bool((actions < 0).any()), "actions must be nonnegative", (actions,))
+         if self.observations is not None and obs_dim != self.observations.shape[1]:
+             raise ValueError(f"observations obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]})")
+         for name, tensor_value in (
+@@ -297,8 +279,7 @@ class ReplayBuffer(ReplayCustody):
+                 continue
+             if name.startswith("rewards.") and (tensor_value.shape != (batch_size,) or tensor_value.dtype != torch.float32):
+                 raise ValueError(f"{name} must have shape ({batch_size},) and dtype torch.float32")
+-            if not bool(torch.isfinite(tensor_value).all()):
+-                raise ValueError(f"{name} must contain only finite values")
++            prefix.require(lambda: bool(torch.isfinite(tensor_value).all()), f"{name} must contain only finite values", (tensor_value,))
+         return batch_size
+ 
+     @replay_local(mutation=True)
+@@ -345,17 +326,13 @@ class ReplayBuffer(ReplayCustody):
+         dones: torch.Tensor,
+         masks: torch.Tensor | None,
+     ) -> None:
+-        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones)
+-        action_dim = self.action_dim
++        prefix = ReplayPrefix(planning=False)
++        batch_size = self._validate_push(observations, actions, rewards, next_observations, dones, prefix=prefix)
++        width = None
+         if masks is not None:
+-            validate_successor_masks(masks, dones, action_dim=masks.shape[1])
+-            if action_dim is not None and masks.shape[1] != action_dim:
+-                raise ValueError("successor action width differs from current buffer action vocabulary")
+-            action_dim = masks.shape[1]
+-            if bool((actions >= action_dim).any()):
+-                raise ValueError("actions outside the declared action vocabulary")
+-            if self.actions is not None and bool((self.actions[: self.size] >= action_dim).any()):
+-                raise ValueError("existing unconstrained actions exceed the supplied action vocabulary")
++            prefix.masks(masks, dones, action_dim=masks.shape[1])
++            width = masks.shape[1]
++        action_dim = self._push_action_dim(actions, width, size=self.size, prefix=prefix)
+         if batch_size == 0:
+             return
+         values = {
+@@ -550,13 +527,17 @@ class ReplayBuffer(ReplayCustody):
+         return state
+ 
+     @staticmethod
+-    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
++    def _require_tensor(
++        state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...], prefix: ReplayPrefix
++    ) -> torch.Tensor:
+         value = state[field]
+         if not isinstance(value, torch.Tensor) or value.dtype != dtype or tuple(value.shape) != shape:
+             raise ValueError(f"Replay checkpoint {field} must be a tensor of shape {shape} and dtype {dtype}")
+-        if dtype.is_floating_point and not bool(torch.isfinite(value).all()):
+-            raise ValueError(f"Replay checkpoint {field} must contain only finite values")
+-        return value.detach().clone()
++        if dtype.is_floating_point:
++            prefix.require(
++                lambda: bool(torch.isfinite(value).all()), f"Replay checkpoint {field} must contain only finite values", (value,)
++            )
++        return prefix.tensor(value)
+ 
+     @staticmethod
+     def _require_int(value: object, field: str, *, minimum: int, maximum: int) -> int:
+@@ -564,29 +545,36 @@ class ReplayBuffer(ReplayCustody):
+             raise ValueError(f"Replay checkpoint {field} must be an integer in [{minimum}, {maximum}]; got {value!r}")
+         return value
+ 
+-    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedReplayState:
++    def _serialized_validation(
++        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, prefix: ReplayPrefix
++    ) -> _ValidatedReplayState:
+         if not isinstance(state, Mapping):
+             raise ValueError("Replay buffer checkpoint payload must be a mapping")
+         version = state.get("format_version")
+         if type(version) is not int or version not in (4, REPLAY_BUFFER_FORMAT_VERSION):
++            prefix.scalar(version, lambda value: None)
+             raise ValueError(f"Cannot load replay buffer checkpoint with format_version {version!r}")
+         legacy = version == 4
+         if legacy:
+             expected_keys = _LEGACY_STATE_KEYS
+         else:
+             expected_keys = REPLAY_BUFFER_STATE_KEYS
++        for key in state:
++            prefix.opaque(key)
+         if set(state) != expected_keys:
+             raise ValueError(
+                 f"Replay checkpoint key set mismatch: missing={sorted(expected_keys - set(state))}, "
+                 f"unknown={sorted(set(state) - expected_keys)}"
+             )
+-        if state["replay_kind"] != REPLAY_BUFFER_KIND:
++        kind = state["replay_kind"]
++        prefix.opaque(kind)
++        if kind != REPLAY_BUFFER_KIND:
+             raise ValueError("Replay checkpoint replay_kind must be standard")
+-        capacity = self._require_int(state["capacity"], "capacity", minimum=1, maximum=2**63 - 1)
++        capacity = prefix.scalar(state["capacity"], lambda value: self._require_int(value, "capacity", minimum=1, maximum=2**63 - 1))
+         if capacity != self.capacity:
+             raise ValueError(f"Replay checkpoint capacity is {capacity}; current capacity is {self.capacity}")
+-        size = self._require_int(state["size"], "size", minimum=0, maximum=capacity)
+-        position = self._require_int(state["position"], "position", minimum=0, maximum=capacity - 1)
++        size = prefix.scalar(state["size"], lambda value: self._require_int(value, "size", minimum=0, maximum=capacity))
++        position = prefix.scalar(state["position"], lambda value: self._require_int(value, "position", minimum=0, maximum=capacity - 1))
+         if position != size % capacity:
+             raise ValueError(f"Replay checkpoint position is {position}; expected {size % capacity} for size {size}")
+         tensors: dict[str, Any] = dict.fromkeys(_STORAGE_FIELDS)
+@@ -599,7 +587,7 @@ class ReplayBuffer(ReplayCustody):
+                 raise ValueError("Replay checkpoint legality_mode is unsupported")
+             action_dim = state["action_dim"]
+             if mode == "recorded":
+-                self._require_int(action_dim, "action_dim", minimum=1, maximum=2**63 - 1)
++                prefix.scalar(action_dim, lambda value: self._require_int(value, "action_dim", minimum=1, maximum=2**63 - 1))
+                 if self.action_dim is not None and self.action_dim != action_dim:
+                     raise ValueError("Replay checkpoint action_dim differs from current buffer vocabulary")
+             elif action_dim is not None:
+@@ -607,7 +595,7 @@ class ReplayBuffer(ReplayCustody):
+             records = state["historical_archives"]
+             if not isinstance(records, list):
+                 raise ValueError("Replay checkpoint historical_archives must be a list")
+-            archives = tuple(self._own_archive(history._archive_from_state(record)) for record in records)
++            archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+         if size == 0:
+             names: tuple[str, ...]
+             if legacy:
+@@ -618,6 +606,9 @@ class ReplayBuffer(ReplayCustody):
+                 raise ValueError("Empty replay checkpoint tensor fields must be null")
+             if not legacy and (action_dim is not None or mode != "unconstrained"):
+                 raise ValueError("Unallocated empty replay cannot claim a captured action vocabulary")
++            if legacy:
++                prefix.values.append(state)
++            prefix.finish()
+             if legacy:
+                 legacy_state = history._clone(state)
+             return _ValidatedReplayState(
+@@ -634,6 +625,7 @@ class ReplayBuffer(ReplayCustody):
+         if not isinstance(observations, torch.Tensor) or observations.ndim != 2 or observations.shape[1] < 1:
+             raise ValueError("Replay checkpoint observations must be [rows, obs_dim] with positive width")
+         obs_dim = observations.shape[1]
++        prefix.opaque(expected_obs_dim)
+         if expected_obs_dim is not None and obs_dim != expected_obs_dim:
+             raise ValueError(f"Replay checkpoint obs_dim is {obs_dim}; expected current obs_dim {expected_obs_dim}")
+         if self.observations is not None and self.observations.shape[1] != obs_dim:
+@@ -652,38 +644,53 @@ class ReplayBuffer(ReplayCustody):
+                 dtype = torch.float32
+             if not legacy and name in _COMPONENTS and state[name] is None:
+                 continue
+-            tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape)
++            tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape, prefix=prefix)
+             if tensors[name].device != observations.device:
+                 raise ValueError("Replay checkpoint row tensor devices must agree")
+-        if bool((tensors["actions"] < 0).any()):
+-            raise ValueError("Replay checkpoint actions must be nonnegative")
++        prefix.require(
++            lambda: not bool((tensors["actions"] < 0).any()), "Replay checkpoint actions must be nonnegative", (tensors["actions"],)
++        )
+         if not legacy:
+             for name in _COMPONENTS:
+-                present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,))
++                present = self._require_tensor(state, f"{name}_present", dtype=torch.bool, shape=(size,), prefix=prefix)
+                 value = tensors[name]
+                 if present.device != observations.device:
+                     raise ValueError("Replay checkpoint component presence devices must agree with rows")
+                 if value is None:
+-                    if bool(present.any()):
+-                        raise ValueError(f"Replay checkpoint {name} omits recorded component values")
+-                elif not bool(present.any()) or bool((value[~present] != 0).any()):
+-                    raise ValueError(f"Replay checkpoint {name} has invalid absent-component placeholders")
++                    prefix.require(lambda: not bool(present.any()), f"Replay checkpoint {name} omits recorded component values", (present,))
++                else:
++                    prefix.require(
++                        lambda: bool(present.any()) and not bool((value[~present] != 0).any()),
++                        f"Replay checkpoint {name} has invalid absent-component placeholders",
++                        (present, value),
++                    )
+                 tensors[f"{name}_present"] = present
+-            recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,))
++            recorded = self._require_tensor(state, "legality_recorded", dtype=torch.bool, shape=(size,), prefix=prefix)
+             if recorded.device != observations.device:
+                 raise ValueError("Replay checkpoint legality devices must agree with rows")
+             tensors["legality_recorded"] = recorded
+             if mode == "recorded":
+                 assert action_dim is not None
+-                masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, action_dim))
+-                validate_successor_masks(masks, tensors["dones"], action_dim=action_dim)
+-                if not bool(recorded.all()):
++                masks = self._require_tensor(state, "next_action_masks", dtype=torch.bool, shape=(size, action_dim), prefix=prefix)
++                prefix.masks(masks, tensors["dones"], action_dim=action_dim)
++                if not prefix.planning and not bool(recorded.all()):
+                     raise HistoricalLegalityUnavailable("current replay contains unrecorded successor legality")
+-                if bool((tensors["actions"] >= action_dim).any()):
+-                    raise ValueError("Replay checkpoint actions exceed the declared vocabulary")
++                prefix.values.append(recorded)
++                prefix.require(
++                    lambda: not bool((tensors["actions"] >= action_dim).any()),
++                    "Replay checkpoint actions exceed the declared vocabulary",
++                    (tensors["actions"],),
++                )
+                 tensors["next_action_masks"] = masks
+-            elif state["next_action_masks"] is not None or bool(recorded.any()):
+-                raise ValueError("Unconstrained replay cannot claim recorded masks or partial capture")
++            else:
++                if state["next_action_masks"] is not None:
++                    raise ValueError("Unconstrained replay cannot claim recorded masks or partial capture")
++                prefix.require(
++                    lambda: not bool(recorded.any()), "Unconstrained replay cannot claim recorded masks or partial capture", (recorded,)
++                )
++        if legacy:
++            prefix.values.append(state)
++        prefix.finish()
+         if legacy:
+             legacy_state = history._clone(state)
+         return _ValidatedReplayState(
+@@ -697,6 +704,9 @@ class ReplayBuffer(ReplayCustody):
+             legacy_state=legacy_state,
+         )
+ 
++    def _validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedReplayState:
++        return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
++
+     def _materialize_serialized(self, state: _ValidatedReplayState) -> _ReplayRestoreCandidate:
+         if not isinstance(state, _ValidatedReplayState):
+             raise ValueError("uniform materialization requires validated replay state")
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index edc58ba556696c101e6ecd8324171662b6f275a8..9e4969d568631cac209a0b31ae36ac61486fd32d 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -12,7 +12,7 @@ from contextlib import ExitStack, contextmanager
+ from dataclasses import dataclass, fields, replace
+ from functools import wraps
+ from threading import RLock, current_thread
+-from typing import Concatenate, Literal, NoReturn
++from typing import Any, Concatenate, Literal, NoReturn, cast
+ from weakref import WeakKeyDictionary
+ 
+ import numpy as np
+@@ -43,6 +43,65 @@ class PreparedReplay:
+         raise TypeError("Prepared replay capabilities cannot be copied or serialized")
+ 
+ 
++class _ReplayPrefixStopError(Exception):
++    """Internal planning stop; never a validation or publication result."""
++
++
++class ReplayPrefix:
++    """Run real validation, or record its possible effects without value work."""
++
++    def __init__(self, *, planning: bool) -> None:
++        self.planning = planning
++        self.values: list[object] = []
++        self.unknown = False
++        self.complete = False
++
++    def scalar(self, value: object, parse: Callable[[Any], Any]) -> Any:
++        if self.planning and type(value) not in (int, float, bool, str, bytes, type(None)):
++            self.values.append(value)
++            self.unknown = isinstance(value, int | float | str)
++            raise _ReplayPrefixStopError
++        return parse(value)
++
++    def opaque(self, value: object) -> None:
++        if self.planning and type(value) not in (int, float, bool, str, bytes, type(None)):
++            self.values.append(value)
++            self.unknown = True
++            raise _ReplayPrefixStopError
++
++    def require(self, check: Callable[[], bool], message: str, values: tuple[object, ...]) -> None:
++        self.values.extend(values)
++        if not self.planning and not check():
++            raise ValueError(message)
++
++    def masks(self, masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
++        _successor_mask_metadata(masks, dones, action_dim=action_dim)
++        self.require(lambda: not bool(((~dones) & ~masks.any(dim=-1)).any()), "nonterminal successor has no legal action", (masks, dones))
++
++    def tensor(self, value: Tensor) -> Tensor:
++        self.values.append(value)
++        if self.planning:
++            return value  # Metadata view only; no planned DTO escapes.
++        return value.detach().clone()
++
++    def archive(self, record: object, restore: Callable[[], Any]) -> Any:
++        if not self.planning:
++            return restore()
++        if not isinstance(record, Mapping):
++            raise _ReplayPrefixStopError
++        for key in record:
++            self.opaque(key)
++        keys = {"source_formats", "original_state", "source_digest", "archived_row_count", "reward_semantics", "approval_reference"}
++        if set(record) != keys:
++            raise _ReplayPrefixStopError
++        self.values.extend((record["source_formats"], record["original_state"]))
++
++    def finish(self) -> None:
++        if self.planning:
++            self.complete = True
++            raise _ReplayPrefixStopError
++
++
+ class ReplayCustody:
+     """One process lease before one replay owner's mutation exclusion."""
+ 
+@@ -53,6 +112,7 @@ class ReplayCustody:
+     observations: Tensor | None
+     legality_recorded: Tensor | None
+     _local_cuda_contracts: Mapping[str, str]
++    _historical_archives: tuple[object, ...]
+ 
+     def _init_custody(self, device: torch.device) -> None:
+         # Current full-member consumers migrate in their own producer packets.
+@@ -128,44 +188,92 @@ class ReplayCustody:
+             return args[index]
+         return kwargs.get(name)
+ 
++    def _push_action_dim(self, actions: Tensor, width: int | None, *, size: int, prefix: ReplayPrefix) -> int | None:
++        action_dim = self.action_dim
++        prefix.opaque(action_dim)
++        if width is not None:
++            if action_dim is not None and width != action_dim:
++                raise ValueError("successor action width differs from current buffer action vocabulary")
++            action_dim = width
++            prefix.require(lambda: not bool((actions >= width).any()), "actions outside the declared action vocabulary", (actions,))
++            if self.actions is not None:
++                existing = self.actions
++                prefix.require(
++                    lambda: not bool((existing[:size] >= width).any()),
++                    "existing unconstrained actions exceed the supplied action vocabulary",
++                    (existing,),
++                )
++        return action_dim
++
+     def _push_inventory(
+-        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...]
++        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...], *, size: int
+     ) -> tuple[torch.device | None, tuple[object, ...]]:
+-        observations = self._replay_argument(args, kwargs, 0, "observations")
+-        prefix: tuple[object, ...] = ()
+-        if route == "push_recorded":
+-            prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
+-        elif self.action_dim is not None:
+-            prefix = (self._replay_argument(args, kwargs, 4, "dones"),)
+-        if not isinstance(observations, Tensor) or observations.ndim != 2 or observations.dtype != torch.float32:
+-            return None, prefix
+-        if observations.shape[1] < 1 or observations.shape[0] > self.capacity:
+-            return None, prefix
+-        rewards = self._replay_argument(args, kwargs, 2, "rewards")
+-        values = (
+-            *args,
+-            *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
+-            *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
++        arguments = cast(
++            tuple[Any, ...],
++            tuple(
++                self._replay_argument(args, kwargs, i, name)
++                for i, name in enumerate(("observations", "actions", "rewards", "next_observations", "dones"))
++            ),
+         )
+-        if observations.shape[0]:
+-            return self.device, (*values, *retained)
+-        if route == "push_recorded" or self.action_dim is not None:
+-            return None, (*values, self.actions)
++        observations, actions, rewards, _, dones = arguments
++        masks = self._replay_argument(args, kwargs, 5, "next_action_masks")
++        prefix = ReplayPrefix(planning=True)
++        width = self.action_dim
++        try:
++            if route == "push_recorded":
++                if not isinstance(masks, Tensor) or masks.ndim != 2:
++                    raise _ReplayPrefixStopError
++                width = masks.shape[1]
++                prefix.masks(masks, dones, action_dim=width)
++            elif width is not None:
++                prefix.opaque(width)
++                prefix.values.append(dones)  # Public adapter allocates ones before validating transitions.
++            batch = self._validate_push(*arguments, prefix=prefix)
++            if route == "push_recorded":
++                prefix.masks(cast(Tensor, masks), dones, action_dim=cast(int, width))
++            self._push_action_dim(actions, width, size=size, prefix=prefix)
++            if batch:
++                self._push_commit_metadata(batch, prefix=prefix)
++        except (_ReplayPrefixStopError, ValueError, TypeError, AttributeError, KeyError, OverflowError):
++            if prefix.unknown:
++                return self.device, (*prefix.values, *arguments, *retained)
++            return None, tuple(prefix.values)
++        if not batch:
++            return None, tuple(prefix.values)
++        values = (*arguments, masks, *(getattr(rewards, name) for name in ("extrinsic", "intrinsic", "shaping")))
++        return self.device, (*prefix.values, *values, *retained)
++
++    def _push_commit_metadata(self, batch: int, *, prefix: ReplayPrefix) -> object:
++        return None
++
++    def _validate_push(
++        self, observations: Tensor, actions: Tensor, rewards: Any, next_observations: Tensor, dones: Tensor, *, prefix: ReplayPrefix
++    ) -> int:
++        raise NotImplementedError("Producer must supply its ordered transition validation")
++
++    def _serialized_validation(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, prefix: ReplayPrefix) -> object:
++        raise NotImplementedError("Producer must supply its ordered transport validation")
++
++    def _transport_inventory(
++        self, state: object, route: str, expected_obs_dim: object, *, count_field: str
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        prefix = ReplayPrefix(planning=True)
++        try:
++            self._serialized_validation(cast(Any, state), expected_obs_dim=cast(Any, expected_obs_dim), prefix=prefix)
++        except (_ReplayPrefixStopError, ValueError, TypeError, AttributeError, KeyError, OverflowError):
++            pass
++        values: tuple[object, ...] = tuple(prefix.values)
++        if prefix.unknown:
++            values = (*values, state)
++        if route != "prepare_serialized" or not (prefix.complete or prefix.unknown):
++            return None, values
++        values = (*values, self._historical_archives)
++        if isinstance(state, Mapping):
++            version, count = state.get("format_version"), state.get(count_field)
++            if (type(version) is not int or version != 4) and (prefix.unknown or (type(count) is int and count > 0)):
++                return self.device, values
+         return None, values
+ 
+-    def _transport_target(self, state: Mapping[str, object], size_field: str, *, strict: bool) -> torch.device | None:
+-        capacity = state.get("capacity")
+-        if strict and type(capacity) is not int:
+-            return None
+-        if not isinstance(capacity, int) or isinstance(capacity, bool) or capacity != self.capacity:
+-            return None
+-        count = state.get(size_field)
+-        if strict and type(count) is not int:
+-            return None
+-        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+-            return None
+-        return self.device
+-
+     def _sample_inventory(
+         self,
+         route: str,
+@@ -497,8 +605,7 @@ def _text(name: str, value: str) -> None:
+         raise ValueError(f"{name} must be a nonempty string")
+ 
+ 
+-def validate_successor_masks(masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
+-    """Validate actual successor sets; only terminal rows may have no action."""
++def _successor_mask_metadata(masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
+     _integer("action_dim", action_dim, 1)
+     if not isinstance(masks, Tensor) or masks.dtype != torch.bool:
+         raise ValueError("next_action_masks/legal must be a bool tensor")
+@@ -506,8 +613,11 @@ def validate_successor_masks(masks: Tensor, dones: Tensor, *, action_dim: int) -
+         raise ValueError("dones must be a bool tensor")
+     if masks.shape != (*dones.shape, action_dim) or masks.device != dones.device:
+         raise ValueError("successor masks shape/device must match dones and action_dim")
+-    if ((~dones) & ~masks.any(dim=-1)).any():
+-        raise ValueError("nonterminal successor has no legal action")
++
++
++def validate_successor_masks(masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
++    """Validate actual successor sets; only terminal rows may have no action."""
++    ReplayPrefix(planning=False).masks(masks, dones, action_dim=action_dim)
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+index 68d456f57f16dfaaba7b41aeaf1ea0b915796298..b5f4171c50ce2b526103b3b2470fcb2fe5b65b56 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -1666,3 +1666,380 @@ def test_bad_observation_prefix_keeps_necessary_gpu_sources(family: str, prefix:
+         assert owner._replay_revision > revision
+         _assert_tree_equal(owner.serialize(), before)
+         _assert_local(events, (2,))
++
++
++_RAW_PREFIX_CASES = [
++    (family, field, value, message)
++    for family in ("flat", "per")
++    for field, value, message in (
++        ("replay_kind", "wrong", "replay_kind"),
++        ("capacity", False, "capacity"),
++        ("capacity", 0, "capacity"),
++        ("count", False, "size"),
++        ("count", -1, "size"),
++        ("position", False, "position"),
++        ("ring", 0, "position"),
++        ("legality_mode", "wrong", "legality_mode"),
++        ("action_dim", False, "action_dim"),
++        ("action_dim", 3, "action_dim"),
++        ("historical_archives", (), "historical_archives"),
++        ("observations", "rank", "observations"),
++        ("observations", "dtype", "observations"),
++        ("observations", "shape", "observations"),
++        ("actions", "dtype", "actions"),
++        ("empty", None, "Empty"),
++        ("precedence", "wrong", "key set mismatch" if family == "flat" else "replay_kind"),
++    )
++] + [
++    ("per", field, value, message)
++    for field, value, message in (
++        ("alpha", False, "alpha"),
++        ("alpha", 0.5, "alpha"),
++        ("beta_initial", float("nan"), "beta_initial"),
++        ("beta_annealing", 0, "beta_annealing"),
++        ("beta", 0.5, "beta"),
++        ("priorities", "type", "priorities"),
++        ("priorities", "dtype", "priorities"),
++        ("priorities", "shape", "priorities"),
++        ("max_priority", 0, "max_priority"),
++    )
++]
++
++
++@pytest.mark.parametrize(
++    "family,field,value,message", _RAW_PREFIX_CASES, ids=[f"{family}-{field}-{value}" for family, field, value, _ in _RAW_PREFIX_CASES]
++)
++@pytest.mark.parametrize("route", ["validate-plan", "validate", "prepare-plan", "prepare"])
++def test_raw_prefix_matrix(
++    family: str, field: str, value: Any, message: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    incoming = copy.deepcopy(before)
++    count = "size" if family == "flat" else "size_current"
++    incoming["dones"] = _CUDAData(incoming["dones"], 3)
++    if field == "empty":
++        incoming = _owner(family, torch.device("cpu")).serialize()
++        incoming["observations"] = _CUDAData(torch.ones((4, 2)), 3)
++    elif field == "ring":
++        incoming[count], incoming["position"] = 3, value
++    elif field == "precedence":
++        incoming["replay_kind"], incoming["extra"] = value, _CUDAData(torch.ones(1), 3)
++    elif field in ("observations", "actions", "priorities"):
++        original = incoming[field]
++        replacements = {
++            "rank": torch.ones(4),
++            "dtype": original.double() if isinstance(original, torch.Tensor) else original.astype(np.float64),
++            "shape": original[:3],
++            "type": _CUDAData(torch.ones(4), 3),
++        }
++        incoming[field] = replacements[value]
++    else:
++        incoming[count if field == "count" else field] = value
++    owner.device = torch.device("cuda:4")
++    prepare = route.startswith("prepare")
++    method = "prepare_serialized" if prepare else "validate_serialized"
++    selected, devices = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
++    assert selected is None and devices == (), "Ordinary refusal must exclude all later row/archive/destination work"
++    if route.endswith("-plan"):
++        return
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match=message):
++            if prepare:  # Real invocation authority remains a B prerequisite.
++                owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++            else:
++                owner.validate_serialized(incoming, expected_obs_dim=2)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize(
++    "field,shape,dtype",
++    [
++        ("observations", (4,), torch.float32),
++        ("observations", (4, 2), torch.float64),
++        ("observations", (4, 0), torch.float32),
++        ("observations", (5, 2), torch.float32),
++        ("next_observations", (4,), torch.float32),
++        ("next_observations", (4, 2), torch.float64),
++        ("next_observations", (3, 2), torch.float32),
++        ("actions", (4, 1), torch.int64),
++        ("actions", (4,), torch.float32),
++        ("actions", (3,), torch.int64),
++        ("rewards", (4, 1), torch.float32),
++        ("rewards", (4,), torch.float64),
++        ("rewards", (3,), torch.float32),
++        ("dones", (4, 1), torch.bool),
++        ("dones", (4,), torch.float32),
++        ("dones", (3,), torch.bool),
++    ],
++    ids=str,
++)
++def test_plain_push_metadata_prefix_matrix(
++    family: str, field: str, shape: tuple, dtype: torch.dtype, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    before, rows = owner.serialize(), _rows()
++    rows[field] = torch.zeros(shape, dtype=dtype)
++    rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 3)
++    owner.device = torch.device("cuda:4")
++    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False)
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    assert _metadata_plan(owner, "push", arguments, False, simulated_cuda) == (None, ())
++    revision = owner._replay_revision
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError):
++            owner.push(*arguments)
++    assert simulated_cuda.events == [] and owner._replay_revision > revision
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("guard", ["type", "rank", "width", "dtype", "dones", "shape", "device"])
++def test_recorded_mask_metadata_precedes_tensor_effects(
++    family: str, guard: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner, rows = _owner(family, torch.device("cpu")), _rows()
++    masks = _CUDAData(rows["next_action_masks"], 2)
++    dones = _CUDAData(rows["dones"], 2)
++    masks = {
++        "type": None,
++        "rank": _CUDAData(torch.ones(4, dtype=torch.bool), 2),
++        "width": _CUDAData(torch.ones((4, 0), dtype=torch.bool), 2),
++        "dtype": _CUDAData(torch.ones((4, 2)), 2),
++        "shape": _CUDAData(torch.ones((3, 2), dtype=torch.bool), 2),
++    }.get(guard, masks)
++    if guard == "dones":
++        dones = _CUDAData(torch.ones(4), 2)
++    elif guard == "device":
++        dones = _CUDAData(rows["dones"], 3)
++    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], dones, masks)
++    owner.device = torch.device("cuda:4")
++    assert _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda) == (None, ())
++    revision = owner._replay_revision
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError):
++            owner.push_recorded(*arguments)
++    assert simulated_cuda.events == [] and owner._replay_revision > revision and len(owner) == 0
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("route", ["raw", "component", "recorded", "known", "retained-width"])
++@pytest.mark.parametrize("public", [False, True])
++def test_later_metadata_refusal_retains_only_earlier_effects(family: str, route: str, public: bool, simulated_cuda: _SimCUDA) -> None:
++    owner, rows = _owner(family, torch.device("cpu")), _rows()
++    if route in ("raw", "known", "retained-width"):
++        _push(owner, rows, recorded=route != "retained-width")
++    before = owner.serialize()
++    if route == "raw":
++        incoming = {
++            **before,
++            "observations": _CUDAData(before["observations"], 2),
++            "actions": before["actions"].float(),
++            "next_observations": _CUDAData(before["next_observations"], 3),
++        }
++        method, arguments = "validate_serialized", (incoming,)
++    else:
++        rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 3)
++        if route == "component":
++            rows["observations"], rows["rewards_extrinsic"] = _CUDAData(rows["observations"], 2), torch.ones(3)
++        elif route == "retained-width":
++            rows["observations"], rows["next_observations"] = torch.ones((4, 3)), torch.ones((4, 3))
++            rows["actions"] = _CUDAData(rows["actions"], 2)
++        else:
++            rows["dones"], rows["next_action_masks"] = _CUDAData(rows["dones"], 2), _CUDAData(rows["next_action_masks"], 2)
++            rows["next_observations"] = torch.ones(4)
++        rewards = RewardTensor(
++            rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
++        )
++        arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++        method = "push_recorded" if route == "recorded" else "push"
++        if route == "recorded":
++            arguments = (*arguments, rows["next_action_masks"])
++    owner.device = torch.device("cuda:4")
++    devices = () if route == "retained-width" and family == "per" else (2,)
++    assert _metadata_plan(owner, method, arguments, False, simulated_cuda) == (None, devices)
++    if not public:
++        return
++    revision = owner._replay_revision
++    message = {
++        "raw": "actions",
++        "component": "rewards.extrinsic",
++        "recorded": "next_observations",
++        "known": "next_observations",
++        "retained-width": "obs_dim",
++    }[route]
++    with pytest.raises(ValueError, match=message):
++        if route == "raw":
++            owner.validate_serialized(*arguments, expected_obs_dim=2)
++        else:
++            getattr(owner, method)(*arguments)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    assert owner._replay_revision > revision if route != "raw" else owner._replay_revision == revision
++    if devices:
++        assert any(event[0] == "work" and event[2] == (2,) for event in events)
++        _assert_local(events, devices)
++    else:
++        assert events == []
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("route", ["validate_serialized", "prepare_serialized", "push", "push_recorded", "known"])
++def test_prefix_first_effect_inventory_controls(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
++    owner, rows = _owner(family, torch.device("cpu")), _rows()
++    _push(owner, rows, recorded=True)
++    state = owner.serialize()
++    assert torch.equal(state["observations"], rows["observations"])
++    assert torch.equal(owner.validate_serialized(state, expected_obs_dim=2).rewards, rows["rewards"])
++    if route.endswith("serialized"):
++        arguments = ({name: _CUDAData(value, 2) if isinstance(value, torch.Tensor) else value for name, value in state.items()},)
++    else:
++        if route != "known":
++            owner.clear()
++        rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
++        arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], _CUDAData(rows["dones"], 2))
++        if route == "push_recorded":
++            arguments = (*arguments, _CUDAData(rows["next_action_masks"], 2))
++    owner.device = torch.device("cuda:4")
++    method = "push" if route == "known" else route
++    selected = None if route == "validate_serialized" else owner.device
++    assert _metadata_plan(owner, method, arguments, route == "prepare_serialized", simulated_cuda) == (selected, (2,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("case", ["type", "keys", "semantics", "later-record"])
++@pytest.mark.parametrize("public", [False, True])
++def test_archive_record_prefix_matrix(family: str, case: str, public: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    before = owner.serialize()
++    record = history._record(_family_archive(family, 2))  # Genuine owned/digest-qualified fixture before observation.
++    if case == "type":
++        records = [None, record]
++    elif case == "keys":
++        records = [{**record, "unused": _CUDAData(torch.ones(1), 3)}]
++    elif case == "semantics":
++        records = [{**record, "reward_semantics": "wrong"}]
++    else:
++        records = [record, None]
++    incoming = {**before, "historical_archives": records, "observations": _CUDAData(torch.ones((4, 2)), 3)}
++    owner.device = torch.device("cuda:4")
++    devices = () if case in ("type", "keys") else (2,)
++    assert _metadata_plan(owner, "validate_serialized", (incoming,), False, simulated_cuda) == (None, devices)
++    if not public:
++        return
++    with pytest.raises(ValueError, match="embedded archive|reward_semantics|reward semantics"):
++        owner.validate_serialized(incoming, expected_obs_dim=2)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    if devices:
++        _assert_cloned_then_completed(events, devices)
++        _assert_local(events, devices)
++    else:
++        assert events == []
++
++
++class _ArchiveComparison(_CUDAData):
++    """Supported nonplain semantic operand with observable real Tensor work."""
++
++    def __ne__(self, other: object) -> torch.Tensor:
++        return self.sum() != 0
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("field", ["reward_semantics", "approval_reference", "source_digest", "archived_row_count"])
++@pytest.mark.parametrize("reject", [False, True])
++def test_archive_semantic_operator_fixture(family: str, field: str, reject: bool, simulated_cuda: _SimCUDA) -> None:
++    record = history._record(_family_archive(family, 2))
++    record[field] = _ArchiveComparison(torch.tensor(int(reject)), 1)
++    simulated_cuda.events.clear()
++    if reject or field == "archived_row_count":
++        with pytest.raises(ValueError, match="reward|digest|archived_row_count"):
++            history._archive_from_state(record)
++    else:
++        assert history._archive_from_state(record).archived_row_count == 4
++    events = simulated_cuda.events
++    assert any(event[:2] == ("finished", "clone") and event[2] == (2,) for event in events)
++    operators = [event for event in events if event[0] == "work" and event[2] == (1,)]
++    assert bool(operators) is (field != "archived_row_count")
++    assert not operators or any(event[1] == "sum" for event in operators)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize(
++    "case",
++    [
++        "top-key",
++        "archive-key",
++        "later-key",
++        "reward",
++        "approval",
++        "later-reward",
++        "count",
++        "reward_semantics",
++        "approval_reference",
++        "source_digest",
++        "success",
++    ],
++)
++@pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
++def test_archive_semantic_and_schema_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
++    record = history._record(_family_archive(family, 2))
++    records, devices, continuation = [record], (2,), False
++    if case == "top-key":
++        incoming[_CUDAData(torch.tensor(1), 2)] = _CUDAData(torch.ones(1), 3)
++    elif case in ("archive-key", "later-key"):
++        record = history._record(_family_archive(family, 3))
++        record[_CUDAData(torch.tensor(1), 2)] = _CUDAData(torch.ones(1), 3)
++        records = [record] if case == "archive-key" else [history._record(_family_archive(family, 1)), record]
++        devices = (2,) if case == "archive-key" else (1, 2)
++    elif case in ("reward", "approval", "later-reward"):
++        record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
++        if case != "approval":
++            record["approval_reference"] = _ArchiveComparison(torch.tensor(1), 1)
++        record["approval_reference" if case == "approval" else "reward_semantics"] = "wrong"
++        if case == "later-reward":
++            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
++            devices = (0, 2)
++    elif case == "count":
++        record["archived_row_count"] = _ArchiveComparison(torch.tensor(4), 1)
++        record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
++    else:
++        continuation = True
++        devices = (2, 3) if case == "success" else (1, 2, 3)
++        if case != "success":
++            record[case] = _ArchiveComparison(torch.tensor(1), 1)
++    incoming["historical_archives"] = records
++    owner.device = torch.device("cuda:4")
++    prepare = route.startswith("prepare")
++    method = "prepare_serialized" if prepare else "validate_serialized"
++    selected = owner.device if prepare and continuation else None
++    assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
++    if route.endswith("-plan"):
++        return
++    arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
++    if case == "success":
++        getattr(owner, method)(incoming, **arguments)
++    else:
++        with pytest.raises(ValueError, match="key set mismatch|schema key mismatch|reward|digest|archived_row_count"):
++            getattr(owner, method)(incoming, **arguments)
++    events = list(simulated_cuda.events)
++    assert _syncs(events) == (*devices, 4) if selected is not None else _syncs(events) == devices
++    assert any(event[0] == "work" and event[2] == (2,) for event in events)
++    copies = {"top-key": (), "archive-key": (), "later-key": (1,), "later-reward": (0, 2)}.get(case, (2,))
++    assert all(any(event[:3] == ("finished", "clone", (index,)) for event in events) for index in copies)
++    if case in ("reward_semantics", "approval_reference", "source_digest"):
++        assert any(event[:3] == ("work", "sum", (1,)) for event in events)
++    if not continuation:
++        assert not any(event[0] == "work" and (3 in event[2] or 4 in event[2]) for event in events)
++    _assert_tree_equal(owner.serialize(), before)

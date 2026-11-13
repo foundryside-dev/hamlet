@@ -1,0 +1,868 @@
+# Archive clone-stability prerequisite — implementation report
+
+## Tests-only freeze after R106
+
+This is the required pre-B dependency carried by the root ruling at the A
+fix-round5 cap, not a blind sixth A fix round or an optional hardening item.
+The earlier R104/final FIX5 report and historical evidence remain untouched.
+No production change is authorized or performed in this stage.
+
+Read the three prior verification/adjudication/design documents and adopted
+root ruling `wave35/r105-prefix-clone-stability-cap-ruling.json`, SHA256
+`e41b2487ecd426545c7fad798dba3fc3124a00485795a82f34df363ba62f9a77`.
+The ruling supersedes the earlier general F2 PASS: an earlier clone hook can
+repair raw count metadata and enable previously omitted digest/live/target work.
+Tests follow the whole-both-graphs proof boundary, including exact OrderedDict
+opacity and the exact Tensor native-empty-instance-dictionary condition.
+
+The tests-only grant is `wave35/r106-clone-stability-tests-grant.json`, SHA256
+`0696aad5008296607b24d65e308d84bbb3f842e1a3351f17c1f4c9f308f6e567`,
+predecessor candidate `ab46784efc86bab95b031494529e06871a12f1ff`.
+Only the existing producer test body was edited. Shared/helper were retained
+read-only; no family/core/tool/other-test body read, application import/runtime,
+helper execution, additional implementation file, source execution copy,
+branch/worktree/checkout, delegation, Git mutation, commit or deletion occurred.
+Read-only Git diff and ordinary evidence metadata processing produced this
+report; its inert delta and exact node map are embedded below, avoiding extra
+artifact files. All prior reports remain unchanged.
+
+| Admitted body | Lines / ceiling | SHA256 |
+| --- | ---: | --- |
+| src/townlet/training/replay_contract.py |842/1000|`3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c`|
+| src/townlet/training/historical_checkpoint.py |675/675, read-only|`74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4`|
+| tests/test_townlet/regressions/bac/test_replay_cuda_producer.py |2468/2600|`d639ebaac4a0e24d313ef5d8d46202f17a32077e111f99905fa110fab4cbdac0`|
+
+Actual3985 in3 bodies; prospective ceiling4275/3 and hard5000/5. Test growth
+is264 net lines. All757 existing test node identities and ten isolated child
+protocols are preserved by leaving their declarations/parameters/protocols
+intact; root collection must verify expected836 total. This worker did not
+collect or execute tests. Existing oracle edits are explicit below; historical
+PASS is preserved as evidence at its original bytes, not relabeled or counted
+as a new pass under the corrected proof premise.
+
+## Corrected existing oracles
+
+The production planner cannot infer clone stability from the _CUDAData test
+class or its currently harmless hook. Existing subclass archive graphs now
+expect opaque continuation, while the actual fixture's public refusal and
+no-work assertions remain distinct. No runtime type policy or fixture-specific
+trust flag was added.
+
+| Existing function / changed cases | Changed plan nodes | Changed public nodes | Corrected expectation |
+| --- | ---: | ---: | --- |
+| test_archive_record_prefix_matrix / semantics,later-record |4|4|Retain2+3 for possible continuation through earlier subclass clones; actual refusal still clones2 before completion and does no row3 work.|
+| test_archive_semantic_and_schema_boundaries / later-key,reward,approval,later-reward,count |20|20|Retain possible later3/target4 and reachable opaque operand1; later-reward also retains0. Actual wrong-semantic/fixed-count fixtures still do no operand1 or later3/4 work.|
+| test_archive_declared_count_boundaries / above,below,zero,digest,later except sequential-zero |56|56|Subclass graph permits continuation, distinct from actual acceptance. Keep actual count refusal/no operator1/live3/target4 work; digest case plans1+2+3, later plans0+2+3.|
+| test_equal_cardinality_key_boundaries / later |4|4|Earlier opaque clone may affect later schema, so retain1+2+3/possible4; actual malformed fixture still refuses without3/4 work.|
+
+Total84 changed reachable plan oracles and84 retained public counterparts.
+The empty sequential zero-count graph contains no Tensor subclass; its existing
+precise negative oracle remains unchanged. Initial top/archive schema refusals
+before any clone retain their original F1 precision. Matching count, selected
+count-clone normalization, MappingProxyType and nonplain semantic controls
+remain present; no existing node was dropped.
+
+## Finite new acceptance tests
+
+**Causal clone repair:** source_formats.replay and earlier sibling state.capacity
+int-subclass deepcopy hooks both restore raw count3→4 before that count is
+cloned, returning valid exact scalar metadata themselves. Each family uses
+fresh records from a genuine four-row archive on2, so source digest/rows are
+initially qualified by the real helper fixture. Planning must leave raw3 and
+the hook-call list untouched, inventory1+2+3 and select4 only for preparation.
+The four direct comparison-digest helper controls must accept owned4, show
+actual earlier clone2 and sum1; setup/fixture failures are not causal RED.
+Eight separate validate/prepare plan nodes are intended RED on frozen FIX5.
+Public validation counterparts retain the accepting comparison operand.
+
+Root source capsule `T18e-R0-CUDA-ARCHIVE-PREPARE-DIGEST-FACTS.md`, SHA256
+`b568f242923108d31705cb3ce205c8cdd9202324277e6a25219984abfcae712d`,
+confirmed both families record/clone/revalidate archives during preparation.
+The comparison Tensor subclass is not certified to survive that reconstruction.
+Accordingly the four new public prepare cases retain the ORIGINAL genuine
+canonical digest string instead. The same hook restores its original four-row
+metadata, with source2/live3 and target4 and no digest operand1. Four additional
+canonical helper controls must accept that digest, then record/reconstruct the
+accepted archive and accept again. They establish the relevant prerequisite
+without B authority. Both public validate and prepare remain upfront B-blocked.
+No family implementation body was opened to resolve this fixture question.
+
+**Native/plain negative and positive pairs:**34 nodes pair validation/preparation
+for standard+flat, prioritized+PER and sequential+flat at above/below/empty/match
+counts. This covers all distinct count contracts without crossing every kind
+with every replay family. Shared semantic reward/approval, fixed-diagnostic
+Tensor count, later-record mismatch and later-key refusal receive one additional
+paired representative each. Clone graphs use exact native CPU tensors/plain
+containers and ordinary native NumPy priorities; accepting digest operand1 and
+otherwise valid live row3/target4 distinguish refusal from continuation. Real
+helper prerequisites run within these controls, before plan assertions. Direct
+prefix identity checks retain reached CPU source_formats/original_state copies,
+including earlier records, even when there is no CUDA device to describe them.
+Native CUDA preceding-source2 qualification remains a later hardware obligation;
+no Tensor subclass is relabeled as native CUDA evidence.
+
+**Classifier boundary:**21 direct ReplayPrefix.archive nodes do not invoke the
+full inventory scanner. Five stable controls cover native tensors, primitive
+leaves/tuple traversal, an acyclic shared alias, native numeric arrays and bool
+arrays. Sixteen opaque cases cover source scalar deepcopy, Tensor subclass,
+custom Mapping.items, list-subclass traversal, nonplain cloned key/kind/count,
+MappingProxyType, object-bearing/structured/subclass/scalar NumPy, active cycle,
+exact OrderedDict with an instance items override, and exact native Tensor with
+an instance detach override or harmless instance attribute. Their wrong semantic
+field makes the entire post-clone gate observable: opaque graphs must stop as
+unknown before making that refusal deduction. Protocol sentinels/call lists,
+zero runtime events and retained input identities assert no classification work.
+The sixteen opaque expectations are intended RED on frozen FIX5; five stable
+cases should already pass. Cycle/custom-Mapping claims are classifier-only,
+respecting the separate adopted inventory traversal contract. No real recursive
+constructor executes a cycle; no arbitrary Mapping protocol is claimed inert.
+
+## Exact execution categories and freeze
+
+All outcomes below are author-UNRUN predictions. Root owns collection/import/
+fixture verification, then the causal RED and control captures before granting
+production. The exact JSON node map is embedded below (UTF-8 payload with its
+final newline SHA256 `0b18c2cf1d9d420ee17cb01292427baf068bd01d86b0b9fd906596c80c86f822`).
+
+| Category | Count | Intended root handling |
+| --- | ---: | --- |
+| New direct helper prerequisites |8|Already-PASS comparison and canonical digest controls, before interpreting RED.|
+| New native/plain controls |34|Already-PASS helper+plan controls preserving ordinary refusal precision.|
+| New stable classifier controls |5|Already-PASS, direct prefix only.|
+| New causal hook plan RED |8|First expected plan assertion fails without invoking the hook.|
+| New opaque-classifier RED |16|Existing prefix API, final unknown assertion fails; no missing proposed API seam.|
+| Changed prior plan RED |84|Corrected opaque-continuation expectations; preserve historical PASS at old bytes.|
+| New public B-blocked UNRUN |8|Four validate/comparison and four prepare/canonical; do not count their initial plan assertion as public execution.|
+| Changed prior public B-blocked UNRUN |84|Existing node identities retained; actual refusal/work assertions remain.|
+
+Thus new79 nodes comprise47 controls,24 intended RED and8 B-blocked public.
+Together with the84 corrected prior reachable oracles, the focused intended RED
+selection is108; the affected public UNRUN selection is92. Existing unselected
+B/child obligations remain outside these focused counts. Do not add historical
+R104/R106 PASS to future final-source totals. The core's separate frozen review
+is not changed or qualified by this work; no current mypy/API success or failure
+is inferred here because this worker ran only permitted test-file static checks.
+
+Test-only bytes are frozen now for root capture. Shared production remains
+exactly FIX5; only an explicit later root baton following actual causal checks
+may authorize the whole-graph source gate. Required B activation/completion,
+all children, parent/recurrent/native integration, real CUDA hardware and
+whole-programme gates remain owed. Fresh bounded independent fixed-source
+verification remains required; no general F2 or other-model acceptance is
+claimed by this tests-stage report.
+
+## Author static transcript
+
+All commands ran in existing `/workspace/hamlet`. Initial formatting and two
+intermediate Ruff/Black checks passed; final checks below followed the canonical
+preparation-fixture correction and strengthened actual no-work assertions.
+No application import/runtime/helper/test/collection/mypy execution occurred.
+
+```text
+$ UV_CACHE_DIR=/tmp/bac-clone-stability-uv-cache uv run --no-sync black tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All done! ✨ 🍰 ✨
+1 file left unchanged.
+
+$ .venv/bin/ruff check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All checks passed!
+
+$ UV_CACHE_DIR=/tmp/bac-clone-stability-uv-cache uv run --no-sync black --check tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit 0
+All done! ✨ 🍰 ✨
+1 file would be left unchanged.
+
+$ sha256sum src/townlet/training/replay_contract.py src/townlet/training/historical_checkpoint.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c  src/townlet/training/replay_contract.py
+74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4  src/townlet/training/historical_checkpoint.py
+d639ebaac4a0e24d313ef5d8d46202f17a32077e111f99905fa110fab4cbdac0  tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+
+$ wc -l src/townlet/training/replay_contract.py src/townlet/training/historical_checkpoint.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+842 src/townlet/training/replay_contract.py
+675 src/townlet/training/historical_checkpoint.py
+2468 tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+3985 total
+```
+
+## Exact node map
+
+```json
+{
+  "stage": "tests-only freeze; author runtime UNRUN",
+  "test_sha256": "d639ebaac4a0e24d313ef5d8d46202f17a32077e111f99905fa110fab4cbdac0",
+  "preserved_existing_nodes": 757,
+  "expected_total_nodes": 836,
+  "preserved_child_protocols": 10,
+  "counts": {
+    "new_causal_helper_controls": 8,
+    "new_native_controls": 34,
+    "new_classifier_controls": 5,
+    "new_causal_plan_red": 8,
+    "new_classifier_red": 16,
+    "changed_prior_plan_red": 84,
+    "new_b_blocked_public_unrun": 8,
+    "changed_prior_b_blocked_public_unrun": 84
+  },
+  "nodes": {
+    "new_causal_helper_controls": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-per]"
+    ],
+    "new_native_controls": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-above]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-below]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-empty]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-match]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-per-prioritized-above]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-per-prioritized-below]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-per-prioritized-empty]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-per-prioritized-match]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-sequential-above]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-sequential-below]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-sequential-empty]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-sequential-match]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-reward]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-approval]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-count-type]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-later]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[False-flat-standard-later-key]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-above]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-below]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-empty]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-match]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-per-prioritized-above]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-per-prioritized-below]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-per-prioritized-empty]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-per-prioritized-match]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-sequential-above]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-sequential-below]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-sequential-empty]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-sequential-match]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-reward]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-approval]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-count-type]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-later]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_native_archive_clone_boundaries[True-flat-standard-later-key]"
+    ],
+    "new_classifier_controls": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[native]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[primitives]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[alias]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-numeric]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-bool]"
+    ],
+    "new_causal_plan_red": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-plan-formats-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-plan-formats-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-plan-sibling-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-plan-sibling-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-plan-formats-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-plan-formats-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-plan-sibling-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-plan-sibling-per]"
+    ],
+    "new_classifier_red": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[scalar]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-subclass]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[mapping]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[list-subclass]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[key]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[kind]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[count]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[proxy]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-object]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-structured]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-subclass]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[numpy-scalar]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[cycle]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[ordered-items]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-detach]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_graph_classification[tensor-attribute]"
+    ],
+    "changed_prior_plan_red": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[False-semantics-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[False-semantics-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[False-later-record-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[False-later-record-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-key-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-key-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-approval-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-approval-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-later-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-count-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-plan-count-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-key-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-key-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-approval-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-approval-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-later-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-count-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-plan-count-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-above-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-below-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-zero-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-digest-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-plan-later-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-above-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-below-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-zero-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-digest-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-plan-later-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-later-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-plan-later-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-later-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-plan-later-per]"
+    ],
+    "new_b_blocked_public_unrun": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-formats-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-formats-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-sibling-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-sibling-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-formats-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-formats-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-sibling-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[prepare-sibling-per]"
+    ],
+    "changed_prior_b_blocked_public_unrun": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[True-semantics-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[True-semantics-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[True-later-record-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_record_prefix_matrix[True-later-record-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-later-key-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-later-key-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-approval-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-approval-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-later-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-later-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-count-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[validate-count-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-later-key-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-later-key-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-approval-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-approval-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-later-reward-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-later-reward-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-count-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_and_schema_boundaries[prepare-count-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-above-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-above-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-above-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-above-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-above-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-above-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-below-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-below-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-below-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-below-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-below-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-below-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-zero-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-zero-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-zero-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-zero-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-digest-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-digest-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-digest-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-digest-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-digest-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-digest-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-later-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-later-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-later-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-later-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-later-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-later-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-above-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-above-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-above-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-above-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-above-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-above-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-below-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-below-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-below-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-below-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-below-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-below-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-zero-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-zero-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-zero-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-zero-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-digest-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-digest-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-digest-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-digest-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-digest-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-digest-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-later-standard-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-later-standard-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-later-prioritized-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-later-prioritized-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-later-sequential-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-later-sequential-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-later-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[validate-later-per]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-later-flat]",
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_equal_cardinality_key_boundaries[prepare-later-per]"
+    ]
+  }
+}
+```
+
+## Inert test delta from R106 predecessor
+
+Read-only command: `git diff ab46784efc86bab95b031494529e06871a12f1ff -- tests/test_townlet/regressions/bac/test_replay_cuda_producer.py`.
+The exact UTF-8 diff payload below, including its final newline, has SHA256
+`4e91a3a816ea7237b0ee75b5536a0cf9b40a154f00eb294fa2664efa2660f736`. It is inert review evidence, not an
+executable source copy or an additional implementation body.
+
+```text
+ .../regressions/bac/test_replay_cuda_producer.py   | 288 ++++++++++++++++++++-
+ 1 file changed, 276 insertions(+), 12 deletions(-)
+```
+
+```diff
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+index 6e1f1f30..6224c83b 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -11,6 +11,7 @@ import multiprocessing
+ import os
+ import random
+ import sys
++from collections import OrderedDict
+ from collections.abc import Callable, Iterator
+ from contextlib import contextmanager
+ from dataclasses import replace
+@@ -27,7 +28,7 @@ from townlet.exploration.rng_custody import LocalCUDAGate, process_rng_domain
+ from townlet.training import historical_checkpoint as history
+ from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+ from townlet.training.replay_buffer import ReplayBuffer
+-from townlet.training.replay_contract import PreparedReplay, ReplayRequest
++from townlet.training.replay_contract import PreparedReplay, ReplayPrefix, ReplayRequest, _ReplayPrefixStopError
+ from townlet.training.state import RewardTensor
+ 
+ 
+@@ -1930,7 +1931,7 @@ def test_archive_record_prefix_matrix(family: str, case: str, public: bool, simu
+         records = [record, None]
+     incoming = {**before, "historical_archives": records, "observations": _CUDAData(torch.ones((4, 2)), 3)}
+     owner.device = torch.device("cuda:4")
+-    devices = () if case in ("type", "keys") else (2,)
++    devices = () if case in ("type", "keys") else (2, 3)  # Subclass clones can change subsequent validation.
+     assert _metadata_plan(owner, "validate_serialized", (incoming,), False, simulated_cuda) == (None, devices)
+     if not public:
+         return
+@@ -1939,7 +1940,9 @@ def test_archive_record_prefix_matrix(family: str, case: str, public: bool, simu
+     events = list(simulated_cuda.events)
+     _assert_tree_equal(owner.serialize(), before)
+     if devices:
+-        _assert_cloned_then_completed(events, devices)
++        clones = [index for index, event in enumerate(events) if event[:3] == ("finished", "clone", (2,))]
++        assert clones and max(clones) < next(index for index, event in enumerate(events) if event[0] == "sync")
++        assert not any(event[0] == "work" and 3 in event[2] for event in events)
+         _assert_local(events, devices)
+     else:
+         assert events == []
+@@ -2019,6 +2022,15 @@ def test_archive_semantic_and_schema_boundaries(family: str, case: str, route: s
+         devices = (2, 3) if case == "success" else (1, 2, 3)
+         if case != "success":
+             record[case] = _ArchiveComparison(torch.tensor(1), 1)
++    opaque_clones = {
++        "later-key": (1, 2, 3),
++        "reward": (1, 2, 3),
++        "approval": (1, 2, 3),
++        "later-reward": (0, 1, 2, 3),
++        "count": (1, 2, 3),
++    }
++    if case in opaque_clones:
++        devices, continuation = opaque_clones[case], True
+     incoming["historical_archives"] = records
+     owner.device = torch.device("cuda:4")
+     prepare = route.startswith("prepare")
+@@ -2040,7 +2052,9 @@ def test_archive_semantic_and_schema_boundaries(family: str, case: str, route: s
+     assert all(any(event[:3] == ("finished", "clone", (index,)) for event in events) for index in copies)
+     if case in ("reward_semantics", "approval_reference", "source_digest"):
+         assert any(event[:3] == ("work", "sum", (1,)) for event in events)
+-    if not continuation:
++    if case in ("reward", "approval", "later-reward", "count"):
++        assert not any(event[0] == "work" and 1 in event[2] for event in events)
++    if case not in ("success", "reward_semantics", "approval_reference", "source_digest"):
+         assert not any(event[0] == "work" and (3 in event[2] or 4 in event[2]) for event in events)
+     _assert_tree_equal(owner.serialize(), before)
+ 
+@@ -2105,14 +2119,16 @@ def test_archive_declared_count_boundaries(family: str, kind: str, case: str, ro
+     incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+     count = 0 if case == "zero" else 2 if case == "above" else 4
+     record = _fix5_archive_record(kind, count, case)
+-    continuation = case in ("match", "clone", "mapping")
+-    devices = (2, 3) if continuation else () if kind == "sequential" and count == 0 else (2,)
++    accepted = case in ("match", "clone", "mapping")
++    continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
++    devices = (2, 3) if continuation else ()
+     records = [record]
+     if case == "digest":
+         record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
++        devices = (1, 2, 3)
+     if case == "later":
+         records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+-        devices = (0, 2)
++        devices = (0, 2, 3)
+     incoming["historical_archives"] = records
+     owner.device = torch.device("cuda:4")
+     prepare = route.startswith("prepare")
+@@ -2122,7 +2138,7 @@ def test_archive_declared_count_boundaries(family: str, kind: str, case: str, ro
+     if route.endswith("-plan"):
+         return
+     arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+-    if continuation:
++    if accepted:
+         getattr(owner, method)(incoming, **arguments)
+     else:
+         with pytest.raises(ValueError, match="archive row count differs from original state"):
+@@ -2133,7 +2149,7 @@ def test_archive_declared_count_boundaries(family: str, kind: str, case: str, ro
+         assert any(event[:3] == ("finished", "clone", (2,)) for event in events)
+     if case == "later":
+         assert any(event[:3] == ("finished", "clone", (0,)) for event in events)
+-    if not continuation:
++    if not accepted:
+         assert not any(event[0] == "work" and any(index in event[2] for index in (1, 3, 4)) for event in events)
+     _assert_tree_equal(owner.serialize(), before)
+ 
+@@ -2180,7 +2196,7 @@ def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, si
+         devices = (2,)
+         if case == "later":
+             incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+-            devices = (1, 2)
++            devices, continuation = (1, 2, 3), True  # Earlier opaque clone may change the later schema.
+     owner.device = torch.device("cuda:4")
+     prepare = route.startswith("prepare")
+     method = "prepare_serialized" if prepare else "validate_serialized"
+@@ -2189,7 +2205,7 @@ def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, si
+     if route.endswith("-plan"):
+         return
+     arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+-    if continuation:
++    if case.startswith("opaque-"):
+         getattr(owner, method)(incoming, **arguments)
+     else:
+         # Mixed-key sorting can raise TypeError before the ordinary diagnostic.
+@@ -2199,6 +2215,254 @@ def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, si
+     assert _syncs(events) == ((*devices, 4) if selected is not None else devices)
+     if case == "later":
+         assert any(event[:3] == ("finished", "clone", (1,)) for event in events)
+-    if not continuation:
++    if not case.startswith("opaque-"):
+         assert not any(event[0] == "work" and (3 in event[2] or 4 in event[2]) for event in events)
+     _assert_tree_equal(owner.serialize(), before)
++
++
++def _native_archive_record(kind: str, count: int) -> dict[str, Any]:
++    legacy = _legacy_transport("per" if kind == "prioritized" else "flat")
++    rows = {key: value[:count] for key, value in legacy.items() if type(value) is torch.Tensor}
++    if kind == "sequential":
++        state = {"replay_kind": kind, "format_version": 5, "capacity": 4, "num_transitions": count, "episodes": [rows] if count else []}
++    else:
++        state = {**legacy, **rows, "position": count % 4, "size_current" if kind == "prioritized" else "size": count}
++    return history._record(history.archive_standalone_replay(state))
++
++
++def _clone_repair_record(family: str, location: str, *, operator: bool) -> tuple[dict[str, Any], list[str], str]:
++    record = history._record(_family_archive(family, 2))
++    state = record["original_state"]
++    field = "size" if family == "flat" else "size_current"
++    state[field] = 3
++    calls: list[str] = []
++
++    class RepairCount(int):
++        def __deepcopy__(self, memo: dict) -> int:
++            calls.append(location)
++            state[field] = 4
++            return int(self)
++
++    target, key = (record["source_formats"], "replay") if location == "formats" else (state, "capacity")
++    target[key] = RepairCount(target[key])
++    if operator:
++        record["source_digest"] = _ArchiveComparison(torch.tensor(0), 1)
++    return record, calls, field
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("location", ["formats", "sibling"])
++@pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
++def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
++    # Preparation records/clones/revalidates archives: its genuine canonical
++    # digest must survive that route, unlike the raw comparison-subclass probe.
++    operator = stage not in ("canonical-fixture", "prepare")
++    record, calls, field = _clone_repair_record(family, location, operator=operator)
++    state = record["original_state"]
++    assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
++    if stage in ("fixture", "canonical-fixture"):
++        simulated_cuda.events.clear()
++        restored = history._archive_from_state(record)
++        assert restored.archived_row_count == 4
++        assert calls and state[field] == 4
++        assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
++        assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
++        if not operator:
++            assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
++            assert history._archive_from_state(history._record(restored)).archived_row_count == 4
++        return
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in before.items()}
++    incoming["historical_archives"] = [record]
++    owner.device = torch.device("cuda:4")
++    prepare = stage.startswith("prepare")
++    method = "prepare_serialized" if prepare else "validate_serialized"
++    plan = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
++    assert calls == [] and state[field] == 3
++    devices = (1, 2, 3) if operator else (2, 3)
++    assert plan == (owner.device if prepare else None, devices)
++    if stage.endswith("-plan"):
++        return
++    arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
++    getattr(owner, method)(incoming, **arguments)
++    events = list(simulated_cuda.events)
++    assert calls and state[field] == 4
++    assert any(event[:3] == ("work", "sum", (1,)) for event in events) is operator
++    assert _syncs(events) == ((*devices, 4) if prepare else devices)
++    assert any(event[:3] == ("finished", "clone", (2,)) for event in events)
++    _assert_tree_equal(owner.serialize(), before)
++
++
++_NATIVE_CLONE_CASES = [
++    (family, kind, case)
++    for family, kind in (("flat", "standard"), ("per", "prioritized"), ("flat", "sequential"))
++    for case in ("above", "below", "empty", "match")
++] + [("flat", "standard", case) for case in ("reward", "approval", "count-type", "later", "later-key")]
++
++
++@pytest.mark.parametrize("family,kind,case", _NATIVE_CLONE_CASES, ids=["-".join(item) for item in _NATIVE_CLONE_CASES])
++@pytest.mark.parametrize("prepare", [False, True])
++def test_native_archive_clone_boundaries(family: str, kind: str, case: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
++    count = 0 if case == "empty" else 2 if case == "above" else 4
++    record = _native_archive_record(kind, count)
++    record["source_digest"] = _ArchiveComparison(torch.tensor(0), 1)
++    records = [record]
++    if case in ("above", "empty", "later"):
++        record["archived_row_count"] = count + 1
++    elif case == "below":
++        record["archived_row_count"] = count - 1
++    elif case in ("reward", "approval"):
++        record["approval_reference" if case == "approval" else "reward_semantics"] = "wrong"
++        if case == "reward":
++            record["approval_reference"] = _ArchiveComparison(torch.tensor(0), 1)
++    elif case == "count-type":
++        record["archived_row_count"] = _ArchiveComparison(torch.tensor(count), 1)
++    elif case == "later-key":
++        record = history._record(_family_archive("flat", 2))
++        record.pop("source_digest")
++        record.pop("approval_reference")
++        record["unexpected"] = None
++        record[_CUDAData(torch.tensor(1), 1)] = None
++    if case in ("later", "later-key"):
++        records = [_native_archive_record(kind, 4), record, history._record(_family_archive("flat", 2))]
++    # Real helper prerequisites distinguish schema/semantic/count refusal from
++    # fixture setup errors; an accepting digest operator is reached only at match.
++    simulated_cuda.events.clear()
++    if case == "match":
++        assert history._archive_from_state(record).archived_row_count == count
++        assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events)
++    else:
++        with pytest.raises(ValueError, match="row count|reward semantics|archived_row_count|schema key mismatch"):
++            history._archive_from_state(record)
++        assert not any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events)
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in owner.serialize().items()}
++    incoming["historical_archives"] = records
++    owner.device = torch.device("cuda:4")
++    method = "prepare_serialized" if prepare else "validate_serialized"
++    devices = (1, 3) if case == "match" else (1,) if case == "later-key" else ()
++    assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (
++        owner.device if prepare and case == "match" else None,
++        devices,
++    )
++    # CPU clones still belong to the reached prefix even when no CUDA device
++    # describes them. Inspect recorded identities without Tensor equality.
++    prefix = ReplayPrefix(planning=True)
++    try:
++        for item in records:
++            prefix.archive(item, lambda: pytest.fail("planning invoked archive restoration"))
++    except _ReplayPrefixStopError:
++        pass
++    reached = records[:1] if case == "later-key" else records[:2] if case == "later" else records
++    for item in reached:
++        assert any(value is item["source_formats"] for value in prefix.values)
++        assert any(value is item["original_state"] for value in prefix.values)
++    assert simulated_cuda.events == []
++
++
++@pytest.mark.parametrize(
++    "case",
++    [
++        "native",
++        "primitives",
++        "alias",
++        "numpy-numeric",
++        "numpy-bool",
++        "scalar",
++        "tensor-subclass",
++        "mapping",
++        "list-subclass",
++        "key",
++        "kind",
++        "count",
++        "proxy",
++        "numpy-object",
++        "numpy-structured",
++        "numpy-subclass",
++        "numpy-scalar",
++        "cycle",
++        "ordered-items",
++        "tensor-detach",
++        "tensor-attribute",
++    ],
++)
++def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
++    record = _native_archive_record("standard", 4)
++    state = record["original_state"]
++    calls: list[str] = []
++
++    def unexpected(*args: Any, **kwargs: Any) -> Any:
++        calls.append(case)
++        raise AssertionError("Clone classification invoked an opaque protocol")
++
++    class CloneScalar(int):
++        __deepcopy__ = unexpected
++
++    class ProtocolMapping(dict):
++        items = unexpected
++
++    class ProtocolList(list):
++        __iter__ = unexpected
++
++    class ProtocolArray(np.ndarray):
++        __deepcopy__ = unexpected
++
++    if case == "primitives":
++        state["leaves"] = (None, True, 1, 1.0, "value", b"value")
++    elif case == "alias":
++        leaf = [1, {"value": torch.ones(1)}]
++        state["aliases"] = [leaf, leaf]
++    elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
++        values = {
++            "numpy-numeric": np.ones(2, dtype=np.float32),
++            "numpy-bool": np.ones(2, dtype=np.bool_),
++            "numpy-object": np.array([CloneScalar(1)], dtype=object),
++            "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
++            "numpy-subclass": np.ones(2).view(ProtocolArray),
++            "numpy-scalar": np.int64(1),
++        }
++        state["array"] = values[case]
++    elif case == "scalar":
++        record["source_formats"]["replay"] = CloneScalar(4)
++    elif case == "tensor-subclass":
++        state["observations"] = _CUDAData(state["observations"], 2)
++    elif case == "mapping":
++        record["original_state"] = ProtocolMapping(state)
++    elif case == "list-subclass":
++        state["nested"] = ProtocolList([1])
++    elif case == "key":
++        state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
++    elif case == "kind":
++        state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
++    elif case == "count":
++        state["size"] = _ArchiveCountOnClone(5)
++    elif case == "proxy":
++        record["original_state"] = MappingProxyType(state)
++    elif case == "cycle":
++        state["cycle"] = state
++    elif case == "ordered-items":
++        ordered = OrderedDict(state)
++        ordered.items = unexpected
++        assert type(ordered) is OrderedDict
++        record["original_state"] = ordered
++    elif case in ("tensor-detach", "tensor-attribute"):
++        tensor = state["observations"]
++        assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
++        if case == "tensor-detach":
++            tensor.detach = unexpected
++        else:
++            tensor.harmless = 1
++    record["reward_semantics"] = "wrong"
++    prefix = ReplayPrefix(planning=True)
++    simulated_cuda.events.clear()
++    with pytest.raises(_ReplayPrefixStopError):
++        prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
++    assert calls == [] and simulated_cuda.events == []
++    assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
++    assert len(prefix.values) == 2
++    assert prefix.values[0] is record["source_formats"] and prefix.values[1] is record["original_state"]
++    # Deliberately classifier-only: inventory may invoke Mapping protocols and
++    # does not promise cycle traversal. No cyclic real constructor is executed.
+```

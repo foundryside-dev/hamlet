@@ -1,0 +1,19 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r102-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r102-owned-types",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owned-mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "--follow-imports=silent"
+      ]
+    }
+  ]
+}

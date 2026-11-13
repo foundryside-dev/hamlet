@@ -1,0 +1,22 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r102-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r102-fix3-positive-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix3-positive-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_prefix_first_effect_inventory_controls",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

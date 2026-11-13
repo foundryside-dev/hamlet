@@ -12,7 +12,7 @@ from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, fields, replace
 from functools import wraps
 from threading import RLock, current_thread
-from typing import Concatenate, Literal, NoReturn
+from typing import Any, Concatenate, Literal, NoReturn, cast
 from weakref import WeakKeyDictionary
 
 import numpy as np
@@ -43,6 +43,147 @@ class PreparedReplay:
         raise TypeError("Prepared replay capabilities cannot be copied or serialized")
 
 
+class _ReplayPrefixStopError(Exception):
+    """Internal planning stop; never a validation or publication result."""
+
+
+def _archive_clone_stable(value: object, active: set[int]) -> bool:
+    """Certify an ordinary clone graph without invoking its clone protocols."""
+    value_type = type(value)
+    if any(value_type is scalar for scalar in (type(None), bool, int, float, str, bytes)):
+        return True
+    if value_type is Tensor:
+        # Exact native tensors can still carry per-instance detach overrides.
+        # Base access avoids user lookup; any instance state makes this opaque.
+        try:
+            attributes = object.__getattribute__(value, "__dict__")
+        except (AttributeError, TypeError):
+            return False
+        return type(attributes) is dict and not attributes
+    if value_type is np.ndarray:
+        dtype = cast(npt.NDArray[Any], value).dtype
+        return not dtype.hasobject and dtype.kind in "biufc"
+    if not any(value_type is container for container in (dict, list, tuple)):
+        return False  # Includes OrderedDict, Mapping views and all subclasses.
+    identity = id(value)
+    if identity in active:
+        return False
+    active.add(identity)
+    try:
+        if value_type is dict:
+            return all(
+                _archive_clone_stable(key, active) and _archive_clone_stable(item, active)
+                for key, item in cast(dict[object, object], value).items()
+            )
+        return all(_archive_clone_stable(item, active) for item in cast(list[object] | tuple[object, ...], value))
+    finally:
+        active.remove(identity)
+
+
+class ReplayPrefix:
+    """Run real validation, or record its possible effects without value work."""
+
+    def __init__(self, *, planning: bool) -> None:
+        self.planning = planning
+        self.values: list[object] = []
+        self.unknown = False
+        self.complete = False
+
+    def scalar(self, value: object, parse: Callable[[Any], Any]) -> Any:
+        if self.planning and type(value) not in (int, float, bool, str, bytes, type(None)):
+            self.values.append(value)
+            self.unknown = isinstance(value, int | float | str)
+            raise _ReplayPrefixStopError
+        return parse(value)
+
+    def opaque(self, value: object) -> None:
+        if self.planning and type(value) not in (int, float, bool, str, bytes, type(None)):
+            self.values.append(value)
+            self.unknown = True
+            raise _ReplayPrefixStopError
+
+    def keys(self, record: Mapping[Any, object], expected: set[str] | frozenset[str]) -> None:
+        if self.planning:
+            keys = tuple(record)
+            if any(type(key) not in (int, float, bool, str, bytes, type(None)) for key in keys):
+                self.values.extend(keys)
+                # An ordinary unexpected key proves refusal even if opaque keys
+                # still require protected comparison or diagnostic rendering.
+                unexpected = any(type(key) in (int, float, bool, str, bytes, type(None)) and key not in expected for key in keys)
+                self.unknown = len(keys) == len(expected) and not unexpected
+                raise _ReplayPrefixStopError
+
+    def require(self, check: Callable[[], bool], message: str, values: tuple[object, ...]) -> None:
+        self.values.extend(values)
+        if not self.planning and not check():
+            raise ValueError(message)
+
+    def masks(self, masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
+        _successor_mask_metadata(masks, dones, action_dim=action_dim)
+        self.require(lambda: not bool(((~dones) & ~masks.any(dim=-1)).any()), "nonterminal successor has no legal action", (masks, dones))
+
+    def tensor(self, value: Tensor) -> Tensor:
+        self.values.append(value)
+        if self.planning:
+            return value  # Metadata view only; no planned DTO escapes.
+        return value.detach().clone()
+
+    def archive(self, record: object, restore: Callable[[], Any]) -> Any:
+        if not self.planning:
+            return restore()
+        from townlet.training.historical_checkpoint import APPROVAL_REFERENCE, REWARD_SEMANTICS
+
+        if not isinstance(record, Mapping):
+            raise _ReplayPrefixStopError
+        keys = {"source_formats", "original_state", "source_digest", "archived_row_count", "reward_semantics", "approval_reference"}
+        self.keys(record, keys)
+        if set(record) != keys:
+            raise _ReplayPrefixStopError
+        clone_inputs = (record["source_formats"], record["original_state"])
+        self.values.extend(clone_inputs)
+        # Either entire clone graph can affect later metadata before validation.
+        # Opaque cloning preserves possible continuation, never runtime refusal.
+        if not all(_archive_clone_stable(value, set()) for value in clone_inputs):
+            self.unknown = True
+            raise _ReplayPrefixStopError
+        for field, expected in (("reward_semantics", REWARD_SEMANTICS), ("approval_reference", APPROVAL_REFERENCE)):
+            value = record[field]
+            self.opaque(value)
+            if value != expected:
+                raise _ReplayPrefixStopError
+        # State validation can succeed after the required copies; no value prediction.
+        count = record["archived_row_count"]
+        if type(count) is not int or count < 0:
+            raise _ReplayPrefixStopError
+        state = clone_inputs[1]
+        if isinstance(state, Mapping):
+            # _clone consumes items, normalizing Mapping inputs while cloning
+            # their keys and values. Only exact string keys preserve this view;
+            # nonplain keys could clone into or overwrite a metadata field.
+            items = tuple(state.items())
+            if all(type(key) is str for key, _ in items):
+                metadata = dict(items)
+                kind = metadata.get("replay_kind")
+                count_fields = {"standard": "size", "prioritized": "size_current", "sequential": "num_transitions"}
+                if type(kind) is str and kind in count_fields:
+                    declared = metadata.get(count_fields[kind])
+                    # Successful _validate_archive_state returns this declared
+                    # exact integer unchanged. Earlier validation may refuse,
+                    # but cannot make a mismatch reach the digest or later rows.
+                    # Subclass metadata may change in _clone: keep it unknown.
+                    if type(declared) is int and declared != count:
+                        raise _ReplayPrefixStopError
+        digest = record["source_digest"]
+        self.opaque(digest)
+        if type(digest) is not str:
+            raise _ReplayPrefixStopError
+
+    def finish(self) -> None:
+        if self.planning:
+            self.complete = True
+            raise _ReplayPrefixStopError
+
+
 class ReplayCustody:
     """One process lease before one replay owner's mutation exclusion."""
 
@@ -53,6 +194,7 @@ class ReplayCustody:
     observations: Tensor | None
     legality_recorded: Tensor | None
     _local_cuda_contracts: Mapping[str, str]
+    _historical_archives: tuple[object, ...]
 
     def _init_custody(self, device: torch.device) -> None:
         # Current full-member consumers migrate in their own producer packets.
@@ -128,43 +270,91 @@ class ReplayCustody:
             return args[index]
         return kwargs.get(name)
 
-    def _push_inventory(
-        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...]
-    ) -> tuple[torch.device | None, tuple[object, ...]]:
-        observations = self._replay_argument(args, kwargs, 0, "observations")
-        prefix: tuple[object, ...] = ()
-        if route == "push_recorded":
-            prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
-        elif self.action_dim is not None:
-            prefix = (self._replay_argument(args, kwargs, 4, "dones"),)
-        if not isinstance(observations, Tensor) or observations.ndim != 2 or observations.dtype != torch.float32:
-            return None, prefix
-        if observations.shape[1] < 1 or observations.shape[0] > self.capacity:
-            return None, prefix
-        rewards = self._replay_argument(args, kwargs, 2, "rewards")
-        values = (
-            *args,
-            *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
-            *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
-        )
-        if observations.shape[0]:
-            return self.device, (*values, *retained)
-        if route == "push_recorded" or self.action_dim is not None:
-            return None, (*values, self.actions)
-        return None, values
+    def _push_action_dim(self, actions: Tensor, width: int | None, *, size: int, prefix: ReplayPrefix) -> int | None:
+        action_dim = self.action_dim
+        prefix.opaque(action_dim)
+        if width is not None:
+            if action_dim is not None and width != action_dim:
+                raise ValueError("successor action width differs from current buffer action vocabulary")
+            action_dim = width
+            prefix.require(lambda: not bool((actions >= width).any()), "actions outside the declared action vocabulary", (actions,))
+            if self.actions is not None:
+                existing = self.actions
+                prefix.require(
+                    lambda: not bool((existing[:size] >= width).any()),
+                    "existing unconstrained actions exceed the supplied action vocabulary",
+                    (existing,),
+                )
+        return action_dim
 
-    def _transport_target(self, state: Mapping[str, object], size_field: str, *, strict: bool) -> torch.device | None:
-        capacity = state.get("capacity")
-        if strict and type(capacity) is not int:
-            return None
-        if not isinstance(capacity, int) or isinstance(capacity, bool) or capacity != self.capacity:
-            return None
-        count = state.get(size_field)
-        if strict and type(count) is not int:
-            return None
-        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
-            return None
-        return self.device
+    def _push_inventory(
+        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...], *, size: int
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        arguments = cast(
+            tuple[Any, ...],
+            tuple(
+                self._replay_argument(args, kwargs, i, name)
+                for i, name in enumerate(("observations", "actions", "rewards", "next_observations", "dones"))
+            ),
+        )
+        observations, actions, rewards, _, dones = arguments
+        masks = self._replay_argument(args, kwargs, 5, "next_action_masks")
+        prefix = ReplayPrefix(planning=True)
+        width = self.action_dim
+        try:
+            if route == "push_recorded":
+                if not isinstance(masks, Tensor) or masks.ndim != 2:
+                    raise _ReplayPrefixStopError
+                width = masks.shape[1]
+                prefix.masks(masks, dones, action_dim=width)
+            elif width is not None:
+                prefix.opaque(width)
+                prefix.values.append(dones)  # Public adapter allocates ones before validating transitions.
+            batch = self._validate_push(*arguments, prefix=prefix)
+            if route == "push_recorded":
+                prefix.masks(cast(Tensor, masks), dones, action_dim=cast(int, width))
+            self._push_action_dim(actions, width, size=size, prefix=prefix)
+            if batch:
+                self._push_commit_metadata(batch, prefix=prefix)
+        except (_ReplayPrefixStopError, ValueError, TypeError, AttributeError, KeyError, OverflowError):
+            if prefix.unknown:
+                return self.device, (*prefix.values, *arguments, *retained)
+            return None, tuple(prefix.values)
+        if not batch:
+            return None, tuple(prefix.values)
+        values = (*arguments, masks, *(getattr(rewards, name) for name in ("extrinsic", "intrinsic", "shaping")))
+        return self.device, (*prefix.values, *values, *retained)
+
+    def _push_commit_metadata(self, batch: int, *, prefix: ReplayPrefix) -> object:
+        return None
+
+    def _validate_push(
+        self, observations: Tensor, actions: Tensor, rewards: Any, next_observations: Tensor, dones: Tensor, *, prefix: ReplayPrefix
+    ) -> int:
+        raise NotImplementedError("Producer must supply its ordered transition validation")
+
+    def _serialized_validation(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, prefix: ReplayPrefix) -> object:
+        raise NotImplementedError("Producer must supply its ordered transport validation")
+
+    def _transport_inventory(
+        self, state: object, route: str, expected_obs_dim: object, *, count_field: str
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        prefix = ReplayPrefix(planning=True)
+        try:
+            self._serialized_validation(cast(Any, state), expected_obs_dim=cast(Any, expected_obs_dim), prefix=prefix)
+        except (_ReplayPrefixStopError, ValueError, TypeError, AttributeError, KeyError, OverflowError):
+            pass
+        values: tuple[object, ...] = tuple(prefix.values)
+        if prefix.unknown:
+            values = (*values, state)
+        if route != "prepare_serialized" or not (prefix.complete or prefix.unknown):
+            return None, values
+        values = (*values, self._historical_archives)
+        if isinstance(state, Mapping):
+            version, count = state.get("format_version"), state.get(count_field)
+            if (type(version) is not int or version != 4) and (prefix.unknown or (type(count) is int and count > 0)):
+                return self.device, values
+        return None, values
 
     def _sample_inventory(
         self,
@@ -497,8 +687,7 @@ def _text(name: str, value: str) -> None:
         raise ValueError(f"{name} must be a nonempty string")
 
 
-def validate_successor_masks(masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
-    """Validate actual successor sets; only terminal rows may have no action."""
+def _successor_mask_metadata(masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
     _integer("action_dim", action_dim, 1)
     if not isinstance(masks, Tensor) or masks.dtype != torch.bool:
         raise ValueError("next_action_masks/legal must be a bool tensor")
@@ -506,8 +695,11 @@ def validate_successor_masks(masks: Tensor, dones: Tensor, *, action_dim: int) -
         raise ValueError("dones must be a bool tensor")
     if masks.shape != (*dones.shape, action_dim) or masks.device != dones.device:
         raise ValueError("successor masks shape/device must match dones and action_dim")
-    if ((~dones) & ~masks.any(dim=-1)).any():
-        raise ValueError("nonterminal successor has no legal action")
+
+
+def validate_successor_masks(masks: Tensor, dones: Tensor, *, action_dim: int) -> None:
+    """Validate actual successor sets; only terminal rows may have no action."""
+    ReplayPrefix(planning=False).masks(masks, dones, action_dim=action_dim)
 
 
 @dataclass(frozen=True, slots=True)

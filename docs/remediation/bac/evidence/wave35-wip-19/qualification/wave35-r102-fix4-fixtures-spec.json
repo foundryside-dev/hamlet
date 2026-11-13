@@ -1,0 +1,37 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r102-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r102-fix4-fixtures",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix4-fixtures",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-reward_semantics-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-reward_semantics-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-approval_reference-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-approval_reference-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-source_digest-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-source_digest-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-archived_row_count-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[False-archived_row_count-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-reward_semantics-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-reward_semantics-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-approval_reference-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-approval_reference-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-source_digest-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-source_digest-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-archived_row_count-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_semantic_operator_fixture[True-archived_row_count-per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

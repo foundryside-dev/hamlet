@@ -1,0 +1,375 @@
+{
+  "time": "2026-11-13T18:52:46.357915+00:00",
+  "tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+  "manifest_sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a",
+  "collection": 757,
+  "unchanged_node_ids": true,
+  "unique_reachable_pass": 436,
+  "disjoint_selections": [
+    10,
+    129,
+    69,
+    24,
+    16,
+    4,
+    40,
+    28,
+    44,
+    72
+  ],
+  "errors": 0,
+  "skips": 0,
+  "warnings": 0,
+  "remaining_unrun": 321,
+  "unrun_detail": "216new B-dependent public cases fromfix3/4/5 plus105priorunselected nodes including10isolatedchildren. No finalproducer/B/hardwarequalification.",
+  "static": "Owned4RuffBlack/default600PASS;owned3mypy1FAIL missingBdevice_invocation shared464. Global16 priorR100 not rerun/rebound.",
+  "checks": {
+    "collection": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-collection-custody.json",
+      "sha256": "fde9c2e791e9bb0d2557d5c5583c664698e793eab267f6486f9a305faa7ced01",
+      "result": {
+        "job": "collection",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.432226657867432,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "static": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-static-custody.json",
+      "sha256": "159c06697d732bb1575361762923f990bdf0f657db11fb1d6e7eed0b70920892",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "ruff-owned",
+            "exit_code": 0,
+            "seconds": 0.0519101619720459,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+          },
+          {
+            "name": "black-owned",
+            "exit_code": 0,
+            "seconds": 1.3023436069488525,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-static/black-owned.log",
+            "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086"
+          },
+          {
+            "name": "no-defaults",
+            "exit_code": 0,
+            "seconds": 1.030409336090088,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-static/no-defaults.log",
+            "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+          }
+        ],
+        "all_passed": true,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    },
+    "owned-types": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-owned-types-custody.json",
+      "sha256": "768a8807b4224b833f0ffb92e482c87809704cb953f910326b856a3da4d3f8e7",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "owned-mypy",
+            "exit_code": 1,
+            "seconds": 1.6579103469848633,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-owned-types/owned-mypy.log",
+            "sha256": "3a809639628d8022ae98014f23069cd17b2ac086c1fdaeacc2cdea42732484e1"
+          }
+        ],
+        "all_passed": false,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    },
+    "fix3-positive-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix3-positive-controls-custody.json",
+      "sha256": "034172fbe5466a8da79f173fe7b9ca412b9c16732f2adb7a8fa7cd61c9623970",
+      "result": {
+        "job": "fix3-positive-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 10,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.139471530914307,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix3-raw-reachable": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix3-raw-reachable-custody.json",
+      "sha256": "1475d0bde74f24fddb3c06a29d9fb391ae5366d940666e9b30160b60ad53628e",
+      "result": {
+        "job": "fix3-raw-reachable",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 129,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.477541446685791,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix3-other-reachable": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix3-other-reachable-custody.json",
+      "sha256": "ec367d5e2e8c80966429a83754128bb9d5538ce7eef11aaf2493e85d40a0b008",
+      "result": {
+        "job": "fix3-other-reachable",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 69,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 3.7185184955596924,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "reachable-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-reachable-controls-custody.json",
+      "sha256": "4d145b3fc733086db70cc928983f28410ef29be873d84bc58a81ab2a437629af",
+      "result": {
+        "job": "reachable-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 24,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.406942367553711,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix4-fixtures": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix4-fixtures-custody.json",
+      "sha256": "412e364d90179a1d6822c90975c98e59f895e1438ba7ec74acdf23ef88325bc0",
+      "result": {
+        "job": "fix4-fixtures",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 16,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.50578498840332,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix4-positive-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix4-positive-controls-custody.json",
+      "sha256": "d617a5315ab350df3bc33fbe010c6126f71d2568f39f4908228c1bee0271a85c",
+      "result": {
+        "job": "fix4-positive-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 4,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.906836032867432,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix4-reachable-red": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix4-reachable-red-custody.json",
+      "sha256": "6c315bcfb21d334f826d031926709d1a00a648f84d7e95abdccdda7077434069",
+      "result": {
+        "job": "fix4-reachable-red",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 40,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.0765650272369385,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix5-fixtures": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix5-fixtures-custody.json",
+      "sha256": "906637e47d42cf4403b24f6a4a8132e72f22e2ee26dd6c5975282afff9a7c55c",
+      "result": {
+        "job": "fix5-fixtures",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 28,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.426153659820557,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix5-positive-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix5-positive-controls-custody.json",
+      "sha256": "f922bcafc67274853d514ad8515612510dcdeb81d7f529725dc8cc50caaaa436",
+      "result": {
+        "job": "fix5-positive-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 44,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.449697732925415,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix5-reachable-red": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-fix5-reachable-red-custody.json",
+      "sha256": "f02d80d031083025f6d3658fbe99d3ecf9f7b3d514083306e7c77d3a2e917329",
+      "result": {
+        "job": "fix5-reachable-red",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+        "exit_code": 0,
+        "counts": {
+          "passed": 72,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 5.291689872741699,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    }
+  },
+  "disposition": "RootreachablechecksPASS. Fresh3bodyAstra source review pending; other-modeladversarialverification remainsowed."
+}

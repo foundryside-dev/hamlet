@@ -1,0 +1,18 @@
+{
+  "time": "2026-11-13T18:06:31.846412+00:00",
+  "round": "implementationfix4/5",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+  "review": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX3-IMPLEMENTATION-REVIEW.md",
+  "review_sha256": "a428ac8cff86065eb31870d3961dd240b1e9a9e3b29111a047206f12aca9f756",
+  "stage": "Fresh higher-capability implementer, TESTS ONLY first; production frozen until root causal checks/baton.",
+  "ceilings": [
+    830,
+    830,
+    1325,
+    2015
+  ],
+  "total": 5000,
+  "files": 4,
+  "future": "Prospective B4885/5 remainswithinbound; D5030/4 exceedsprojectedbound and must be measured/resliced BEFORE future D body grant. No future grant or scope/capability waiver."
+}

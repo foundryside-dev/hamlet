@@ -1,0 +1,47 @@
+{
+  "candidate_manifest": {
+    "bytes": 204196,
+    "path": "wave35/r108-candidate.json",
+    "root": "W",
+    "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce"
+  },
+  "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "disposition": "SPEC/QUALITY PASS for bounded clone-stability repair; concrete P2 addressed within adopted trusted ordinary native profile.",
+  "limits": [
+    "Adopted trusted ordinary native profile; no arbitrary ambient dispatch/global monkeypatch or concurrent external mutation claim",
+    "Classifier cycle handling does not qualify arbitrary cyclic input inventory or constructor behavior",
+    "329 focused producer nodes UNRUN, including10 producer children; production B activation remains absent",
+    "New invocation own-phase/fork/state/alias and producer parent/recurrent/hardware/repo/CI gates remain required"
+  ],
+  "preservation": "Earlier pending components/draft, FIX3/FIX4 failures, R104 initially-passing review and later clone-stability finding remain unchanged. This is a linked later disposition.",
+  "review": {
+    "bytes": 12359,
+    "path": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-OTHERMODEL-REVIEW.md",
+    "root": "W",
+    "sha256": "eaf6b4b20eb37d4bbc7056d91d04c0c0d4d34fedbf61c060a32d7fc1f7345213"
+  },
+  "root_disposition": {
+    "bytes": 1510,
+    "path": "wave35/r108-clone-source-disposition.json",
+    "root": "W",
+    "sha256": "7e346a979a340db855a68f9357ee5ff7b9213563f51d3f8d71f1533c0dd5668b"
+  },
+  "schema": "bac-source-review-history-supplement-v1",
+  "scope": "Source prerequisite only; not terminal checkpoint evidence qualification, A/B/package acceptance or publication.",
+  "status": "R108 BOUNDED OTHER-MODEL SOURCE PASS; TERMINAL EVIDENCE REVIEW STILL PENDING",
+  "supplements": [
+    {
+      "bytes": 10322,
+      "path": "evidence-management/wip19-preparation/r107-r108-history-component-v1.json",
+      "root": "W",
+      "sha256": "dbba57c1e142c4f501a01a31b8a3197d5fa732079441d4f65bbb196705d4b9a1"
+    },
+    {
+      "bytes": 2525673,
+      "path": "evidence-management/wip19-preparation/wip19-r99-r108-complete-receipt-input-v1.json",
+      "root": "W",
+      "sha256": "5b000d087b249e7598f58eb9fad6c76d53c805b3bb9aefb1e5df7ecb910106df"
+    }
+  ],
+  "terminal_review": null
+}

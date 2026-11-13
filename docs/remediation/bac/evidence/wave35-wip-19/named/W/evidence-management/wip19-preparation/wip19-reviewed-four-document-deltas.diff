@@ -1,0 +1,122 @@
+diff --git a/README.md b/README.md
+index fdb4792f5d94433fabd990d502a584a5739eef68..144a2e89d73939b40742a8cdbb9b789d4686aafe 100644
+--- a/README.md
++++ b/README.md
+@@ -383,7 +383,7 @@ BAC remediation remains in progress: 28 qualified, 38 remaining, 66 total. The b
+ 
+ The RNG custody core now provides scoped CUDA admission and idle enrollment, explicit per-invocation device operations, and source-bound local CUDA completion. Its bounded CPU/protocol component is qualified at R89; see [the core contract](docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) for exact APIs and evidence. The production local-GPU contract manifest remains empty; B6 producer integration and real GPU qualification remain required. Programme accounting stays28 qualified/38 remaining/66 total.
+ 
+-Subsequent flat/PER CUDA producer work is staged and incomplete. The R98 checkpoint retains an open validation-prefix defect and required core integration; see [BAC status](docs/remediation/bac/STATUS.md) and the [evidence index](docs/remediation/bac/EVIDENCE-INDEX.md). It does not extend R89 qualification or advance package acceptance.
++The R99–R108 checkpoint adds an implemented single-use RNG invocation outcome and a bounded clone repair. Initial core source review and 76 R106 controls pass; R108 separately passes 507 reachable controls, with 329 focused cases UNRUN. Independent clone-source SPEC/QUALITY review passes the bounded P2 repair under the adopted ordinary native runtime profile. Own-invocation failure/fork/state/alias qualification, production CUDA contract activation, producer children and parent/recurrent integration remain open. See [BAC status](docs/remediation/bac/STATUS.md), the [core contract](docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) and the [evidence index](docs/remediation/bac/EVIDENCE-INDEX.md). This remains unreleased work in progress; accounting stays 28 qualified / 38 remaining / 66 total.
+ 
+ T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
+ row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each
+diff --git a/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md b/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md
+index a9b4c630df7c556ffd7bca4915ce3925d23b2180..a1fd653f6817955b18978cd5fa7983a5c7251fd9 100644
+--- a/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md
++++ b/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md
+@@ -6,7 +6,13 @@ The current process core adds scoped CUDA admission, idle enrollment expansion,
+ 
+ ## Current source and qualification scope
+ 
+-Current [rng_custody.py](../../../src/townlet/exploration/rng_custody.py) is821 lines, SHA256 `0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477`. Focused [CUDA admission regression](../../../tests/test_townlet/regressions/bac/test_rng_cuda_admission.py) is1409 lines, SHA256 `b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e`.
++The implemented invocation-outcome core [rng_custody.py](../../../src/townlet/exploration/rng_custody.py) is 948 lines, SHA256 `ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e`. Its initial [CUDA admission regression](../../../tests/test_townlet/regressions/bac/test_rng_cuda_admission.py) packet is 1681 lines, SHA256 `ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38`.
++
++R106 has independent initial-source SPEC/QUALITY approval and 76 exact-candidate passing controls: 66 nonisolated and ten existing isolated cases. These establish the initial API/lifetime/authentication packet and retained regressions, not the new nonempty own-phase failure, nested failure, invocation fork, direct state or numeric-ID alias qualification. Those second-phase controls remain owed. The ten old children do not qualify new invocation outcomes. R108's extended public-consumer type probe passes for the required factory, `RNGDeviceInvocation`, `AbstractContextManager[RNGOperation]`, bool getter and `Literal[False]` exit; owned typing/style and unchanged defaults600 also pass. The [evidence index](EVIDENCE-INDEX.md) separates these exact candidates and remaining gates.
++
++### Historical R89 qualification
++
++R89 used core821 SHA256 `0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477` and test1409 SHA256 `b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e`. The following results retain those historical source bindings.
+ 
+ R89 qualifies this bounded core CPU/protocol component. Root records1515 unique PASS:67 new core,1290 coherent existing,109 replay and49 owner regression cases. Two CUDA-hardware controls remain SKIP, and one previously required ordinary-runner case remains deselected and owed. The focused67 include ten actual qualified spawn children and two real inherited-gate fork trials, with strict source/import/manifest/PID/PPID ancestry checks. Independent Astra executed the same67 with complete custody verification and PASS; those overlap root's67 and add no unique cases. All R89 qualification execution is closed.
+ 
+@@ -26,6 +32,10 @@ All parameters below are required. Domain entrypoints and gate methods use the e
+ | --- | --- |
+ | `domain.operation(*, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation \| None)` | yields `RNGOperation`; full-member completion |
+ | `domain.device_operation(*, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation \| None, cuda_devices: tuple[int, ...])` | yields `RNGOperation`; exact invocation subset |
++| `domain.device_invocation(*, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation \| None, cuda_devices: tuple[int, ...])` | returns opaque single-use `RNGDeviceInvocation` |
++| `invocation.__enter__()` | yields the authentic `RNGOperation` |
++| `invocation.__exit__(exc_type: type[BaseException] \| None, exc_value: BaseException \| None, traceback: TracebackType \| None)` | `Literal[False]`; preserves failures |
++| `invocation.completion_failed()` | immutable historical `bool` after an entered invocation exits |
+ | `domain.admission(*, lineage: RNGOperation \| None)` | yields `RNGAdmission` |
+ | `admission.resolve_cuda(device: torch.device)` | `int`; positional or keyword selector |
+ | `admission.enroll(*, participant: RNGParticipant, cuda_devices: tuple[int, ...])` | `None` |
+@@ -40,6 +50,18 @@ The full-member and explicit-subset operations are distinct capabilities. Both a
+ 
+ `lineage=None` obtains standalone admission only while the same thread is idle. An active operation requires its exact authentic lineage; missing, foreign, expired and cross-thread lineage refuse. No local scope, diagnostic value or gate can fabricate lineage. Other threads wait at the actual domain RLock. The new admission gate holds that same lock throughout its lifetime and creates no operation, token or draw authority. A gate opened under a parent requires its authentic lineage and cannot initialize or enroll while that parent remains active.
+ 
++## Single-use invocation completion outcome
++
++`device_invocation` binds the explicit participant, kind, lineage and immutable device tuple without CUDA work, owner pinning or domain exclusion. Actual entry repeats admission through the same operation implementation and yields its genuine lineage; nested contexts can yield the same parent operation while retaining distinct invocation identities. `TracebackType` is from `types`; `Literal` is from `typing`. All inputs are required, and normal exit returns False rather than suppressing errors.
++
++The opaque source-issued handle cannot be copied, serialized, reused or moved to another thread. Every handle method checks actual process PID before registry, thread, lock or CUDA access, then authenticates the exact issued identity and issuing Thread object. The lifecycle is issued → entering → active → exited, or entering → entry_failed. The getter refuses before completed exit, including entry failure. Historical reads require no active operation, membership, domain/owner lock or CUDA access and remain valid after poison, unrelated work and participant retirement. They grant no draw, token, publication or parent authority. Termination releases execution bindings; retaining the completed handle does not retain its owner, operation, original errors, traceback or generator through the outcome record.
++
++The result describes only this invocation's own required completion phase. False means its actual completion returned successfully, including an empty phase that touches no CUDA attribute. True means that phase failed or remained uncertified. Body errors, reported gate errors, shared poison and exception identity do not determine the result. Nested completion uses its admitted subset; outermost completion uses the final union including descendants. A child's False remains unchanged if later outer completion fails. A failed child can be True while a parent's own successful union phase is False, although poison and error propagation remain in force.
++
++Certification occurs at the actual completion call, and exit seals the result before outward error delivery. A body error E and synchronization error using that same E can still propagate as exactly E while the result is True; body-only E with successful completion yields False. The receipt adds no retry or second synchronization pass. Generic completion retains its current implementation; its early-stop tail is not a new permanent outcome guarantee. Local completion retains its separate all-declared-devices rule.
++
++The producer must retain actual owner exclusion through completion, result read and any justified uncertainty transition. The core boolean neither proves lock custody nor identifies affected owners/devices. Parent integration must designate the consumer of the outer outcome and justify owner transitions from actual reachability before releasing the relevant locks; it cannot reinterpret a child's immutable receipt or infer blanket quarantine. The implementation and initial CPU controls do not close these producer or second-phase qualification obligations.
++
+ ## Lazy resolution, READY and enrollment
+ 
+ CUDA resolution requires an actual `torch.device` CUDA selector. Structural refusal precedes CUDA queries. For unindexed `torch.device("cuda")`, resolution reads the actual current device anew; the public selector is not permanently canonicalized to its first index. A returned effective index is per invocation. Producer inventory must separately include actual retained/source/input/staged/output/temporary devices; selection alone is insufficient, and historical enrollment is not an instruction to synchronize every device on every call.
+@@ -70,15 +92,15 @@ Core tokens are issuer-owned evidence for their participant, operation, generati
+ 
+ Correct lock order is sole domain admission/gate before producer-owner exclusion, with parent/BANK lifecycle locks placed inside the declared order. CUDA completion must finish before owner exclusion is released. The core's `_cuda_busy` transaction guard rejects unrelated same-thread reentry during runtime/bootstrap/inventory/local-completion transactions; other threads wait at the actual domain lock. `status()` remains blocking diagnostics and supplies no owner-lock-safe admission authority.
+ 
+-New gate entries and every gate method check the actual process PID before lock acquisition, scope/thread/policy checks or CUDA effects. Real inherited use raises built-in `RuntimeError` with exact text `RNG custody cannot be inherited by another process`. Open issuing-thread scope, real RLock ownership and unchanged local binding are also authenticated. Gate/contract/operation/participant/token capabilities are process identities, noncopyable and nonportable; synchronous scopes cannot cross await/task ownership or be used after exit. Genuine domain custody does not intercept arbitrary raw library calls or detect raw mutable aliases.
++New gate entries and every gate method check the actual process PID before lock acquisition, scope/thread/policy checks or CUDA effects. Real inherited use raises built-in `RuntimeError` with exact text `RNG custody cannot be inherited by another process`. Open issuing-thread scope, real RLock ownership and unchanged local binding are also authenticated. Gate/contract/operation/participant/token capabilities are process identities, noncopyable and nonportable; synchronous scopes cannot cross await/task ownership or be used after exit. Genuine domain custody does not intercept arbitrary raw library calls or detect raw mutable aliases. An exited RNGDeviceInvocation's historical getter is the explicit post-exit exception; it does not revive any expired synchronous operation or gate.
+ 
+ ## Subsequent producer checkpoint boundary
+ 
+-R98 stages separate flat/PER producer changes and does not extend R89 core qualification. Its source review remains CHANGES REQUIRED for metadata-prefix planning. The adopted invocation-outcome API and concrete production local-contract activation remain unimplemented dependencies. Ten producer poison children are still unrun and are distinct from R89's ten qualified core children. See the [evidence index](EVIDENCE-INDEX.md) for the separate candidate and outstanding gates.
++R99–R108 retains staged flat/PER producer work and the newly implemented core invocation outcome. R106 source review approves the initial core implementation; second-phase own-invocation failure/fork/state/alias qualification remains open. R108's reachable CPU selection passes 507 distinct controls, with 836 collected and 329 UNRUN, including ten producer poison children. The clone repair has independent fixed-source SPEC/QUALITY PASS; concrete clone-stability P2 is addressed under the adopted ordinary native runtime profile. Production local-contract activation, actual producer children, parent outcome ownership/handoff and recurrent integration remain required; no B acceptance follows. See the [evidence index](EVIDENCE-INDEX.md) for exact candidate and scope.
+ 
+ ## Remaining integration and hardware obligations
+ 
+-The core change supplies no replay CUDA preflight wrapper, per-producer selected/retained/input/staged inventory, local route activation, owner mutation revision/publication implementation or parent call-site migration. Those require their own bounded source and causal evidence. Existing same-object/raw-alias quiescence and real parent/role/all-child publication responsibilities remain. Real CUDA initialization and initialized-query RNG preservation, actual asynchronous completion under owner exclusion and applicable one-/two-device tests remain required. B6 actual producer/hardware work, the deselected required ordinary-runner case,15 global type errors and the remaining38 programme packages stay open despite this core component qualification.
++The core change supplies no replay CUDA preflight wrapper, per-producer selected/retained/input/staged inventory, local route activation, owner mutation revision/publication implementation or parent call-site migration. Those require their own bounded source and causal evidence. Existing same-object/raw-alias quiescence and real parent/role/all-child publication responsibilities remain. Real CUDA initialization and initialized-query RNG preservation, actual asynchronous completion under owner exclusion and applicable one-/two-device tests remain required. B6 actual producer/hardware work, the deselected required ordinary-runner case, global typing and the remaining38 programme packages stay open despite this core component qualification.
+ 
+ ## Historical source-qualified contracts and evidence
+ 
+diff --git a/docs/remediation/bac/EVIDENCE-INDEX.md b/docs/remediation/bac/EVIDENCE-INDEX.md
+index 68be6f9131dc6229d6f72c2c618973cd7f86acc1..dd943bad5620b6db50a54d5761a874825fae17a3 100644
+--- a/docs/remediation/bac/EVIDENCE-INDEX.md
++++ b/docs/remediation/bac/EVIDENCE-INDEX.md
+@@ -2,7 +2,17 @@
+ 
+ Checkpoint publication, bounded component qualification and whole-programme acceptance are separate. The [evidence process](EVIDENCE-PROCESS.md) governs additions; historical evidence is preserved.
+ 
+-## Current checkpoint: WIP18 / R98 — work in progress
++## Current checkpoint: WIP19 / R108 — work in progress
++
++The [manifest](evidence/wave35-wip-19.json) and [selection plan](evidence/wave35-wip-19/selection-plan.json) record the finite R99–R108 interval, ending at executed candidate `fa1c6804fcff475f5652e5f5f357468e2d931c0d`, base `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`, candidate-manifest SHA256 `27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce`. Execution identity and publication identity are distinct; publication does not turn bounded component evidence into full programme acceptance.
++
++R106's independently source-approved initial invocation implementation has 76 exact-candidate PASS. R108 separately records 507 distinct reachable PASS, 836 collected and 329 UNRUN, with owned typing/style/defaults600 and the extended public invocation type probe PASS. The clone repair's other-model fixed-source SPEC/QUALITY review passes: concrete P2 is addressed under the adopted ordinary native runtime profile; full A/B qualification remains open. Global mypy16 remains historical, not a new global check. These are bounded source/custody results; the two candidates' counts are not summed. The archive preserves failed, interrupted and unrun interval attempts.
++
++Core own-invocation failure/fork/state/alias qualification, production local-contract activation, ten producer poison children, actual parent handoff and recurrent integration remain open. Tooling protocol reviews or synthetic controls do not qualify those application paths. Real CUDA and final repository/coverage/slow/learning/review/CI gates remain required. **28 qualified / 38 remaining / 66 original packages** is unchanged.
++
++WIP18 remote is reported at `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`: Config PASS, Lint FAIL with 16 known errors, Tests FAIL in the fast suite. Test-log retrieval was unavailable; no detailed cause or equivalence with local typing errors is inferred. Publication identity and CI are verified separately; this checkpoint makes no successful-current-CI or full-BAC acceptance claim.
++
++## Historical checkpoint: WIP18 / R98
+ 
+ The [manifest](evidence/wave35-wip-18.json) and [selection plan](evidence/wave35-wip-18/selection-plan.json) preserve the finite R90–R98 interval. R98 executed candidate is `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, base `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, candidate-manifest SHA-256 `02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1`. Publication documentation/evidence changes are distinct from the executed application identity.
+ 
+diff --git a/docs/remediation/bac/STATUS.md b/docs/remediation/bac/STATUS.md
+index a7a7858bf1f091534e7f04a903e120d4cdd068b9..9bfab0571f22169d2f49f037f1bbb88e5d3362fa 100644
+--- a/docs/remediation/bac/STATUS.md
++++ b/docs/remediation/bac/STATUS.md
+@@ -1,5 +1,13 @@
+ # BAC implementation status
+ 
++## 2026-11-13 — WIP19 checkpoint: invocation outcome and clone repair through R108
++
++The R99–R108 checkpoint ends at execution tree `fa1c6804fcff475f5652e5f5f357468e2d931c0d`, based on `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`. R106's initial single-use invocation implementation has independent source SPEC/QUALITY approval and 76 exact-candidate controls PASS. The new handle supplies an immutable own-phase completion result without changing genuine lineage or granting producer publication authority; its second-phase failure/fork/state/alias qualification remains open.
++
++R108 records 507 distinct reachable PASS, 836 collected and 329 UNRUN. It covers the bounded clone repair's causal/preservation and native/opaque boundary controls; independent fixed-source SPEC/QUALITY review passes, addressing clone-stability P2 under the adopted ordinary native runtime profile. Owned typing/style/defaults600 and the extended invocation public-consumer type probe pass. Global mypy16 is historical evidence, not a fresh global result; owned typing does not establish global success or reduce the historical count to15. R106's 76 belong to a separate exact candidate and are not added to 507 or described as an R108 run. Collection is not execution, and these results do not accept B activation or the unrun producer cases.
++
++Production local-contract activation, ten producer poison children, actual parent outcome ownership/lock handoff, recurrent integration, real CUDA and remaining runner/full-suite/coverage/slow/learning/final-review gates remain open. WIP18 remote is reported at `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`: Config PASS, Lint FAIL with 16 known errors, and Tests FAIL in the fast suite; test-log retrieval was unavailable, so no detailed Tests cause is inferred. Publication identity and CI are verified separately; this checkpoint makes no successful-current-CI or full-BAC acceptance claim. **28 qualified / 38 remaining / 66 original packages** is unchanged. See the [core contract](CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md). This is an unreleased evidence checkpoint; full A/B/component/programme acceptance remains open.
++
+ ## 2026-11-13 — flat/PER CUDA producer work in progress at R98
+ 
+ R98 is a durability checkpoint, not producer acceptance. At candidate `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, based on `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, 24 reachable CPU controls pass and 129 tests collect. Owned-file Ruff/Black and the unchanged global defaults600 gate pass. Owned-three mypy fails only on the required, not-yet-implemented core `device_invocation` API. Collection and simulated CUDA controls are not hardware evidence.

@@ -11,10 +11,10 @@ import queue
 import threading
 import weakref
 from collections.abc import Iterator, Mapping
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
-from types import MappingProxyType
-from typing import Any, Protocol, cast
+from types import MappingProxyType, TracebackType
+from typing import Any, Literal, Protocol, cast
 
 import torch
 
@@ -54,6 +54,29 @@ class RNGOperation(_Opaque):
     """Synchronous issuing-thread operation lineage."""
 
     __slots__ = ()
+
+
+class RNGDeviceInvocation(_Opaque):
+    """Single-use operation context with an immutable own-phase exit outcome."""
+
+    __slots__ = ()
+
+    def __enter__(self) -> RNGOperation:
+        return _PROCESS_DOMAIN._enter_invocation(self)
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> Literal[False]:
+        return _PROCESS_DOMAIN._exit_invocation(self, exc_type, exc_value, traceback)
+
+    def completion_failed(self) -> bool:
+        record = _PROCESS_DOMAIN._invocation_record(self)
+        if record.state != "exited":
+            raise RuntimeError("RNG invocation has no completed outcome")
+        return record.failed_completion
 
 
 class RNGCurrentToken(_Opaque):
@@ -160,6 +183,18 @@ class _Current:
     currency: int
 
 
+@dataclass
+class _Invocation:
+    thread: threading.Thread
+    state: str
+    participant: RNGParticipant | None
+    operation_kind: str | None
+    lineage: RNGOperation | None
+    cuda_devices: tuple[int, ...]
+    context: AbstractContextManager[RNGOperation] | None
+    failed_completion: bool
+
+
 _CONSTRUCTION = object()
 
 
@@ -178,6 +213,7 @@ class AmbientRNGDomain:
         self._members: dict[RNGParticipant, _Member] = {}
         self._tokens: weakref.WeakKeyDictionary[RNGCurrentToken, _Current] = weakref.WeakKeyDictionary()
         self._operations: dict[RNGOperation, _Operation] = {}
+        self._invocations: weakref.WeakKeyDictionary[RNGDeviceInvocation, _Invocation] = weakref.WeakKeyDictionary()
         self._gates: dict[RNGAdmission | LocalCUDAGate, _Gate] = {}
         self._retired: queue.SimpleQueue[RNGParticipant] = queue.SimpleQueue()
         self._generation = 0
@@ -311,12 +347,17 @@ class AmbientRNGDomain:
         for index in devices:
             torch.cuda.synchronize(index)
 
-    def _finish(self, operation: RNGOperation, devices: tuple[int, ...], failures: list[BaseException]) -> None:
+    def _finish(
+        self, operation: RNGOperation, devices: tuple[int, ...], failures: list[BaseException], completion: _Invocation | None
+    ) -> None:
         try:
             self._complete(devices)
         except BaseException as error:
             self.poison(operation=operation, error=error)
             failures.append(error)
+        else:
+            if completion is not None:
+                completion.failed_completion = False
         failures.extend(self._authenticate(operation).reported)
 
     @staticmethod
@@ -613,7 +654,7 @@ class AmbientRNGDomain:
     @contextmanager
     def operation(self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
         with self._operation(
-            participant=participant, operation_kind=operation_kind, lineage=lineage, full_member=True, cuda_devices=()
+            participant=participant, operation_kind=operation_kind, lineage=lineage, full_member=True, cuda_devices=(), completion=None
         ) as operation:
             yield operation
 
@@ -622,9 +663,94 @@ class AmbientRNGDomain:
         self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None, cuda_devices: tuple[int, ...]
     ) -> Iterator[RNGOperation]:
         with self._operation(
-            participant=participant, operation_kind=operation_kind, lineage=lineage, full_member=False, cuda_devices=cuda_devices
+            participant=participant,
+            operation_kind=operation_kind,
+            lineage=lineage,
+            full_member=False,
+            cuda_devices=cuda_devices,
+            completion=None,
         ) as operation:
             yield operation
+
+    def device_invocation(
+        self, *, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation | None, cuda_devices: tuple[int, ...]
+    ) -> RNGDeviceInvocation:
+        self._check_pid()
+        self._member(participant)
+        if type(operation_kind) is not str or not operation_kind:
+            raise ValueError("RNG invocation requires an explicit nonempty operation kind")
+        if lineage is not None and (type(lineage) is not RNGOperation or lineage not in self._operations):
+            raise ValueError("RNG operation lineage is foreign or expired")
+        self._device_tuple(cuda_devices)
+        invocation = object.__new__(RNGDeviceInvocation)
+        self._invocations[invocation] = _Invocation(
+            threading.current_thread(), "issued", participant, operation_kind, lineage, cuda_devices, None, True
+        )
+        return invocation
+
+    def _invocation_record(self, invocation: RNGDeviceInvocation) -> _Invocation:
+        # Refuse inherited/forged/wrong-thread calls before any exclusion or CUDA.
+        self._check_pid()
+        if type(invocation) is not RNGDeviceInvocation or invocation not in self._invocations:
+            raise ValueError("RNG invocation is foreign or unissued")
+        record = self._invocations[invocation]
+        if record.thread is not threading.current_thread():
+            raise ValueError("RNG invocation belongs to another thread")
+        return record
+
+    @staticmethod
+    def _release_invocation(record: _Invocation) -> None:
+        record.participant = None
+        record.operation_kind = None
+        record.lineage = None
+        record.cuda_devices = ()
+        record.context = None
+
+    def _enter_invocation(self, invocation: RNGDeviceInvocation) -> RNGOperation:
+        record = self._invocation_record(invocation)
+        if record.state != "issued":
+            raise RuntimeError("RNG invocation permits exactly one entry")
+        record.state = "entering"
+        try:
+            if record.participant is None or record.operation_kind is None:
+                raise RuntimeError("RNG invocation has no execution binding")
+            context = self._operation(
+                participant=record.participant,
+                operation_kind=record.operation_kind,
+                lineage=record.lineage,
+                full_member=False,
+                cuda_devices=record.cuda_devices,
+                completion=record,
+            )
+            record.context = context
+            operation = context.__enter__()
+        except BaseException:
+            record.state = "entry_failed"
+            self._release_invocation(record)
+            raise
+        record.state = "active"
+        return operation
+
+    def _exit_invocation(
+        self,
+        invocation: RNGDeviceInvocation,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> Literal[False]:
+        record = self._invocation_record(invocation)
+        if record.state != "active" or record.context is None:
+            raise RuntimeError("RNG invocation requires one active exit")
+        context = record.context
+        # Taking the execution reference also refuses recursive exit while the
+        # phase is running; the outcome stays unreadable until finally seals it.
+        record.context = None
+        try:
+            context.__exit__(exc_type, exc_value, traceback)
+        finally:
+            self._release_invocation(record)
+            record.state = "exited"
+        return False
 
     def _operation_inventory(self, *, member: _Member, cuda_devices: tuple[int, ...]) -> None:
         self._device_tuple(cuda_devices)
@@ -661,6 +787,7 @@ class AmbientRNGDomain:
         lineage: RNGOperation | None,
         full_member: bool,
         cuda_devices: tuple[int, ...],
+        completion: _Invocation | None,
     ) -> Iterator[RNGOperation]:
         # Another thread waits at this actual lock before any enrolled work.
         self._check_pid()
@@ -710,7 +837,7 @@ class AmbientRNGDomain:
                 except BaseException as error:
                     failures.append(error)
                 finally:
-                    self._finish(active, devices, failures)
+                    self._finish(active, devices, failures, completion)
                     if ordinary or failures:
                         self._currency += 1
                     record.kinds.pop()
@@ -739,7 +866,7 @@ class AmbientRNGDomain:
             except BaseException as error:
                 failures.append(error)
             finally:
-                self._finish(operation, tuple(sorted(record.devices)), failures)
+                self._finish(operation, tuple(sorted(record.devices)), failures, completion)
                 if ordinary or failures:
                     self._currency += 1
                 # Even unchanged bytes or an exception invalidate released work.

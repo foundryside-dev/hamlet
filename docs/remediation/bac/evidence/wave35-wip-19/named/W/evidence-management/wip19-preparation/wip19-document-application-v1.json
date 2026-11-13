@@ -1,0 +1,36 @@
+{
+  "schema": "bac-reviewed-document-application-v1",
+  "at": "2026-11-13T19:56:01.595619+00:00",
+  "actor": "/root",
+  "proposal": {
+    "path": "wave35-preparation/T18e-R0-WIP19-DOCUMENTATION-PROPOSAL-V3.md",
+    "sha256": "6c93f909dbfbf3ddcdcf07f74f584c03f2f378d6270cb85d51a5b5839e1bc048"
+  },
+  "documents": [
+    {
+      "path": "README.md",
+      "before_sha256": "fe172c53b4e34beb9723698d9b827e3cbb9175fdf498c63851216d5ec0f5c70a",
+      "after_sha256": "efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3",
+      "lines": 551
+    },
+    {
+      "path": "docs/remediation/bac/STATUS.md",
+      "before_sha256": "d7ef31d33a56ce6203582c5558c84bcee0177166550c4380a7e8302f2b4002c4",
+      "after_sha256": "52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe",
+      "lines": 300
+    },
+    {
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "before_sha256": "72b86c0763dc8e297efcc5cd5988b5b37fad28d91a436d61ae166af575698b7e",
+      "after_sha256": "9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad",
+      "lines": 45
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "before_sha256": "259f78f91209cd917412941a7f60e3eef557899414110306ac4d9f75bfa9a9a7",
+      "after_sha256": "553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab",
+      "lines": 232
+    }
+  ],
+  "scope": "Exact source-verified proposed replacements only; application source/tests unchanged. Planned archive links must resolve before commit/publication. No test rerun required for prose-only changes."
+}

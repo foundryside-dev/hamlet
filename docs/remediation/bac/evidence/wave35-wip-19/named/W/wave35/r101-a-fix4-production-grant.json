@@ -1,0 +1,16 @@
+{
+  "time": "2026-11-13T18:16:03.010993+00:00",
+  "parent": "wave35/r100-a-implementation-fix4-grant.json",
+  "stage": "Production FIX4 baton after actualR101 causal checks",
+  "ceilings": [
+    829,
+    816,
+    1310,
+    2045
+  ],
+  "total": 5000,
+  "files": 4,
+  "test_sha256": "75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04",
+  "ordering": "Currentfrozenfamilies817/1311 require proposed sharedkeycall replacement net-1each FIRST, before sharedgrowth. No capture/runtime while coherence transition underway. Measure actual total throughout; no >5000 bodyread/write state. Test frozen; no compression/removal/hiddenbody. Ask reslice before genuine overrun.",
+  "scope": "Only originalF1/F2 finitefix per a428ac8c; all priorinvariants/order/types/393oldnodes and104newnodes preserved. B prerequisites stay explicit."
+}

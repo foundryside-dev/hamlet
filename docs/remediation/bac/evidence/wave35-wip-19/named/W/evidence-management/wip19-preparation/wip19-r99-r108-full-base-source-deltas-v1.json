@@ -1,0 +1,358 @@
+{
+  "schema": "bac-full-base-source-delta-archive-v1",
+  "status": "INERT PATCH ARCHIVE; NO SOURCE EXECUTION/CHECKOUT",
+  "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "interval": [
+    99,
+    108
+  ],
+  "candidates": [
+    {
+      "round": 99,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "f9b5f592bbc3763d6172574857b074bf978ae68a",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r99-candidate.json",
+        "sha256": "942400ad11c9cc6414b5ad0f9cd2c4358d7e6ef91ff6532970a359e0fe2ba92e",
+        "bytes": 203416
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r99-owned-candidate.patch",
+        "sha256": "293796000e23fcd9d94fb66536acc366fff37e2b5577715f63d2a3c6abfec58d",
+        "bytes": 14186
+      },
+      "changed_paths": [
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "f9b5f592bbc3763d6172574857b074bf978ae68a"
+      ]
+    },
+    {
+      "round": 100,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "0b17ef1e48a6efc6e52bc814812439d4035e5447",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r100-candidate.json",
+        "sha256": "59d925fcef3c60cff1da69b01edd297b968588fd15320a8c33807ffa7d64e4ca",
+        "bytes": 203565
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r100-owned-candidate.patch",
+        "sha256": "c5067c2fdc8ef451255da9fdd31702312bbc6aa010d5b9e400c60c576d8d18ce",
+        "bytes": 77010
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "0b17ef1e48a6efc6e52bc814812439d4035e5447"
+      ]
+    },
+    {
+      "round": 101,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "e2c139289acd4c55f70e270f199c1d1f48e42e63",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r101-candidate.json",
+        "sha256": "c28f79712a9cf5757edbeb206b074153d05c844d2b3e6d59e9fe0c31d62cddc9",
+        "bytes": 203565
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r101-owned-candidate.patch",
+        "sha256": "fe3ce2f521eaa606582056937b2c565c5eedaa086c03cf92f7a337f36d47eb5e",
+        "bytes": 82218
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "e2c139289acd4c55f70e270f199c1d1f48e42e63"
+      ]
+    },
+    {
+      "round": 102,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "0dc5a95de19925148917d884a3554d90221d7d26",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r102-candidate.json",
+        "sha256": "2bc01fc5f8815bb83048835a9af16cec484c7458bde9c3e6ad5f6337c61bc6b0",
+        "bytes": 203565
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r102-owned-candidate.patch",
+        "sha256": "0eb5051c141cf644420ab2403b397fddb15a0fc0c6bfa390dd0457e0553d3408",
+        "bytes": 83386
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "0dc5a95de19925148917d884a3554d90221d7d26"
+      ]
+    },
+    {
+      "round": 103,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r103-candidate.json",
+        "sha256": "2114749486f2d3a25afa1eb8447e5c2d37c656df3ba28e32e8e6fd55617a3cfa",
+        "bytes": 204073
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r103-owned-candidate.patch",
+        "sha256": "6d21b6ba9913942dc2f42fcc5465da06fd6a44cdf71d7b4e0fc62ec7654bdec9",
+        "bytes": 91973
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0"
+      ]
+    },
+    {
+      "round": 104,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "e206288d4f6eee330e3fcb8114a47af3002eecb1",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r104-candidate.json",
+        "sha256": "90534e49a82821c82df027828e1ed85037ed7d5cb98d723250584e75a9e5672a",
+        "bytes": 204073
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r104-owned-candidate.patch",
+        "sha256": "500c4bbb29df0aba53ba60f02d422f49369e038c4720393ca2121e61f7d15a56",
+        "bytes": 93405
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "e206288d4f6eee330e3fcb8114a47af3002eecb1"
+      ]
+    },
+    {
+      "round": 105,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r105-candidate.json",
+        "sha256": "f358fe37d8e01925761eedfdd181c4bbce24c6b3e02fe04634487b01db2b7dc9",
+        "bytes": 204142
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r105-owned-candidate.patch",
+        "sha256": "ca53a264a2498f00eace2b9e80857c1099c9069094b58fdab13cd534284ca62a",
+        "bytes": 107096
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "dc16ff43ae9ad5aa1bd3ca63904fe37c150a38e7"
+      ]
+    },
+    {
+      "round": 106,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "ab46784efc86bab95b031494529e06871a12f1ff",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r106-candidate.json",
+        "sha256": "12e5609bf4f300e608ebd6f94297fd0f2496bf95169e757864cb6ad50fbd0970",
+        "bytes": 204188
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r106-owned-candidate.patch",
+        "sha256": "466ec9aa1b8aee32074045ef77b09362d8eac5f0bb9beba8f6aefb849f403270",
+        "bytes": 116819
+      },
+      "changed_paths": [
+        "src/townlet/exploration/rng_custody.py",
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "ab46784efc86bab95b031494529e06871a12f1ff"
+      ]
+    },
+    {
+      "round": 107,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "423a4677794feb995959a7a8abde9784255db57c",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r107-candidate.json",
+        "sha256": "476a3d330ed146784df934150a92bf6350bb7b7ad9ebedf5bf3c04d1182819d8",
+        "bytes": 204196
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r107-owned-candidate.patch",
+        "sha256": "3c951137f3eefbc644af4f3a7a49ebedfcdfea79c0fa8254770089c6d7ad80b9",
+        "bytes": 130464
+      },
+      "changed_paths": [
+        "src/townlet/exploration/rng_custody.py",
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "423a4677794feb995959a7a8abde9784255db57c"
+      ]
+    },
+    {
+      "round": 108,
+      "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+      "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r108-candidate.json",
+        "sha256": "27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce",
+        "bytes": 204196
+      },
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip19-preparation/r108-owned-candidate.patch",
+        "sha256": "ccd504b9347f673e5bf481b62c01679af69888a2f7ea5ef1981879cbcf9d2fe1",
+        "bytes": 132340
+      },
+      "changed_paths": [
+        "src/townlet/exploration/rng_custody.py",
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+      ],
+      "full_base_reconstruction": true,
+      "creation_command": [
+        "git",
+        "-C",
+        "/workspace/hamlet",
+        "diff",
+        "--full-index",
+        "--binary",
+        "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "fa1c6804fcff475f5652e5f5f357468e2d931c0d"
+      ]
+    }
+  ],
+  "completeness": "Each patch is exact Git --full-index --binary output for the full base-to-candidate tree difference, with no path restriction; changed-path inventory equals captured manifest. Existing seven full-base patches reused byte-for-byte. Three later patches created exclusively. Earlier incremental/embedded diffs remain historical but are not the sole recovery path.",
+  "verification_limit": "Patch bytes and tree metadata verified; no checkout, application, Git apply or source execution performed. Remote recovery requires retaining the named base commit with this artifact archive.",
+  "private_backup_exclusion": "No private backup contents read or copied; only exact captured Git tree differences redirected to inert artifacts."
+}

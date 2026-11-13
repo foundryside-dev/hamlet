@@ -1,0 +1,37 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r104-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r104-reachable-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "reachable-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "time": "2026-11-13T17:49:15.351311+00:00",
+  "parent": "wave35/r99-a-fix3-production-budget-addendum.json",
+  "before": [
+    790,
+    860,
+    1390,
+    1950
+  ],
+  "after": [
+    800,
+    850,
+    1390,
+    1950
+  ],
+  "total": 4990,
+  "reason": "Transfer10lines flat to shared for protectedunknownversiontarget selection/annotations; measuredBlackpreview790/817/1296/1945=4848. Samefinite repair, no source exceeded priorceilings.",
+  "future": "B4940/5;D5000/4 exacthardlimit. No future grant; remeasure/reslice before growth."
+}

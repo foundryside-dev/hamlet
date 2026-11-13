@@ -1,5 +1,13 @@
 # BAC implementation status
 
+## 2026-11-13 — WIP19 checkpoint: invocation outcome and clone repair through R108
+
+The R99–R108 checkpoint ends at execution tree `fa1c6804fcff475f5652e5f5f357468e2d931c0d`, based on `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`. R106's initial single-use invocation implementation has independent source SPEC/QUALITY approval and 76 exact-candidate controls PASS. The new handle supplies an immutable own-phase completion result without changing genuine lineage or granting producer publication authority; its second-phase failure/fork/state/alias qualification remains open.
+
+R108 records 507 distinct reachable PASS, 836 collected and 329 UNRUN. It covers the bounded clone repair's causal/preservation and native/opaque boundary controls; independent fixed-source SPEC/QUALITY review passes, addressing clone-stability P2 under the adopted ordinary native runtime profile. Owned typing/style/defaults600 and the extended invocation public-consumer type probe pass. Global mypy16 is historical evidence, not a fresh global result; owned typing does not establish global success or reduce the historical count to15. R106's 76 belong to a separate exact candidate and are not added to 507 or described as an R108 run. Collection is not execution, and these results do not accept B activation or the unrun producer cases.
+
+Production local-contract activation, ten producer poison children, actual parent outcome ownership/lock handoff, recurrent integration, real CUDA and remaining runner/full-suite/coverage/slow/learning/final-review gates remain open. WIP18 remote is reported at `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`: Config PASS, Lint FAIL with 16 known errors, and Tests FAIL in the fast suite; test-log retrieval was unavailable, so no detailed Tests cause is inferred. Publication identity and CI are verified separately; this checkpoint makes no successful-current-CI or full-BAC acceptance claim. **28 qualified / 38 remaining / 66 original packages** is unchanged. See the [core contract](CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md). This is an unreleased evidence checkpoint; full A/B/component/programme acceptance remains open.
+
 ## 2026-11-13 — flat/PER CUDA producer work in progress at R98
 
 R98 is a durability checkpoint, not producer acceptance. At candidate `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, based on `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, 24 reachable CPU controls pass and 129 tests collect. Owned-file Ruff/Black and the unchanged global defaults600 gate pass. Owned-three mypy fails only on the required, not-yet-implemented core `device_invocation` API. Collection and simulated CUDA controls are not hardware evidence.

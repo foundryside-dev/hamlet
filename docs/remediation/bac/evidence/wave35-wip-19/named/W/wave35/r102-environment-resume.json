@@ -1,0 +1,18 @@
+{
+  "time": "2026-11-13T18:28:45.822727+00:00",
+  "event": "Environment restart returned ready; source/HEAD retained, collaboration lists root only. Formerreviewer had supplied provisionalmessages, finalFIX4reviewfile absent. No applicationprocess was stillrunning atrestart.",
+  "head": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+  "source_unchanged": [
+    "cd7a913f53fac09f3d8a4edc403fcedce85e4cee84007a361ecaf4298eef272b",
+    "683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d",
+    "7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29",
+    "75ebf66e06645a45484fa0ef3e7f48e5cbfb2d2a7808c3c586e236d6eab4ed04"
+  ],
+  "rootchecks_sha256": "66bdee5942fae695bcb4f989181a446f8a7fd578b4f207aaee5566b48f399ee1",
+  "report_sha256": "8bde6b44e68a7a41836dc80f29555ab85b60a40ca67362c58bcf3b50776ea634",
+  "cpu": "400000 100000",
+  "affinity": 5,
+  "memory_current": "817676288",
+  "memory_limit": "17179869184",
+  "provisional_reviewer_message": "FIX4source closes tested cardinality-mismatch and semantic/operator cases; remaining same-cardinality keyset with ordinaryunexpectedstring plusopaque key, and archive metadata count5 vsreturnedcount4. Reviewer waschecking before finalizing; NOT a sealedreview."
+}

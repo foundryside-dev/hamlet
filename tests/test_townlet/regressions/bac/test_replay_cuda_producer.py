@@ -11,6 +11,7 @@ import multiprocessing
 import os
 import random
 import sys
+from collections import OrderedDict
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import replace
@@ -27,7 +28,7 @@ from townlet.exploration.rng_custody import LocalCUDAGate, process_rng_domain
 from townlet.training import historical_checkpoint as history
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.replay_buffer import ReplayBuffer
-from townlet.training.replay_contract import PreparedReplay, ReplayRequest
+from townlet.training.replay_contract import PreparedReplay, ReplayPrefix, ReplayRequest, _ReplayPrefixStopError
 from townlet.training.state import RewardTensor
 
 
@@ -1666,3 +1667,802 @@ def test_bad_observation_prefix_keeps_necessary_gpu_sources(family: str, prefix:
         assert owner._replay_revision > revision
         _assert_tree_equal(owner.serialize(), before)
         _assert_local(events, (2,))
+
+
+_RAW_PREFIX_CASES = [
+    (family, field, value, message)
+    for family in ("flat", "per")
+    for field, value, message in (
+        ("replay_kind", "wrong", "replay_kind"),
+        ("capacity", False, "capacity"),
+        ("capacity", 0, "capacity"),
+        ("count", False, "size"),
+        ("count", -1, "size"),
+        ("position", False, "position"),
+        ("ring", 0, "position"),
+        ("legality_mode", "wrong", "legality_mode"),
+        ("action_dim", False, "action_dim"),
+        ("action_dim", 3, "action_dim"),
+        ("historical_archives", (), "historical_archives"),
+        ("observations", "rank", "observations"),
+        ("observations", "dtype", "observations"),
+        ("observations", "shape", "observations"),
+        ("actions", "dtype", "actions"),
+        ("empty", None, "Empty"),
+        ("precedence", "wrong", "key set mismatch" if family == "flat" else "replay_kind"),
+    )
+] + [
+    ("per", field, value, message)
+    for field, value, message in (
+        ("alpha", False, "alpha"),
+        ("alpha", 0.5, "alpha"),
+        ("beta_initial", float("nan"), "beta_initial"),
+        ("beta_annealing", 0, "beta_annealing"),
+        ("beta", 0.5, "beta"),
+        ("priorities", "type", "priorities"),
+        ("priorities", "dtype", "priorities"),
+        ("priorities", "shape", "priorities"),
+        ("max_priority", 0, "max_priority"),
+    )
+]
+
+
+@pytest.mark.parametrize(
+    "family,field,value,message", _RAW_PREFIX_CASES, ids=[f"{family}-{field}-{value}" for family, field, value, _ in _RAW_PREFIX_CASES]
+)
+@pytest.mark.parametrize("route", ["validate-plan", "validate", "prepare-plan", "prepare"])
+def test_raw_prefix_matrix(
+    family: str, field: str, value: Any, message: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    before = owner.serialize()
+    incoming = copy.deepcopy(before)
+    count = "size" if family == "flat" else "size_current"
+    incoming["dones"] = _CUDAData(incoming["dones"], 3)
+    if field == "empty":
+        incoming = _owner(family, torch.device("cpu")).serialize()
+        incoming["observations"] = _CUDAData(torch.ones((4, 2)), 3)
+    elif field == "ring":
+        incoming[count], incoming["position"] = 3, value
+    elif field == "precedence":
+        incoming["replay_kind"], incoming["extra"] = value, _CUDAData(torch.ones(1), 3)
+    elif field in ("observations", "actions", "priorities"):
+        original = incoming[field]
+        replacements = {
+            "rank": torch.ones(4),
+            "dtype": original.double() if isinstance(original, torch.Tensor) else original.astype(np.float64),
+            "shape": original[:3],
+            "type": _CUDAData(torch.ones(4), 3),
+        }
+        incoming[field] = replacements[value]
+    else:
+        incoming[count if field == "count" else field] = value
+    owner.device = torch.device("cuda:4")
+    prepare = route.startswith("prepare")
+    method = "prepare_serialized" if prepare else "validate_serialized"
+    selected, devices = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
+    assert selected is None and devices == (), "Ordinary refusal must exclude all later row/archive/destination work"
+    if route.endswith("-plan"):
+        return
+    with monkeypatch.context() as scoped:
+        scoped.setattr(torch, "cuda", _NoCUDA())
+        with pytest.raises(ValueError, match=message):
+            if prepare:  # Real invocation authority remains a B prerequisite.
+                owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
+            else:
+                owner.validate_serialized(incoming, expected_obs_dim=2)
+    assert simulated_cuda.events == []
+    _assert_tree_equal(owner.serialize(), before)
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize(
+    "field,shape,dtype",
+    [
+        ("observations", (4,), torch.float32),
+        ("observations", (4, 2), torch.float64),
+        ("observations", (4, 0), torch.float32),
+        ("observations", (5, 2), torch.float32),
+        ("next_observations", (4,), torch.float32),
+        ("next_observations", (4, 2), torch.float64),
+        ("next_observations", (3, 2), torch.float32),
+        ("actions", (4, 1), torch.int64),
+        ("actions", (4,), torch.float32),
+        ("actions", (3,), torch.int64),
+        ("rewards", (4, 1), torch.float32),
+        ("rewards", (4,), torch.float64),
+        ("rewards", (3,), torch.float32),
+        ("dones", (4, 1), torch.bool),
+        ("dones", (4,), torch.float32),
+        ("dones", (3,), torch.bool),
+    ],
+    ids=str,
+)
+def test_plain_push_metadata_prefix_matrix(
+    family: str, field: str, shape: tuple, dtype: torch.dtype, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    before, rows = owner.serialize(), _rows()
+    rows[field] = torch.zeros(shape, dtype=dtype)
+    rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 3)
+    owner.device = torch.device("cuda:4")
+    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False)
+    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
+    assert _metadata_plan(owner, "push", arguments, False, simulated_cuda) == (None, ())
+    revision = owner._replay_revision
+    with monkeypatch.context() as scoped:
+        scoped.setattr(torch, "cuda", _NoCUDA())
+        with pytest.raises(ValueError):
+            owner.push(*arguments)
+    assert simulated_cuda.events == [] and owner._replay_revision > revision
+    _assert_tree_equal(owner.serialize(), before)
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("guard", ["type", "rank", "width", "dtype", "dones", "shape", "device"])
+def test_recorded_mask_metadata_precedes_tensor_effects(
+    family: str, guard: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner, rows = _owner(family, torch.device("cpu")), _rows()
+    masks = _CUDAData(rows["next_action_masks"], 2)
+    dones = _CUDAData(rows["dones"], 2)
+    masks = {
+        "type": None,
+        "rank": _CUDAData(torch.ones(4, dtype=torch.bool), 2),
+        "width": _CUDAData(torch.ones((4, 0), dtype=torch.bool), 2),
+        "dtype": _CUDAData(torch.ones((4, 2)), 2),
+        "shape": _CUDAData(torch.ones((3, 2), dtype=torch.bool), 2),
+    }.get(guard, masks)
+    if guard == "dones":
+        dones = _CUDAData(torch.ones(4), 2)
+    elif guard == "device":
+        dones = _CUDAData(rows["dones"], 3)
+    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
+    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], dones, masks)
+    owner.device = torch.device("cuda:4")
+    assert _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda) == (None, ())
+    revision = owner._replay_revision
+    with monkeypatch.context() as scoped:
+        scoped.setattr(torch, "cuda", _NoCUDA())
+        with pytest.raises(ValueError):
+            owner.push_recorded(*arguments)
+    assert simulated_cuda.events == [] and owner._replay_revision > revision and len(owner) == 0
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("route", ["raw", "component", "recorded", "known", "retained-width"])
+@pytest.mark.parametrize("public", [False, True])
+def test_later_metadata_refusal_retains_only_earlier_effects(family: str, route: str, public: bool, simulated_cuda: _SimCUDA) -> None:
+    owner, rows = _owner(family, torch.device("cpu")), _rows()
+    if route in ("raw", "known", "retained-width"):
+        _push(owner, rows, recorded=route != "retained-width")
+    before = owner.serialize()
+    if route == "raw":
+        incoming = {
+            **before,
+            "observations": _CUDAData(before["observations"], 2),
+            "actions": before["actions"].float(),
+            "next_observations": _CUDAData(before["next_observations"], 3),
+        }
+        method, arguments = "validate_serialized", (incoming,)
+    else:
+        rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 3)
+        if route == "component":
+            rows["observations"], rows["rewards_extrinsic"] = _CUDAData(rows["observations"], 2), torch.ones(3)
+        elif route == "retained-width":
+            rows["observations"], rows["next_observations"] = torch.ones((4, 3)), torch.ones((4, 3))
+            rows["actions"] = _CUDAData(rows["actions"], 2)
+        else:
+            rows["dones"], rows["next_action_masks"] = _CUDAData(rows["dones"], 2), _CUDAData(rows["next_action_masks"], 2)
+            rows["next_observations"] = torch.ones(4)
+        rewards = RewardTensor(
+            rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+        )
+        arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
+        method = "push_recorded" if route == "recorded" else "push"
+        if route == "recorded":
+            arguments = (*arguments, rows["next_action_masks"])
+    owner.device = torch.device("cuda:4")
+    devices = () if route == "retained-width" and family == "per" else (2,)
+    assert _metadata_plan(owner, method, arguments, False, simulated_cuda) == (None, devices)
+    if not public:
+        return
+    revision = owner._replay_revision
+    message = {
+        "raw": "actions",
+        "component": "rewards.extrinsic",
+        "recorded": "next_observations",
+        "known": "next_observations",
+        "retained-width": "obs_dim",
+    }[route]
+    with pytest.raises(ValueError, match=message):
+        if route == "raw":
+            owner.validate_serialized(*arguments, expected_obs_dim=2)
+        else:
+            getattr(owner, method)(*arguments)
+    events = list(simulated_cuda.events)
+    _assert_tree_equal(owner.serialize(), before)
+    assert owner._replay_revision > revision if route != "raw" else owner._replay_revision == revision
+    if devices:
+        assert any(event[0] == "work" and event[2] == (2,) for event in events)
+        _assert_local(events, devices)
+    else:
+        assert events == []
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("route", ["validate_serialized", "prepare_serialized", "push", "push_recorded", "known"])
+def test_prefix_first_effect_inventory_controls(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
+    owner, rows = _owner(family, torch.device("cpu")), _rows()
+    _push(owner, rows, recorded=True)
+    state = owner.serialize()
+    assert torch.equal(state["observations"], rows["observations"])
+    assert torch.equal(owner.validate_serialized(state, expected_obs_dim=2).rewards, rows["rewards"])
+    if route.endswith("serialized"):
+        arguments = ({name: _CUDAData(value, 2) if isinstance(value, torch.Tensor) else value for name, value in state.items()},)
+    else:
+        if route != "known":
+            owner.clear()
+        rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
+        arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], _CUDAData(rows["dones"], 2))
+        if route == "push_recorded":
+            arguments = (*arguments, _CUDAData(rows["next_action_masks"], 2))
+    owner.device = torch.device("cuda:4")
+    method = "push" if route == "known" else route
+    selected = None if route == "validate_serialized" else owner.device
+    assert _metadata_plan(owner, method, arguments, route == "prepare_serialized", simulated_cuda) == (selected, (2,))
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("case", ["type", "keys", "semantics", "later-record"])
+@pytest.mark.parametrize("public", [False, True])
+def test_archive_record_prefix_matrix(family: str, case: str, public: bool, simulated_cuda: _SimCUDA) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    before = owner.serialize()
+    record = history._record(_family_archive(family, 2))  # Genuine owned/digest-qualified fixture before observation.
+    if case == "type":
+        records = [None, record]
+    elif case == "keys":
+        records = [{**record, "unused": _CUDAData(torch.ones(1), 3)}]
+    elif case == "semantics":
+        records = [{**record, "reward_semantics": "wrong"}]
+    else:
+        records = [record, None]
+    incoming = {**before, "historical_archives": records, "observations": _CUDAData(torch.ones((4, 2)), 3)}
+    owner.device = torch.device("cuda:4")
+    devices = () if case in ("type", "keys") else (2, 3)  # Subclass clones can change subsequent validation.
+    assert _metadata_plan(owner, "validate_serialized", (incoming,), False, simulated_cuda) == (None, devices)
+    if not public:
+        return
+    with pytest.raises(ValueError, match="embedded archive|reward_semantics|reward semantics"):
+        owner.validate_serialized(incoming, expected_obs_dim=2)
+    events = list(simulated_cuda.events)
+    _assert_tree_equal(owner.serialize(), before)
+    if devices:
+        clones = [index for index, event in enumerate(events) if event[:3] == ("finished", "clone", (2,))]
+        assert clones and max(clones) < next(index for index, event in enumerate(events) if event[0] == "sync")
+        assert not any(event[0] == "work" and 3 in event[2] for event in events)
+        _assert_local(events, devices)
+    else:
+        assert events == []
+
+
+class _ArchiveComparison(_CUDAData):
+    """Supported nonplain semantic operand with observable real Tensor work."""
+
+    def __ne__(self, other: object) -> torch.Tensor:
+        return self.sum() != 0
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("field", ["reward_semantics", "approval_reference", "source_digest", "archived_row_count"])
+@pytest.mark.parametrize("reject", [False, True])
+def test_archive_semantic_operator_fixture(family: str, field: str, reject: bool, simulated_cuda: _SimCUDA) -> None:
+    record = history._record(_family_archive(family, 2))
+    record[field] = _ArchiveComparison(torch.tensor(int(reject)), 1)
+    simulated_cuda.events.clear()
+    if reject or field == "archived_row_count":
+        with pytest.raises(ValueError, match="reward|digest|archived_row_count"):
+            history._archive_from_state(record)
+    else:
+        assert history._archive_from_state(record).archived_row_count == 4
+    events = simulated_cuda.events
+    assert any(event[:2] == ("finished", "clone") and event[2] == (2,) for event in events)
+    operators = [event for event in events if event[0] == "work" and event[2] == (1,)]
+    assert bool(operators) is (field != "archived_row_count")
+    assert not operators or any(event[1] == "sum" for event in operators)
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize(
+    "case",
+    [
+        "top-key",
+        "archive-key",
+        "later-key",
+        "reward",
+        "approval",
+        "later-reward",
+        "count",
+        "reward_semantics",
+        "approval_reference",
+        "source_digest",
+        "success",
+    ],
+)
+@pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+def test_archive_semantic_and_schema_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    before = owner.serialize()
+    incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+    record = history._record(_family_archive(family, 2))
+    records, devices, continuation = [record], (2,), False
+    if case == "top-key":
+        incoming[_CUDAData(torch.tensor(1), 2)] = _CUDAData(torch.ones(1), 3)
+    elif case in ("archive-key", "later-key"):
+        record = history._record(_family_archive(family, 3))
+        record[_CUDAData(torch.tensor(1), 2)] = _CUDAData(torch.ones(1), 3)
+        records = [record] if case == "archive-key" else [history._record(_family_archive(family, 1)), record]
+        devices = (2,) if case == "archive-key" else (1, 2)
+    elif case in ("reward", "approval", "later-reward"):
+        record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        if case != "approval":
+            record["approval_reference"] = _ArchiveComparison(torch.tensor(1), 1)
+        record["approval_reference" if case == "approval" else "reward_semantics"] = "wrong"
+        if case == "later-reward":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2)
+    elif case == "count":
+        record["archived_row_count"] = _ArchiveComparison(torch.tensor(4), 1)
+        record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+    else:
+        continuation = True
+        devices = (2, 3) if case == "success" else (1, 2, 3)
+        if case != "success":
+            record[case] = _ArchiveComparison(torch.tensor(1), 1)
+    opaque_clones = {
+        "later-key": (1, 2, 3),
+        "reward": (1, 2, 3),
+        "approval": (1, 2, 3),
+        "later-reward": (0, 1, 2, 3),
+        "count": (1, 2, 3),
+    }
+    if case in opaque_clones:
+        devices, continuation = opaque_clones[case], True
+    incoming["historical_archives"] = records
+    owner.device = torch.device("cuda:4")
+    prepare = route.startswith("prepare")
+    method = "prepare_serialized" if prepare else "validate_serialized"
+    selected = owner.device if prepare and continuation else None
+    assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+    if route.endswith("-plan"):
+        return
+    arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+    if case == "success":
+        getattr(owner, method)(incoming, **arguments)
+    else:
+        with pytest.raises(ValueError, match="key set mismatch|schema key mismatch|reward|digest|archived_row_count"):
+            getattr(owner, method)(incoming, **arguments)
+    events = list(simulated_cuda.events)
+    assert _syncs(events) == (*devices, 4) if selected is not None else _syncs(events) == devices
+    assert any(event[0] == "work" and event[2] == (2,) for event in events)
+    copies = {"top-key": (), "archive-key": (), "later-key": (1,), "later-reward": (0, 2)}.get(case, (2,))
+    assert all(any(event[:3] == ("finished", "clone", (index,)) for event in events) for index in copies)
+    if case in ("reward_semantics", "approval_reference", "source_digest"):
+        assert any(event[:3] == ("work", "sum", (1,)) for event in events)
+    if case in ("reward", "approval", "later-reward", "count"):
+        assert not any(event[0] == "work" and 1 in event[2] for event in events)
+    if case not in ("success", "reward_semantics", "approval_reference", "source_digest"):
+        assert not any(event[0] == "work" and (3 in event[2] or 4 in event[2]) for event in events)
+    _assert_tree_equal(owner.serialize(), before)
+
+
+class _OpaqueSchemaKey(str):
+    """Accepted nonplain key: equality can succeed without a new key policy."""
+
+
+class _ArchiveCountOnClone(int):
+    """A raw nonplain count can become valid exact metadata during ownership."""
+
+    def __deepcopy__(self, memo: dict) -> int:
+        return int(self) - 1
+
+
+def _fix5_archive_record(kind: str, count: int, case: str) -> dict[str, Any]:
+    legacy = _legacy_transport("per" if kind == "prioritized" else "flat")
+    rows = {key: _CUDAData(value[:count], 2) for key, value in legacy.items() if isinstance(value, torch.Tensor)}
+    if kind == "sequential":
+        state = {"replay_kind": kind, "format_version": 5, "capacity": 4, "num_transitions": count, "episodes": [rows] if count else []}
+    else:
+        state = {**legacy, **rows, "position": count % 4, "size_current" if kind == "prioritized" else "size": count}
+    record = history._record(history.archive_standalone_replay(state))
+    if case == "clone":
+        field = {"standard": "size", "prioritized": "size_current", "sequential": "num_transitions"}[kind]
+        record["original_state"][field] = _ArchiveCountOnClone(count + 1)
+    elif case == "mapping":
+        record["original_state"] = MappingProxyType(record["original_state"])
+    elif case in ("above", "zero", "digest", "later"):
+        record["archived_row_count"] = count + 1
+    elif case == "below":
+        record["archived_row_count"] = count - 1
+    return record
+
+
+@pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+@pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+def test_archive_declared_count_fixture(kind: str, case: str, simulated_cuda: _SimCUDA) -> None:
+    count = 0 if case == "zero" else 2 if case == "above" else 4
+    record = _fix5_archive_record(kind, count, case)
+    record["source_digest"] = _ArchiveComparison(torch.tensor(0), 1)
+    simulated_cuda.events.clear()
+    if case in ("match", "clone", "mapping"):
+        assert history._archive_from_state(record).archived_row_count == count
+        assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events)
+    else:
+        with pytest.raises(ValueError, match="archive row count differs from original state"):
+            history._archive_from_state(record)
+        assert not any(event[0] == "work" and (event[1] == "cpu" or event[2] == (1,)) for event in simulated_cuda.events)
+    if count:
+        assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+@pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+@pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    before = owner.serialize()
+    incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+    count = 0 if case == "zero" else 2 if case == "above" else 4
+    record = _fix5_archive_record(kind, count, case)
+    accepted = case in ("match", "clone", "mapping")
+    continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+    devices = (2, 3) if continuation else ()
+    records = [record]
+    if case == "digest":
+        record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+        devices = (1, 2, 3)
+    if case == "later":
+        records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+        devices = (0, 2, 3)
+    incoming["historical_archives"] = records
+    owner.device = torch.device("cuda:4")
+    prepare = route.startswith("prepare")
+    method = "prepare_serialized" if prepare else "validate_serialized"
+    selected = owner.device if prepare and continuation else None
+    assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+    if route.endswith("-plan"):
+        return
+    arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+    if accepted:
+        getattr(owner, method)(incoming, **arguments)
+    else:
+        with pytest.raises(ValueError, match="archive row count differs from original state"):
+            getattr(owner, method)(incoming, **arguments)
+    events = list(simulated_cuda.events)
+    assert _syncs(events) == ((*devices, 4) if selected is not None else devices)
+    if count:
+        assert any(event[:3] == ("finished", "clone", (2,)) for event in events)
+    if case == "later":
+        assert any(event[:3] == ("finished", "clone", (0,)) for event in events)
+    if not accepted:
+        assert not any(event[0] == "work" and any(index in event[2] for index in (1, 3, 4)) for event in events)
+    _assert_tree_equal(owner.serialize(), before)
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("location", ["top", "archive"])
+def test_equal_cardinality_opaque_key_fixture(family: str, location: str, simulated_cuda: _SimCUDA) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    incoming = owner.serialize()
+    record = history._record(history.archive_standalone_replay(_legacy_transport(family)))
+    incoming["historical_archives"] = [record]
+    target, field = (incoming, "rewards") if location == "top" else (record, "source_digest")
+    target[_OpaqueSchemaKey(field)] = target.pop(field)
+    simulated_cuda.events.clear()
+    owner.validate_serialized(incoming, expected_obs_dim=2)
+    assert simulated_cuda.events == []
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("case", ["top", "archive", "later", "opaque-top", "opaque-archive"])
+@pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+def test_equal_cardinality_key_boundaries(family: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    before = owner.serialize()
+    incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+    record = history._record(_family_archive(family, 3 if case in ("archive", "later") else 2))
+    incoming["historical_archives"] = [record]
+    top = case in ("top", "opaque-top")
+    target = incoming if top else record
+    fields = ("rewards", "dones") if top else ("source_digest", "approval_reference")
+    continuation = case.startswith("opaque-")
+    if continuation:
+        target[_OpaqueSchemaKey(fields[0])] = target.pop(fields[0])
+        devices = (2, 3)
+    else:
+        cardinality = len(target)
+        for field in fields:
+            target.pop(field)
+        target["unexpected"] = None
+        target[_CUDAData(torch.tensor(1), 2)] = None
+        assert len(target) == cardinality
+        devices = (2,)
+        if case == "later":
+            incoming["historical_archives"].insert(0, history._record(_family_archive(family, 1)))
+            devices, continuation = (1, 2, 3), True  # Earlier opaque clone may change the later schema.
+    owner.device = torch.device("cuda:4")
+    prepare = route.startswith("prepare")
+    method = "prepare_serialized" if prepare else "validate_serialized"
+    selected = owner.device if prepare and continuation else None
+    assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+    if route.endswith("-plan"):
+        return
+    arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+    if case.startswith("opaque-"):
+        getattr(owner, method)(incoming, **arguments)
+    else:
+        # Mixed-key sorting can raise TypeError before the ordinary diagnostic.
+        with pytest.raises((ValueError, TypeError)):
+            getattr(owner, method)(incoming, **arguments)
+    events = list(simulated_cuda.events)
+    assert _syncs(events) == ((*devices, 4) if selected is not None else devices)
+    if case == "later":
+        assert any(event[:3] == ("finished", "clone", (1,)) for event in events)
+    if not case.startswith("opaque-"):
+        assert not any(event[0] == "work" and (3 in event[2] or 4 in event[2]) for event in events)
+    _assert_tree_equal(owner.serialize(), before)
+
+
+def _native_archive_record(kind: str, count: int) -> dict[str, Any]:
+    legacy = _legacy_transport("per" if kind == "prioritized" else "flat")
+    rows = {key: value[:count] for key, value in legacy.items() if type(value) is torch.Tensor}
+    if kind == "sequential":
+        state = {"replay_kind": kind, "format_version": 5, "capacity": 4, "num_transitions": count, "episodes": [rows] if count else []}
+    else:
+        state = {**legacy, **rows, "position": count % 4, "size_current" if kind == "prioritized" else "size": count}
+    return history._record(history.archive_standalone_replay(state))
+
+
+def _clone_repair_record(family: str, location: str, *, operator: bool) -> tuple[dict[str, Any], list[str], str]:
+    record = history._record(_family_archive(family, 2))
+    state = record["original_state"]
+    field = "size" if family == "flat" else "size_current"
+    state[field] = 3
+    calls: list[str] = []
+
+    class RepairCount(int):
+        def __deepcopy__(self, memo: dict) -> int:
+            calls.append(location)
+            state[field] = 4
+            return int(self)
+
+    target, key = (record["source_formats"], "replay") if location == "formats" else (state, "capacity")
+    target[key] = RepairCount(target[key])
+    if operator:
+        record["source_digest"] = _ArchiveComparison(torch.tensor(0), 1)
+    return record, calls, field
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+@pytest.mark.parametrize("location", ["formats", "sibling"])
+@pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+    # Preparation records/clones/revalidates archives: its genuine canonical
+    # digest must survive that route, unlike the raw comparison-subclass probe.
+    operator = stage not in ("canonical-fixture", "prepare")
+    record, calls, field = _clone_repair_record(family, location, operator=operator)
+    state = record["original_state"]
+    assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+    if stage in ("fixture", "canonical-fixture"):
+        simulated_cuda.events.clear()
+        restored = history._archive_from_state(record)
+        assert restored.archived_row_count == 4
+        assert calls and state[field] == 4
+        assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+        assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+        if not operator:
+            assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+            assert history._archive_from_state(history._record(restored)).archived_row_count == 4
+        return
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    before = owner.serialize()
+    incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in before.items()}
+    incoming["historical_archives"] = [record]
+    owner.device = torch.device("cuda:4")
+    prepare = stage.startswith("prepare")
+    method = "prepare_serialized" if prepare else "validate_serialized"
+    plan = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
+    assert calls == [] and state[field] == 3
+    devices = (1, 2, 3) if operator else (2, 3)
+    assert plan == (owner.device if prepare else None, devices)
+    if stage.endswith("-plan"):
+        return
+    arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+    getattr(owner, method)(incoming, **arguments)
+    events = list(simulated_cuda.events)
+    assert calls and state[field] == 4
+    assert any(event[:3] == ("work", "sum", (1,)) for event in events) is operator
+    assert _syncs(events) == ((*devices, 4) if prepare else devices)
+    assert any(event[:3] == ("finished", "clone", (2,)) for event in events)
+    _assert_tree_equal(owner.serialize(), before)
+
+
+_NATIVE_CLONE_CASES = [
+    (family, kind, case)
+    for family, kind in (("flat", "standard"), ("per", "prioritized"), ("flat", "sequential"))
+    for case in ("above", "below", "empty", "match")
+] + [("flat", "standard", case) for case in ("reward", "approval", "count-type", "later", "later-key")]
+
+
+@pytest.mark.parametrize("family,kind,case", _NATIVE_CLONE_CASES, ids=["-".join(item) for item in _NATIVE_CLONE_CASES])
+@pytest.mark.parametrize("prepare", [False, True])
+def test_native_archive_clone_boundaries(family: str, kind: str, case: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
+    count = 0 if case == "empty" else 2 if case == "above" else 4
+    record = _native_archive_record(kind, count)
+    record["source_digest"] = _ArchiveComparison(torch.tensor(0), 1)
+    records = [record]
+    if case in ("above", "empty", "later"):
+        record["archived_row_count"] = count + 1
+    elif case == "below":
+        record["archived_row_count"] = count - 1
+    elif case in ("reward", "approval"):
+        record["approval_reference" if case == "approval" else "reward_semantics"] = "wrong"
+        if case == "reward":
+            record["approval_reference"] = _ArchiveComparison(torch.tensor(0), 1)
+    elif case == "count-type":
+        record["archived_row_count"] = _ArchiveComparison(torch.tensor(count), 1)
+    elif case == "later-key":
+        record = history._record(_family_archive("flat", 2))
+        record.pop("source_digest")
+        record.pop("approval_reference")
+        record["unexpected"] = None
+        record[_CUDAData(torch.tensor(1), 1)] = None
+    if case in ("later", "later-key"):
+        records = [_native_archive_record(kind, 4), record, history._record(_family_archive("flat", 2))]
+    # Real helper prerequisites distinguish schema/semantic/count refusal from
+    # fixture setup errors; an accepting digest operator is reached only at match.
+    simulated_cuda.events.clear()
+    if case == "match":
+        assert history._archive_from_state(record).archived_row_count == count
+        assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events)
+    else:
+        with pytest.raises(ValueError, match="row count|reward semantics|archived_row_count|schema key mismatch"):
+            history._archive_from_state(record)
+        assert not any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events)
+    owner = _owner(family, torch.device("cpu"))
+    _push(owner, _rows(), recorded=True)
+    incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in owner.serialize().items()}
+    incoming["historical_archives"] = records
+    owner.device = torch.device("cuda:4")
+    method = "prepare_serialized" if prepare else "validate_serialized"
+    devices = (1, 3) if case == "match" else (1,) if case == "later-key" else ()
+    assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (
+        owner.device if prepare and case == "match" else None,
+        devices,
+    )
+    # CPU clones still belong to the reached prefix even when no CUDA device
+    # describes them. Inspect recorded identities without Tensor equality.
+    prefix = ReplayPrefix(planning=True)
+    try:
+        for item in records:
+            prefix.archive(item, lambda: pytest.fail("planning invoked archive restoration"))
+    except _ReplayPrefixStopError:
+        pass
+    reached = records[:1] if case == "later-key" else records[:2] if case == "later" else records
+    for item in reached:
+        assert any(value is item["source_formats"] for value in prefix.values)
+        assert any(value is item["original_state"] for value in prefix.values)
+    assert simulated_cuda.events == []
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "native",
+        "primitives",
+        "alias",
+        "numpy-numeric",
+        "numpy-bool",
+        "scalar",
+        "tensor-subclass",
+        "mapping",
+        "list-subclass",
+        "key",
+        "kind",
+        "count",
+        "proxy",
+        "numpy-object",
+        "numpy-structured",
+        "numpy-subclass",
+        "numpy-scalar",
+        "cycle",
+        "ordered-items",
+        "tensor-detach",
+        "tensor-attribute",
+    ],
+)
+def test_archive_clone_graph_classification(case: str, simulated_cuda: _SimCUDA) -> None:
+    record = _native_archive_record("standard", 4)
+    state = record["original_state"]
+    calls: list[str] = []
+
+    def unexpected(*args: Any, **kwargs: Any) -> Any:
+        calls.append(case)
+        raise AssertionError("Clone classification invoked an opaque protocol")
+
+    class CloneScalar(int):
+        __deepcopy__ = unexpected
+
+    class ProtocolMapping(dict):
+        items = unexpected
+
+    class ProtocolList(list):
+        __iter__ = unexpected
+
+    class ProtocolArray(np.ndarray):
+        __deepcopy__ = unexpected
+
+    if case == "primitives":
+        state["leaves"] = (None, True, 1, 1.0, "value", b"value")
+    elif case == "alias":
+        leaf = [1, {"value": torch.ones(1)}]
+        state["aliases"] = [leaf, leaf]
+    elif case in ("numpy-numeric", "numpy-bool", "numpy-object", "numpy-structured", "numpy-subclass", "numpy-scalar"):
+        values = {
+            "numpy-numeric": np.ones(2, dtype=np.float32),
+            "numpy-bool": np.ones(2, dtype=np.bool_),
+            "numpy-object": np.array([CloneScalar(1)], dtype=object),
+            "numpy-structured": np.zeros(2, dtype=[("value", np.float32)]),
+            "numpy-subclass": np.ones(2).view(ProtocolArray),
+            "numpy-scalar": np.int64(1),
+        }
+        state["array"] = values[case]
+    elif case == "scalar":
+        record["source_formats"]["replay"] = CloneScalar(4)
+    elif case == "tensor-subclass":
+        state["observations"] = _CUDAData(state["observations"], 2)
+    elif case == "mapping":
+        record["original_state"] = ProtocolMapping(state)
+    elif case == "list-subclass":
+        state["nested"] = ProtocolList([1])
+    elif case == "key":
+        state[_OpaqueSchemaKey("capacity")] = state.pop("capacity")
+    elif case == "kind":
+        state["replay_kind"] = _OpaqueSchemaKey(state["replay_kind"])
+    elif case == "count":
+        state["size"] = _ArchiveCountOnClone(5)
+    elif case == "proxy":
+        record["original_state"] = MappingProxyType(state)
+    elif case == "cycle":
+        state["cycle"] = state
+    elif case == "ordered-items":
+        ordered = OrderedDict(state)
+        ordered.items = unexpected
+        assert type(ordered) is OrderedDict
+        record["original_state"] = ordered
+    elif case in ("tensor-detach", "tensor-attribute"):
+        tensor = state["observations"]
+        assert type(tensor) is torch.Tensor and object.__getattribute__(tensor, "__dict__") == {}
+        if case == "tensor-detach":
+            tensor.detach = unexpected
+        else:
+            tensor.harmless = 1
+    record["reward_semantics"] = "wrong"
+    prefix = ReplayPrefix(planning=True)
+    simulated_cuda.events.clear()
+    with pytest.raises(_ReplayPrefixStopError):
+        prefix.archive(record, lambda: pytest.fail("planning invoked archive restoration"))
+    assert calls == [] and simulated_cuda.events == []
+    assert prefix.unknown is (case not in ("native", "primitives", "alias", "numpy-numeric", "numpy-bool"))
+    assert len(prefix.values) == 2
+    assert prefix.values[0] is record["source_formats"] and prefix.values[1] is record["original_state"]
+    # Deliberately classifier-only: inventory may invoke Mapping protocols and
+    # does not promise cycle traversal. No cyclic real constructor is executed.

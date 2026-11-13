@@ -1,0 +1,29 @@
+{
+  "schema": "bac-bounded-qualification-plan-adoption-v1",
+  "at": "2026-11-13T19:28:57.540138+00:00",
+  "actor": "/root",
+  "status": "PLAN AND BUDGET ADOPTED; SOURCE/TEST/VERIFIER WRITE NOT YET GRANTED",
+  "sources": [
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-QUALIFICATION-PROTOCOL.md",
+      "sha256": "d2b9d7fdfe5b9bb3db796830608aeb74a0de2ee0955f19878d495a5c997580d9",
+      "bytes": 21743
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-QUALIFICATION-PROTOCOL-REVIEW.md",
+      "sha256": "ace6b4ea9acaca1d93f128901f686dc1332754cdd16bc0239ffdbc16a4bf8863",
+      "bytes": 8414
+    }
+  ],
+  "budget": {
+    "core": 1250,
+    "core_test": 2350,
+    "total": 3600,
+    "files": 2,
+    "hard_lines": 5000,
+    "hard_files": 5
+  },
+  "requirements": "Exactfiniteprotocol withAstrafixtureclarifications: one-shotchildsyncfault allowsactualparentunion success; validfactory/out-of-subsetentryfailed; observedE/Fidentity andper-jobprovenance, actualthreadforwardingproxyalias; fixed5actioninvocationforktrial andsixnewroles, separatelyreviewedstrictverifier.",
+  "order": "Prefixclone-stabilitywriterfinishescurrenttests/sourcepacket; thenexplicitcoretestsbaton, exactfrozenprotocol, strictverifierqualification, rootappcapture/controls/isolatedchecks. No productionmanifestactivation untilB.",
+  "scope": "No hardware or package acceptance; no extraimplementationbody or newbranch/worktree/sourcecopy."
+}

@@ -1,0 +1,7 @@
+# Archive validator count result
+
+Supplementary root source fact for the already reviewed F2 constructor sequence; no execution or new implementation-body grant. Unchanged `historical_checkpoint.py` SHA256 is `74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4`.
+
+`_validate_archive_state`195 obtains `count = _count(state)` after its source-format/state-kind/version checks. If its remaining validation succeeds, it returns that same `count`; the later row/episode/value checks do not replace it. `_count`157 requires an exact supported string `state.get("replay_kind")`, selects `size` for `standard`, `size_current` for `prioritized`, or `num_transitions` for `sequential`, then passes that field through `_integer(..., minimum=0)`. It also requires a valid positive integer capacity and count no greater than capacity. `_integer` requires exact Python int. This count is a declared metadata field, not a Tensor reduction result. Earlier validation may refuse instead of returning it.
+
+The constructor then compares this successful returned count with its separately validated `archived_row_count` and refuses if unequal, before digest comparison or any following archive record/transport row. Both mapping clones and internal archive-state checks have already occurred at that point. These facts supply the actual count-result relationship omitted from the earlier short semantic-field capsule; they do not authorize running data-dependent validation during planning or assuming arbitrary nonplain cloning/comparison hooks are inert.

@@ -1,0 +1,40 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "at": "2026-11-13T19:18:39.231490+00:00",
+  "actor": "/root",
+  "worker": "/root/bac_astra_replay_prefix_fix5",
+  "task": "B0 archive clone-stability prerequisite carried by A cap ruling",
+  "stage": "TESTS ONLY",
+  "ruling": {
+    "path": "wave35/r105-prefix-clone-stability-cap-ruling.json",
+    "sha256": "e41b2487ecd426545c7fad798dba3fc3124a00485795a82f34df363ba62f9a77"
+  },
+  "predecessor_candidate": "ab46784efc86bab95b031494529e06871a12f1ff",
+  "read_scope": [
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "sha256": "3fd73601d1ec9110a7ca03157d452827e0fc1d8249f0c3a86a18cad364c8b23c",
+      "lines": 842,
+      "ceiling": 1000
+    },
+    {
+      "path": "src/townlet/training/historical_checkpoint.py",
+      "sha256": "74709ebedc0c84208c3b30debd4101bc3bc67ca73f9df1a4be8a1aafff0894a4",
+      "lines": 675,
+      "ceiling": 675
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "sha256": "d178bb0a40340292e3b06328438ec2d825378d9464df8bf600873d3c7e2fce9b",
+      "lines": 2204,
+      "ceiling": 2600
+    }
+  ],
+  "write_scope": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "requirements": "Finite5category acceptance fromadjudication withpeer/rootclarifications; preserveall757nodes and10children, reviseunprovedCUDAData refusaloracles intoopaquecontinuation, addnativeplainrefusalcontrols. Exacthookhelperpositive andplanRED beforeproduction.",
+  "execution": "Allowed test-fileRuff/Black only; no appimports/runtime. Rootcaptures/runsfrozenbytes. No core/helper/family/otheredits, commits, newbodies, branches/worktrees/copies orsubagents.",
+  "report": "wave35-preparation/T18e-R0-CUDA-ARCHIVE-CLONE-STABILITY-IMPLEMENTATION-REPORT.md",
+  "limits": "Core source/testsfrozen underseparatereview. Not blind sixthAfix round; this is theexplicitload-bearingpre-Bdependency fromcap. No acceptancewaiver."
+}

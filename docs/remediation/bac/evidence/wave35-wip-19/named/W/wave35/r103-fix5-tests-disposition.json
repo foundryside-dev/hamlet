@@ -1,0 +1,151 @@
+{
+  "time": "2026-11-13T18:43:09.002468+00:00",
+  "tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+  "manifest_sha256": "2114749486f2d3a25afa1eb8447e5c2d37c656df3ba28e32e8e6fd55617a3cfa",
+  "collection": 757,
+  "prior497preserved": true,
+  "result": "28directfixturePASS,44plancontinuationPASS,72intendedfirstassertionRED;0errors/skips/warnings.116newpublicBblockedUNRUN.",
+  "checks": {
+    "collection": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-collection-custody.json",
+      "sha256": "2adfc51d1f52502b8ad847fff148d116a87f26aa74f5a146a2df0ddb9d53f2cd",
+      "result": {
+        "job": "collection",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.523129224777222,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "static": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-static-custody.json",
+      "sha256": "8771d2384f46fac8369e3cc27e5aae46ea2d8111eb24f89d85f19aed32e42c22",
+      "result": {
+        "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+        "source_guards": 818,
+        "configs": 573,
+        "artifacts": 13,
+        "results": [
+          {
+            "name": "ruff-owned",
+            "exit_code": 0,
+            "seconds": 0.04575610160827637,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+          },
+          {
+            "name": "black-owned",
+            "exit_code": 0,
+            "seconds": 0.857630729675293,
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-static/black-owned.log",
+            "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+          }
+        ],
+        "all_passed": true,
+        "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+      }
+    },
+    "fix5-fixtures": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-fix5-fixtures-custody.json",
+      "sha256": "be7f88b76f42d6a0243c44aad82ab1cff14b2e020bdc60a7d98d55580d16c044",
+      "result": {
+        "job": "fix5-fixtures",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+        "exit_code": 0,
+        "counts": {
+          "passed": 28,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.482658386230469,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix5-positive-controls": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-fix5-positive-controls-custody.json",
+      "sha256": "77364c51814c98c02ce565529eefc2aecbc3fb0ca5eb4e6c83e077c43e4c6bf4",
+      "result": {
+        "job": "fix5-positive-controls",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+        "exit_code": 0,
+        "counts": {
+          "passed": 44,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.9620232582092285,
+        "source_guards": 818,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "fix5-reachable-red": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r103-fix5-reachable-red-custody.json",
+      "sha256": "a0150002275b1d90fed82b49a35aa7c02121f86af447cabc385ee6e99870b2a2",
+      "result": {
+        "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+        "base_commit": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9",
+        "candidate_tree": "d1e0427d18c7640b93a546ef31cc8599e0a4c8f0",
+        "exit_code": 1,
+        "counts": {
+          "failed": 72,
+          "passed": 0,
+          "skipped": 0,
+          "errors": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "summary": "============================== 72 failed in 3.95s ==============================",
+        "wall_seconds": 8.553437948226929,
+        "source_guards": 818,
+        "process_identities": 1,
+        "configs": 573,
+        "artifacts": 13,
+        "registry": 14,
+        "available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "unique_node_phase_failures": 72,
+        "affected_files": 1,
+        "signature_groups": 1,
+        "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+      }
+    }
+  },
+  "disposition": "CausalremainingF1/F2 established againstR102production; shared-onlyproductionfix5 authorizedseparately. No acceptance."
+}

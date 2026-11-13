@@ -1,0 +1,53 @@
+# Invocation outcome — tests-only handoff
+
+2026-11-13. Status: **TESTS AUTHORED; RUNTIME/RED UNEXECUTED; PRODUCTION FROZEN.** Worker `/root/bac_core_invocation_impl` acted under `wave35/r104-core-invocation-tests-grant.json` SHA256 `52616d9cc9ed4a65bc457de6d4dca102bb7eb1706562adadaef4ce1741259ad2`. Adopted DESIGN-FIX1 and bounded IMPLEMENTATION-MAP remain the requirements; this stage does not reopen the design.
+
+## Frozen bytes and budget
+
+- Writable test: `tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`, 1681 lines, SHA256 `ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38`.
+- Unchanged production: `src/townlet/exploration/rng_custody.py`, 821 lines, SHA256 `0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477`.
+- Two retained bodies total 2502 lines, below paired ceilings 1250/2000/3250 and hard ceiling five bodies/5000 lines. No other implementation body was read.
+- Baseline test SHA256 `b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e`; the HEAD test blob hashes identically. Inert diff: `T18e-R0-CUDA-INVOCATION-OUTCOME-TESTS-ONLY.diff`, from that baseline, 274 added / 2 replaced import lines. Existing test bodies and empty-production-manifest assertion are preserved.
+- Inert diff SHA256 `73be274ebfc2d21319579739c19a61934edb39e1123f390ddef51e6a5015a001`.
+
+## Exact proposed node map
+
+Every ID below has prefix `tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::`. These are authored node names, not a claim that collection succeeded.
+
+| Category | Node suffix | Observable break caught |
+| --- | --- | --- |
+| OUT-API-RED | `test_device_invocation_required_api` | Missing/optional factory inputs; wrong context/yield/exit/getter types; public construction. |
+| OUT-LIFETIME-RED | `test_device_invocation_historical_result_preserves_real_token_and_retirement` | Issuance currency change; replacement lineage; broken genuine token flow; receipt depending on active operation/membership or lock acquisition. |
+| OUT-AUTH-RED | `test_device_invocation_lifecycle_refusals_leave_completed_result_stable` | Premature False, duplicate enter/exit, reuse, or refusal corrupting a valid lifecycle/result. |
+| OUT-AUTH-RED | `test_device_invocation_entry_failure_has_no_outcome_or_reuse` | Participant retirement between issuance/entry bypasses admission, or failed entry publishes a result/reusable handle. |
+| OUT-AUTH-RED | `test_device_invocation_issuance_rejects_forged_arguments_without_cuda` | Unissued participant/lineage, malformed kind/inventory, or mutable inventory gains issuance authority. |
+| OUT-AUTH-RED | `test_device_invocation_unissued_subclass_and_copy_refuse` | Unissued/subclass/copy/serialization/attribute forgery or reinitialization gains authority. |
+| OUT-AUTH-RED | `test_device_invocation_wrong_thread_refuses_before_held_locks` | Wrong-thread enter/exit/getter waits for held real domain/owner exclusion, at issued/active/exited phases. |
+| OUT-LIFETIME-RED | `test_device_invocation_unused_handle_does_not_pin_owner` | Construction pins a weak lifetime owner; expired owner nevertheless permits entry/outcome. |
+| OUT-LIFETIME-RED | `test_device_invocation_completed_handle_releases_execution_references` | Completed body-error handle retains owner, operation, original error/generator/traceback cycle, or registry retains its weak key. |
+
+New public names are looked up inside test functions. The existing module import at collection remains unchanged. Factory lookups precede owner registration where applicable so the intended missing API failure does not leave a newly registered owner behind. Empty-inventory controls use NoCUDA; reference tests use real weak owners/operations/errors and collection; token controls use actual source-issued current tokens. Wrong-thread controls use real threads with finite waits while actual domain/owner locks are held. No fake PID or test-issued production contract is introduced.
+
+## Existing healthy CPU controls for root capture
+
+Same full prefix as above:
+
+- `test_existing_cpu_registration_and_completion_query_no_cuda` — preferred prerequisite healthy registration/completion control.
+- `test_subset_cpu_path_never_queries_cuda` — existing device-operation empty-inventory parity control.
+- `test_existing_released_prepare_install_currentness` — existing genuine token baseline.
+
+Root owns exact-byte capture, actual collection, healthy control execution, and decisive missing-API RED against the frozen core821. None was executed by this worker; no fixture or RED result is claimed here.
+
+## Static verification and execution boundary
+
+Fresh authorized checks on final test bytes:
+
+- `.venv/bin/ruff check tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`: exit 0, all checks passed.
+- `.venv/bin/black --check tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`: exit 0, one file unchanged.
+- `git diff --check -- tests/test_townlet/regressions/bac/test_rng_cuda_admission.py`: exit 0.
+
+Preserved attempts: bare `ruff` was unavailable in PATH (exit127), then the repository `.venv/bin/ruff` found one import-order issue; its correction precedes the passing final checks. No application import, test collection, pytest, GPU operation, child/fork protocol execution, index mutation, commit, branch/worktree/copy, other source-body read, or delegation occurred. The report/diff are inert handoff artifacts requested by root.
+
+## Next grant boundary
+
+Production remains unchanged until root supplies fixture-healthy causal RED and a production-write grant. Separate later work still owes nonempty success/own-phase failures, same-object body/completion error identity, nested/sibling/token parity, deterministic thread-object alias controls, actual registry/state/reference and lock-path facts, isolated schedules and exact child/fork verifier admission. Public consumer typing and real parent-owner handoff remain root/separate-owner obligations. These nine controls do not claim CUDA hardware, producer integration, B activation, B6, or programme closure.

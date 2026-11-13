@@ -1,0 +1,72 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 56 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_world_rng_bootstrap.py>
+            <Function test_control_real_compiled_selected_factory_native_roundtrip[none]>
+            <Function test_control_real_compiled_selected_factory_native_roundtrip[count_based]>
+            <Function test_control_real_compiled_selected_factory_native_roundtrip[rnd]>
+            <Function test_control_real_compiled_selected_factory_native_roundtrip[adaptive_rnd]>
+            <Function test_control_real_compiled_selected_factory_native_roundtrip[icm]>
+            <Function test_control_real_private_factory_uses_actual_candidate_rng[none]>
+            <Function test_control_real_private_factory_uses_actual_candidate_rng[count_based]>
+            <Function test_control_real_private_factory_uses_actual_candidate_rng[rnd]>
+            <Function test_control_real_private_factory_uses_actual_candidate_rng[adaptive_rnd]>
+            <Function test_control_real_private_factory_uses_actual_candidate_rng[icm]>
+            <Function test_control_genuine_native_learning_and_next_service[none]>
+            <Function test_control_genuine_native_learning_and_next_service[count_based]>
+            <Function test_control_genuine_native_learning_and_next_service[rnd]>
+            <Function test_control_genuine_native_learning_and_next_service[adaptive_rnd]>
+            <Function test_control_genuine_native_learning_and_next_service[icm]>
+            <Function test_control_shared_constructor_retains_real_torch_advancement[rnd]>
+            <Function test_control_shared_constructor_retains_real_torch_advancement[adaptive_rnd]>
+            <Function test_control_shared_constructor_retains_real_torch_advancement[icm]>
+            <Function test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[none]>
+            <Function test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[count_based]>
+            <Function test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[rnd]>
+            <Function test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[adaptive_rnd]>
+            <Function test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[icm]>
+            <Function test_bootstrap_restores_actual_next_service_and_learning[none]>
+            <Function test_bootstrap_restores_actual_next_service_and_learning[count_based]>
+            <Function test_bootstrap_restores_actual_next_service_and_learning[rnd]>
+            <Function test_bootstrap_restores_actual_next_service_and_learning[adaptive_rnd]>
+            <Function test_bootstrap_restores_actual_next_service_and_learning[icm]>
+            <Function test_bootstrap_discards_actual_factory_validator_and_attachment_draws[none]>
+            <Function test_bootstrap_discards_actual_factory_validator_and_attachment_draws[count_based]>
+            <Function test_bootstrap_discards_actual_factory_validator_and_attachment_draws[rnd]>
+            <Function test_bootstrap_discards_actual_factory_validator_and_attachment_draws[adaptive_rnd]>
+            <Function test_bootstrap_discards_actual_factory_validator_and_attachment_draws[icm]>
+            <Function test_bootstrap_preserves_supported_saved_optimizer_configuration[rnd]>
+            <Function test_bootstrap_preserves_supported_saved_optimizer_configuration[adaptive_rnd]>
+            <Function test_bootstrap_preserves_supported_saved_optimizer_configuration[icm]>
+            <Function test_empty_reservation_refuses_ordinary_work_without_native_effects>
+            <Function test_early_refusal_discards_draws_and_all_handles_then_corrected_retry[factory]>
+            <Function test_early_refusal_discards_draws_and_all_handles_then_corrected_retry[validator]>
+            <Function test_installed_attachment_failure_quarantines_only_offside_reservation>
+            <Function test_bootstrap_handle_destination_consumption_and_same_owner_reentry>
+            <Function test_bootstrap_inner_ordinary_work_invalidates_earlier_handle>
+            <Function test_bootstrap_registration_requires_idle_and_active_owner_is_pinned>
+            <Function test_held_bootstrap_excludes_peer_through_capture_and_cleanup>
+            <Function test_explicit_lineage_archive_validation_uses_target_seed_and_source_policy>
+            <Function test_activate_under_rejects_wrong_expired_foreign_thread_and_foreign_frame>
+            <Function test_cpu_empty_inventory_performs_no_cuda_query>
+            <Function test_reservation_authenticates_exact_device_inventory_without_draws[None]>
+            <Function test_reservation_authenticates_exact_device_inventory_without_draws[devices1]>
+            <Function test_reservation_authenticates_exact_device_inventory_without_draws[devices2]>
+            <Function test_reservation_authenticates_exact_device_inventory_without_draws[devices3]>
+            <Function test_reservation_authenticates_exact_device_inventory_without_draws[devices4]>
+            <Function test_reservation_authenticates_exact_device_inventory_without_draws[devices5]>
+            <Function test_fresh_child_bootstrap_poison_fails_common_domain_closed[setter]>
+            <Function test_fresh_child_bootstrap_poison_fails_common_domain_closed[cleanup]>
+            <Function test_fresh_child_bootstrap_poison_fails_common_domain_closed[completion]>
+
+========================= 56 tests collected in 0.15s ==========================

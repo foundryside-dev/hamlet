@@ -1,0 +1,1577 @@
+{
+  "status": "UNRELEASED WIP; no package or repository release",
+  "packet": "W35 pure-bootstrap core R58",
+  "evidence_base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "evidence_candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+  "execution_subtrees": {
+    "src": "c381a9819737d510e1d44daeb2df618296d71318",
+    "tests": "46e22e37ec44cf316ced2b07a131fb9d504fdb1e",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "receipt": {
+    "status": "UNRELEASED WIP; no package or repository release",
+    "packet": "W35 pure-bootstrap core R58",
+    "manifest": "wave35/r58-candidate.json",
+    "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+    "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "created_at": "2026-11-13T03:30:47.609346+00:00",
+    "package_accounting": {
+      "qualified": 28,
+      "remaining": 38,
+      "total": 66
+    },
+    "runtime": {
+      "owned": {
+        "job": "owned",
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "exit_code": 0,
+        "counts": {
+          "passed": 56,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 31.20985460281372,
+        "source_guards": 812,
+        "process_identities": 3,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "coherent": {
+        "job": "coherent",
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1052,
+          "skipped": 2,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 72.41850161552429,
+        "source_guards": 812,
+        "process_identities": 3,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "independent": {
+        "job": "independent",
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "exit_code": 0,
+        "counts": {
+          "passed": 56,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 32.854631662368774,
+        "source_guards": 812,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    "review_sha256": {
+      "wave35-preparation/T18e-PURE-BOOTSTRAP-CANDIDATE-REVIEW.md": "5499f42061984fc3653989ae594bf20d15fdb081dc44a08bdd0216e71c9ebe82",
+      "wave35-preparation/T18e-PURE-BOOTSTRAP-INDEPENDENT-EXECUTION.md": "45541a9a2cd3efb756538cd58533f5c488493f57a75ba50f0b885d385eee1fc8",
+      "wave35-preparation/T18e-PURE-BOOTSTRAP-IMPLEMENTATION-REPORT.md": "0d42e68d4014b07091611a49031b2fe69750893847fc18f11d5e7197c7e64dfe",
+      "wave35-preparation/T18e-PURE-BOOTSTRAP-DOCUMENTATION-REVIEW.md": "fd7df08c06bb81fbf9c37433812c9a70e4e8b618151535e0092ef5e362f17b38"
+    },
+    "open_bootstrap_material_findings": 0,
+    "current_documents": {
+      "CURRENT-PURE-BOOTSTRAP-CONTRACT.md": {
+        "path": "docs/remediation/bac/CURRENT-PURE-BOOTSTRAP-CONTRACT.md",
+        "sha256": "6e6d78786fbca23b70278f86e7d71f14a96ff38aef3c3ea8e5485c8d832904bd"
+      },
+      "CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+        "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+        "sha256": "bf0baea43a7222200f48e8c1fb2bf14cdbfe7ac1fd70577bbb845620959a2c9b"
+      },
+      "STATUS.md": {
+        "path": "docs/remediation/bac/STATUS.md",
+        "sha256": "f268d7ca52d88ffa32a3c44ded67715638ca891aa8c686936c27a8b6eab2e1ee"
+      }
+    },
+    "required_next": [
+      "Actual BANK/CP lineage and locking, atomic native/gradient capture, payload recovery and final publication",
+      "Genuine all-provider/both-scope parent and ordinary runner learning/save/restore/continued learning",
+      "Full finite acceptance, type errors, final repository/coverage/slow/hardware/CI gates"
+    ],
+    "required_runner_gap": {
+      "status": "OPEN; not waived",
+      "node": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+      "cause": "DemoRunner missing ENV world_roster/training_seed/lane_world_ids",
+      "selection": "Excluded only from bounded component suite; required integration obligation"
+    },
+    "overlap": "Independent56 and owned56 overlap coherent1054; do not sum",
+    "hardware": "Two CUDA-unavailable skips; CPU fault injection does not qualify GPU",
+    "global_types": {
+      "BANK_lineage": 14,
+      "oracle": 6,
+      "total": 20,
+      "not_waived": true
+    },
+    "compiler_cli": {
+      "status": "PASS required compiler CLI and all actual process identities",
+      "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+      "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+      "packs": 34,
+      "process_identities": 35,
+      "source_guards_per_process": 812,
+      "configs_per_process": 573,
+      "artifacts_per_process": 13,
+      "wall_seconds": 174.16542863845825,
+      "log_sha256": "d7d966768c1857b3b03b04e92055f7d875ce9e9d0fcea66279dd6f4a0bead552",
+      "profile_hashes": {
+        "compiler-cli/compiler-processes/215175.json": "5a161af19f57162f1292acaddd34af1eba033624ec50984a9c92d8eda5ba7cd8",
+        "compiler-cli/compiler-processes/215199.json": "00b3650fbbdb5c556cbf755ee45150398cd36fa83bf8f5c5b980106ef37b65b7",
+        "compiler-cli/compiler-processes/215286.json": "7c2f04692c452d2b3b5231203f795ad6d9bc2ef4bc9ad01bdd9650e59812571b",
+        "compiler-cli/compiler-processes/215368.json": "fffd0688b331d9e6e7bb2d3c7ef905d9d0710a2d86bdaeacf5438b773521256f",
+        "compiler-cli/compiler-processes/215419.json": "9e286869bf127d476f7df5a40b25becde49c989e118cf0cf8ffd5c7b56d4c9d9",
+        "compiler-cli/compiler-processes/215475.json": "2a9f1870a2bf5ec9b03a524a591aae1f087a3e40cba9ebcaac399f8c6e2661eb",
+        "compiler-cli/compiler-processes/215525.json": "f4c1add5ca510e0862b2d14d8c005113b7ebac52063b19c85de39493bded6930",
+        "compiler-cli/compiler-processes/215573.json": "3b838974896826977344bb60130f1b7ab1ef9700ae169a49afea4e5ad83f9a7b",
+        "compiler-cli/compiler-processes/215598.json": "e370b2c4ba6b261ddfc2481c157b48e817c2e7344b7b7b534202e5d0a57f7e57",
+        "compiler-cli/compiler-processes/215623.json": "a024aa6b49291c40b1460bd1e8e51bda2c01e5250bdd122e1d044bc9ca4d7ca8",
+        "compiler-cli/compiler-processes/215648.json": "d2d5c54f414ac2fca53048a917096085b7446f77e3605e20b36e554c1346ba78",
+        "compiler-cli/compiler-processes/215673.json": "2f6a5f14d1795d46e6ca0fc98a679d35bfa0792a8b888c7ff61e285526284a44",
+        "compiler-cli/compiler-processes/215698.json": "b03bec2959de58e9c7ceebe812dbc566bcd274f0bfd2d3c3416504cf20b9e198",
+        "compiler-cli/compiler-processes/215723.json": "dbc27278d5fbc1a59755687cfbefe599bb752863a1ff946936ad8837a8180a17",
+        "compiler-cli/compiler-processes/215748.json": "2cb416d2b7b5ff3b05b815268fe293b4e99c14cc9718c588e7f6ab490e67bbb9",
+        "compiler-cli/compiler-processes/215783.json": "c500a0c6f96f1afc88947f98d0919035a106a5304e5c6186c8f69938349583b5",
+        "compiler-cli/compiler-processes/215815.json": "29b74d434b0e5bebaa9080a0e8498e9aff21c965be40c9608b5bbe409d145eb4",
+        "compiler-cli/compiler-processes/215840.json": "5c1271f89b124bafe4602fd1124bb8eaceda34e3b5762d130f45ecd45c4d5498",
+        "compiler-cli/compiler-processes/215866.json": "4f7d02811bc13e6c66e4b17bffe6ecac558eb2902c82b66a60c8c55d7e89ad3b",
+        "compiler-cli/compiler-processes/215891.json": "7045f0bd1708141744003f5d08ad861d24f873ffeef0975887d943270b36539c",
+        "compiler-cli/compiler-processes/215916.json": "78dfe492edd2c23a8fcb2fd77de16d7ccd94317defe786a4953f4cb4ddf184a4",
+        "compiler-cli/compiler-processes/215941.json": "674e5a209e7c3efab41593b1a33639aff822478d5708bba4d3339b8ff40375d2",
+        "compiler-cli/compiler-processes/215966.json": "f1dc02f0f49ada3320ee76b88b678cdfe982d43a921bc141a2a882d3d75b57be",
+        "compiler-cli/compiler-processes/215991.json": "1027337d4e7f9d349493b66f33200723746c48e85f9d5bb918b08504fe6f3a4a",
+        "compiler-cli/compiler-processes/216016.json": "2bccaf1a26df6f37c6d816b903d17aba79493b7dc2e353212c6410ba86e2c546",
+        "compiler-cli/compiler-processes/216041.json": "02dd02d55fa4b4a3fd1b94cf66e7bd752c5acefc4c531cc403f749e802d3f1c8",
+        "compiler-cli/compiler-processes/216066.json": "958516c21f66c9e1ec145b51b1eed1ba143a6e340da846a8d0161759d9f6e8ce",
+        "compiler-cli/compiler-processes/216091.json": "2b590936ab45d4ae8fb38fbc2b72622cf81a01c1ef928f6967d45a0886fdf549",
+        "compiler-cli/compiler-processes/216116.json": "9a293886290d03837f9b0bd48cd0ce873fa24539fa57e1c605bef6f48ab5aeeb",
+        "compiler-cli/compiler-processes/216141.json": "e42ba97432897c657e616034c50f9591585eaa6b0a8579e3465bac7ac6a2473d",
+        "compiler-cli/compiler-processes/216165.json": "cb15fc2582d465752666f463f38c315da458278768940f8b923099a79025fd66",
+        "compiler-cli/compiler-processes/216190.json": "acb583931a55496d97b279267c15360191fbccd20a8f350342aea5efafe2727f",
+        "compiler-cli/compiler-processes/216214.json": "a11c27947549da95f90941081c33b63061e7affd648c5da5320a8336befb9fc0",
+        "compiler-cli/compiler-processes/216238.json": "0c570ddc9777b076d21f82282bd20ac609290abb48f77ff53d4ad3e9cc8dbe2c",
+        "compiler-cli/compiler-processes/216263.json": "d8e4302202643960f2ab6687189fff5a3d4c34eff2e4100a4318a8439743a363"
+      },
+      "scope": "Compiler fleet only; not repository or whole-BAC qualification."
+    },
+    "global_static": {
+      "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+      "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+      "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+      "source_guards": 812,
+      "configs": 573,
+      "artifacts": 13,
+      "results": [
+        {
+          "name": "ruff-global",
+          "exit_code": 0,
+          "seconds": 0.09792184829711914,
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r58-static/ruff-global.log",
+          "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+        },
+        {
+          "name": "black-global",
+          "exit_code": 0,
+          "seconds": 55.918644189834595,
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r58-static/black-global.log",
+          "sha256": "864d3891fc76a6e04ac9e7a0dc196d600618cb6d0892a33606e371b95c53b7d8"
+        },
+        {
+          "name": "mypy",
+          "exit_code": 1,
+          "seconds": 32.49810719490051,
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r58-static/mypy.log",
+          "sha256": "09a4470c106204eae65ae41d2b333cdb4c5e05d7ba037f6abacbadabee14c35e"
+        },
+        {
+          "name": "no-defaults",
+          "exit_code": 0,
+          "seconds": 0.9880790710449219,
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r58-static/no-defaults.log",
+          "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0"
+        },
+        {
+          "name": "expression-doc",
+          "exit_code": 0,
+          "seconds": 1.936018943786621,
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r58-static/expression-doc.log",
+          "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf"
+        }
+      ],
+      "all_passed": false,
+      "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+    },
+    "spawn_custody": {
+      "wave35-r58-owned/owned/spawn-custody-bootstrap_poison_setter.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "owned",
+        "case": "bootstrap_poison_setter",
+        "expected_message": "bootstrap poison setter fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 215341,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "8989d971b2db9a150a7d7255cfa8f5cfb061245dcabe741b98a81a1d1c1f9c00",
+        "parent_observation_sha256": "a928af72de1f2941e1092c701609f227626d32bf612ea2bbce5be405891148fc",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-owned/owned/spawn-custody-bootstrap_poison_completion.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "owned",
+        "case": "bootstrap_poison_completion",
+        "expected_message": "bootstrap poison completion fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 215343,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "92cfe7cc429428f3d9e1b646e5b78a37805792d160712097def2e924003106da",
+        "parent_observation_sha256": "95ae5aea6bdddf67ab41b8a04274baeaecd4df90f26e8bf7c05c0a04e32431b7",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-owned/owned/spawn-custody-bootstrap_poison_cleanup.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "owned",
+        "case": "bootstrap_poison_cleanup",
+        "expected_message": "bootstrap poison cleanup fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 215417,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "0eca372f8cf028e8b2e3f6d5d66f17c3fbbf753e7c93d5443684249362b02982",
+        "parent_observation_sha256": "ad2f4b8be3069ef3fc5da0befbb8b92c6cbda1075285b0a8844c5aa0d8eab028",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-coherent/coherent/spawn-custody-binding_poison.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "coherent",
+        "case": "binding_poison",
+        "expected_message": "binding poison fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 1852,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "7817ee8246696947b3c834757970e9fcabd84fde0cc63792a591070fb80454e0",
+        "parent_observation_sha256": "8e405acab4b5f29e6f3b8a3f7a7bc9747bdf3e9c9043ee7600e74d11c41dcc42",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-coherent/coherent/spawn-custody-bootstrap_poison_setter.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "coherent",
+        "case": "bootstrap_poison_setter",
+        "expected_message": "bootstrap poison setter fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 1788,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "ee7c7fe3aabe162fb6ae6c79116c1a381819bf1233218d814a38d0c575f91abc",
+        "parent_observation_sha256": "4699917b21571185cc80269228738d70bb5d008e14855e8b5f911ef9e2142de6",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-coherent/coherent/spawn-custody-bootstrap_poison_completion.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "coherent",
+        "case": "bootstrap_poison_completion",
+        "expected_message": "bootstrap poison completion fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 1850,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "74567adce5fd50d449c0da1d212c4f55fedbb7fdcc681f1fbc7407df06e502da",
+        "parent_observation_sha256": "56987adbc815e2981c786edfcd230903000d5496d3e409607f182acdd6fb3da5",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-coherent/coherent/spawn-custody-domains_poison.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "coherent",
+        "case": "domains_poison",
+        "expected_message": "domains poison fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 1939,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "91f15a5b89f864c548fedad99b7781f2f0d36310dab80c6e4f6085949ccb496c",
+        "parent_observation_sha256": "943419a7f5b0d9f348cc76132e25774f834722993795bdf55e1e6c62f79c1649",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-coherent/coherent/spawn-custody-bootstrap_poison_cleanup.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "coherent",
+        "case": "bootstrap_poison_cleanup",
+        "expected_message": "bootstrap poison cleanup fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 1816,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "8378ba7ca11527906bf1da908ee677a7304bb63e5783cf6a563e5cb5281ddf58",
+        "parent_observation_sha256": "1e4812de4cc81705e50bdf6e9d9bb49c8c4e1ec48c7efefe94efbc8ca10ddfb4",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-independent/independent/spawn-custody-bootstrap_poison_setter.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "independent",
+        "case": "bootstrap_poison_setter",
+        "expected_message": "bootstrap poison setter fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 2091,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "3abd53ba1aead9339096c3b0cc901b76b397aaf32e82fe1da88ee6ff848eb02a",
+        "parent_observation_sha256": "bb27de03072c27f17726afdf112847e3f6ff3195ecbe3939013cc55cb915b899",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-independent/independent/spawn-custody-bootstrap_poison_completion.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "independent",
+        "case": "bootstrap_poison_completion",
+        "expected_message": "bootstrap poison completion fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 2148,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "c8d8f0c62ac023a4c361f91512fd369e7a3f420643f4b70c77a379943f44b2de",
+        "parent_observation_sha256": "152af0fc629979530f5c668b72141039fccfe517c87b512bbc15ae4f1688baca",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "wave35-r58-independent/independent/spawn-custody-bootstrap_poison_cleanup.json": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "independent",
+        "case": "bootstrap_poison_cleanup",
+        "expected_message": "bootstrap poison cleanup fail closed",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 2120,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "2b7d6860f11b92da7f6fa721e4a769ee9e3451a53f9bcfe3456a3a6a366792fa",
+        "parent_observation_sha256": "e76de67037e959f4929998002cb110219bcefd10a5e2100ee6f0cc60d605abf9",
+        "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      },
+      "core": {
+        "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+        "job": "coherent",
+        "parent_job_exit_code": 0,
+        "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+        "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+        "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+        "child_pid": 2032,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 812,
+        "configs": 573,
+        "artifacts": 13,
+        "child_receipt_sha256": "463b15f0d12701e43902e7d5364dd6be91641cdb394671a9626cacda385bc0da",
+        "parent_observation_sha256": "a1fbd3f4b9deba600fdf354926b3f74371cb5819f76ff2663950c91017cfa00e",
+        "verifier_sha256": "3f68e4af47eed338dee711879da8f82d51da06f25a4750200c49d673aa6e19f7",
+        "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+      }
+    },
+    "status_truth_review": "All source/runtime claims and historical R53 currentness reviewed; exact approved correction applied."
+  },
+  "generated_documents": {
+    "docs/remediation/bac/EVIDENCE-PROCESS.md": {
+      "sha256": "cbf4e48bcbbfe4618168719add930d1a35c3eef49683da3037e5f7f5d9a3ca97",
+      "bytes": 8316
+    },
+    "docs/remediation/bac/EVIDENCE-INDEX.md": {
+      "sha256": "d9933e7b775f64c66467ae2779e1c819dc1ce987c14a21be46654d0590a09934",
+      "bytes": 7243
+    },
+    "AGENTS.md": {
+      "sha256": "7cf711206c00682b317064a2ff0f49eb78ca03d899642af8be82951c12970c93",
+      "bytes": 6242
+    }
+  },
+  "predecessor": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-12.json",
+    "sha256": "1a780c451de018139eecb62f52e3124ddb3a10cc553d2c5d0a9d41c1132a2349"
+  },
+  "selection_plan": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
+    "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
+  },
+  "artifacts": {
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215199.json": {
+      "sha256": "00b3650fbbdb5c556cbf755ee45150398cd36fa83bf8f5c5b980106ef37b65b7",
+      "bytes": 104532,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli-custody.json": {
+      "sha256": "016c40fd05e3f0d999c95ffb24608267d44fcd9f33888189624e384539c520e0",
+      "bytes": 4735,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216041.json": {
+      "sha256": "02dd02d55fa4b4a3fd1b94cf66e7bd752c5acefc4c531cc403f749e802d3f1c8",
+      "bytes": 104536,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-collection/collection-custody.json": {
+      "sha256": "06137b66916f764077898170b785d444a0d96fbb0537b3508efc63f2c256aba3",
+      "bytes": 641,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent.log": {
+      "sha256": "06ecae9e2487f53cb98164038539c121b1f533b478e261fda784c8ce4f2b3297",
+      "bytes": 1724,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/black-global-result.json": {
+      "sha256": "081416e4992acc3c8fafd58ef8e9b9e7f510d84b20496d70e9732cc846721e5a",
+      "bytes": 720,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/historical-candidates/r57-candidate.json": {
+      "sha256": "091b7764ae1ee1b59893334eeb3605ba0dbbf65a918e2a728ad03b0b54d4af96",
+      "bytes": 205542,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-10/qualification/wave35-r44-static/mypy.log": {
+      "sha256": "09a4470c106204eae65ae41d2b333cdb4c5e05d7ba037f6abacbadabee14c35e",
+      "bytes": 5227,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/failure-controller-1782192361f399d0.json": {
+      "sha256": "0a24a2c907cec1059c68494c2264113d693b368f186a0527d2270d281be6d581",
+      "bytes": 3631,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt": {
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "bytes": 2917,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216238.json": {
+      "sha256": "0c570ddc9777b076d21f82282bd20ac609290abb48f77ff53d4ad3e9cc8dbe2c",
+      "bytes": 104535,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/reviews/T18e-PURE-BOOTSTRAP-IMPLEMENTATION-REPORT.md": {
+      "sha256": "0d42e68d4014b07091611a49031b2fe69750893847fc18f11d5e7197c7e64dfe",
+      "bytes": 13033,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/identity-gw1.json": {
+      "sha256": "0d6c9854bb889fdeb3ef9dd53a9becdde785d17b4c34a1060403c303d6de2ba7",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-identity-bootstrap_poison_cleanup.json": {
+      "sha256": "0eca372f8cf028e8b2e3f6d5d66f17c3fbbf753e7c93d5443684249362b02982",
+      "bytes": 667,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215991.json": {
+      "sha256": "1027337d4e7f9d349493b66f33200723746c48e85f9d5bb918b08504fe6f3a4a",
+      "bytes": 104537,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline/baseline/identity-gw1.json": {
+      "sha256": "14be55b333b4e9f62f2cc640517643e56a5d7798bf0f2fd2db035d21af6f219d",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-observation-bootstrap_poison_completion.json": {
+      "sha256": "152af0fc629979530f5c668b72141039fccfe517c87b512bbc15ae4f1688baca",
+      "bytes": 231,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt": {
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "bytes": 2043,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/test_evidence_tools.py.txt": {
+      "sha256": "1cc754f90cc7b4136f4deea954bf5d125f0b04fe4b7eaff68748bbe171cab9b7",
+      "bytes": 8690,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-observation-bootstrap_poison_cleanup.json": {
+      "sha256": "1e4812de4cc81705e50bdf6e9d9bb49c8c4e1ec48c7efefe94efbc8ca10ddfb4",
+      "bytes": 228,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/checkpoint-receipt.json": {
+      "sha256": "20eae95eed6245a9b184b678012678275da346051800e4ab0ca5ded76bc32193",
+      "bytes": 25686,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-custody-domains_poison.json": {
+      "sha256": "20f0ea33f92a7f92358aa4baa6121a56cc4aa2c9c9ccdab41bcdcc9354c7ab57",
+      "bytes": 988,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave34-wip-01/compiler-identity-sitecustomize.py.txt": {
+      "sha256": "21fc9c4ab9281ddd25ef5c78b806b67a5b6a2f58d6f93485f23d8eea191760b5",
+      "bytes": 2496,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-02/qualification/wave35-r7-static/no-defaults.log": {
+      "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+      "bytes": 233,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-basic-none/basic-none-custody.json": {
+      "sha256": "28b2e9363d76ed8779c7ebb5b9cf2b8fed8e6df1ca5cd9fcf34006d649d05341",
+      "bytes": 641,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215815.json": {
+      "sha256": "29b74d434b0e5bebaa9080a0e8498e9aff21c965be40c9608b5bbe409d145eb4",
+      "bytes": 104546,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline/baseline/identity-gw0.json": {
+      "sha256": "2a031b03229af4b053565653dc7188a0d6c517f2f27e6b51c884894a625cec84",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215475.json": {
+      "sha256": "2a9f1870a2bf5ec9b03a524a591aae1f087a3e40cba9ebcaac399f8c6e2661eb",
+      "bytes": 104549,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216091.json": {
+      "sha256": "2b590936ab45d4ae8fb38fbc2b72622cf81a01c1ef928f6967d45a0886fdf549",
+      "bytes": 104536,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-identity-bootstrap_poison_cleanup.json": {
+      "sha256": "2b7d6860f11b92da7f6fa721e4a769ee9e3451a53f9bcfe3456a3a6a366792fa",
+      "bytes": 665,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216016.json": {
+      "sha256": "2bccaf1a26df6f37c6d816b903d17aba79493b7dc2e353212c6410ba86e2c546",
+      "bytes": 104531,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215748.json": {
+      "sha256": "2cb416d2b7b5ff3b05b815268fe293b4e99c14cc9718c588e7f6ab490e67bbb9",
+      "bytes": 104548,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/ROOT-HANDOFF.md": {
+      "sha256": "2e922842a3874604f0145abe7dbc62fe8257ed6ac61155ba940806eb00cc0953",
+      "bytes": 4691,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215673.json": {
+      "sha256": "2f6a5f14d1795d46e6ca0fc98a679d35bfa0792a8b888c7ff61e285526284a44",
+      "bytes": 104536,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline/baseline.log": {
+      "sha256": "332857214bb32a5548b61322629cfe7527772542688f1da54c5f51b6bf7d6a54",
+      "bytes": 602,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-basic-none-spec.json": {
+      "sha256": "3532cb033e3dd44b8cea32e726330ccdd685448486eb66571cc30b6d18840b29",
+      "bytes": 666,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned.log": {
+      "sha256": "36cd29c005f385730374251c733a26d845f359fa13a79eaa71acfd4217ad99a5",
+      "bytes": 602,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-custody-bootstrap_poison_setter.json": {
+      "sha256": "3931b1ddcdd7a99483dd595719f8fa7e025f855afabc2729bc4086220688dcaf",
+      "bytes": 1005,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline-spec.json": {
+      "sha256": "3a416f760eec5f42a4d3043b6ec5de370dc6bc1c935c47f153d079f3ac967bc4",
+      "bytes": 694,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-identity-bootstrap_poison_setter.json": {
+      "sha256": "3abd53ba1aead9339096c3b0cc901b76b397aaf32e82fe1da88ee6ff848eb02a",
+      "bytes": 664,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-owned-spec.json": {
+      "sha256": "3b660d3f0a847a6af9147f51a200f644aca66f798a3c3de18447ba14fde8a2e2",
+      "bytes": 704,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215573.json": {
+      "sha256": "3b838974896826977344bb60130f1b7ab1ef9700ae169a49afea4e5ad83f9a7b",
+      "bytes": 104519,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-feature-red/feature-red.log": {
+      "sha256": "3cb8d3195e1f3e275f61d30d429aee8e1480132a4fbe583d2cf1224fa3b0b8fe",
+      "bytes": 1888,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave34-wip-01/exec_identity_compiler_cli.py.txt": {
+      "sha256": "3dd8d5823288f5b4dd634a3be39f840561822388f2bd6bb4f8d6c81eb6f30665",
+      "bytes": 467,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-authored-fix2-review.diff": {
+      "sha256": "3eca7e5baa99549de329c9814e907d47b51ca0ac3f2c7883c760df70f101e6d4",
+      "bytes": 13811,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-10/verify_bac_spawn_identity.py.txt": {
+      "sha256": "3f68e4af47eed338dee711879da8f82d51da06f25a4750200c49d673aa6e19f7",
+      "bytes": 4539,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-feature-red-spec.json": {
+      "sha256": "400c53367d76316a24da050f4dd1861c23a09a9df00282d75841544d2cd75e45",
+      "bytes": 661,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-owned-spec.json": {
+      "sha256": "442f4ab3c6498a0a92661cfff6b17e8ff0918ebd09ee41a6bde32651654c69a6",
+      "bytes": 704,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/reviews/T18e-PURE-BOOTSTRAP-INDEPENDENT-EXECUTION.md": {
+      "sha256": "45541a9a2cd3efb756538cd58533f5c488493f57a75ba50f0b885d385eee1fc8",
+      "bytes": 4512,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-identity-poison.json": {
+      "sha256": "463b15f0d12701e43902e7d5364dd6be91641cdb394671a9626cacda385bc0da",
+      "bytes": 647,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-observation-bootstrap_poison_setter.json": {
+      "sha256": "4699917b21571185cc80269228738d70bb5d008e14855e8b5f911ef9e2142de6",
+      "bytes": 227,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli-spec.json": {
+      "sha256": "4829dbd937eb3113055e366a3c4b80de9700cfd42920abaf835cbdf9c9e81a69",
+      "bytes": 871,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-collection/collection-result.json": {
+      "sha256": "48e54c37317d5a944d009f872ce2a3eadfe595bd5235dd45438c97084aa0f69b",
+      "bytes": 859,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline/baseline-custody.json": {
+      "sha256": "49337bbd86dce3ef02fceae531da65e5a8b6066ee40c4a03cb57fc7367c95bf7",
+      "bytes": 639,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static-spec.json": {
+      "sha256": "4ae00ebb387b3bfae5c4f38235060e3a4c0fdb85e394cf74c417452989edf03e",
+      "bytes": 1090,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/verify_bac_named_spawn_identity.py.txt": {
+      "sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+      "bytes": 4818,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline-failure-index.json": {
+      "sha256": "4bbb5d297d144ee2f3db0dd7da219a22b406bcbf9e30d3679a08bd7b7698d009",
+      "bytes": 911,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-collection/collection.log": {
+      "sha256": "4e92a7ce8f627c47f9eba8a577c5136589e8276f44fcd77530727832da0cbad0",
+      "bytes": 5903,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215866.json": {
+      "sha256": "4f7d02811bc13e6c66e4b17bffe6ecac558eb2902c82b66a60c8c55d7e89ad3b",
+      "bytes": 104529,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/ruff-global-result.json": {
+      "sha256": "51477f2a40de5df8141265a0b9d62ff8b1086b2bc32574c895bdc7e91786e899",
+      "bytes": 660,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-feature-red/feature-red-result.json": {
+      "sha256": "514e9faa1f8c4490e3df49dc533d63ed8f3d84084a14e843abe3f357c19acdcb",
+      "bytes": 895,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/reviews/T18e-PURE-BOOTSTRAP-CANDIDATE-REVIEW.md": {
+      "sha256": "5499f42061984fc3653989ae594bf20d15fdb081dc44a08bdd0216e71c9ebe82",
+      "bytes": 6559,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/historical-document-references.json": {
+      "sha256": "56832d9826557aba535f695ec61205ef08868713e3b9794f2a0b666151caa8d2",
+      "bytes": 3479,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/validation-v2.json": {
+      "sha256": "568da9a680894ab8c86ec726874f89e477a9091f369aa02035b93aac20b1ec7f",
+      "bytes": 574,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-observation-bootstrap_poison_completion.json": {
+      "sha256": "56987adbc815e2981c786edfcd230903000d5496d3e409607f182acdd6fb3da5",
+      "bytes": 231,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-capture.json": {
+      "sha256": "57acc115305e613eae8a10d0d6e524957688a531715a6e148d7ab9d3b0e5696e",
+      "bytes": 5367,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-custody-bootstrap_poison_setter.json": {
+      "sha256": "58f97eccd6c7cca8457a070f395dbb3781c0469239b2342f76c1f5c9dce64306",
+      "bytes": 1009,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-feature-red/feature-red-negative-custody.json": {
+      "sha256": "5964761b975f42f5e4fbf0e304023c08f042c18b811af483236bab732c468737",
+      "bytes": 959,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215175.json": {
+      "sha256": "5a161af19f57162f1292acaddd34af1eba033624ec50984a9c92d8eda5ba7cd8",
+      "bytes": 104471,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215840.json": {
+      "sha256": "5c1271f89b124bafe4602fd1124bb8eaceda34e3b5762d130f45ecd45c4d5498",
+      "bytes": 104532,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/EVIDENCE-INDEX.md": {
+      "sha256": "5e4d0261584a1271d595179076e3b65dc3e731ff510e2f77d855e7408eeaadb7",
+      "bytes": 6665,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-custody-bootstrap_poison_setter.json": {
+      "sha256": "5f18917a7860f285b37d8b75ba773f873633b2fa0115c53e0fc966a5162f1168",
+      "bytes": 1006,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-custody-bootstrap_poison_cleanup.json": {
+      "sha256": "6034f39db569ac0f9cec887ce265feebb55dcda2ef3b07c53c0635482d789f10",
+      "bytes": 1008,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-feature-red/feature-red.log": {
+      "sha256": "6373f57a53bbd1b68c54914726a0efd774fa9c24a6e53b5eaf850512e90dc960",
+      "bytes": 1888,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave09/documentation-guards/expression-doc.log": {
+      "sha256": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "bytes": 61,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215941.json": {
+      "sha256": "674e5a209e7c3efab41593b1a33639aff822478d5708bba4d3339b8ff40375d2",
+      "bytes": 104528,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline/baseline-result.json": {
+      "sha256": "68fb5e8e75ff259f46945e216e723baad27e22e98f42818fdfebc0decbd90088",
+      "bytes": 913,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/evidence_index.py.txt": {
+      "sha256": "699a18304087815d56d192dbd9b9d5d18a1d869f87fa6260b3bfa0aeefc76ea4",
+      "bytes": 7354,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-collection-spec.json": {
+      "sha256": "69cf84f435210e978fdd533cd07571394c000449c0f0028fee191e47d4d03541",
+      "bytes": 619,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned-spec.json": {
+      "sha256": "6ae01e6abe8bcdadf0653a05087d59a6aa1b1edbc4e53767a92a0b765b19e7b5",
+      "bytes": 649,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline.log": {
+      "sha256": "6b90fe8b0abf7006aaab17d6e4db095f241dd2795c21ff8f869f0968ab3e661a",
+      "bytes": 7842,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_compiler_cli_run.py.txt": {
+      "sha256": "6b92675d03c5fe6d918f0d24f250ddf5fd66f3d715a80f66c6d04edb9700235f",
+      "bytes": 3064,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-custody-binding_poison.json": {
+      "sha256": "6d05d70c088f6d5855a3bcfa41031a74483fd9381713121637779fc17d919aad",
+      "bytes": 988,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/documents/CURRENT-PURE-BOOTSTRAP-CONTRACT.md": {
+      "sha256": "6e6d78786fbca23b70278f86e7d71f14a96ff38aef3c3ea8e5485c8d832904bd",
+      "bytes": 8367,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-collection/collection-result.json": {
+      "sha256": "6f8792fa331f62542facb6223522724d68afc20c7085e0cd518140546ee7d4c1",
+      "bytes": 859,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-collection-spec.json": {
+      "sha256": "6fb25e53468198296dc747f811dd2b53d3de1a6423defdafdbf1fe77bf116de0",
+      "bytes": 619,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline/baseline/identity-controller.json": {
+      "sha256": "6fcb424cd54f660a527a8b0c96d9ee9c02ec96a369bfc37ddbd229fec1ae560e",
+      "bytes": 246,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215891.json": {
+      "sha256": "7045f0bd1708141744003f5d08ad861d24f873ffeef0975887d943270b36539c",
+      "bytes": 104530,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-identity-bootstrap_poison_completion.json": {
+      "sha256": "74567adce5fd50d449c0da1d212c4f55fedbb7fdcc681f1fbc7407df06e502da",
+      "bytes": 668,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/identity-gw0.json": {
+      "sha256": "75379a27021355c6064536ed6b0468516bf42e82c83fe31e94373b32fba194ce",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-identity-binding_poison.json": {
+      "sha256": "7817ee8246696947b3c834757970e9fcabd84fde0cc63792a591070fb80454e0",
+      "bytes": 654,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215916.json": {
+      "sha256": "78dfe492edd2c23a8fcb2fd77de16d7ccd94317defe786a4953f4cb4ddf184a4",
+      "bytes": 104528,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-capture.json": {
+      "sha256": "79eea520126649b3abde6c876598a88c97aa2e7177ce75b47bcd6074a2ff6bd6",
+      "bytes": 5367,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215286.json": {
+      "sha256": "7c2f04692c452d2b3b5231203f795ad6d9bc2ef4bc9ad01bdd9650e59812571b",
+      "bytes": 104534,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/historical-candidates/r56-candidate.json": {
+      "sha256": "826e593ba3d3e326d671b52be216e27d16f02dfbd6e4fe316154c23dbaeae1ba",
+      "bytes": 205542,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log": {
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli-result.json": {
+      "sha256": "8350dd236297c90c7e29d252aacb4fcba97f7853ab4760f1502682e698d3b9c7",
+      "bytes": 707,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-identity-bootstrap_poison_cleanup.json": {
+      "sha256": "8378ba7ca11527906bf1da908ee677a7304bb63e5783cf6a563e5cb5281ddf58",
+      "bytes": 665,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline/baseline-result.json": {
+      "sha256": "849b9219f905d7fd622806aabeb907f742e02b0a4c8937c9df8004823fcc38ad",
+      "bytes": 911,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-feature-red/feature-red-negative-custody.json": {
+      "sha256": "84b2248c27d4d11b2a41b5c1db03f833d42c468e2bbbf39c1be19002016f3f27",
+      "bytes": 958,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/black-global.log": {
+      "sha256": "864d3891fc76a6e04ac9e7a0dc196d600618cb6d0892a33606e371b95c53b7d8",
+      "bytes": 58,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-basic-none/basic-none.log": {
+      "sha256": "874819732a8c01eba99a27df2c2bfb5c488d63b59bbfe28c2d6452687233b1c0",
+      "bytes": 578,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-custody-bootstrap_poison_cleanup.json": {
+      "sha256": "878ef721e36c5d7e8d5b8ad62432ec9143a28dd5003da225e14251752d930a68",
+      "bytes": 1007,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline/baseline/identity-gw1.json": {
+      "sha256": "879827c823c2e5d1a1709f0ea13b3b9030ff0f03b2b8c633b2e452d645354972",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-custody-bootstrap_poison_completion.json": {
+      "sha256": "8801f1a68f059ae86622d2fb4439fc17aa195c9e2cbf6e60711043abe51407b6",
+      "bytes": 1014,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-custody-bootstrap_poison_completion.json": {
+      "sha256": "882616a904acc5d6700d0487f7f5b57bb70eda10ec6935f6b3161fe3a134d5d4",
+      "bytes": 1013,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-identity-bootstrap_poison_setter.json": {
+      "sha256": "8989d971b2db9a150a7d7255cfa8f5cfb061245dcabe741b98a81a1d1c1f9c00",
+      "bytes": 666,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-custody.json": {
+      "sha256": "8a1725316a5e6f10d80508706f0958588524e4390b121a9976abd0a0ea087fd3",
+      "bytes": 908,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-basic-none/basic-none-result.json": {
+      "sha256": "8a906e44932854327123ac2318405fdc87910e601d05dc814dcdcf7fa2051f8e",
+      "bytes": 910,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-observation-binding_poison.json": {
+      "sha256": "8e405acab4b5f29e6f3b8a3f7a7bc9747bdf3e9c9043ee7600e74d11c41dcc42",
+      "bytes": 217,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent-custody.json": {
+      "sha256": "913d07b59035237ae95d8a3656431a9ca1a982185b018cad662553e0fcc8e548",
+      "bytes": 642,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/identity-gw0.json": {
+      "sha256": "916a597a21b98d51df5a83aaa8a00b5bfebfda1d45521f8210355b20b9ac5ca6",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-identity-domains_poison.json": {
+      "sha256": "91f15a5b89f864c548fedad99b7781f2f0d36310dab80c6e4f6085949ccb496c",
+      "bytes": 654,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-identity-bootstrap_poison_completion.json": {
+      "sha256": "92cfe7cc429428f3d9e1b646e5b78a37805792d160712097def2e924003106da",
+      "bytes": 670,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline/baseline.log": {
+      "sha256": "931b0c60bf523ddf2b233910f2d207d1f729d1b9830f64aaa64efe14924431bb",
+      "bytes": 602,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-observation-domains_poison.json": {
+      "sha256": "943419a7f5b0d9f348cc76132e25774f834722993795bdf55e1e6c62f79c1649",
+      "bytes": 217,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216066.json": {
+      "sha256": "958516c21f66c9e1ec145b51b1eed1ba143a6e340da846a8d0161759d9f6e8ce",
+      "bytes": 104536,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-observation-bootstrap_poison_completion.json": {
+      "sha256": "95ae5aea6bdddf67ab41b8a04274baeaecd4df90f26e8bf7c05c0a04e32431b7",
+      "bytes": 235,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent-spec.json": {
+      "sha256": "97aba8bc66b20e4cdc62fc128cbf818e5c6a65c7d43062f9ac30c53eb6e84d29",
+      "bytes": 595,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-feature-red/feature-red-failure-index.json": {
+      "sha256": "99b75b6925019b6563f0a5cb339e3ba91ae2ddc0ad6656266d6c8151a58807c4",
+      "bytes": 696,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline-spec.json": {
+      "sha256": "99d011c85cbcb43507b2cec1402fb24ee8e26b50c19a8dafa755cfdd7ce49898",
+      "bytes": 694,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216116.json": {
+      "sha256": "9a293886290d03837f9b0bd48cd0ce873fa24539fa57e1c605bef6f48ab5aeeb",
+      "bytes": 104530,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-feature-red/feature-red-failure-index.json": {
+      "sha256": "9dcf4d70918bdafc01d845c0f11a765f3d9e4b7ed7ec0219dc175691a71d4ea1",
+      "bytes": 696,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent.log": {
+      "sha256": "9e2838e5b4428b8da938570576bccad38b5e278a2af5ed434b1ef7344b574c98",
+      "bytes": 660,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215419.json": {
+      "sha256": "9e286869bf127d476f7df5a40b25becde49c989e118cf0cf8ffd5c7b56d4c9d9",
+      "bytes": 104561,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-capture.json": {
+      "sha256": "9e96b39dc3251c593451028aa195d7236d82be36b61db2056dcf76193190ec4a",
+      "bytes": 5367,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-collection/collection.log": {
+      "sha256": "9f5caa4d1cde4977fe079d08db4c4d377336454205a4401b24212607bdf0a104",
+      "bytes": 5903,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215623.json": {
+      "sha256": "a024aa6b49291c40b1460bd1e8e51bda2c01e5250bdd122e1d044bc9ca4d7ca8",
+      "bytes": 104533,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline/baseline/identity-controller.json": {
+      "sha256": "a063f35ad1c5e69d1377d0c53c0b870dcc5ab1febb03fb056a0d8fcce1f51d0e",
+      "bytes": 246,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216214.json": {
+      "sha256": "a11c27947549da95f90941081c33b63061e7affd648c5da5320a8336befb9fc0",
+      "bytes": 104538,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-observation-poison.json": {
+      "sha256": "a1fbd3f4b9deba600fdf354926b3f74371cb5819f76ff2663950c91017cfa00e",
+      "bytes": 227,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/failure-controller-f10394c5fdbbe7ef.json": {
+      "sha256": "a2273ce2536f48f8a79e04e2da0426ad76bf46d8c013c2ddd933214465e9ca30",
+      "bytes": 3607,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/assemble_bac_wip13.py.txt": {
+      "sha256": "a42f4ef72059e43b894bcec6253d3936ca3fb32dce19f3aad1e21ae5e73dc57e",
+      "bytes": 9971,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-observation-bootstrap_poison_setter.json": {
+      "sha256": "a928af72de1f2941e1092c701609f227626d32bf612ea2bbce5be405891148fc",
+      "bytes": 231,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent-custody.json": {
+      "sha256": "abc1b2031721d9b8186c318cf2fd782c3f25137f601321e90a6b63034ae47954",
+      "bytes": 644,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-baseline/baseline-custody.json": {
+      "sha256": "abe432d69e9fe7cbd7a6ba499d3400f617ae54502810b967a3589a6a708bb336",
+      "bytes": 641,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216190.json": {
+      "sha256": "acb583931a55496d97b279267c15360191fbccd20a8f350342aea5efafe2727f",
+      "bytes": 104542,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned/spawn-observation-bootstrap_poison_cleanup.json": {
+      "sha256": "ad2f4b8be3069ef3fc5da0befbb8b92c6cbda1075285b0a8844c5aa0d8eab028",
+      "bytes": 232,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-collection/collection-custody.json": {
+      "sha256": "aeacdc5f6b1ba7c4d76a6fad3899dab383a99bf38a1c6cbe8a36caa5fc11c60b",
+      "bytes": 641,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/expression-doc-result.json": {
+      "sha256": "af44076b5d4edc2fecf1b667cd878fcf11f39c360d3b33f7b4114608f191050e",
+      "bytes": 682,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt": {
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+      "bytes": 3032,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215698.json": {
+      "sha256": "b03bec2959de58e9c7ceebe812dbc566bcd274f0bfd2d3c3416504cf20b9e198",
+      "bytes": 104530,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-collection/collection-custody.json": {
+      "sha256": "b060339c2195f2c4bf5a5aa13cbd9ba8d7ac899e4595706601fc3a0e7bccca28",
+      "bytes": 642,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-feature-red/feature-red/failure-controller-fad7cf493db20877.json": {
+      "sha256": "b0cf4ef6e2c8ac8e573111428ab9d1de6b843df21fe1e7a1a98cc68fc118a20a",
+      "bytes": 1141,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline-result.json": {
+      "sha256": "b59f2104e48c022a4be48b530c3aacab9da0a4607e71695bdc449f1877c1c8cb",
+      "bytes": 912,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-capture.json": {
+      "sha256": "b59fb497006fc368fbe47bc26ae196320f594f6315b492aa5becb1bab6afccc1",
+      "bytes": 5367,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/canonical-chain.json": {
+      "sha256": "b7bf02bbaceaba809eb84c1967a94c80d27de0399e21cae765bb542cafd6ac9f",
+      "bytes": 64494,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent-spec.json": {
+      "sha256": "b81ef39dd82e8ce6d57db64dd9743e90238f779a39303193745110fcbb7e7006",
+      "bytes": 1526,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-causal-count/causal-count.log": {
+      "sha256": "b85e5d1d943284f995d8c81d6469fedea16ecb3c998aa3ea2264505724517cb0",
+      "bytes": 579,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/candidate-manifest.json": {
+      "sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+      "bytes": 205598,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-observation-bootstrap_poison_setter.json": {
+      "sha256": "bb27de03072c27f17726afdf112847e3f6ff3195ecbe3939013cc55cb915b899",
+      "bytes": 227,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent-result.json": {
+      "sha256": "bc133a7a2c735273689f8655907f469f897c350090817e270ec6dddde3444684",
+      "bytes": 841,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-custody-bootstrap_poison_cleanup.json": {
+      "sha256": "bdfb87b67505c61f9aac2098a45f765a3306eecf248e9d57e8b59c69126b3bd7",
+      "bytes": 1011,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/documents/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+      "sha256": "bf0baea43a7222200f48e8c1fb2bf14cdbfe7ac1fd70577bbb845620959a2c9b",
+      "bytes": 18911,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-causal-count-spec.json": {
+      "sha256": "c17589187d192c1f96f1f767f7f455bf68895ec91cc3a3cd34c796a75e75c3cc",
+      "bytes": 814,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215783.json": {
+      "sha256": "c500a0c6f96f1afc88947f98d0919035a106a5304e5c6186c8f69938349583b5",
+      "bytes": 104546,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/identity-controller.json": {
+      "sha256": "c55c7eff89e22a524b12db837176cef86da86fa66b85b173baa90ceda2a0fef6",
+      "bytes": 246,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/INDEPENDENT-REVIEW.md": {
+      "sha256": "c6bc16e77d88109d80cd71f49cb22a4eb7b10ca49b8c425bdc6d276974fb1f11",
+      "bytes": 5223,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-collection/collection-custody.json": {
+      "sha256": "c7b39e9207866516c5cf20aa6e8aa3aabe2da469a83dcd7eab037d81c2c654ea",
+      "bytes": 641,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-identity-bootstrap_poison_completion.json": {
+      "sha256": "c8d8f0c62ac023a4c361f91512fd369e7a3f420643f4b70c77a379943f44b2de",
+      "bytes": 668,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-collection-spec.json": {
+      "sha256": "c923b9d7162bb182de2d2743979ec1bb884622822a229151eaa586e75360acf1",
+      "bytes": 619,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-basic-none/basic-none/identity-controller.json": {
+      "sha256": "c94418a909cf18619b0c2102db605cd2696575232090aeeaea7cc955fb7b4843",
+      "bytes": 246,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216165.json": {
+      "sha256": "cb15fc2582d465752666f463f38c315da458278768940f8b923099a79025fd66",
+      "bytes": 104536,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/PROCESS.md": {
+      "sha256": "cbf4e48bcbbfe4618168719add930d1a35c3eef49683da3037e5f7f5d9a3ca97",
+      "bytes": 8316,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-collection/collection-result.json": {
+      "sha256": "cc10da96f73e560b5d103d7e97e7f249617c49e144101e2c963d03e6072a4ded",
+      "bytes": 860,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/mypy-result.json": {
+      "sha256": "cc11d17a801086fda9079c36f7de82598b590804b9ac82466f2b0aa0f4468d20",
+      "bytes": 641,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-owned-spec.json": {
+      "sha256": "ce5dda516e673f09dfe3b9b8a3a79b0cb2fe535c59e47561a7efb44e3838df3f",
+      "bytes": 704,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/static-custody.json": {
+      "sha256": "cf4b4d05b58a0ffea3c958cb640ab940f84811df15d5b9828d2f58413c23f128",
+      "bytes": 724,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/no-defaults-result.json": {
+      "sha256": "cf9a207a252f1c43cc05a1aeb39f6a000aee12200eecb86a39a01dbe6b264060",
+      "bytes": 777,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/select_wip13.py.txt": {
+      "sha256": "d0d36448575aad092b959531ed602bdbceb42d3300834e37850538d2c91e29b5",
+      "bytes": 13245,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215648.json": {
+      "sha256": "d2d5c54f414ac2fca53048a917096085b7446f77e3605e20b36e554c1346ba78",
+      "bytes": 104532,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-collection/collection-result.json": {
+      "sha256": "d3ba06f7fb1b2997bbe34f80172d642a4d95d300cbf05cd7c38225c6987ad56d",
+      "bytes": 859,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-custody-bootstrap_poison_completion.json": {
+      "sha256": "d461f4386f9e371cc26b7be68aca2f5f5cd05569b303a8d53699700353bcdf62",
+      "bytes": 1017,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli.log": {
+      "sha256": "d7d966768c1857b3b03b04e92055f7d875ce9e9d0fcea66279dd6f4a0bead552",
+      "bytes": 5141,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/historical-candidates/r55-candidate.json": {
+      "sha256": "d82ee09b83c529e770b4c76280f2bcfb7c744099edb36111f946a3e64a078bf4",
+      "bytes": 205542,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216263.json": {
+      "sha256": "d8e4302202643960f2ab6687189fff5a3d4c34eff2e4100a4318a8439743a363",
+      "bytes": 104523,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215723.json": {
+      "sha256": "dbc27278d5fbc1a59755687cfbefe599bb752863a1ff946936ad8837a8180a17",
+      "bytes": 104544,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-causal-count/causal-count-result.json": {
+      "sha256": "dc2641411f42a693de7964798dd7640ad210be9f3eb5bb35a2c523d1856fe6bb",
+      "bytes": 1056,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-collection-spec.json": {
+      "sha256": "dd6e10a18565aae1442dcd7f2354b8cd554e40c9084a17944d521c27ce51192a",
+      "bytes": 619,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline-negative-custody.json": {
+      "sha256": "df51c207d586627d30eaa60aaddb883c7446004c9d870965322aa8cebbf51938",
+      "bytes": 959,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned-custody.json": {
+      "sha256": "e27b88034c437ebb67de4ba30d0e8af70cb6aa82e351cf18a3ecd85d3cd23856",
+      "bytes": 637,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215598.json": {
+      "sha256": "e370b2c4ba6b261ddfc2481c157b48e817c2e7344b7b7b534202e5d0a57f7e57",
+      "bytes": 104536,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/216141.json": {
+      "sha256": "e42ba97432897c657e616034c50f9591585eaa6b0a8579e3465bac7ac6a2473d",
+      "bytes": 104543,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-feature-red-spec.json": {
+      "sha256": "e502b11634d70317ea628d4a0f5a6e5dba0e904965a9570b6895994cfbf2606e",
+      "bytes": 661,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-independent/independent/spawn-observation-bootstrap_poison_cleanup.json": {
+      "sha256": "e76de67037e959f4929998002cb110219bcefd10a5e2100ee6f0cc60d605abf9",
+      "bytes": 228,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-owned/owned-result.json": {
+      "sha256": "e77256a83e0a0cf99817ca875942c7ebf627d69acff6dc0b121e159b6fa22b42",
+      "bytes": 872,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/subprocess-custody-poisoning-1939.json": {
+      "sha256": "ea1d9bfad66c6ad38be704278b393581653ad0455cde194f7b1abc907e9870fd",
+      "bytes": 109323,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/failure-gw1-f10394c5fdbbe7ef.json": {
+      "sha256": "ea477b579e9bfbad0ecbf098b259dd4688a14636b0347f37a984403cc7b7464a",
+      "bytes": 3600,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-collection/collection.log": {
+      "sha256": "ea569505e27dfd7d13a0536add30ee407c6bd4ca690d24dbb8dfe62400dc322e",
+      "bytes": 5903,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-baseline/baseline/identity-gw0.json": {
+      "sha256": "eb4ce3a7253aaa79b983c0cb4df7f1b3ecd7f8add4daead7b90afebbb94b137a",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-feature-red/feature-red/failure-controller-fad7cf493db20877.json": {
+      "sha256": "ebe458f0099269ed7b87d21537ed0bdd279974a481a4759ef470b7a0b9f579af",
+      "bytes": 1141,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/ASSEMBLY-REVIEW.md": {
+      "sha256": "ed1cc8299f97873f3280d17c29fd202962673702a9e040ce880f2c2d118ac7d2",
+      "bytes": 2367,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent-result.json": {
+      "sha256": "ed432ad24b2c8b7d5ac658ce8ec3b1911598c415ee583c1b7d4ad69089b4988f",
+      "bytes": 1708,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-static/static-custody.json": {
+      "sha256": "edeadd2c682379bb99a52e2baa97222cdb43b84780e956cbd89bcfbe9d1e2ea5",
+      "bytes": 1834,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-coherent/coherent/spawn-identity-bootstrap_poison_setter.json": {
+      "sha256": "ee7c7fe3aabe162fb6ae6c79116c1a381819bf1233218d814a38d0c575f91abc",
+      "bytes": 664,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/identity-gw1.json": {
+      "sha256": "ef2dc5cc7d4e10c3595c8b9c540d09cde5ebdbb8647a78f11e06eb0e903f11ed",
+      "bytes": 239,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline-spec.json": {
+      "sha256": "eff6bded8c79781d1f9a17d77c656fc0fecde9f0cd375c4f553eecce0ca69692",
+      "bytes": 694,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r56-causal-count/causal-count-custody.json": {
+      "sha256": "f14ecf6886506241752ba3969d74a3ea8b5bb90d83f10db4c751888f08055169",
+      "bytes": 643,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt": {
+      "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+      "bytes": 2532,
+      "action": "reference-existing"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215966.json": {
+      "sha256": "f1dc02f0f49ada3320ee76b88b678cdfe982d43a921bc141a2a882d3d75b57be",
+      "bytes": 104539,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/documents/STATUS.md": {
+      "sha256": "f268d7ca52d88ffa32a3c44ded67715638ca891aa8c686936c27a8b6eab2e1ee",
+      "bytes": 85009,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-collection/collection.log": {
+      "sha256": "f3887faf5fde2a8f84b24194d138818570400981f20527ddb044b49e61ae8f93",
+      "bytes": 5903,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-feature-red/feature-red-result.json": {
+      "sha256": "f391b3ca943d9d3b61d162ef8053d04ff908f1d53f0f885e62f349d908ac6f07",
+      "bytes": 894,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215525.json": {
+      "sha256": "f4c1add5ca510e0862b2d14d8c005113b7ebac52063b19c85de39493bded6930",
+      "bytes": 104531,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r55-baseline/baseline/failure-gw0-1782192361f399d0.json": {
+      "sha256": "f964f77d93a7c66be90414a75df6ea4c906e6fd3c2ef66842b6d724e551a6620",
+      "bytes": 3624,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/AGENTS-entry.md": {
+      "sha256": "f9f5c4332fd1105345e9cacab9ebfdb47b754e8076cc7bca53ffc369f9aafa5e",
+      "bytes": 658,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/explicit/validation-tests-v2.log": {
+      "sha256": "fca486155cc6d86a960d63baeab1533ba7b6ee8f57db81c47a7d0e4897df95a2",
+      "bytes": 1708,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/reviews/T18e-PURE-BOOTSTRAP-DOCUMENTATION-REVIEW.md": {
+      "sha256": "fd7df08c06bb81fbf9c37433812c9a70e4e8b618151535e0092ef5e362f17b38",
+      "bytes": 4511,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r57-feature-red-spec.json": {
+      "sha256": "fdf69eec4b35a1673f297df492f3afd6104dbc6e03d672e8bf543de420b558ba",
+      "bytes": 661,
+      "action": "copy-new"
+    },
+    "docs/remediation/bac/evidence/wave35-wip-13/qualification/wave35-r58-compiler-cli/compiler-cli/compiler-processes/215368.json": {
+      "sha256": "fffd0688b331d9e6e7bb2d3c7ef905d9d0710a2d86bdaeacf5438b773521256f",
+      "bytes": 104551,
+      "action": "copy-new"
+    }
+  },
+  "qualified_progress": "28 qualified / 38 remaining / 66 original packages; bounded bootstrap only.",
+  "publication": "Reviewed source checkpoint; exact remote publication and CI verified separately.",
+  "next": [
+    "Actual BANK/CP lineage and locking, atomic native/gradient capture, payload recovery and final publication",
+    "Genuine all-provider/both-scope parent and ordinary runner learning/save/restore/continued learning",
+    "Full finite acceptance, type errors, final repository/coverage/slow/hardware/CI gates"
+  ]
+}

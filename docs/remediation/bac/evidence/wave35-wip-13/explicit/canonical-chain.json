@@ -1,0 +1,1481 @@
+{
+  "schema": "bac-canonical-checkpoint-chain-v1",
+  "inventory": "inventory-v2.json",
+  "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
+  "latest_published_checkpoint": "wave35-wip-12",
+  "current_local_candidate": {
+    "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+    "status": "Final R58 receipt selected; publication pending root checks",
+    "selection_plan": "wip13-final-plan-v2.json"
+  },
+  "entries": [
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave02-qualification",
+      "identity": {
+        "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave02-qualification.json",
+        "sha256": "99c3dc848068745c224a6a187a0c458ecc5c72d4d8c6f63163f769ca9cec5cfc"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "shared-novelty-original",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "Five bounded packages, not whole-BAC/final qualification",
+      "status": "qualified_package_wave; finalwholeBACacceptance remains owed",
+      "previous_record": null
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave03-qualification",
+      "identity": {},
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave03-qualification.json",
+        "sha256": "b36880473daf4abccf9d51052d650d736bb96bca7bcd3c0c651043eed2ec270d"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave02-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": [
+        "T03a is archive/access primitive; actual buffer/runner historical import/new warmup and current-format full resume integration remain later owners.",
+        "PW01 is declaration/identity/seed primitive; actual private bank/RNG/optimizer update independence remains required later.",
+        "No entire finding/contract closes from a package count; final common-source reviews, E2E and finite qualification remain required."
+      ],
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave02-qualification.json",
+        "sha256": "99c3dc848068745c224a6a187a0c458ecc5c72d4d8c6f63163f769ca9cec5cfc"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave04-qualification",
+      "identity": {},
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave04-qualification.json",
+        "sha256": "f9b9f86fadfe72159d02681b64b89633e67cf746977746f849b8ab69853f682f"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave03-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave03-qualification.json",
+        "sha256": "b36880473daf4abccf9d51052d650d736bb96bca7bcd3c0c651043eed2ec270d"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave05-qualification",
+      "identity": {},
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave05-qualification.json",
+        "sha256": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave04-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave04-qualification.json",
+        "sha256": "f9b9f86fadfe72159d02681b64b89633e67cf746977746f849b8ab69853f682f"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave06-qualification",
+      "identity": {},
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave06-qualification.json",
+        "sha256": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave05-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave05-qualification.json",
+        "sha256": "33b6fb7c10007587ef9e4bbb629238f50833a4d47cc7c15f06cbffb9650ed3d5"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave07-qualification",
+      "identity": {},
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave07-qualification.json",
+        "sha256": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave06-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave06-qualification.json",
+        "sha256": "0683d4994771bfacc7843a9a77b4eec78a63c2a32195524bac0e28204054fa0f"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave08-qualification",
+      "identity": {},
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave08-qualification.json",
+        "sha256": "e2b9c1cc0ceefa79382fb20011cdd264c94341d9829bb1c780c0376e0a612283"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave07-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave07-qualification.json",
+        "sha256": "be0c98c492f6360ca35bd1ce05e7d06bf0d6308b8de35b18ea12591ee3ec7f10"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave09-documentation",
+      "identity": {
+        "source_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave09-documentation.json",
+        "sha256": "cbebf7f994d9465bc2ac8e8879b5d05b2a47a0e4030a90d59c0675523e9346e4"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave08-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "Scoped T15 release;25/66packages,all54requirements/22final lenses+learning/E2E/finalgates remainopen. CPUonly,CUDAunavailable.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave08-qualification.json",
+        "sha256": "e2b9c1cc0ceefa79382fb20011cdd264c94341d9829bb1c780c0376e0a612283"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 20,
+        "invalid": 0,
+        "verified_evidence": 833
+      },
+      "id": "wave09-qualification",
+      "identity": {
+        "qualified_tree": "f71c52fad680a74da1b90cc7470455fc90f4fa3f",
+        "source_commit": "ae0914afb3e7e1ca525e91acd49a07b3ae54c327"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave09-qualification.json",
+        "sha256": "2db6cc08ae3416493d17c7d1ec3e070385ca1c330e7ee822b7040ce2b1da4bdf"
+      },
+      "package_accounting": null,
+      "packet": "T15",
+      "previous_catalog_entry": "wave09-documentation",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "Scoped population learner/consumer qualification only. Original scoped jobs overlap; never sum them. Old tests retain actual original HEAD/tree; unchanged-source bindings are explicit.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave09-documentation.json",
+        "sha256": "cbebf7f994d9465bc2ac8e8879b5d05b2a47a0e4030a90d59c0675523e9346e4"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 0
+      },
+      "id": "wave10-documentation",
+      "identity": {
+        "source_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave10-documentation.json",
+        "sha256": "730d1e54b3ad9d6cebac2be307495d7cf5d81338d45594d4ba59167fedafbf84"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave09-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "T16 scoped qualification;26/66 packages. All54 final requirements,22 final review lenses plus synthesis, learning/E2E and final gates remain open. CUDA unavailable and unqualified.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave09-qualification.json",
+        "sha256": "2db6cc08ae3416493d17c7d1ec3e070385ca1c330e7ee822b7040ce2b1da4bdf"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 13,
+        "invalid": 0,
+        "verified_evidence": 234
+      },
+      "id": "wave10-qualification",
+      "identity": {
+        "qualified_tree": "51c6d53eb2a815257b7eab4bffa800fb54d8a2a2",
+        "source_commit": "6b5fdf62f046ec158b8c3378d65add06faebd591"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave10-qualification.json",
+        "sha256": "c0f10eb7f7b813a7a5a2d3dd63c8efb4659f9165b1489481d9b60e68e2e43acf"
+      },
+      "package_accounting": null,
+      "packet": "T16",
+      "previous_catalog_entry": "wave10-documentation",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "Scoped runner canonical configuration, fresh owned PER, readiness and clocks. Original failed/intermediate/passing sources retain actual identities. Unchanged scopes are explicitly bound; overlapping test counts are never summed.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave10-documentation.json",
+        "sha256": "730d1e54b3ad9d6cebac2be307495d7cf5d81338d45594d4ba59167fedafbf84"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 14
+      },
+      "id": "wave11-documentation",
+      "identity": {
+        "source_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave11-documentation.json",
+        "sha256": "e496d2fae92358bb85fbf07c72704a0597954788675c8eba2855428c0644a294"
+      },
+      "package_accounting": null,
+      "packet": null,
+      "previous_catalog_entry": "wave10-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "27/66 scoped packages; all54 final requirements/22fresh lenses+synthesis, finite learning/E2E/final gates remain open;CUDA unavailable and unqualified.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave10-qualification.json",
+        "sha256": "c0f10eb7f7b813a7a5a2d3dd63c8efb4659f9165b1489481d9b60e68e2e43acf"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 9,
+        "invalid": 0,
+        "verified_evidence": 189
+      },
+      "id": "wave11-qualification",
+      "identity": {
+        "qualified_tree": "f0410f6b8185cf2c87f4f6d5ddbd0a730e886dc9",
+        "source_commit": "995ce97b02a7ab57fad8da9c3c0ccd0b94a284f6"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave11-qualification.json",
+        "sha256": "7afca415266624d8f3a4ef79ef2e91ea24f0afa2d0ba1cbfffa50889256a020e"
+      },
+      "package_accounting": null,
+      "packet": "T17",
+      "previous_catalog_entry": "wave11-documentation",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "Per-type descriptor/live-payload interactions before selectable mean/attention pooling, explicit effective factory routing, retained linear/direct construction and recurrent/context behavior. Scoped package evidence, not repository green.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave11-documentation.json",
+        "sha256": "e496d2fae92358bb85fbf07c72704a0597954788675c8eba2855428c0644a294"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 19
+      },
+      "id": "wave12-documentation",
+      "identity": {
+        "source_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave12-documentation.json",
+        "sha256": "18860ddb7c6e0c8f0da19c19e2f849b4231f8432345b1e13824152e4d18c6e46"
+      },
+      "package_accounting": null,
+      "packet": "T19",
+      "previous_catalog_entry": "wave11-qualification",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": "PASS_DOCUMENTATION_CHECKPOINT",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave11-qualification.json",
+        "sha256": "7afca415266624d8f3a4ef79ef2e91ea24f0afa2d0ba1cbfffa50889256a020e"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 14,
+        "invalid": 0,
+        "verified_evidence": 255
+      },
+      "id": "wave12-qualification",
+      "identity": {
+        "qualified_tree": "4bf7dab98a9baa1140380e13d8230ddcb445076a",
+        "source_commit": "39e61662299fb1429a9041e4add795f5c8efb8c6"
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave12-qualification.json",
+        "sha256": "26f5d85d6687ac1dc1996354a55af0cb10adeed2badfe70b5b0971fa74d2516f"
+      },
+      "package_accounting": null,
+      "packet": "T19",
+      "previous_catalog_entry": "wave12-documentation",
+      "qualified_progress": null,
+      "receipt_pointer": null,
+      "round": null,
+      "scope": "Owned explicit-identity completion envelopes and truthful global event clocks; additive pure predictor accounting view; existing legacy/constructor/completion/service behavior retained. Scoped CPU package only.",
+      "status": null,
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave12-documentation.json",
+        "sha256": "18860ddb7c6e0c8f0da19c19e2f849b4231f8432345b1e13824152e4d18c6e46"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 3,
+        "invalid": 0,
+        "verified_evidence": 228
+      },
+      "id": "wave13-wip-01",
+      "identity": {
+        "evidence_base_commit": "383d21acc07a8568adf0056f00c73114ff4bbfc5",
+        "evidence_candidate_tree": "993b8092ff63aa22cfbdd95024191420960b77f8",
+        "execution_subtrees": {
+          "configs": "b2b7466ca5cb6a4e768660c9ef8b8d923b0f18e5",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "16ed53248a22e6c4009ecdcc5028ab764b1b5a14",
+          "tests": "a769302355d1db5bbb2f1b47b709f704fa801731"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave13-wip-01.json",
+        "sha256": "7a966902f18a0189fa25fb20d98f7c2f13e2fa2527e6219cbca400610ec701ba"
+      },
+      "package_accounting": null,
+      "packet": "T20 current-only remediation and no-compat execution amendment",
+      "previous_catalog_entry": "wave12-qualification",
+      "qualified_progress": "28/66 previous scoped packages; T20 unreleased. Maintenance slices are traced to existing task owners; no new closure claim.",
+      "receipt_pointer": null,
+      "round": null,
+      "scope": null,
+      "status": "WIP \u2014 NOT QUALIFIED \u2014 NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave12-qualification.json",
+        "sha256": "26f5d85d6687ac1dc1996354a55af0cb10adeed2badfe70b5b0971fa74d2516f"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 305
+      },
+      "id": "wave13-wip-02",
+      "identity": {
+        "evidence_base_commit": "af6b91f7166be8ac799cb97a08accaabf1022cb0",
+        "evidence_candidate_tree": "763ed2ce04718627f15ecf98d52b1e0333ae3fe6",
+        "execution_subtrees": {
+          "configs": "b2b7466ca5cb6a4e768660c9ef8b8d923b0f18e5",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "342a156c6af2bac75615e8919e5f7a78fe18b1cc",
+          "tests": "d9bea1211b22db747da0d8e8a46e06b32219a1d4"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave13-wip-02.json",
+        "sha256": "63dae83ec2c2fc6934655bb0ece4b05f1aa24886b8092714b20df6b793b9df4e"
+      },
+      "package_accounting": null,
+      "packet": "T20 current-only curriculum producer; no backwards compatibility",
+      "previous_catalog_entry": "wave13-wip-01",
+      "qualified_progress": "28/66 original scoped packages; no new integrated T20 release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "WIP \u2014 NOT INTEGRATED-QUALIFIED \u2014 NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave13-wip-01.json",
+        "sha256": "7a966902f18a0189fa25fb20d98f7c2f13e2fa2527e6219cbca400610ec701ba"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 240
+      },
+      "id": "wave14-wip-01",
+      "identity": {
+        "evidence_base_commit": "02d1f614bfbf603b9742d8fea60984b7b7e1b568",
+        "evidence_candidate_tree": "b7a8c6778ef1dc61e0865c8136ad073eafcfb255",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "9fb8224c6a2b9f1d1342fa37622f3dae9dae9886",
+          "tests": "310b40fef9a0e6680947669a7eed5e7fe4891e34"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave14-wip-01.json",
+        "sha256": "2bbd384abc2f3888c884af2753c9ce35efc4d42fc8f56bed2311b909923371eb"
+      },
+      "package_accounting": null,
+      "packet": "T21 current options/static policy/factory plus typed decision interface",
+      "previous_catalog_entry": "wave13-wip-02",
+      "qualified_progress": "28/66 original scoped releases; current T20/T21 integrated release remains open",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "WIP \u2014 BOUNDED HANDOFFS ACCEPTED \u2014 NOT INTEGRATED-QUALIFIED \u2014 NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave13-wip-02.json",
+        "sha256": "63dae83ec2c2fc6934655bb0ece4b05f1aa24886b8092714b20df6b793b9df4e"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 2,
+        "invalid": 0,
+        "verified_evidence": 190
+      },
+      "id": "wave15-wip-01",
+      "identity": {
+        "evidence_base_commit": "f22d77af39cd67bb8102854f38f43baa50a1381c",
+        "evidence_candidate_tree": "92d2c81503908cd4f9f7c345d8c9729acb652058",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "0de5fe5ad9cf62a0fcd31b36aa168b164482d969",
+          "tests": "5b63b95d5fb897285542ca9e60326b07b9090762"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave15-wip-01.json",
+        "sha256": "8e699f85227287be4ff8b6d9e4b43ec7733294d3a8e9cd9051c0c0a91fab543b"
+      },
+      "package_accounting": null,
+      "packet": "Current native1.42 compiled roster transport and live-token caller fixture",
+      "previous_catalog_entry": "wave14-wip-01",
+      "qualified_progress": "28/66 original scoped releases; current T20/T21 integrated release remains open",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "WIP \u2014 BOUNDED HANDOFFS ACCEPTED \u2014 NOT INTEGRATED-QUALIFIED \u2014 NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave14-wip-01.json",
+        "sha256": "2bbd384abc2f3888c884af2753c9ce35efc4d42fc8f56bed2311b909923371eb"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 143
+      },
+      "id": "wave16-wip-01",
+      "identity": {
+        "evidence_base_commit": "28830be0f794be3514ddcde751d58f47478cdabb",
+        "evidence_candidate_tree": "05b01ad1d548ad76bda8d0ef9a6ef4b685acb29a",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "59fdefce9fb07f601b45f99853426b672d967361",
+          "tests": "691cf267ff1e16e57a41016556d12656e128f850"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave16-wip-01.json",
+        "sha256": "ea67fbfb2973490984cbbd441131c4f9ba038ce87e8e5d0c9418ea42408bb7b9"
+      },
+      "package_accounting": null,
+      "packet": "World identity lifecycle/current-native producer, fixround1 source-reviewed and independently executed",
+      "previous_catalog_entry": "wave15-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "WIP \u2014 owned source repair reviewed; required caller/integration qualification OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave15-wip-01.json",
+        "sha256": "8e699f85227287be4ff8b6d9e4b43ec7733294d3a8e9cd9051c0c0a91fab543b"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 3,
+        "invalid": 0,
+        "verified_evidence": 94
+      },
+      "id": "wave17-wip-01",
+      "identity": {
+        "evidence_base_commit": "86ee0d91c463adb7ac14a7949ee7b67f91c6c171",
+        "evidence_candidate_tree": "6f46f449b2c851dc8838e00f48e7fddc8e436dc1",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "4690de57a970121751e6b4922152412742a55991",
+          "tests": "811c72287e55ab8f0d1095911045c6fa3ec8471b"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave17-wip-01.json",
+        "sha256": "5486f65d00ea4d986dd4cbbf9eb6f73b1f489eb0ee14b3d6be6251349bdbcec9"
+      },
+      "package_accounting": null,
+      "packet": "Required authored-world identity/seed/lane constructor transport",
+      "previous_catalog_entry": "wave16-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "WIP \u2014 constructor transport source/owned integration reviewed; full BAC/reset consumers OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave16-wip-01.json",
+        "sha256": "ea67fbfb2973490984cbbd441131c4f9ba038ce87e8e5d0c9418ea42408bb7b9"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 2,
+        "invalid": 0,
+        "verified_evidence": 161
+      },
+      "id": "wave18-wip-01",
+      "identity": {
+        "evidence_base_commit": "d7aea669ea49a88140a833c473f56b7e7ae83b01",
+        "evidence_candidate_tree": "59afaaa2ca3164e29573569dbdf5907ca8e77a94",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "e56a732c2535562333d5924758def505d550f88e",
+          "tests": "55aaf5cde25035d451cb0c4f4142ac8902ef0c04"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave18-wip-01.json",
+        "sha256": "f4b4abc8cef6deecc3ec3678371d2ac01ff17244fd70d7edc494625c6bc562d6"
+      },
+      "package_accounting": null,
+      "packet": "Direct per-world VFS identity and current owner-test migration",
+      "previous_catalog_entry": "wave17-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED PRODUCER AND OWNER TEST HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave17-wip-01.json",
+        "sha256": "5486f65d00ea4d986dd4cbbf9eb6f73b1f489eb0ee14b3d6be6251349bdbcec9"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 261
+      },
+      "id": "wave19-wip-01",
+      "identity": {
+        "evidence_base_commit": "b954c812dc0e92044eb3cab503b371e3346b48a4",
+        "evidence_candidate_tree": "0918ce2f973b15e987fd943898ae92d39c1801c8",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "dc09c2679958cff5fc64998a61af7ae8402b816b",
+          "tests": "6415fd23328d557bc9c6b6c41da183cefb3e93e0"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave19-wip-01.json",
+        "sha256": "9f8bc6c4400aa976d2e5f7d34d1e1cc5f0512a91f899433ed967bb7712b687f2"
+      },
+      "package_accounting": null,
+      "packet": "Public local service clock and immutable all-row curiosity event stamp primitives",
+      "previous_catalog_entry": "wave18-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED CLOCK/STAMP AND CURRENT OWNER FIXTURE HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave18-wip-01.json",
+        "sha256": "f4b4abc8cef6deecc3ec3678371d2ac01ff17244fd70d7edc494625c6bc562d6"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 703
+      },
+      "id": "wave20-wip-01",
+      "identity": {
+        "evidence_base_commit": "64748bdf0b623c66bdc400238d4c17645bd6fba7",
+        "evidence_candidate_tree": "ee8d22825ab3b28fd72d9e00fc7a869bbb8d4ba6",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "819eaebb6dfcf9cea35e11f3b8cbf55d4f80ba20",
+          "tests": "c0dd59240b6f1ec993992c51a73dbe797ce65e05"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave20-wip-01.json",
+        "sha256": "0b146ad94c0958edb90f3c25471c26772dfb8c7a1e18dfc1e8530b660a71ac4f"
+      },
+      "package_accounting": null,
+      "packet": "RND ICM and adaptive local cadence complete native preparation and real constructor RNG hooks",
+      "previous_catalog_entry": "wave19-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED BACKEND PRODUCER HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave19-wip-01.json",
+        "sha256": "9f8bc6c4400aa976d2e5f7d34d1e1cc5f0512a91f899433ed967bb7712b687f2"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 161
+      },
+      "id": "wave21-wip-01",
+      "identity": {
+        "evidence_base_commit": "7e702ab885c2bc1bba37652273cfb89742624f08",
+        "evidence_candidate_tree": "4c0cec9a4cd8893910a0abb64c396eb7011f5787",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "819eaebb6dfcf9cea35e11f3b8cbf55d4f80ba20",
+          "tests": "dc18b23bc274b4e6f8afa1fef622dd1353e4ecb5"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave21-wip-01.json",
+        "sha256": "e129b85123db23c12762c0b5330b0dac17c37abff00e173ac5b627187f14c999"
+      },
+      "package_accounting": null,
+      "packet": "Existing current owner-fixture migration and actual basic_env metadata identity transport",
+      "previous_catalog_entry": "wave20-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED OWNER FIXTURE COMPONENT HANDOFF ACCEPTED; REQUIRED REAL RUNNER OPEN; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave20-wip-01.json",
+        "sha256": "0b146ad94c0958edb90f3c25471c26772dfb8c7a1e18dfc1e8530b660a71ac4f"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 3,
+        "invalid": 0,
+        "verified_evidence": 643
+      },
+      "id": "wave23-wip-01",
+      "identity": {
+        "evidence_base_commit": "50210cfec4fdccf304d4a6bfb00ae179563a5846",
+        "evidence_candidate_tree": "32108b7f6a869c02e0547e6297315cc2aaabfcba",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "78e6bc824da9bef071a2c3514f0853f8d26170a8",
+          "tests": "10b6b70b27fc5efb8c4919909ee2de9ae32b0aa6"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave23-wip-01.json",
+        "sha256": "f0e42f6c9c74acbc4d7dea2ee839019533c65245f1b24cc2b69bceda66730270"
+      },
+      "package_accounting": null,
+      "packet": "Additive activation-safe RNG binding and actual five-backend construction/selector factory",
+      "previous_catalog_entry": "wave21-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded producer handoff not integrated release",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED RNG BINDING AND FIVE-BACKEND FACTORY PRODUCERS ACCEPTED; INTEGRATED RELEASE AND BAC QUALIFICATION OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave21-wip-01.json",
+        "sha256": "e129b85123db23c12762c0b5330b0dac17c37abff00e173ac5b627187f14c999"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 93
+      },
+      "id": "wave24-wip-01",
+      "identity": {
+        "evidence_base_commit": "265a36ac152a4419d22a3b5753ea6d151d112f19",
+        "evidence_candidate_tree": "4a69520c1616ebb2c3bbd7c4868b207e80a3952d",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "78e6bc824da9bef071a2c3514f0853f8d26170a8",
+          "tests": "16a30e5aedce7ca18fbca9b241663bb4ab412986"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave24-wip-01.json",
+        "sha256": "320e3223bfbb8cef819fc9bb931d54ab59b982a7af34c383544fd309a5c65e3c"
+      },
+      "package_accounting": null,
+      "packet": "Current32case PW02 RNG owner fixture migration, full actual subprocess source/profile custody",
+      "previous_catalog_entry": "wave23-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; mandatory consumerfixture repair accepted, bank/runner/fullreleaseOPEN",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "REQUIRED CURRENT PW02 OWNER FIXTURE MIGRATION ACCEPTED; BANK/RUNNER/WHOLE BAC QUALIFICATION OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave23-wip-01.json",
+        "sha256": "f0e42f6c9c74acbc4d7dea2ee839019533c65245f1b24cc2b69bceda66730270"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 478
+      },
+      "id": "wave25-wip-01",
+      "identity": {
+        "evidence_base_commit": "6f451471c2fa865633dd93658991b2253fb68a10",
+        "evidence_candidate_tree": "d0c26b6f52139e680f7fd96644713eeb3d17b9e8",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "55c465c060be5656b9422563e18ecf25d0db0a6f",
+          "tests": "379697efb1540448f2b0207efe998cdec28fb28e"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave25-wip-01.json",
+        "sha256": "2b08299a59115faa7d585734c0a7c369011d5e9b457ad83bdd0e10c713102657"
+      },
+      "package_accounting": null,
+      "packet": "PW05 actual private curiosity bank and explicit shared alternative, bounded producer handoff",
+      "previous_catalog_entry": "wave24-wip-01",
+      "qualified_progress": "28/66 original releases unchanged; actual BANK bounded producer accepted, integrated/native/runner/final requirements remain OPEN",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED CURIOSITY BANK PRODUCER HANDOFF ACCEPTED; WIP NOT INTEGRATED-QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave24-wip-01.json",
+        "sha256": "320e3223bfbb8cef819fc9bb931d54ab59b982a7af34c383544fd309a5c65e3c"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 129
+      },
+      "id": "wave26-wip-01",
+      "identity": {
+        "evidence_base_commit": "2640353422d2946d9a74c58ec11ce9bf03c49579",
+        "evidence_candidate_tree": "5028604b97fa241f00e4bae758125b4aeb2e8755",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "3c32a30321cdf2fe0d3dbf53deb8a8eb452d1ddc",
+          "tests": "2bed3e3d3c501cfac5cfb00a1a084b7277dfbad0"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave26-wip-01.json",
+        "sha256": "abe74db2b44b7b5241a95f011d09f0c3396db5cfed477282f918623af535ef3f"
+      },
+      "package_accounting": null,
+      "packet": "Minimal actual public ENV accepted-token authentication prerequisite for scoped bank",
+      "previous_catalog_entry": "wave25-wip-01",
+      "qualified_progress": "28/66 original scoped releases unchanged; bounded producer accepted, actualbank/runner/fullreleaseOPEN",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED ACTUAL PUBLIC ENV ACCEPTED-TOKEN AUTHENTICATION PRODUCER ACCEPTED; BANK/RUNNER/FULLQUALIFICATION OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave25-wip-01.json",
+        "sha256": "2b08299a59115faa7d585734c0a7c369011d5e9b457ad83bdd0e10c713102657"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 213
+      },
+      "id": "wave27-wip-01",
+      "identity": {
+        "evidence_base_commit": "cfef2979e70f0cc9a850c9928386e2e243a0b21b",
+        "evidence_candidate_tree": "2558d794476a4e7a1878b3c334b62d1733d62bb9",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "a12528328e7febb3d94c169182b7e718211fefc2",
+          "tests": "daedafc5c772d53e9c8dcb2305a5c594722d165e"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave27-wip-01.json",
+        "sha256": "f1d08b4bf3d318ec3350fbd81a130175bf75de254687783ed22eabf087e22c2e"
+      },
+      "package_accounting": null,
+      "packet": "Exact nonempty declared world-ID outcome validation; separately draft BANK tests with genuine missing-implementation RED",
+      "previous_catalog_entry": "wave26-wip-01",
+      "qualified_progress": "28/66 original releases unchanged; only bounded exact-ID DTO producer accepted. BANK source absent and tests draft/unimplemented, parent/fullreleaseOPEN",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED EXACT OUTCOME ID PRODUCER ACCEPTED; BANK TESTS ARE DRAFT TDD INTENT, NOT IMPLEMENTATION; PARENT/FULLQUALIFICATION OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave26-wip-01.json",
+        "sha256": "abe74db2b44b7b5241a95f011d09f0c3396db5cfed477282f918623af535ef3f"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 2,
+        "invalid": 0,
+        "verified_evidence": 658
+      },
+      "id": "wave28-wip-01",
+      "identity": {
+        "evidence_base_commit": "41e5742307ad170bc9871e0b5354b00599084da6",
+        "evidence_candidate_tree": "e52234ed9e775355ef3fbc2704ce46b13c78c6bb",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "847d648660d4c6d487c266bd23286d8fa0d31447",
+          "tests": "8802d38de046aa727ce043a33c206e6bc88aaf5c"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave28-wip-01.json",
+        "sha256": "3fb235740e0e99308219c3bd8f7ed1aea3558075c04068ed0e912d95fa399c5b"
+      },
+      "package_accounting": null,
+      "packet": "PW06 actual current same-scope curiosity BANK checkpoint preparation, ownership and atomic publication",
+      "previous_catalog_entry": "wave27-wip-01",
+      "qualified_progress": "Original28/66releases unchanged; reviewed producer component only, actual parent/runner/native/REPLAY/T26/final qualification still required",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED PW06 SAME-SCOPE BANK CHECKPOINT COMPONENT ACCEPTED; WIP NOT PARENT/INTEGRATION QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave27-wip-01.json",
+        "sha256": "f1d08b4bf3d318ec3350fbd81a130175bf75de254687783ed22eabf087e22c2e"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 2,
+        "invalid": 0,
+        "verified_evidence": 983
+      },
+      "id": "wave32-wip-01",
+      "identity": {
+        "evidence_base_commit": "a7c4cd0b19c410114aaabdd9284888fef159e84e",
+        "evidence_candidate_tree": "4f755ce9756fcde76cba50e96673b67aa54b1571",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "0fcc7b11cbc8c15e2eafedab30afdabaa4994249",
+          "tests": "336c2e0ede8199a37154604fce2bd894d3ae120e"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave32-wip-01.json",
+        "sha256": "73e8813a1754ba42c00913c062f01640b527f1a10933a9cae28b20eaa0b526ff"
+      },
+      "package_accounting": null,
+      "packet": "PW07 explicit private curiosity initialization and inactive learned-source archive; native ordered metadata preservation",
+      "previous_catalog_entry": "wave28-wip-01",
+      "qualified_progress": "Original28/66 qualified releases unchanged. Bounded producer qualification only; actual parent/runtime integration and all final acceptance remain owed.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "BOUNDED PW07 PRIVATE INITIALIZATION AND OWNED NATIVE METADATA COMPONENTS ACCEPTED; WIP NOT PARENT/INTEGRATION QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave28-wip-01.json",
+        "sha256": "3fb235740e0e99308219c3bd8f7ed1aea3558075c04068ed0e912d95fa399c5b"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 2,
+        "invalid": 0,
+        "verified_evidence": 104
+      },
+      "id": "wave33-wip-01",
+      "identity": {
+        "evidence_base_commit": "c1de41509ae108848fd5bf295487510254daab6b",
+        "evidence_candidate_tree": "b848b95aec04d580b9d188f10061f1e5c9173ddb",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "70dfdf98688fe11422b09d3c14a1c996f1db3f31",
+          "tests": "084da8089680e63e8e8008a07f2e8e0bc1a20d59"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave33-wip-01.json",
+        "sha256": "b909d304f20ea9e6d0ebfedfd0c01080d58c9092abe028447bcb50e847ca0410"
+      },
+      "package_accounting": null,
+      "packet": "Original T18d none raw/selected-scale/contribution zero prerequisite at BANK and current checkpoint cache boundary",
+      "previous_catalog_entry": "wave32-wip-01",
+      "qualified_progress": "Original28/66 releases unchanged; whole T18d runtime and actual parent/runner/native/replay/learning/final qualification remain owed.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "ORIGINAL T18d NONE-SCALE PRODUCER/CURRENT-CACHE PREREQUISITE ACCEPTED; WIP NOT WHOLE T18d OR PARENT/INTEGRATION QUALIFIED NOT RELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave32-wip-01.json",
+        "sha256": "73e8813a1754ba42c00913c062f01640b527f1a10933a9cae28b20eaa0b526ff"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 3,
+        "invalid": 0,
+        "verified_evidence": 628
+      },
+      "id": "wave34-wip-01",
+      "identity": {
+        "evidence_base_commit": "47d82ee6c3d138256155c8593e70d0108f8ab877",
+        "evidence_candidate_tree": "9644cd5f4da362357d6ae4f448325efa91335f34",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "cc520992073c2fb9db0847bb0cf3a097ce533420",
+          "tests": "769f67f1a1bf34c281274229441930a76f9560dd"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave34-wip-01.json",
+        "sha256": "b5aabe4a90d3628616c9bf586bd9da5954a3cb258ad5d83a58c197bd912eb8b2"
+      },
+      "package_accounting": null,
+      "packet": "Original T18d current runtime component, plus current curriculum unit-consumer collection repair; WIP only",
+      "previous_catalog_entry": "wave33-wip-01",
+      "qualified_progress": "28/66 original released packages unchanged,38remaining. Not actual parent integration or package/full BAC release.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "WIP CURRENT RUNTIME COMPONENT AND CONSUMER REPAIR QUALIFIED; EARLIER FULL EXECUTION OWED; UNRELEASED",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave33-wip-01.json",
+        "sha256": "b909d304f20ea9e6d0ebfedfd0c01080d58c9092abe028447bcb50e847ca0410"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 2691
+      },
+      "id": "wave35-wip-01",
+      "identity": {
+        "evidence_base_commit": "30a802a996fe8bf7cd63e53d211fa8b2cd028f77",
+        "evidence_candidate_tree": "444c2840c67598d882824564e98bdd6dcd9ab03b",
+        "execution_subtrees": {
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "5908ba48b6b64bfe518f66e5ca4dbf1c8665d56a",
+          "tests": "aae3c819f89cdf6c0f1f971f9f08f0a345c75d3b"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-01.json",
+        "sha256": "8010506348db6e50cdcdc322b7a94f654f2d319b7aebf77263a2ff7847dbfb78"
+      },
+      "package_accounting": null,
+      "packet": "Original T18e real scale composer primitive only; actual parent integration remains required",
+      "previous_catalog_entry": "wave34-wip-01",
+      "qualified_progress": "28/66 original released packages unchanged;38remaining. This is explicitly not repository green, wholeT18e or BAC closure.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP: composer arithmetic component PASS; full repository FAILED and current direct consumer integration OPEN",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave34-wip-01.json",
+        "sha256": "b5aabe4a90d3628616c9bf586bd9da5954a3cb258ad5d83a58c197bd912eb8b2"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 310
+      },
+      "id": "wave35-wip-02",
+      "identity": {
+        "evidence_base_commit": "31beef58892fe651daf6c9965f372b3643523ce2",
+        "evidence_candidate_tree": "b2d57f456a68501fa203602b36e6c60a8f0295f7",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "89372cf8f958e0cdce48cdbb6304559ec68dbe22",
+          "tests": "9f9c7b5fbe29978de5b0b0efb5eab36eb3c811fb"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-02.json",
+        "sha256": "567f227c96550475c039f2c870932f65e71592c1523eb5068ff79cb9d9a9da6e"
+      },
+      "package_accounting": null,
+      "packet": "Current stamped population/environment reward-flow WIP and finite follow-on native design",
+      "previous_catalog_entry": "wave35-wip-01",
+      "qualified_progress": "28 qualified original packages,38 remaining,66 total unchanged. Overlapping75-case selections do not close known parent findings or whole-BAC acceptance.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-01.json",
+        "sha256": "8010506348db6e50cdcdc322b7a94f654f2d319b7aebf77263a2ff7847dbfb78"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 2,
+        "invalid": 0,
+        "verified_evidence": 299
+      },
+      "id": "wave35-wip-03",
+      "identity": {
+        "evidence_base_commit": "1938f7cac6dca6ecb31952c9f31cc74248024dd0",
+        "evidence_candidate_tree": "b0e3814b982eca65fa8ea3cb0dd7391a97009793",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "8ff5bd217c4b5d6007ff79fde67d68ef73c7e780",
+          "tests": "38274104f28b6a7232d0b47a9d451aa8727beac8"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-03.json",
+        "sha256": "b12c20e106b7578c7e17f7dc1818ca22885edb4da267c247ee0faa81f603e752"
+      },
+      "package_accounting": null,
+      "packet": "Native model reset and bounded parent retry/binding repairs",
+      "previous_catalog_entry": "wave35-wip-02",
+      "qualified_progress": "28 qualified original packages,38 remaining,66 total unchanged; required owner integration remains failed.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-02.json",
+        "sha256": "567f227c96550475c039f2c870932f65e71592c1523eb5068ff79cb9d9a9da6e"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 279
+      },
+      "id": "wave35-wip-04",
+      "identity": {
+        "evidence_base_commit": "383d2ac145bafc01dc0a8adc1299f944a523d257",
+        "evidence_candidate_tree": "be7e7fcc0efd1138e1d30ef69d10fa6d8cc2da52",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "0097fc9cd3e9bb537d3abd6b0f962e72d3c40db7",
+          "tests": "f7f1e1c629ddaf8a7f17f5ff73d670c64130dc68"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-04.json",
+        "sha256": "ee99ca6906ee9d963ec10a2217098ee3615d531342847bd73e8c8c3de58e88e4"
+      },
+      "package_accounting": null,
+      "packet": "Native Count/NONE reset and exact factory consumer alignment",
+      "previous_catalog_entry": "wave35-wip-03",
+      "qualified_progress": "28 qualified original packages,38 remaining,66 total unchanged; required BANK/restore integration remains failed.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-03.json",
+        "sha256": "b12c20e106b7578c7e17f7dc1818ca22885edb4da267c247ee0faa81f603e752"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 326
+      },
+      "id": "wave35-wip-05",
+      "identity": {
+        "evidence_base_commit": "d442680317e71a3d34f312a360ded1e7737375fc",
+        "evidence_candidate_tree": "575487046d3b1cc26c265c40848d30af2f68ff7d",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "21c0971bf38f36cc25cf7ac023e410b47e044220",
+          "tests": "c4b7bc1a2efda89df77728dc7118c483cfe68995"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-05.json",
+        "sha256": "432f263a0d1fac0d395e769b256a2c326a2a646107f94320412a42f7095e77df"
+      },
+      "package_accounting": null,
+      "packet": "Owned ENV initial participation and fail-closed callback custody",
+      "previous_catalog_entry": "wave35-wip-04",
+      "qualified_progress": "28 qualified original packages,38 remaining,66 total unchanged; real POP/native and current caller gates remain required.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-04.json",
+        "sha256": "ee99ca6906ee9d963ec10a2217098ee3615d531342847bd73e8c8c3de58e88e4"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 347
+      },
+      "id": "wave35-wip-06",
+      "identity": {
+        "evidence_base_commit": "7a96f86dd3706edae99f92dba7191bd9b1ca85cc",
+        "evidence_candidate_tree": "1f86a18c49747607e6b8a10e2fc8719aa15a0cc9",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "a11e2b50e4cb86366270c205afc737db64c83195",
+          "tests": "923d97a5d89065e028dfc76bab43eedadb3cfc3e"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-06.json",
+        "sha256": "81e87ab1098f4b2f3cccddfa2beed99b1af00258d97afa8705ac1cdc70aedf54"
+      },
+      "package_accounting": null,
+      "packet": "Pure retained initial-participation reading with active-only execution authority",
+      "previous_catalog_entry": "wave35-wip-05",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged; actual POP/native/current caller/final gates required.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-05.json",
+        "sha256": "432f263a0d1fac0d395e769b256a2c326a2a646107f94320412a42f7095e77df"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 435
+      },
+      "id": "wave35-wip-07",
+      "identity": {
+        "evidence_base_commit": "00889036f1e00f9f864d126dd46f8c0cc9519459",
+        "evidence_candidate_tree": "24258ffe10cbb423276fa324295cef24440c2c89",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "47220b79e7c02a9f2a7f953f0d929d45a586502e",
+          "tests": "e8b5c66e9df740f287f8c87b92e401e958af78bf"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-07.json",
+        "sha256": "e7ef96e10a461accb8000bcb259c172e7afaab26ce14746d24506af8d5480361"
+      },
+      "package_accounting": null,
+      "packet": "Actual population initial participation, inference custody, learning/replay/mixed closure and preserved failed diagnostics",
+      "previous_catalog_entry": "wave35-wip-06",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged; actual POP/native/current caller/final gates required.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-06.json",
+        "sha256": "81e87ab1098f4b2f3cccddfa2beed99b1af00258d97afa8705ac1cdc70aedf54"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 290
+      },
+      "id": "wave35-wip-08",
+      "identity": {
+        "evidence_base_commit": "d152425faf9cfdae1eed00e19719441ce11e0f5d",
+        "evidence_candidate_tree": "22ee68664004f4cb0b0177e8f92db1686211b18e",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "47220b79e7c02a9f2a7f953f0d929d45a586502e",
+          "tests": "b31617ff2c59b215ebf1ae11d5318279ae4f4d8c"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-08.json",
+        "sha256": "cc6e61a8a1fb86840d9bcf9380abebf1ddbb621434dd732da7fe535be55155a1"
+      },
+      "package_accounting": null,
+      "packet": "Executable exact ordinary dense CPU Adam RNG profile and stochastic-hook control",
+      "previous_catalog_entry": "wave35-wip-07",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged; actual POP/native/current caller/final gates required.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-07.json",
+        "sha256": "e7ef96e10a461accb8000bcb259c172e7afaab26ce14746d24506af8d5480361"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 0,
+        "invalid": 0,
+        "verified_evidence": 432
+      },
+      "id": "wave35-wip-09",
+      "identity": {
+        "evidence_base_commit": "4b470fa9e5a363b17d0d796171bc21ee04ab392c",
+        "evidence_candidate_tree": "74ab2af445a6421e4056f6d5600a14e75fd97665",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "47220b79e7c02a9f2a7f953f0d929d45a586502e",
+          "tests": "a645b5ae8fda037dca98648ef231f5978e2d14f4"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-09.json",
+        "sha256": "af51ab5d8976a96626843f08e58acf3db35fb611d205c21737605e64711aa36b"
+      },
+      "package_accounting": null,
+      "packet": "Genuine world owner fixtures, scoped native component continuation and prepublication cadence-clock refusal",
+      "previous_catalog_entry": "wave35-wip-08",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged; actual POP/native/current caller/final gates required.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-08.json",
+        "sha256": "cc6e61a8a1fb86840d9bcf9380abebf1ddbb621434dd732da7fe535be55155a1"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 529
+      },
+      "id": "wave35-wip-10",
+      "identity": {
+        "evidence_base_commit": "017d909432f6ba57450cb9bba21a5b2d7e339a92",
+        "evidence_candidate_tree": "20ce0b5758dba020c520f97dcce68f5cecd25ce5",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "0ac3f1f13440fff25a26d4897b1398434aac196d",
+          "tests": "3de79a76655aebdcc94c4aa5f465d4280638d941"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-10.json",
+        "sha256": "cbb1ed8cf585c43b2d0245da71b3fcc68adc83d4ff7ced4c61ca23547324166d"
+      },
+      "package_accounting": null,
+      "packet": "RNG custody standalone CPU core: actual shared/private admission, currentness, lifetime, reset/restore and independently executed adversarial controls",
+      "previous_catalog_entry": "wave35-wip-09",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged. Standalone CPU core is bounded component evidence.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-09.json",
+        "sha256": "af51ab5d8976a96626843f08e58acf3db35fb611d205c21737605e64711aa36b"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 1,
+        "invalid": 0,
+        "verified_evidence": 170
+      },
+      "id": "wave35-wip-11",
+      "identity": {
+        "evidence_base_commit": "11ec988571f631c0d9e9bab81bb29db8dab1c40d",
+        "evidence_candidate_tree": "8828819d905559e02f1865c768609c0acd66b139",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "0ac3f1f13440fff25a26d4897b1398434aac196d",
+          "tests": "ce91905e67bb9147ffb23ce2a963bfbc22b997b4"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-11.json",
+        "sha256": "c14c170bb58cfe25bf5259076cc7b6fcbeaa2db599f22a2854caffa72a501b21"
+      },
+      "package_accounting": null,
+      "packet": "W35-R0-existing84-owner-regression-migration",
+      "previous_catalog_entry": "wave35-wip-10",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged. Owner regressions and unchanged CPU core are bounded component evidence; 84 independent cases overlap the137 combined cases.",
+      "receipt_pointer": "#/receipt",
+      "round": null,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-10.json",
+        "sha256": "cbb1ed8cf585c43b2d0245da71b3fcc68adc83d4ff7ced4c61ca23547324166d"
+      }
+    },
+    {
+      "artifact_checks": {
+        "historical_external_reference": 5,
+        "invalid": 0,
+        "verified_evidence": 742
+      },
+      "id": "wave35-wip-12",
+      "identity": {
+        "evidence_base_commit": "b8be82465c06257798247debd08cd7ec3b176699",
+        "evidence_candidate_tree": "51173768987b6bd451291ca59d90f75cf4bf0b7e",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "5af5cd64596b32c079efc36de873daf75c429552",
+          "tests": "2f568821319c97b719167a7e302cdc24d41b1bcf"
+        }
+      },
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-12.json",
+        "sha256": "1a780c451de018139eecb62f52e3124ddb3a10cc553d2c5d0a9d41c1132a2349"
+      },
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "packet": "Native v4 named Adam restore configuration and current owner fixtures",
+      "previous_catalog_entry": "wave35-wip-11",
+      "qualified_progress": "28 original packages qualified,38 remaining,66 total unchanged. Native producer and repaired owner fixtures are bounded evidence; required runner gap and global gates remain open.",
+      "receipt_pointer": "#/receipt",
+      "round": 54,
+      "scope": null,
+      "status": "UNRELEASED WIP; no package or repository release",
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-11.json",
+        "sha256": "c14c170bb58cfe25bf5259076cc7b6fcbeaa2db599f22a2854caffa72a501b21"
+      }
+    }
+  ]
+}

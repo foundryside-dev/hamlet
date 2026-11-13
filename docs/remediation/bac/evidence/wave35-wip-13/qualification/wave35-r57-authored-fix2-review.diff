@@ -1,0 +1,283 @@
+diff --git a/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py b/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py
+index 2cfb7f65..61359090 100644
+--- a/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py
++++ b/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py
+@@ -16,7 +16,8 @@ import os
+ import random
+ import threading
+ import weakref
+-from collections.abc import Callable, Mapping
++from collections.abc import Callable, Iterator, Mapping
++from contextlib import contextmanager
+ from copy import deepcopy
+ from pathlib import Path
+ from queue import Empty
+@@ -88,6 +89,37 @@ def _draw() -> None:
+     torch.rand(3)
+ 
+ 
++@contextmanager
++def _no_rng_or_native_effects() -> Iterator[None]:
++    """Observe actual calls only at cuts that must reject before any such work."""
++    observed: list[str] = []
++    observing_thread = threading.get_ident()
++
++    def observe(original: Callable[..., Any], label: str) -> Callable[..., Any]:
++        def invoke(*args: Any, **kwargs: Any) -> Any:
++            if threading.get_ident() == observing_thread:
++                observed.append(label)
++            return original(*args, **kwargs)
++
++        return invoke
++
++    targets = (
++        (random, ("getstate", "setstate", "random", "seed", "getrandbits", "uniform", "randrange", "randint")),
++        (np.random, ("get_state", "set_state", "random", "random_sample", "rand", "randn", "randint", "seed")),
++        (torch, ("get_rng_state", "set_rng_state", "rand", "randn", "randint", "manual_seed", "seed")),
++        (torch.nn.Linear, ("__init__",)),
++        (torch.optim.Adam, ("__init__",)),
++    )
++    with pytest.MonkeyPatch.context() as patch:
++        for owner, names in targets:
++            for name in names:
++                patch.setattr(owner, name, observe(getattr(owner, name), f"{owner.__name__}.{name}"))
++        try:
++            yield
++        finally:
++            assert observed == [], f"forbidden effects before admission/refusal: {observed}"
++
++
+ @pytest.fixture(scope="module")
+ def compiled() -> Any:
+     return UniverseCompiler().compile(
+@@ -416,7 +448,8 @@ def test_bootstrap_preserves_supported_saved_optimizer_configuration(compiled: A
+ def test_empty_reservation_refuses_ordinary_work_without_native_effects(compiled: Any) -> None:
+     policy, descriptor, _, payload, _ = _source(compiled, "rnd")
+     before = _ambient()
+-    reservation = SharedWorldBackend.reserve(cuda_devices=())
++    with _no_rng_or_native_effects():
++        reservation = SharedWorldBackend.reserve(cuda_devices=())
+     effects: list[str] = []
+ 
+     def callback(provider: Any) -> None:
+@@ -435,8 +468,9 @@ def test_empty_reservation_refuses_ordinary_work_without_native_effects(compiled
+         lambda: reservation.validate_prepared(object(), lineage=None),
+     )
+     for operation in operations:
+-        with pytest.raises((RuntimeError, ValueError)):
+-            operation()
++        with _no_rng_or_native_effects():
++            with pytest.raises((RuntimeError, ValueError)):
++                operation()
+         assert effects == []
+         _assert_ambient(before)
+     with pytest.raises((RuntimeError, ValueError)):
+@@ -571,8 +605,9 @@ def test_bootstrap_registration_requires_idle_and_active_owner_is_pinned(compile
+     reference = weakref.ref(reservation)
+     context = reservation.bootstrap(lineage=None)
+     with context as lineage:
+-        with pytest.raises(RuntimeError):
+-            SharedWorldBackend.reserve(cuda_devices=())
++        with _no_rng_or_native_effects():
++            with pytest.raises(RuntimeError):
++                SharedWorldBackend.reserve(cuda_devices=())
+         with pytest.raises(RuntimeError):
+             with reservation.bootstrap(lineage=lineage):
+                 pytest.fail("aggregate bootstrap reentered itself")
+@@ -594,11 +629,32 @@ def test_held_bootstrap_excludes_peer_through_capture_and_cleanup(compiled: Any,
+     body_done = threading.Event()
+     cleanup = threading.Event()
+     release_cleanup = threading.Event()
+-    attempted = threading.Event()
+-    entered = threading.Event()
++    attempted = {phase: threading.Event() for phase in ("capture", "cleanup")}
++    entered = {phase: threading.Event() for phase in ("capture", "cleanup")}
++    acquired_immediately: dict[str, bool] = {}
+     failures: list[BaseException] = []
+     real_get = torch.get_rng_state
+     real_set = torch.set_rng_state
++    domain = process_rng_domain()
++    real_lock = domain._lock
++
++    class ObservedAdmission:
++        """Delegate custody to the real RLock and report its actual acquire result."""
++
++        def __enter__(self) -> ObservedAdmission:
++            name = threading.current_thread().name
++            phase = name.removeprefix("bootstrap-peer-")
++            if phase in attempted and not attempted[phase].is_set():
++                acquired = real_lock.acquire(blocking=False)
++                if acquired:
++                    real_lock.release()
++                acquired_immediately[phase] = acquired
++                attempted[phase].set()
++            real_lock.acquire()
++            return self
++
++        def __exit__(self, error_type: Any, error: Any, traceback: Any) -> None:
++            real_lock.release()
+ 
+     def guarded_get() -> torch.Tensor:
+         if threading.current_thread().name == "bootstrap-capture" and not capture.is_set():
+@@ -614,6 +670,7 @@ def test_held_bootstrap_excludes_peer_through_capture_and_cleanup(compiled: Any,
+ 
+     monkeypatch.setattr(torch, "get_rng_state", guarded_get)
+     monkeypatch.setattr(torch, "set_rng_state", guarded_set)
++    monkeypatch.setattr(domain, "_lock", ObservedAdmission())
+ 
+     def prepare() -> None:
+         try:
+@@ -623,33 +680,38 @@ def test_held_bootstrap_excludes_peer_through_capture_and_cleanup(compiled: Any,
+         except BaseException as error:
+             failures.append(error)
+ 
+-    def peer_operation() -> None:
+-        attempted.set()
++    def peer_operation(phase: str) -> None:
+         try:
+-            peer.call(lambda provider: entered.set(), lineage=None)
++            peer.call(lambda provider: entered[phase].set(), lineage=None)
+         except BaseException as error:
+             failures.append(error)
+ 
+     producer = threading.Thread(target=prepare, name="bootstrap-capture")
+-    consumer = threading.Thread(target=peer_operation, name="bootstrap-peer")
++    consumers = {
++        phase: threading.Thread(target=peer_operation, args=(phase,), name=f"bootstrap-peer-{phase}") for phase in ("capture", "cleanup")
++    }
+     producer.start()
+     try:
+         assert capture.wait(10)
+-        consumer.start()
+-        assert attempted.wait(5)
+-        assert not entered.wait(0.05)
++        consumers["capture"].start()
++        assert attempted["capture"].wait(5)
++        assert acquired_immediately["capture"] is False and not entered["capture"].is_set()
+         release_capture.set()
+         assert cleanup.wait(10)
+-        assert not entered.wait(0.05)
++        consumers["cleanup"].start()
++        assert attempted["cleanup"].wait(5)
++        assert acquired_immediately["cleanup"] is False
++        assert not any(event.is_set() for event in entered.values())
+         release_cleanup.set()
+     finally:
+         release_capture.set()
+         release_cleanup.set()
+         producer.join(15)
+-        if consumer.ident is not None:
+-            consumer.join(15)
+-    assert not producer.is_alive() and not consumer.is_alive()
+-    assert failures == [] and entered.is_set()
++        for consumer in consumers.values():
++            if consumer.ident is not None:
++                consumer.join(15)
++    assert not producer.is_alive() and not any(consumer.is_alive() for consumer in consumers.values())
++    assert failures == [] and all(event.is_set() for event in entered.values())
+     _assert_ambient(before)
+ 
+ 
+@@ -673,8 +735,9 @@ def test_explicit_lineage_archive_validation_uses_target_seed_and_source_policy(
+             assert _equal(candidate.checkpoint_state(), payload["backend"])
+             attach_gradients(candidate, gradients, "rnd")
+             assert _equal(capture_gradients(candidate, "rnd"), gradients)
+-            with pytest.raises(RuntimeError):
+-                reservation.snapshot(lineage=lineage)
++            with _no_rng_or_native_effects():
++                with pytest.raises(RuntimeError):
++                    reservation.snapshot(lineage=lineage)
+         _install(reservation, policy, descriptor, payload, gradients, lineage)
+     _assert_ambient(before)
+ 
+@@ -689,13 +752,16 @@ def test_activate_under_rejects_wrong_expired_foreign_thread_and_foreign_frame(c
+     generator = torch.Generator(device="cpu").manual_seed(private_descriptor.seed_for("target-a", "model_init"))
+     expected_a = torch.rand(3, generator=generator)
+     expected_next_a = torch.rand(3, generator=generator)
+-    with pytest.raises((TypeError, ValueError, RuntimeError)):
+-        with rng.activate_under("model_init", lineage=object()):
+-            pytest.fail("fabricated lineage activated")
++    for invalid_lineage in (None, object()):
++        with _no_rng_or_native_effects():
++            with pytest.raises((TypeError, ValueError)):
++                with rng.activate_under("model_init", lineage=invalid_lineage):
++                    pytest.fail("absent/fabricated lineage activated")
+     with reservation.bootstrap(lineage=None) as lineage:
+-        with pytest.raises(ValueError):
+-            with rng.activate_under("wrong", lineage=lineage):
+-                pytest.fail("unknown named stream activated")
++        with _no_rng_or_native_effects():
++            with pytest.raises(ValueError):
++                with rng.activate_under("wrong", lineage=lineage):
++                    pytest.fail("unknown named stream activated")
+         with rng.activate_under("model_init", lineage=lineage) as sources:
+             assert torch.equal(torch.rand(3), expected_a)
+             with rng.activate_under("model_init", lineage=lineage) as same:
+@@ -705,20 +771,23 @@ def test_activate_under_rejects_wrong_expired_foreign_thread_and_foreign_frame(c
+                 with rng.activate_under("model_init", lineage=lineage) as resumed:
+                     assert resumed is sources
+                     assert torch.equal(torch.rand(3), expected_next_a)
+-            with pytest.raises(RuntimeError):
+-                with other.activate_under("model_init", lineage=lineage):
+-                    pytest.fail("foreign private frame activated")
+-            with pytest.raises(ValueError):
+-                rng.validate_binding(descriptor=private_descriptor, world_id="target-z", cuda_devices=())
++            with _no_rng_or_native_effects():
++                with pytest.raises(RuntimeError):
++                    with other.activate_under("model_init", lineage=lineage):
++                        pytest.fail("foreign private frame activated")
++            with _no_rng_or_native_effects():
++                with pytest.raises(ValueError):
++                    rng.validate_binding(descriptor=private_descriptor, world_id="target-z", cuda_devices=())
+         failures: list[BaseException] = []
+         started = threading.Event()
+ 
+         def foreign_thread() -> None:
+             started.set()
+             try:
+-                with rng.activate_under("model_init", lineage=lineage):
+-                    failures.append(AssertionError("foreign thread activated"))
+-            except (RuntimeError, ValueError) as error:
++                with _no_rng_or_native_effects():
++                    with rng.activate_under("model_init", lineage=lineage):
++                        failures.append(AssertionError("foreign thread activated"))
++            except BaseException as error:
+                 failures.append(error)
+ 
+         thread = threading.Thread(target=foreign_thread)
+@@ -728,9 +797,10 @@ def test_activate_under_rejects_wrong_expired_foreign_thread_and_foreign_frame(c
+     thread.join(10)
+     assert not thread.is_alive()
+     assert len(failures) == 1 and isinstance(failures[0], (RuntimeError, ValueError))
+-    with pytest.raises((RuntimeError, ValueError)):
+-        with rng.activate_under("model_init", lineage=lineage):
+-            pytest.fail("expired lineage activated")
++    with _no_rng_or_native_effects():
++        with pytest.raises(ValueError):
++            with rng.activate_under("model_init", lineage=lineage):
++                pytest.fail("expired lineage activated")
+     _assert_ambient(before)
+ 
+ 
+@@ -743,7 +813,8 @@ def test_cpu_empty_inventory_performs_no_cuda_query(compiled: Any, monkeypatch:
+     for name in ("is_available", "is_initialized", "device_count", "synchronize", "get_rng_state", "set_rng_state"):
+         monkeypatch.setattr(torch.cuda, name, forbidden)
+     before = _ambient()
+-    reservation = SharedWorldBackend.reserve(cuda_devices=())
++    with _no_rng_or_native_effects():
++        reservation = SharedWorldBackend.reserve(cuda_devices=())
+     with reservation.bootstrap(lineage=None) as lineage:
+         _install(reservation, policy, descriptor, payload, gradients, lineage)
+     assert reservation.snapshot(lineage=None)["healthy"] is True
+@@ -753,8 +824,9 @@ def test_cpu_empty_inventory_performs_no_cuda_query(compiled: Any, monkeypatch:
+ @pytest.mark.parametrize("devices", (None, [], (True,), (-1,), (1, 0), (0, 0)))
+ def test_reservation_authenticates_exact_device_inventory_without_draws(devices: Any) -> None:
+     before = _ambient()
+-    with pytest.raises((TypeError, ValueError)):
+-        SharedWorldBackend.reserve(cuda_devices=devices)
++    with _no_rng_or_native_effects():
++        with pytest.raises((TypeError, ValueError)):
++            SharedWorldBackend.reserve(cuda_devices=devices)
+     _assert_ambient(before)
+ 
+ 

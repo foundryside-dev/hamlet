@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py::test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[none]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\nfamily = 'none'\n\n    @pytest.mark.parametrize(\"family\", FAMILIES)\n    def test_bootstrap_real_native_roundtrip_final_parameters_and_ambient(compiled: Any, family: str) -> None:\n        policy, descriptor, original, payload, gradients = _source(compiled, family)\n        before = _ambient()\n>       reservation = SharedWorldBackend.reserve(cuda_devices=())\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: type object 'SharedWorldBackend' has no attribute 'reserve'\n\ntests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:341: AttributeError",
+  "candidate_tree": "c0fd71c1333f914cd42979c3a88a601edd4c1dea"
+}

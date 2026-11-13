@@ -1,0 +1,20 @@
+test_aliases_and_all_bytes (test_evidence_tools.EvidenceTests.test_aliases_and_all_bytes) ... ok
+test_explicit_python_snapshot_suffix_and_historical_reference (test_evidence_tools.EvidenceTests.test_explicit_python_snapshot_suffix_and_historical_reference) ... ok
+test_final_completeness_fail_closed (test_evidence_tools.EvidenceTests.test_final_completeness_fail_closed) ... ok
+test_historical_formats_and_mismatch (test_evidence_tools.EvidenceTests.test_historical_formats_and_mismatch) ... ok
+test_missing (test_evidence_tools.EvidenceTests.test_missing) ... ok
+test_path_escape_refusal (test_evidence_tools.EvidenceTests.test_path_escape_refusal) ... ok
+test_receipt_symlink_refused (test_evidence_tools.EvidenceTests.test_receipt_symlink_refused) ... ok
+test_reuse_outside_archive_refused (test_evidence_tools.EvidenceTests.test_reuse_outside_archive_refused) ... ok
+test_selector_finite_interval_and_content_reuse (test_evidence_tools.EvidenceTests.test_selector_finite_interval_and_content_reuse) ... ok
+test_selector_rechecks_reused_bytes (test_evidence_tools.EvidenceTests.test_selector_rechecks_reused_bytes) ... ok
+test_selector_rejects_draft_as_final (test_evidence_tools.EvidenceTests.test_selector_rejects_draft_as_final) ... ok
+test_selector_rejects_identity_mismatch (test_evidence_tools.EvidenceTests.test_selector_rejects_identity_mismatch) ... ok
+test_symlink_refusal (test_evidence_tools.EvidenceTests.test_symlink_refusal) ... ok
+test_tamper (test_evidence_tools.EvidenceTests.test_tamper) ... ok
+test_unindexed_addition (test_evidence_tools.EvidenceTests.test_unindexed_addition) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.032s
+
+OK

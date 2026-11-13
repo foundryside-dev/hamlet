@@ -1,0 +1,22 @@
+{
+  "job": "collection",
+  "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "candidate_tree": "40dff6dba8e5821a1b1df9feb983dbe1efdb2705",
+  "exit_code": 0,
+  "counts": {
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 5.059673070907593,
+  "source_guards": 812,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

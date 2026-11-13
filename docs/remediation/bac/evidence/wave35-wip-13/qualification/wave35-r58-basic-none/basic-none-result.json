@@ -1,0 +1,25 @@
+{
+  "name": "basic-none",
+  "exit_code": 0,
+  "seconds": 6.783627271652222,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py::test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[none]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r58-basic-none/basic-none.log",
+  "sha256": "874819732a8c01eba99a27df2c2bfb5c488d63b59bbfe28c2d6452687233b1c0",
+  "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+  "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,142 @@
+"""Read-only BAC evidence inventory. No Git calls, execution of receipts, or source writes."""
+import argparse
+import hashlib
+import json
+import re
+from pathlib import Path
+
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def natural(value):
+    return [int(x) if x.isdigit() else x for x in re.split(r'(\d+)', str(value))]
+
+
+def safe_path(root, relative):
+    p = root / relative
+    if Path(relative).is_absolute() or '..' in Path(relative).parts:
+        raise ValueError(f'unsafe relative path: {relative}')
+    if p.resolve() != p.absolute() or not p.is_relative_to(root):
+        raise ValueError(f'symlink or escaped path: {relative}')
+    return p
+
+
+def scan(root):
+    root = root.resolve()
+    evidence = root / 'docs/remediation/bac/evidence'
+    objects, paths, issues, checkpoints = {}, {}, [], []
+    for p in sorted(evidence.rglob('*'), key=natural):
+        if p.is_symlink():
+            raise ValueError(f'symlink forbidden: {p}')
+        if not p.is_file():
+            continue
+        relative = p.relative_to(root).as_posix()
+        before = p.stat()
+        sha = digest(p)
+        after = p.stat()
+        if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+            raise ValueError(f'file changed during scan: {relative}')
+        paths[relative] = sha
+        objects.setdefault(sha, {'bytes': after.st_size, 'paths': []})['paths'].append(relative)
+    checked = 0
+    for p in sorted(evidence.glob('*.json'), key=natural):
+        data = json.loads(p.read_text())
+        relative = p.relative_to(root).as_posix()
+        if digest(p) != paths[relative]:
+            raise ValueError(f'manifest changed during scan: {relative}')
+        artifacts = data.get('artifacts', {})
+        if not isinstance(artifacts, dict):
+            raise ValueError(f'unknown artifact schema: {relative}')
+        counts = {'verified_evidence': 0, 'historical_external_reference': 0, 'invalid': 0}
+        for name, row in artifacts.items():
+            if isinstance(row, str):
+                row = {'sha256': row}
+            if not isinstance(row, dict) or not re.fullmatch('[0-9a-f]{64}', row.get('sha256', '')):
+                issues.append({'manifest': relative, 'path': name, 'kind': 'unsupported_artifact_record'})
+                counts['invalid'] += 1
+                continue
+            key = 'docs/remediation/bac/' + name if name.startswith('evidence/') else name
+            target = safe_path(root, key)
+            if key.startswith('docs/remediation/bac/evidence/'):
+                checked += 1
+                if paths.get(key) != row['sha256']:
+                    issues.append({'manifest': relative, 'path': key, 'kind': 'missing_or_hash_mismatch',
+                                   'expected': row['sha256'], 'observed': paths.get(key)})
+                    counts['invalid'] += 1
+                else:
+                    counts['verified_evidence'] += 1
+            else:
+                # Historical mutable document references are not current-file assertions.
+                counts['historical_external_reference'] += 1
+                issues.append({'manifest': relative, 'path': key, 'kind': 'historical_external_reference',
+                               'expected': row['sha256'], 'exact_bytes_in_inventory': row['sha256'] in objects})
+        receipt = data.get('receipt', {})
+        if not isinstance(receipt, dict):
+            receipt = {}
+        identity = {key: data[key] for key in ('evidence_base_commit', 'evidence_candidate_tree',
+                    'source_commit', 'qualified_tree', 'candidate_tree', 'execution_subtrees') if key in data}
+        checkpoints.append({'id': p.stem, 'manifest': {'path': relative, 'sha256': paths[relative]},
+                            'previous_catalog_entry': checkpoints[-1]['id'] if checkpoints else None,
+                            'identity': identity, 'status': data.get('status'), 'packet': data.get('packet', data.get('task')),
+                            'artifact_checks': counts, 'receipt_pointer': '#/receipt' if receipt else None,
+                            'round': receipt.get('final_round_number'),
+                            'package_accounting': receipt.get('package_accounting'),
+                            'qualified_progress': data.get('qualified_progress'),
+                            'scope': data.get('scope', data.get('scope_limits'))})
+    total = sum(objects[h]['bytes'] for h in paths.values())
+    unique = sum(row['bytes'] for row in objects.values())
+    metrics = {'files': len(paths), 'unique_contents': len(objects), 'bytes': total, 'unique_bytes': unique,
+               'duplicate_aliases': len(paths) - len(objects), 'duplicate_bytes': total - unique,
+               'manifests': len(checkpoints), 'artifact_hash_assertions_checked': checked,
+               'integrity_failures': sum(x['kind'] != 'historical_external_reference' for x in issues),
+               'historical_external_references': sum(x['kind'] == 'historical_external_reference' for x in issues)}
+    return {'schema': 'bac-evidence-inventory-v1', 'scope': 'Existing docs/remediation/bac/evidence bytes only; no current-source qualification',
+            'ordering': 'Natural filename catalog order, NOT verified Git ancestry or dependency order',
+            'metrics': metrics, 'objects': objects, 'checkpoints': checkpoints, 'reference_findings': issues}
+
+
+def verify(root, inventory):
+    seen = set()
+    for sha, row in inventory['objects'].items():
+        if not re.fullmatch('[0-9a-f]{64}', sha) or not row['paths']:
+            raise ValueError('invalid content object')
+        for name in row['paths']:
+            if name in seen:
+                raise ValueError(f'duplicate path: {name}')
+            seen.add(name)
+            p = safe_path(root.resolve(), name)
+            if not p.is_file() or p.stat().st_size != row['bytes'] or digest(p) != sha:
+                raise ValueError(f'integrity mismatch: {name}')
+    actual = {p.relative_to(root.resolve()).as_posix() for p in (root.resolve() / 'docs/remediation/bac/evidence').rglob('*') if p.is_file()}
+    if actual != seen:
+        raise ValueError('inventory path set differs from evidence path set; create a new snapshot')
+    return {'status': 'PASS', 'verified_paths': len(seen), 'verified_contents': len(inventory['objects'])}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('mode', choices=('build', 'verify'))
+    parser.add_argument('--root', type=Path, required=True)
+    parser.add_argument('--inventory', type=Path, required=True)
+    args = parser.parse_args()
+    if args.mode == 'build':
+        result = scan(args.root)
+        # Exclusive output: never silently replace an earlier snapshot.
+        with args.inventory.open('x') as stream:
+            json.dump(result, stream, separators=(',', ':'), sort_keys=True)
+            stream.write('\n')
+        print(json.dumps(result['metrics'], indent=2))
+        if result['metrics']['integrity_failures']:
+            raise SystemExit(1)
+    else:
+        print(json.dumps(verify(args.root, json.loads(args.inventory.read_text())), indent=2))
+
+
+if __name__ == '__main__':
+    main()

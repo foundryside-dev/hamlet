@@ -1,0 +1,28 @@
+{
+  "name": "feature-red",
+  "exit_code": 1,
+  "seconds": 8.593063116073608,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "not test_control_",
+    "-q",
+    "--maxfail=1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r57-feature-red/feature-red.log",
+  "sha256": "6373f57a53bbd1b68c54914726a0efd774fa9c24a6e53b5eaf850512e90dc960",
+  "candidate_tree": "c0fd71c1333f914cd42979c3a88a601edd4c1dea",
+  "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "manifest_sha256": "091b7764ae1ee1b59893334eeb3605ba0dbbf65a918e2a728ad03b0b54d4af96",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

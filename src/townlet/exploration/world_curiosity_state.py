@@ -787,6 +787,14 @@ class WorldRNGState:
             yield sources
 
     @contextmanager
+    def activate_under(self, component: str, *, lineage: RNGOperation) -> Iterator[WorldRandomSources]:
+        """Activate an already registered stream under actual held caller custody."""
+        if type(lineage) is not RNGOperation:
+            raise ValueError("Explicit RNG activation requires an authentic current operation")
+        with self._activate(component, lineage) as sources:
+            yield sources
+
+    @contextmanager
     def _activate(self, component: str, lineage: RNGOperation | None) -> Iterator[WorldRandomSources]:
         with _rng_domain.operation(participant=self._participant, operation_kind="rng", lineage=lineage) as operation:
             _usable()
@@ -1123,6 +1131,72 @@ class SharedWorldBackend(_BackendOwner):
     def __init__(self, backend: Any, cuda_devices: tuple[int, ...]):
         super().__init__(backend, cuda_devices, None)
         self._cuda_devices = cuda_devices
+        self._bootstrap_state = "ordinary"
+        self._bootstrap_operation: RNGOperation | None = None
+
+    @classmethod
+    def reserve(cls, *, cuda_devices: tuple[int, ...]) -> SharedWorldBackend:
+        """Register the actual empty offside owner, without native or RNG work."""
+        owner = cls(None, cuda_devices)
+        owner._bootstrap_state = "empty"
+        return owner
+
+    @contextmanager
+    def _scope(self, kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        with super()._scope(kind, lineage) as operation:
+            if self._bootstrap_state not in {"ordinary", "ready"}:
+                if lineage is not self._bootstrap_operation or self._bootstrap_state not in {"building", "installed"}:
+                    raise RuntimeError("Shared reservation requires its active bootstrap before ordinary lifecycle work")
+                if self._bootstrap_state == "building" and kind not in {"prepare", "validate", "install"}:
+                    raise RuntimeError("Shared reservation has no installed native backend")
+            yield operation
+
+    @contextmanager
+    def bootstrap(self, *, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        """Build one independent continuation with disposable ambient consumption.
+
+        Aggregate progress is separate from each inner lifecycle mutation guard.
+        Keep real common exclusion until completion has verified and READY is set;
+        no owner membership or parent publication authority is created here.
+        """
+        with _rng_domain._lock:
+            started = False
+            try:
+                with _rng_domain.operation(participant=self._participant, operation_kind="prepare", lineage=lineage) as operation:
+                    with self._lock:
+                        _quiescent()
+                        if self._active or self._bootstrap_operation is not None:
+                            raise RuntimeError("Reentrant shared bootstrap is forbidden")
+                        if self._bootstrap_state != "empty" or self._failed:
+                            raise RuntimeError("Bootstrap requires a healthy reservation never published ready")
+                        started = True
+                        self._bootstrap_state = "building"
+                        self._bootstrap_operation = operation
+                        with _preserve_ambient(self._cuda_devices, operation):
+                            yield operation
+                            if self._bootstrap_state != "installed" or self._failed:
+                                raise RuntimeError("Bootstrap requires a complete healthy native installation")
+                            self._bootstrap_state = "closing"
+                # The actual operation's device completion has now succeeded.
+                with self._lock:
+                    self._bootstrap_state = "ready"
+            except BaseException:
+                if started:
+                    with self._lock:
+                        poisoned = _rng_domain.status()[2]
+                        if poisoned or self._bootstrap_state != "building":
+                            self._bootstrap_state = "discarded"
+                            self._failed = True
+                        else:
+                            self._bootstrap_state = "empty"
+                raise
+            finally:
+                if started:
+                    with self._lock:
+                        for state in self._prepared.values():
+                            _rng_domain._consume_token(state.current)
+                        self._prepared.clear()
+                        self._bootstrap_operation = None
 
     @classmethod
     def construct(cls, *, factory: Callable[[], Any], cuda_devices: tuple[int, ...]) -> SharedWorldBackend:
@@ -1214,6 +1288,8 @@ class SharedWorldBackend(_BackendOwner):
         lineage: RNGOperation | None,
     ) -> PreparedWorldBackend:
         with self._scope("prepare", lineage) as operation:
+            if self._bootstrap_operation is not None:
+                raise RuntimeError("Shared bootstrap requires restore preparation, not a learning reset")
             if self._failed:
                 raise RuntimeError("Learning reset requires a healthy shared backend")
             if not callable(factory) or not callable(prepare_native):
@@ -1233,6 +1309,8 @@ class SharedWorldBackend(_BackendOwner):
 
     def install(self, prepared: PreparedWorldBackend, *, lineage: RNGOperation | None) -> None:
         with self._scope("install", lineage) as operation:
+            if self._bootstrap_state == "installed":
+                raise RuntimeError("Shared bootstrap permits only one native installation")
             state = self._validate_prepared(prepared, operation)
             if state.rng is not None:
                 raise ValueError("A shared backend cannot install private RNG ownership")
@@ -1244,6 +1322,8 @@ class SharedWorldBackend(_BackendOwner):
             # later joint publication failures require the parent's quarantine.
             try:
                 self._backend = state.backend
+                if self._bootstrap_state == "building":
+                    self._bootstrap_state = "installed"
                 self._failed = False
                 self._revision += 1
                 del self._prepared[prepared]

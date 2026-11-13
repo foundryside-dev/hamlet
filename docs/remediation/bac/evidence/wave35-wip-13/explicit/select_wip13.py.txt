@@ -1,0 +1,207 @@
+"""Prepare a non-mutating WIP13 delta plan from an explicit R58 checkpoint receipt.
+
+Only --output is written, exclusively. Root retains publication, Git and gate authority.
+"""
+import argparse
+import json
+import re
+from pathlib import Path
+from evidence_index import digest, safe_path, verify
+
+
+def validate_final(qualification, receipt, manifest, manifest_path):
+    expected = ('93ce825943c104b88a1506a4641e19d1f892466c', 'ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42')
+    if (manifest['base_commit'], manifest['candidate_tree']) != expected:
+        raise ValueError('this selector is bound to the reviewed R58 candidate')
+    if any(not manifest.get(group) for group in ('source_files', 'configs', 'artifacts')):
+        raise ValueError('empty frozen witness inventory')
+    required_docs = {'CURRENT-PURE-BOOTSTRAP-CONTRACT.md', 'CURRENT-RNG-CUSTODY-CORE-CONTRACT.md', 'STATUS.md'}
+    if not required_docs <= receipt['current_documents'].keys():
+        raise ValueError('missing required R58 current documents')
+    required_reviews = {'T18e-PURE-BOOTSTRAP-' + suffix + '.md' for suffix in
+                        ('CANDIDATE-REVIEW', 'INDEPENDENT-EXECUTION', 'IMPLEMENTATION-REPORT', 'DOCUMENTATION-REVIEW')}
+    if not required_reviews <= {Path(name).name for name in receipt['review_sha256']}:
+        raise ValueError('missing required R58 reviews')
+    if set(receipt['runtime']) != {'owned', 'coherent', 'independent'}:
+        raise ValueError('missing or unexpected R58 runtime checks')
+    for number in range(55, 59):
+        if not any(p.is_file() for top in qualification.glob(f'wave35-r{number}-*')
+                   for p in (top.rglob('*') if top.is_dir() else [top])):
+            raise ValueError(f'missing retained R{number} evidence')
+    historical_jobs = {55: ('baseline', 'collection'),
+                       56: ('collection', 'causal-count', 'baseline', 'feature-red'),
+                       57: ('feature-red', 'baseline', 'collection')}
+    for number, jobs in historical_jobs.items():
+        prior_manifest_path = manifest_path.parent / f'r{number}-candidate.json'
+        prior_manifest = json.loads(prior_manifest_path.read_text())
+        for job in jobs:
+            folder = qualification / f'wave35-r{number}-{job}'
+            result = json.loads((folder / f'{job}-result.json').read_text())
+            if (result['candidate_tree'], result['base_commit'], result['manifest_sha256']) != (
+                    prior_manifest['candidate_tree'], prior_manifest['base_commit'], digest(prior_manifest_path)):
+                raise ValueError(f'historical raw result identity mismatch: R{number}/{job}')
+            if digest(folder / f'{job}.log') != result['sha256']:
+                raise ValueError(f'historical raw log mismatch: R{number}/{job}')
+    for job, run in receipt['runtime'].items():
+        folder = qualification / f'wave35-r58-{job}'
+        custody = json.loads((folder / f'{job}-custody.json').read_text())
+        result = json.loads((folder / f'{job}-result.json').read_text())
+        if custody != run or run['exit_code'] != 0 or run['counts']['passed'] <= 0:
+            raise ValueError(f'R58 receipt/custody mismatch or nonpassing runtime: {job}')
+        if (result['base_commit'], result['candidate_tree']) != expected or result['manifest_sha256'] != digest(manifest_path):
+            raise ValueError(f'R58 raw result identity mismatch: {job}')
+        log = folder / f'{job}.log'
+        if result['exit_code'] != run['exit_code'] or digest(log) != result['sha256']:
+            raise ValueError(f'R58 raw result/log mismatch: {job}')
+    for field, relative in (('compiler_cli', 'wave35-r58-compiler-cli/compiler-cli-custody.json'),
+                            ('global_static', 'wave35-r58-static/static-custody.json')):
+        custody = json.loads((qualification / relative).read_text())
+        if custody != receipt[field] or (custody['base_commit'], custody['candidate_tree']) != expected:
+            raise ValueError(f'R58 {field} receipt/custody mismatch')
+    for row in receipt['global_static']['results']:
+        if digest(qualification / 'wave35-r58-static' / (row['name'] + '.log')) != row['sha256']:
+            raise ValueError('static log mismatch')
+    compiler = receipt['compiler_cli']
+    compiler_folder = qualification / 'wave35-r58-compiler-cli'
+    if digest(compiler_folder / 'compiler-cli.log') != compiler['log_sha256']:
+        raise ValueError('compiler log mismatch')
+    if not compiler['profile_hashes'] or len(compiler['profile_hashes']) != compiler['process_identities']:
+        raise ValueError('compiler actual process profiles missing')
+    for name, sha in compiler['profile_hashes'].items():
+        if digest(safe_path(compiler_folder, name)) != sha:
+            raise ValueError('compiler process identity hash mismatch')
+
+
+def select(root, qualification, work, inventory_path, receipt_path, includes, draft=False):
+    root, qualification, work = root.resolve(), qualification.resolve(), work.resolve()
+    inventory = json.loads(inventory_path.read_text())
+    if inventory['metrics']['integrity_failures']:
+        raise ValueError('inventory contains unresolved archive integrity failures')
+    receipt_path = receipt_path.absolute()
+    if not receipt_path.is_relative_to(work):
+        raise ValueError('receipt must reside within work evidence root')
+    receipt_path = safe_path(work, receipt_path.relative_to(work))
+    receipt = json.loads(receipt_path.read_text())
+    manifest_path = safe_path(work, receipt['manifest'])
+    manifest = json.loads(manifest_path.read_text())
+    if receipt['candidate_tree'] != manifest['candidate_tree'] or receipt['base_commit'] != manifest['base_commit']:
+        raise ValueError('receipt/manifest source identity mismatch')
+    if receipt['package_accounting'] != {'qualified': 28, 'remaining': 38, 'total': 66}:
+        raise ValueError('WIP13 must not silently change original-package accounting')
+    if receipt['required_runner_gap']['status'] != 'OPEN; not waived' or receipt['global_static']['all_passed'] is not False:
+        raise ValueError('WIP13 required gaps changed; explicit contract review required')
+    if not draft and (not receipt.get('current_documents') or 'draft' in receipt_path.name.lower()):
+        raise ValueError('final receipt and current document hashes required; --draft is planning only')
+    if receipt['status'] != 'UNRELEASED WIP; no package or repository release':
+        raise ValueError('unexpected qualification scope')
+    for name, run in receipt['runtime'].items():
+        if (run['candidate_tree'], run['base_commit']) != (manifest['candidate_tree'], manifest['base_commit']):
+            raise ValueError(f'runtime source mismatch: {name}')
+        if run['source_index_import_threads_fixture_custody'] != 'PASS':
+            raise ValueError(f'runtime custody not verified: {name}')
+    if not draft:
+        verify(root, inventory)
+        validate_final(qualification, receipt, manifest, manifest_path)
+    # Validate explicit source/config/artifact witnesses; never execute their content.
+    for group in ('source_files', 'configs', 'artifacts'):
+        for name, sha in manifest[group].items():
+            approved_docs = {row['path']: row['sha256'] for row in receipt['current_documents'].values()}
+            expected = approved_docs[name] if name.startswith('docs/remediation/bac/') and name in approved_docs else sha
+            if digest(safe_path(root, name)) != expected:
+                raise ValueError(f'frozen witness changed: {name}')
+    selected = {}
+    def add(path, destination):
+        if path.is_symlink() or path.resolve() != path.absolute() or not path.is_file():
+            raise ValueError(f'not an ordinary immutable input: {path}')
+        if path.suffix == '.bundle' or 'git-backups' in path.parts:
+            raise ValueError('backup excluded from publication')
+        if destination in selected and selected[destination] != path:
+            raise ValueError(f'destination collision: {destination}')
+        selected[destination] = path
+    # Closed finite interval, including failed/red attempts and logs of any extension.
+    for path in sorted(qualification.glob('wave35-r*')):
+        match = re.match(r'wave35-r(\d+)(?:-|$)', path.name)
+        if match and 55 <= int(match.group(1)) <= 58:
+            for item in sorted(path.rglob('*')) if path.is_dir() else [path]:
+                if item.is_file():
+                    add(item, 'qualification/' + item.relative_to(qualification).as_posix())
+    add(receipt_path, 'checkpoint-receipt.json')
+    add(manifest_path, 'candidate-manifest.json')
+    for number in range(55, 58):
+        prior_manifest = manifest_path.parent / f'r{number}-candidate.json'
+        if prior_manifest.exists():
+            add(prior_manifest, f'historical-candidates/r{number}-candidate.json')
+        elif not draft:
+            raise ValueError(f'missing historical candidate R{number}')
+    for name, sha in receipt['review_sha256'].items():
+        path = safe_path(work, name)
+        if digest(path) != sha:
+            raise ValueError(f'review hash mismatch: {name}')
+        add(path, 'reviews/' + path.name)
+    for row in receipt['current_documents'].values():
+        path = safe_path(root, row['path'])
+        if digest(path) != row['sha256']:
+            raise ValueError(f'document hash mismatch: {path}')
+        add(path, 'documents/' + path.name)
+    for name in includes:
+        path = Path(name).absolute()
+        if not (path.is_relative_to(work) or path.is_relative_to(qualification)):
+            raise ValueError('explicit additions must be in qualification or work evidence roots')
+        stored_name = path.name + '.txt' if path.suffix == '.py' else path.name
+        add(path, 'explicit/' + stored_name)
+    objects, sources, new_bytes, reused_bytes = {}, [], 0, 0
+    for destination, path in sorted(selected.items()):
+        sha = digest(path)
+        size = path.stat().st_size
+        sources.append({'original': str(path), 'sha256': sha, 'logical_path': destination})
+        if sha in objects:
+            continue
+        existing = inventory['objects'].get(sha)
+        if existing:
+            ref = existing['paths'][0]
+            if not ref.startswith('docs/remediation/bac/evidence/'):
+                raise ValueError('reuse target is outside immutable evidence archive')
+            target = safe_path(root, ref)
+            if digest(target) != sha or target.stat().st_size != size:
+                raise ValueError(f'prior exact bytes changed: {ref}')
+            objects[sha] = {'path': ref, 'bytes': size, 'action': 'reference-existing'}
+            reused_bytes += size
+        else:
+            objects[sha] = {'path': 'docs/remediation/bac/evidence/wave35-wip-13/' + destination,
+                            'bytes': size, 'action': 'copy-new', 'source': str(path)}
+            new_bytes += size
+    prior = root / 'docs/remediation/bac/evidence/wave35-wip-12.json'
+    prior_sha = digest(prior)
+    if prior_sha not in inventory['objects'] or prior.relative_to(root).as_posix() not in inventory['objects'][prior_sha]['paths']:
+        raise ValueError('WIP12 predecessor differs from verified inventory')
+    return {'schema': 'bac-wip13-delta-plan-v1', 'status': 'DRAFT PLAN ONLY' if draft else 'READY FOR ROOT PUBLICATION CHECKS',
+            'authority': 'Selection/integrity only. Does not execute, publish, stage, commit, waive gates, or certify acceptance.',
+            'candidate_tree': manifest['candidate_tree'], 'base_commit': manifest['base_commit'],
+            'document_delta': {row['path']: {'candidate_sha256': manifest['source_files'].get(row['path']),
+                              'approved_sha256': row['sha256']} for row in receipt['current_documents'].values()},
+            'inventory_sha256': digest(inventory_path),
+            'previous_checkpoint': {'path': prior.relative_to(root).as_posix(), 'sha256': prior_sha},
+            'receipt': {'original': str(receipt_path), 'sha256': digest(receipt_path)},
+            'objects': objects, 'inputs': sources,
+            'metrics': {'input_paths': len(sources), 'unique_objects': len(objects),
+                        'new_objects': sum(x['action'] == 'copy-new' for x in objects.values()),
+                        'reused_objects': sum(x['action'] == 'reference-existing' for x in objects.values()),
+                        'new_bytes': new_bytes, 'reused_bytes': reused_bytes}}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ('root', 'qualification', 'work', 'inventory', 'receipt', 'output'):
+        parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--include', action='append', default=[])
+    parser.add_argument('--draft', action='store_true')
+    args = parser.parse_args()
+    result = select(args.root, args.qualification, args.work, args.inventory, args.receipt, args.include, args.draft)
+    with args.output.open('x') as stream:
+        json.dump(result, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+    print(json.dumps({'status': result['status'], **result['metrics']}, indent=2))
+
+
+if __name__ == '__main__':
+    main()

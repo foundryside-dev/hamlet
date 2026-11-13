@@ -1,0 +1,115 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [18 items]
+
+.F...F............                                                       [100%]
+=================================== FAILURES ===================================
+__ test_control_real_compiled_selected_factory_native_roundtrip[count_based] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_control_real_compiled_selected_factory_native_roundtrip(compiled: Any, family: str) -> None:
+>       policy, descriptor, owner, payload, gradients = _source(compiled, family)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:248: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:222: in _source
+    owner.call(lambda provider: _service(provider, family, descriptor), lineage=None)
+src/townlet/exploration/world_curiosity_state.py:1157: in call
+    return _owned(operation(self._backend))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:222: in <lambda>
+    owner.call(lambda provider: _service(provider, family, descriptor), lineage=None)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = <townlet.exploration.count_based.CountExploration object at 0x7f699557c910>
+family = 'count_based'
+descriptor = WorldCuriosityDescriptor(schema_version=1, scope='shared', provider_kind='count_based', provider_parameter_hash='a921c..._unit='vector_tick', origin='authored', guarantee='shared_population_state', training_seed=731, seeds=mappingproxy({}))
+
+    def _service(provider: Any, family: str, descriptor: WorldCuriosityDescriptor) -> dict[str, Any]:
+        native = provider.checkpoint_state()
+        selected = native["rnd_state"] if family == "adaptive_rnd" else native
+        previous = selected["service_position"] if family == "icm" else selected.get("predictor_service", {}).get("service_position")
+        unit = descriptor.service_clock_unit
+        position = (0 if previous is None else previous) + (3 if unit == "world_eligible_admission" else 1)
+        rows = torch.arange(3 * descriptor.observation_dim, dtype=torch.float32).reshape(3, descriptor.observation_dim) / 113.0
+        context = IntrinsicTransitionContext(
+            predecessor=rows,
+            actions=torch.arange(3, dtype=torch.int64) % descriptor.action_dim,
+            successor=rows + 0.125,
+            active_on_entry=torch.ones(3, dtype=torch.bool),
+            vector_tick=position,
+        )
+        if family == "icm":
+            novelty = provider.compute_transition_novelty(context, update_stats=True)
+            receipt = provider.admit_and_service_at(context, clock=ServiceClock(unit, position))
+        elif family == "count_based":
+>           novelty = provider.compute_transition_novelty(context, update_stats=True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CountExploration' object has no attribute 'compute_transition_novelty'
+
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:206: AttributeError
+______ test_control_genuine_native_learning_and_next_service[count_based] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'count_based'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_control_genuine_native_learning_and_next_service(compiled: Any, family: str) -> None:
+>       policy, descriptor, original, payload, _ = _source(compiled, family)
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:222: in _source
+    owner.call(lambda provider: _service(provider, family, descriptor), lineage=None)
+src/townlet/exploration/world_curiosity_state.py:1157: in call
+    return _owned(operation(self._backend))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:222: in <lambda>
+    owner.call(lambda provider: _service(provider, family, descriptor), lineage=None)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = <townlet.exploration.count_based.CountExploration object at 0x7f09605ed810>
+family = 'count_based'
+descriptor = WorldCuriosityDescriptor(schema_version=1, scope='shared', provider_kind='count_based', provider_parameter_hash='a921c..._unit='vector_tick', origin='authored', guarantee='shared_population_state', training_seed=731, seeds=mappingproxy({}))
+
+    def _service(provider: Any, family: str, descriptor: WorldCuriosityDescriptor) -> dict[str, Any]:
+        native = provider.checkpoint_state()
+        selected = native["rnd_state"] if family == "adaptive_rnd" else native
+        previous = selected["service_position"] if family == "icm" else selected.get("predictor_service", {}).get("service_position")
+        unit = descriptor.service_clock_unit
+        position = (0 if previous is None else previous) + (3 if unit == "world_eligible_admission" else 1)
+        rows = torch.arange(3 * descriptor.observation_dim, dtype=torch.float32).reshape(3, descriptor.observation_dim) / 113.0
+        context = IntrinsicTransitionContext(
+            predecessor=rows,
+            actions=torch.arange(3, dtype=torch.int64) % descriptor.action_dim,
+            successor=rows + 0.125,
+            active_on_entry=torch.ones(3, dtype=torch.bool),
+            vector_tick=position,
+        )
+        if family == "icm":
+            novelty = provider.compute_transition_novelty(context, update_stats=True)
+            receipt = provider.admit_and_service_at(context, clock=ServiceClock(unit, position))
+        elif family == "count_based":
+>           novelty = provider.compute_transition_novelty(context, update_stats=True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'CountExploration' object has no attribute 'compute_transition_novelty'
+
+tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py:206: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py::test_control_real_compiled_selected_factory_native_roundtrip[count_based]
+FAILED tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py::test_control_genuine_native_learning_and_next_service[count_based]
+======================== 2 failed, 16 passed in 12.05s =========================

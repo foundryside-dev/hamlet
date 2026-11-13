@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "candidate_tree": "c0fd71c1333f914cd42979c3a88a601edd4c1dea",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: type object 'SharedWorldBackend' has no attribute 'reserve'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py::test_bootstrap_real_native_roundtrip_final_parameters_and_ambient[none]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

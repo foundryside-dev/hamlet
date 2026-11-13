@@ -1,0 +1,159 @@
+"""Root-owned, one-shot assembly of the reviewed WIP13 delta; no commit/push."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+R = Path('/workspace/hamlet')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+E = W / 'evidence-management'
+D = R / 'docs/remediation/bac'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+plan_path = Path(sys.argv[1])
+plan_bytes = plan_path.read_bytes()
+plan = json.loads(plan_bytes)
+assert plan['status'] == 'READY FOR ROOT PUBLICATION CHECKS'
+receipt_path = Path(plan['receipt']['original'])
+assert sha(receipt_path) == plan['receipt']['sha256']
+receipt = json.loads(receipt_path.read_text())
+m = json.loads((W / receipt['manifest']).read_text())
+assert git('rev-parse', 'HEAD') == m['base_commit'] == plan['base_commit']
+assert git('write-tree') == m['candidate_tree'] == plan['candidate_tree']
+assert git('branch', '--show-current') == 'project-recovery-bac-2026-11-01'
+assert receipt['package_accounting'] == {'qualified': 28, 'remaining': 38, 'total': 66}
+approved_docs = {v['path']: v['sha256'] for v in receipt['current_documents'].values()}
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == approved_docs.get(path, digest), path
+for path, digest in approved_docs.items():
+    assert sha(R / path) == digest, path
+assert git('worktree', 'list', '--porcelain') == m['worktree_registry'].strip()
+for row in m['worktree_availability']:
+    assert Path(row['path']).is_dir() == row['directory_exists']
+assert sha(R / plan['previous_checkpoint']['path']) == plan['previous_checkpoint']['sha256']
+for row in plan['inputs']:
+    assert sha(Path(row['original'])) == row['sha256'], row['original']
+for digest, row in plan['objects'].items():
+    p = R / row['path']
+    assert p.resolve().is_relative_to((D / 'evidence').resolve())
+    if row['action'] == 'reference-existing':
+        assert sha(p) == digest and p.stat().st_size == row['bytes']
+    else:
+        assert row['action'] == 'copy-new' and not p.exists()
+        assert p.is_relative_to(D / 'evidence/wave35-wip-13')
+        assert sha(Path(row['source'])) == digest
+        assert not p.name.endswith('.py'), p
+execution = {p: git('rev-parse', m['candidate_tree'] + ':' + p)
+             for p in ('src', 'tests', 'configs', 'scripts', '.defaults-ratchet')}
+added = set()
+for digest, row in plan['objects'].items():
+    if row['action'] != 'copy-new':
+        continue
+    p = R / row['path']
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open('xb') as f:
+        f.write(Path(row['source']).read_bytes())
+    assert sha(p) == digest and p.stat().st_size == row['bytes']
+    added.add(row['path'])
+selection = D / 'evidence/wave35-wip-13/selection-plan.json'
+assert not selection.exists()
+selection.write_bytes(plan_bytes)
+added.add(selection.relative_to(R).as_posix())
+# Prepare final public navigation/governance bytes before sealing the manifest.
+# The chain refers to the manifest and is deliberately not hashed by that manifest.
+prepared_documents = {}
+for source, target in [('PROCESS.md', 'EVIDENCE-PROCESS.md'), ('EVIDENCE-INDEX.md', 'EVIDENCE-INDEX.md')]:
+    p = D / target
+    assert not p.exists()
+    text = (E / source).read_text()
+    if source == 'EVIDENCE-INDEX.md':
+        text = text.replace('Use `PROCESS.md`', 'Use [EVIDENCE-PROCESS.md](EVIDENCE-PROCESS.md)')
+        old = 'Latest published checkpoint at this audit: `docs/remediation/bac/evidence/wave35-wip-12.json`. R58/WIP13 is a separate local candidate until root finalizes and publishes its receipt.'
+        assert old in text
+        text = text.replace(old, 'Historical audit snapshot: WIP12 was the latest verified remote checkpoint when this baseline was audited. The current locally assembled WIP13 record is identified below; its remote publication and CI require separate verification.')
+        old = 'Root still owns publication; selection is not independent application qualification.'
+        assert old in text
+        text = text.replace(old, 'This historical selection observation is superseded by the locally assembled WIP13 checkpoint record below; selection is not independent application qualification.')
+        text = text.replace('* R58 local handoff:', '* R58 historical handoff at audit:')
+        text += '\n## Current checkpoint record\n\n[WIP13](evidence/wave35-wip-13.json) is the current locally assembled checkpoint record for the qualified R58 bootstrap candidate, reviewed documentation and delta evidence. Its selection retains failed historical attempts. Remote publication and CI are independently verified later; no remote push or green CI is asserted here. Original-package accounting remains 28/38/66.\n'
+    prepared_documents[p.relative_to(R).as_posix()] = text.encode()
+agents = R / 'AGENTS.md'
+prior_agents = agents.read_text()
+assert '## BAC checkpoint evidence' not in prior_agents
+prepared_documents['AGENTS.md'] = (prior_agents + '\n' + (E / 'AGENTS-entry.md').read_text()).encode()
+manifest = {
+    'status': receipt['status'], 'packet': receipt['packet'],
+    'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+    'execution_subtrees': execution, 'receipt': receipt,
+    'generated_documents': {path: {'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
+                            for path, data in prepared_documents.items()},
+    'predecessor': plan['previous_checkpoint'],
+    'selection_plan': {'path': selection.relative_to(R).as_posix(), 'sha256': sha(selection)},
+    'artifacts': {row['path']: {'sha256': digest, 'bytes': row['bytes'], 'action': row['action']}
+                  for digest, row in plan['objects'].items()},
+    'qualified_progress': '28 qualified / 38 remaining / 66 original packages; bounded bootstrap only.',
+    'publication': 'Reviewed source checkpoint; exact remote publication and CI verified separately.',
+    'next': receipt['required_next'],
+}
+mp = D / 'evidence/wave35-wip-13.json'
+assert not mp.exists()
+mp.write_text(json.dumps(manifest, indent=2) + '\n')
+added.add(mp.relative_to(R).as_posix())
+for path, data in prepared_documents.items():
+    p = R / path
+    if path == 'AGENTS.md':
+        assert p.read_text() == prior_agents
+        p.write_bytes(data)
+    else:
+        with p.open('xb') as f:
+            f.write(data)
+    assert sha(p) == manifest['generated_documents'][path]['sha256']
+    added.add(path)
+chain = json.loads((E / 'canonical-chain.json').read_text())
+assert len(chain['entries']) == 46 and chain['entries'][-1]['id'] == 'wave35-wip-12'
+assert chain['entries'][-1]['manifest'] == plan['previous_checkpoint']
+assert chain.pop('latest_published_checkpoint') == 'wave35-wip-12'
+chain['latest_verified_remote_publication_at_assembly'] = 'wave35-wip-12'
+chain['inventory'] = {'scope': 'local-only baseline audit; not a public relative link',
+                      'original_path': str(E / 'inventory-v2.json'), 'sha256': sha(E / 'inventory-v2.json')}
+chain['current_local_candidate']['selection_plan'] = manifest['selection_plan']
+chain['current_local_candidate']['status'] = 'Locally assembled WIP13; independent remote publication verification pending'
+chain['current_checkpoint'] = {'path': mp.relative_to(R).as_posix(), 'sha256': sha(mp),
+                             'candidate_tree': m['candidate_tree'],
+                             'publication': 'Locally assembled; independent remote publication and CI verification pending'}
+chain['entries'].append({
+    'id': 'wave35-wip-13', 'manifest': {'path': mp.relative_to(R).as_posix(), 'sha256': sha(mp)},
+    'previous_record': plan['previous_checkpoint'], 'previous_catalog_entry': 'wave35-wip-12',
+    'identity': {'evidence_base_commit': m['base_commit'], 'evidence_candidate_tree': m['candidate_tree'],
+                 'execution_subtrees': execution},
+    'status': receipt['status'], 'packet': receipt['packet'], 'round': 58,
+    'receipt_pointer': '#/receipt', 'package_accounting': receipt['package_accounting'],
+    'qualified_progress': manifest['qualified_progress'],
+    'selection_plan': manifest['selection_plan'],
+    'publication': 'Locally assembled; independent remote publication and CI verification pending',
+})
+for name, value in [('checkpoint-chain.json', chain), ('historical-document-references.json', json.loads((E / 'historical-document-references.json').read_text()))]:
+    p = D / 'evidence' / name
+    assert not p.exists()
+    p.write_text(json.dumps(value, indent=2) + '\n')
+    added.add(p.relative_to(R).as_posix())
+added.update(approved_docs)
+# Recheck every reviewed input after generating documents/chain and before staging.
+for row in plan['inputs']:
+    assert sha(Path(row['original'])) == row['sha256'], row['original']
+subprocess.run(['git', 'add', '-f', '--', *sorted(added)], cwd=R, check=True)
+tree = git('write-tree')
+for path, identity in execution.items():
+    assert git('rev-parse', tree + ':' + path) == identity, path
+assert set(git('diff', '--cached', '--name-only').splitlines()) == set(m['changed_paths']) | added
+assert not git('diff', '--name-only')
+subprocess.run(['git', 'diff', '--cached', '--check', '--', '.', ':(glob,exclude)docs/remediation/bac/evidence/**'], cwd=R, check=True)
+result = {'status': 'ASSEMBLED; no commit or push', 'evidence_tree': m['candidate_tree'],
+          'publication_tree': tree, 'new_objects': plan['metrics'], 'staged_paths': sorted(set(m['changed_paths']) | added),
+          'source_equivalence': 'Exact qualified src/tests/configs/scripts/ratchet retained; approved docs/evidence/governance only.'}
+out = Path('/workspace/bac-review-2026-11-01/qualification/wave35-wip-13-assembly.json')
+assert not out.exists()
+out.write_text(json.dumps(result, indent=2) + '\n')
+print(json.dumps({k: v for k, v in result.items() if k != 'staged_paths'}, indent=2))

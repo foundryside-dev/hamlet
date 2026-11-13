@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "tests": 15,
+  "test_exit": 0,
+  "scope": "Explicit .py helper inputs use .py.txt for newly copied snapshots; original paths/bytes/hashes and historical reference paths preserved. No gate waiver.",
+  "supersedes_validation": "validation.json",
+  "tool_sha256": {
+    "evidence_index.py": "699a18304087815d56d192dbd9b9d5d18a1d869f87fa6260b3bfa0aeefc76ea4",
+    "select_wip13.py": "d0d36448575aad092b959531ed602bdbceb42d3300834e37850538d2c91e29b5",
+    "test_evidence_tools.py": "1cc754f90cc7b4136f4deea954bf5d125f0b04fe4b7eaff68748bbe171cab9b7"
+  }
+}

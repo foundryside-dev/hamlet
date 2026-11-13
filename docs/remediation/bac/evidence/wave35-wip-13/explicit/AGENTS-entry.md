@@ -1,0 +1,3 @@
+## BAC checkpoint evidence
+
+For BAC checkpoint publication, follow [EVIDENCE-PROCESS.md](docs/remediation/bac/EVIDENCE-PROCESS.md) and update [EVIDENCE-INDEX.md](docs/remediation/bac/EVIDENCE-INDEX.md). Publish one authoritative record per candidate/check with immutable attempts, exact source/process provenance and independent qualification. Preserve failed/unexecuted results and package-vs-component scope; do not sum overlapping test selections. Publish only new exact bytes and hash-verified references to existing artifacts, with a concise status delta. Preserve historical evidence and backups; this rule authorizes no deletion or acceptance waiver.

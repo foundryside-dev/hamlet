@@ -1,0 +1,68 @@
+[
+  {
+    "exact_bytes_in_inventory": false,
+    "expected": "99ebf796a2d338f8e37695de883ad10df13ffc6b98cb66d239ac89b7aa6b8e77",
+    "kind": "historical_external_reference",
+    "manifest": "docs/remediation/bac/evidence/wave23-wip-01.json",
+    "path": "docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md",
+    "git_commit": "265a36ac152a4419d22a3b5753ea6d151d112f19",
+    "git_path": "docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md",
+    "observed_sha256": "99ebf796a2d338f8e37695de883ad10df13ffc6b98cb66d239ac89b7aa6b8e77",
+    "verified": true
+  },
+  {
+    "exact_bytes_in_inventory": false,
+    "expected": "8f966181a3b38b9bd66a27992a987988f10e016ad0044883f36ee806afd2bbb0",
+    "kind": "historical_external_reference",
+    "manifest": "docs/remediation/bac/evidence/wave35-wip-12.json",
+    "path": "docs/remediation/bac/CURRENT-NATIVE-RESTORE-CONFIGURATION-CONTRACT.md",
+    "git_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "git_path": "docs/remediation/bac/CURRENT-NATIVE-RESTORE-CONFIGURATION-CONTRACT.md",
+    "observed_sha256": "8f966181a3b38b9bd66a27992a987988f10e016ad0044883f36ee806afd2bbb0",
+    "verified": true
+  },
+  {
+    "exact_bytes_in_inventory": false,
+    "expected": "e432f88d423d47c5aaba59af99561072585a37215fcc7297636cdfb8d2af0a44",
+    "kind": "historical_external_reference",
+    "manifest": "docs/remediation/bac/evidence/wave35-wip-12.json",
+    "path": "docs/remediation/bac/CURRENT-NATIVE-LEARNING-RESET-CONTRACT.md",
+    "git_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "git_path": "docs/remediation/bac/CURRENT-NATIVE-LEARNING-RESET-CONTRACT.md",
+    "observed_sha256": "e432f88d423d47c5aaba59af99561072585a37215fcc7297636cdfb8d2af0a44",
+    "verified": true
+  },
+  {
+    "exact_bytes_in_inventory": false,
+    "expected": "c84d76287cbe497ee4ba82c4937951ee3b039a27ae623f1b46b7c283676a02ec",
+    "kind": "historical_external_reference",
+    "manifest": "docs/remediation/bac/evidence/wave35-wip-12.json",
+    "path": "docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md",
+    "git_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "git_path": "docs/remediation/bac/CURRENT-BACKEND-LOCAL-SERVICE-CONTRACT.md",
+    "observed_sha256": "c84d76287cbe497ee4ba82c4937951ee3b039a27ae623f1b46b7c283676a02ec",
+    "verified": true
+  },
+  {
+    "exact_bytes_in_inventory": false,
+    "expected": "9edd156dc0966e78d5c360d06a7c14db5e7bb45077f17622856ccd9c4c67ca92",
+    "kind": "historical_external_reference",
+    "manifest": "docs/remediation/bac/evidence/wave35-wip-12.json",
+    "path": "docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+    "git_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "git_path": "docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md",
+    "observed_sha256": "9edd156dc0966e78d5c360d06a7c14db5e7bb45077f17622856ccd9c4c67ca92",
+    "verified": true
+  },
+  {
+    "exact_bytes_in_inventory": false,
+    "expected": "9cfbe171931882fa3983cc0a999cc14709525910df75cf6444a030fa26a90013",
+    "kind": "historical_external_reference",
+    "manifest": "docs/remediation/bac/evidence/wave35-wip-12.json",
+    "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+    "git_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+    "git_path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+    "observed_sha256": "9cfbe171931882fa3983cc0a999cc14709525910df75cf6444a030fa26a90013",
+    "verified": true
+  }
+]

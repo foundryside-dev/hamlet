@@ -1,0 +1,22 @@
+{
+  "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+  "job": "independent",
+  "case": "bootstrap_poison_setter",
+  "expected_message": "bootstrap poison setter fail closed",
+  "parent_job_exit_code": 0,
+  "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "candidate_tree": "ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42",
+  "manifest_sha256": "b9d2bc97dd040ca97ab94de290a94726efc8f143337cf86d5cdf9e390ce22a5e",
+  "child_pid": 2091,
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "debug": true,
+  "source_guards": 812,
+  "configs": 573,
+  "artifacts": 13,
+  "child_receipt_sha256": "3abd53ba1aead9339096c3b0cc901b76b397aaf32e82fe1da88ee6ff848eb02a",
+  "parent_observation_sha256": "bb27de03072c27f17726afdf112847e3f6ff3195ecbe3939013cc55cb915b899",
+  "verifier_sha256": "4ae9976f320eab6745de88109494decbb1654ab7708e7619a4bed752d8578791",
+  "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+}

@@ -1,0 +1,31 @@
+{
+  "name": "baseline",
+  "exit_code": 0,
+  "seconds": 15.8553946018219,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-k",
+    "test_control_",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r57-baseline/baseline.log",
+  "sha256": "931b0c60bf523ddf2b233910f2d207d1f729d1b9830f64aaa64efe14924431bb",
+  "candidate_tree": "c0fd71c1333f914cd42979c3a88a601edd4c1dea",
+  "base_commit": "93ce825943c104b88a1506a4641e19d1f892466c",
+  "manifest_sha256": "091b7764ae1ee1b59893334eeb3605ba0dbbf65a918e2a728ad03b0b54d4af96",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

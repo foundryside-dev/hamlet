@@ -1,0 +1,173 @@
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from evidence_index import digest, scan, verify
+from select_wip13 import select, validate_final
+
+
+class EvidenceTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.evidence = self.root / 'docs/remediation/bac/evidence'
+        self.evidence.mkdir(parents=True)
+        self.a = self.evidence / 'a.log'
+        self.a.write_text('actual failure\n')
+        (self.evidence / 'b.log').write_bytes(self.a.read_bytes())
+        self.inventory = scan(self.root)
+
+    def test_aliases_and_all_bytes(self):
+        self.assertEqual(self.inventory['metrics']['duplicate_aliases'], 1)
+        self.assertEqual(verify(self.root, self.inventory)['verified_paths'], 2)
+
+    def test_tamper(self):
+        self.a.write_text('false success\n')
+        with self.assertRaises(ValueError):
+            verify(self.root, self.inventory)
+
+    def test_missing(self):
+        self.a.unlink()
+        with self.assertRaises(ValueError):
+            verify(self.root, self.inventory)
+
+    def test_unindexed_addition(self):
+        (self.evidence / 'new.log').write_text('new')
+        with self.assertRaises(ValueError):
+            verify(self.root, self.inventory)
+
+    def test_symlink_refusal(self):
+        (self.evidence / 'link').symlink_to(self.a)
+        with self.assertRaises(ValueError):
+            scan(self.root)
+
+    def test_historical_formats_and_mismatch(self):
+        key = self.a.relative_to(self.root).as_posix()
+        (self.evidence / 'wave01.json').write_text(json.dumps({'artifacts': {key: digest(self.a)}}))
+        (self.evidence / 'wave02.json').write_text(json.dumps({'artifacts': {key: {'sha256': digest(self.a)}}}))
+        result = scan(self.root)
+        self.assertEqual(result['metrics']['artifact_hash_assertions_checked'], 2)
+        self.assertEqual(result['metrics']['integrity_failures'], 0)
+        self.a.write_text('modified')
+        self.assertEqual(scan(self.root)['metrics']['integrity_failures'], 2)
+
+    def test_path_escape_refusal(self):
+        (self.evidence / 'wave01.json').write_text(json.dumps({'artifacts': {'../escape': 'a' * 64}}))
+        with self.assertRaises(ValueError):
+            scan(self.root)
+
+    def prepare_selector(self):
+        self.q = self.root / 'q'
+        self.w = self.root / 'w'
+        self.q.mkdir()
+        self.w.mkdir()
+        (self.evidence / 'wave35-wip-12.json').write_text('{}')
+        (self.q / 'wave35-r54-old.log').write_text('exclude old interval')
+        (self.q / 'wave35-r55-failed.log').write_bytes(self.a.read_bytes())
+        (self.q / 'wave35-r58-a.log').write_text('new runtime')
+        (self.q / 'wave35-r58-b.log').write_text('new runtime')
+        manifest = {'candidate_tree': 'a' * 40, 'base_commit': 'b' * 40, 'source_files': {}, 'configs': {}, 'artifacts': {}}
+        (self.w / 'manifest.json').write_text(json.dumps(manifest))
+        self.receipt = {'manifest': 'manifest.json', 'candidate_tree': 'a' * 40, 'base_commit': 'b' * 40,
+                        'package_accounting': {'qualified': 28, 'remaining': 38, 'total': 66},
+                        'required_runner_gap': {'status': 'OPEN; not waived'}, 'global_static': {'all_passed': False},
+                        'status': 'UNRELEASED WIP; no package or repository release',
+                        'runtime': {}, 'review_sha256': {}, 'current_documents': {}}
+        self.rp = self.w / 'receipt-draft.json'
+        self.rp.write_text(json.dumps(self.receipt))
+        self.ip = self.root / 'inventory.json'
+        self.ip.write_text(json.dumps(scan(self.root)))
+
+    def test_selector_finite_interval_and_content_reuse(self):
+        self.prepare_selector()
+        result = select(self.root, self.q, self.w, self.ip, self.rp, [], draft=True)
+        paths = [x['original'] for x in result['inputs']]
+        self.assertFalse(any('r54' in p for p in paths))
+        self.assertTrue(any('r55-failed' in p for p in paths))
+        self.assertEqual(result['metrics']['reused_objects'], 1)
+        self.assertEqual(result['metrics']['input_paths'] - result['metrics']['unique_objects'], 1)
+
+    def test_selector_rejects_draft_as_final(self):
+        self.prepare_selector()
+        with self.assertRaises(ValueError):
+            select(self.root, self.q, self.w, self.ip, self.rp, [])
+
+    def test_selector_rejects_identity_mismatch(self):
+        self.prepare_selector()
+        self.receipt['candidate_tree'] = 'c' * 40
+        self.rp.write_text(json.dumps(self.receipt))
+        with self.assertRaises(ValueError):
+            select(self.root, self.q, self.w, self.ip, self.rp, [], draft=True)
+
+    def test_selector_rechecks_reused_bytes(self):
+        self.prepare_selector()
+        self.a.write_text('tampered')
+        with self.assertRaises(ValueError):
+            select(self.root, self.q, self.w, self.ip, self.rp, [], draft=True)
+
+
+    def test_receipt_symlink_refused(self):
+        self.prepare_selector()
+        link = self.w / 'receipt-link.json'
+        link.symlink_to(self.rp)
+        with self.assertRaises(ValueError):
+            select(self.root, self.q, self.w, self.ip, link, [], draft=True)
+
+    def test_final_completeness_fail_closed(self):
+        self.prepare_selector()
+        manifest = {'base_commit': '93ce825943c104b88a1506a4641e19d1f892466c',
+                    'candidate_tree': 'ef124681f9e1ff9f560b9dfc7da404fcfdeb1c42',
+                    'source_files': {}, 'configs': {}, 'artifacts': {}}
+        with self.assertRaisesRegex(ValueError, 'empty frozen'):
+            validate_final(self.q, self.receipt, manifest, self.w / 'manifest.json')
+        for group in ('source_files', 'configs', 'artifacts'):
+            manifest[group] = {'synthetic': 'a' * 64}
+        with self.assertRaisesRegex(ValueError, 'current documents'):
+            validate_final(self.q, self.receipt, manifest, self.w / 'manifest.json')
+        self.receipt['current_documents'] = {name: {} for name in
+            ('CURRENT-PURE-BOOTSTRAP-CONTRACT.md', 'CURRENT-RNG-CUSTODY-CORE-CONTRACT.md', 'STATUS.md')}
+        with self.assertRaisesRegex(ValueError, 'reviews'):
+            validate_final(self.q, self.receipt, manifest, self.w / 'manifest.json')
+        self.receipt['review_sha256'] = {'T18e-PURE-BOOTSTRAP-' + name + '.md': 'a' * 64 for name in
+            ('CANDIDATE-REVIEW', 'INDEPENDENT-EXECUTION', 'IMPLEMENTATION-REPORT', 'DOCUMENTATION-REVIEW')}
+        with self.assertRaisesRegex(ValueError, 'runtime checks'):
+            validate_final(self.q, self.receipt, manifest, self.w / 'manifest.json')
+        self.receipt['runtime'] = {name: {} for name in ('owned', 'coherent', 'independent')}
+        with self.assertRaisesRegex(ValueError, 'R56 evidence'):
+            validate_final(self.q, self.receipt, manifest, self.w / 'manifest.json')
+
+    def test_explicit_python_snapshot_suffix_and_historical_reference(self):
+        self.prepare_selector()
+        fresh = self.w / 'helper.py'
+        fresh.write_text('print(42)\n')
+        previous = self.evidence / 'old-helper.py'
+        previous.write_text('print(21)\n')
+        reused = self.w / 'old-helper.py'
+        reused.write_bytes(previous.read_bytes())
+        self.ip.write_text(json.dumps(scan(self.root)))
+        result = select(self.root, self.q, self.w, self.ip, self.rp, [str(fresh), str(reused)], draft=True)
+        row = result['objects'][digest(fresh)]
+        self.assertEqual(row['action'], 'copy-new')
+        self.assertTrue(row['path'].endswith('/explicit/helper.py.txt'))
+        self.assertEqual(row['source'], str(fresh))
+        self.assertEqual(row['bytes'], fresh.stat().st_size)
+        old = result['objects'][digest(reused)]
+        self.assertEqual(old['action'], 'reference-existing')
+        self.assertEqual(old['path'], previous.relative_to(self.root).as_posix())
+        origins = {row['original']: row for row in result['inputs']}
+        self.assertEqual(origins[str(fresh)]['sha256'], digest(fresh))
+        self.assertEqual(origins[str(reused)]['sha256'], digest(previous))
+
+    def test_reuse_outside_archive_refused(self):
+        self.prepare_selector()
+        data = json.loads(self.ip.read_text())
+        data['objects'][digest(self.a)]['paths'] = ['mutable.log']
+        (self.root / 'mutable.log').write_bytes(self.a.read_bytes())
+        self.ip.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError, 'outside immutable'):
+            select(self.root, self.q, self.w, self.ip, self.rp, [], draft=True)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,0 +1,23 @@
+{
+  "name": "constructors",
+  "exit_code": 0,
+  "seconds": 4.688844203948975,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors.log",
+  "sha256": "0cb353fe094742b1a51c6a6edcf8e4e0e1d722a76003a8767568ec9ba1829ec7",
+  "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

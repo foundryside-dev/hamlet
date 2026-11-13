@@ -1,0 +1,393 @@
+{
+  "schema": "bac-bounded-component-attempt-v1",
+  "status": "TESTS-FIRST CAUSAL RED; PRODUCTION UNCHANGED",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+  "candidate_manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r90-candidate.json",
+    "sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+    "bytes": 203415
+  },
+  "source_budget": {
+    "files": 4,
+    "lines": 2587,
+    "planned_lines": 3800
+  },
+  "checks": [
+    {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection-spec.json",
+        "sha256": "0809324ba867b1b92297af064789577c36abfb18ac83a24d01cbf872ceb11b43",
+        "bytes": 582
+      },
+      "results": [
+        {
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection-result.json",
+            "sha256": "f310037ddf9c0f3ef6b122a6c51ddb57c7d77203926281ba94c029e6f6168993",
+            "bytes": 829
+          },
+          "observed": {
+            "name": "collection",
+            "exit_code": 0,
+            "seconds": 4.71397852897644,
+            "command": [
+              "/workspace/hamlet/.venv/bin/python",
+              "-m",
+              "pytest",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+              "--no-cov",
+              "-p",
+              "no:cacheprovider",
+              "-p",
+              "bac_source_identity",
+              "--collect-only",
+              "-q"
+            ],
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection.log",
+            "sha256": "c740d4a6cb50f548754218c479d426a13e9dffca10b1b3d3e202c9131f57dc82",
+            "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+            "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+            "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+            "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection.log",
+            "sha256": "c740d4a6cb50f548754218c479d426a13e9dffca10b1b3d3e202c9131f57dc82",
+            "bytes": 1876
+          }
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection/identity-controller.json",
+          "sha256": "98f2337e6097998bcd130e9c660c5acb4f447ea7629a30b2453ff9dc2854e891",
+          "bytes": 246
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection-custody.json",
+          "sha256": "eeaeb524cd5cf8c24896250387583234a7021cc04733d0f091b0745d0c5739b5",
+          "bytes": 640
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection-result.json",
+          "sha256": "f310037ddf9c0f3ef6b122a6c51ddb57c7d77203926281ba94c029e6f6168993",
+          "bytes": 829
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-collection/collection.log",
+          "sha256": "c740d4a6cb50f548754218c479d426a13e9dffca10b1b3d3e202c9131f57dc82",
+          "bytes": 1876
+        }
+      ]
+    },
+    {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static-spec.json",
+        "sha256": "bcf75698e36d828a04055aaaa29e49f7a894f0c8110320c31c88308e133fb76c",
+        "bytes": 636
+      },
+      "results": [
+        {
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/ruff-owned-result.json",
+            "sha256": "0a76a609a624237d30027130285a4ae3241f2628d32dc844539c7a24cc2555d0",
+            "bytes": 720
+          },
+          "observed": {
+            "name": "ruff-owned",
+            "exit_code": 0,
+            "seconds": 0.11348080635070801,
+            "command": [
+              "/workspace/hamlet/.venv/bin/python",
+              "-m",
+              "ruff",
+              "check",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+            ],
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+            "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+            "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+            "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+            "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+            "bytes": 19
+          }
+        },
+        {
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/black-owned-result.json",
+            "sha256": "6ab97a6869e5f7cf008969933e269368f8076dfb2c6cd8e2637602da888d0ef0",
+            "bytes": 724
+          },
+          "observed": {
+            "name": "black-owned",
+            "exit_code": 0,
+            "seconds": 0.4418764114379883,
+            "command": [
+              "/workspace/hamlet/.venv/bin/python",
+              "-m",
+              "black",
+              "--check",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+            ],
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/black-owned.log",
+            "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+            "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+            "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+            "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+            "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/black-owned.log",
+            "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+            "bytes": 55
+          }
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/black-owned-result.json",
+          "sha256": "6ab97a6869e5f7cf008969933e269368f8076dfb2c6cd8e2637602da888d0ef0",
+          "bytes": 724
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/black-owned.log",
+          "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+          "bytes": 55
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/ruff-owned-result.json",
+          "sha256": "0a76a609a624237d30027130285a4ae3241f2628d32dc844539c7a24cc2555d0",
+          "bytes": 720
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/ruff-owned.log",
+          "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+          "bytes": 19
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/static-custody.json",
+          "sha256": "8129aa1e61fd693afb2d91e3e6b693155effacc7774826c4b3d76328848790c9",
+          "bytes": 996
+        }
+      ]
+    },
+    {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red-spec.json",
+        "sha256": "b09ec39e73c4cf0dd834898d14c40917f331a5ac40572898129d4cdf3c1ca2eb",
+        "bytes": 1009
+      },
+      "results": [
+        {
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red-result.json",
+            "sha256": "b7c74e050c140a95de343f470f3246f5e555d699c51c444ecc214899d7486075",
+            "bytes": 1254
+          },
+          "observed": {
+            "name": "constructor-red",
+            "exit_code": 1,
+            "seconds": 6.687151193618774,
+            "command": [
+              "/workspace/hamlet/.venv/bin/python",
+              "-m",
+              "pytest",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-flat]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-per]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-flat]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-per]",
+              "--no-cov",
+              "-p",
+              "no:cacheprovider",
+              "-p",
+              "bac_source_identity",
+              "-q"
+            ],
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red.log",
+            "sha256": "8f699dabe090525f532f05a25196501a4e644e7da1091250d28355db3d0fcb1c",
+            "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+            "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+            "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+            "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red.log",
+            "sha256": "8f699dabe090525f532f05a25196501a4e644e7da1091250d28355db3d0fcb1c",
+            "bytes": 10050
+          }
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red/failure-controller-9ad48b3351ac2766.json",
+          "sha256": "89590dc1dc50139dfdc7428cf4916cadf0c07e6b335263a0242c0e9935e6fef7",
+          "bytes": 2397
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red/failure-controller-b977a47657955b7a.json",
+          "sha256": "0ea872b47628ce1b1dbeed426aaa7d5e3fe86dc05fe2a6a742223c0f5b6cbf38",
+          "bytes": 2461
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red/failure-controller-bffe7e82b12ba59b.json",
+          "sha256": "ddf8bd445cf3a5f69947d14b14d6aa6bad4a7da96cd9abfdfd041b80ce5b4344",
+          "bytes": 2515
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red/failure-controller-c0c13fc4de91bd35.json",
+          "sha256": "a4076839faa266a779490be9f01f22f2f595422f7b8026daaf89ae329cdd54c7",
+          "bytes": 2320
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red/identity-controller.json",
+          "sha256": "98f2337e6097998bcd130e9c660c5acb4f447ea7629a30b2453ff9dc2854e891",
+          "bytes": 246
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red-failure-index.json",
+          "sha256": "435d7d5594dd57df9121a199dd61f6de620a6d7d6dddfa5d4c8913f33f5e35b1",
+          "bytes": 1391
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red-negative-custody.json",
+          "sha256": "2e60ad490d1cac0c7b8a8191b7ab8fc40a29fc0accb6d098dd849654633d062b",
+          "bytes": 958
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red-result.json",
+          "sha256": "b7c74e050c140a95de343f470f3246f5e555d699c51c444ecc214899d7486075",
+          "bytes": 1254
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/constructor-red.log",
+          "sha256": "8f699dabe090525f532f05a25196501a4e644e7da1091250d28355db3d0fcb1c",
+          "bytes": 10050
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/failed-custody-verification.log",
+          "sha256": "2e60ad490d1cac0c7b8a8191b7ab8fc40a29fc0accb6d098dd849654633d062b",
+          "bytes": 958
+        }
+      ]
+    },
+    {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls-spec.json",
+        "sha256": "46af39ec3ce8801e3d82c0596e825b556ad2698a96c0c6a7243e272f4f684252",
+        "bytes": 1690
+      },
+      "results": [
+        {
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls-result.json",
+            "sha256": "456ddd64c558b283a94ba7e6ccba49819bc9a2dc3a306ae8f369ed4ba178848c",
+            "bytes": 1912
+          },
+          "observed": {
+            "name": "cpu-controls",
+            "exit_code": 0,
+            "seconds": 6.659604072570801,
+            "command": [
+              "/workspace/hamlet/.venv/bin/python",
+              "-m",
+              "pytest",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cpu-flat]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cpu-per]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[per]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_flat_sampling_preserves_selected_cpu_torch_stream[direct]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_flat_sampling_preserves_selected_cpu_torch_stream[batch]",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_direct_retains_vectorized_global_law_with_owned_sampler",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_batch_external_sampler_retains_vectorized_global_law",
+              "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_batch_owned_sampler_retains_residual_draw_law",
+              "--no-cov",
+              "-p",
+              "no:cacheprovider",
+              "-p",
+              "bac_source_identity",
+              "-q"
+            ],
+            "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls.log",
+            "sha256": "02bdac62cb6d973982a5b6ee3b7aa3b536c1a9a4bb9638b0df934627d27c1a4f",
+            "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+            "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+            "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+            "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls.log",
+            "sha256": "02bdac62cb6d973982a5b6ee3b7aa3b536c1a9a4bb9638b0df934627d27c1a4f",
+            "bytes": 853
+          }
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls/identity-controller.json",
+          "sha256": "98f2337e6097998bcd130e9c660c5acb4f447ea7629a30b2453ff9dc2854e891",
+          "bytes": 246
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls-custody.json",
+          "sha256": "174589aa30009e5b6867233708faae9cf457b3d40fb71c92e69a6a71a0d8d2c5",
+          "bytes": 643
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls-result.json",
+          "sha256": "456ddd64c558b283a94ba7e6ccba49819bc9a2dc3a306ae8f369ed4ba178848c",
+          "bytes": 1912
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls.log",
+          "sha256": "02bdac62cb6d973982a5b6ee3b7aa3b536c1a9a4bb9638b0df934627d27c1a4f",
+          "bytes": 853
+        }
+      ]
+    }
+  ],
+  "actual_result_commands": 5,
+  "runtime": {
+    "collected": 13,
+    "cpu_controls_passed": 9,
+    "constructor_failed": 4,
+    "errors": 0,
+    "skips": 0,
+    "warnings": 0
+  },
+  "red_causality": "cuda flat/PER require explicit index at replay_contract.py55; cuda:3 flat/PER access torch.cuda.is_initialized duringactualconstructor lifetime registration. Sentinel setup intact, no pytestplumbingfailure.",
+  "static": "Newtest Ruff/Black PASS",
+  "custody": "818source/573configs/13artifacts/14registry MAIN1; actualcontroller/import/thread/index custodyverified forcollection/PASS/FAIL; staticcustodyverified.",
+  "source_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-INITIAL-TESTS-REVIEW.md",
+    "sha256": "6c657dd191b83774a0a2b006956f346e60e426f6ce52cf8ecb9139ef14d9dc81",
+    "bytes": 8000
+  },
+  "capture_failure": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r90-initial-capture-failure.json",
+    "sha256": "3495d6fd2d3bd644751c7def503489661f698d73531398f4b6cb4154f2ac1f5b",
+    "bytes": 927
+  },
+  "verification_orchestration": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r90-verifier-index-collision.json",
+    "sha256": "3a82168451d5ed6451b125dee41b25b720c88b1ed9630a614d2b74e57b9e6bff",
+    "bytes": 1012
+  },
+  "unrun": [
+    "generatedwave35-r90-owned-spec curriculumtemplate",
+    "remainingAproducerCUDA protocoltests andactualimplementation",
+    "Bactivation/outcomeimplementation andpairedcoretests",
+    "actualone/twodevicehardware,parentintegration,remainingprogramme"
+  ],
+  "programme_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "next": "Extend finite causal producer tests with adoptedoutcomeAPI/suppliercapsules; implement coherentA/B with independentreview, not constructor-only acceptance."
+}

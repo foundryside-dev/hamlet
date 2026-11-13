@@ -1,0 +1,35 @@
+{
+  "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "command": [
+    "git",
+    "ls-tree",
+    "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+    "src",
+    "tests",
+    "configs",
+    "scripts",
+    ".defaults-ratchet"
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": {
+      "kind": "blob",
+      "oid": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+    },
+    "configs": {
+      "kind": "tree",
+      "oid": "33e853d568354eeb24afab9498b9bc227830671d"
+    },
+    "scripts": {
+      "kind": "tree",
+      "oid": "1797d2e80c7a5285fe03c1c029954b0f622fe57e"
+    },
+    "src": {
+      "kind": "tree",
+      "oid": "ac43971770acfc44dc4b4df51c8ba518e187c7a8"
+    },
+    "tests": {
+      "kind": "tree",
+      "oid": "2e81f46f181e1d9170131b289ad7d6db421fce15"
+    }
+  }
+}

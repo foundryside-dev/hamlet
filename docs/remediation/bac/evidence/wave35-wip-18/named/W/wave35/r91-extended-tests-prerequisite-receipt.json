@@ -1,0 +1,18 @@
+{
+  "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+  "manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+  "collection": 65,
+  "ruff": "PASS",
+  "black": "FAIL",
+  "fixture_prerequisites": {
+    "passed": 0,
+    "failed": 3,
+    "cause": "_CUDAData.__torch_function__ missing required kwargs argument before intended producer assertions",
+    "custody": "PASS; failed gate preserved",
+    "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r91-fixture-prerequisites/fixture-prerequisites.log"
+  },
+  "review": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-EXTENDED-TESTS-REVIEW.md",
+  "review_sha256": "12b61777766f7329f994761a144f53993efbbd7784e48192817d9d151c90fc57",
+  "disposition": "No broad RED run. Original author fix round1: E1/E2/E3, fixture signature and formatting only. Production remains unchanged. Tests ceiling1400; four-body prospective4200; user hard5files/5000 preserved.",
+  "time": "2026-11-13T14:08:15.471660+00:00"
+}

@@ -1,0 +1,1776 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 78 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py ..FFFF.. [ 10%]
+.......FFFFFFFFFFF.FF..FFFFFF.FFFFFFFFF..FF........FF..FF.FF....FFFFFF   [100%]
+
+=================================== FAILURES ===================================
+_____________ test_empty_constructor_has_no_cuda_access[cuda-flat] _____________
+
+family = 'flat', selector = 'cuda'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fac2dc2b130>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:139: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:50: in _owner
+    return ReplayBuffer(capacity=4, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:147: in __init__
+    self._init_custody(device)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.replay_buffer.ReplayBuffer object at 0x7fac2dce4050>
+device = device(type='cuda')
+
+    def _init_custody(self, device: torch.device) -> None:
+        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+        index = device.index
+        devices: tuple[int, ...]
+        if device.type == "cuda":
+            if index is None or type(index) is not int or index < 0:
+>               raise ValueError("CUDA replay custody requires an explicit initialized device index")
+E               ValueError: CUDA replay custody requires an explicit initialized device index
+
+src/townlet/training/replay_contract.py:55: ValueError
+_____________ test_empty_constructor_has_no_cuda_access[cuda-per] ______________
+
+family = 'per', selector = 'cuda'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fac2dcbcb50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:139: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:52: in _owner
+    return PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:203: in __init__
+    self._init_custody(device)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.prioritized_replay_buffer.PrioritizedReplayBuffer object at 0x7fac2dce4a50>
+device = device(type='cuda')
+
+    def _init_custody(self, device: torch.device) -> None:
+        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+        index = device.index
+        devices: tuple[int, ...]
+        if device.type == "cuda":
+            if index is None or type(index) is not int or index < 0:
+>               raise ValueError("CUDA replay custody requires an explicit initialized device index")
+E               ValueError: CUDA replay custody requires an explicit initialized device index
+
+src/townlet/training/replay_contract.py:55: ValueError
+____________ test_empty_constructor_has_no_cuda_access[cuda:3-flat] ____________
+
+family = 'flat', selector = 'cuda:3'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fac2dbdc050>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:139: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:50: in _owner
+    return ReplayBuffer(capacity=4, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:147: in __init__
+    self._init_custody(device)
+src/townlet/training/replay_contract.py:63: in _init_custody
+    self._replay_participant = process_rng_domain().register(
+src/townlet/exploration/rng_custody.py:247: in register
+    if cuda_devices and (not torch.cuda.is_initialized() or any(index >= torch.cuda.device_count() for index in cuda_devices)):
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_replay_cuda_producer._NoCUDA object at 0x7fac2dcb8640>
+name = 'is_initialized'
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+>       raise AssertionError(f"Replay unexpectedly accessed torch.cuda.{name}")
+E       AssertionError: Replay unexpectedly accessed torch.cuda.is_initialized
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:32: AssertionError
+____________ test_empty_constructor_has_no_cuda_access[cuda:3-per] _____________
+
+family = 'per', selector = 'cuda:3'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fac2dbb5b70>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:139: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:52: in _owner
+    return PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:203: in __init__
+    self._init_custody(device)
+src/townlet/training/replay_contract.py:63: in _init_custody
+    self._replay_participant = process_rng_domain().register(
+src/townlet/exploration/rng_custody.py:247: in register
+    if cuda_devices and (not torch.cuda.is_initialized() or any(index >= torch.cuda.device_count() for index in cuda_devices)):
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_replay_cuda_producer._NoCUDA object at 0x7fac2db1c5f0>
+name = 'is_initialized'
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+>       raise AssertionError(f"Replay unexpectedly accessed torch.cuda.{name}")
+E       AssertionError: Replay unexpectedly accessed torch.cuda.is_initialized
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:32: AssertionError
+_____________ test_dynamic_selector_resolves_each_real_push[flat] ______________
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dce5bd0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_dynamic_selector_resolves_each_real_push(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        selector = torch.device("cuda")
+        owner.device = selector
+        for index in (0, 1):
+            owner.clear()
+            simulated_cuda.selected = index
+            simulated_cuda.events.clear()
+            _push(owner, _rows(), recorded=True)
+            events = list(simulated_cuda.events)
+            assert owner.device is selector
+            assert owner.observations is not None and owner.observations.device == torch.device("cuda", index)
+            assert torch.equal(owner.observations.cpu(), _rows()["observations"])
+>           assert [event for event in events if event[0] == "current"] == [("current", index)]
+E           AssertionError: assert [] == [('current', 0)]
+E             
+E             Right contains one more item: ('current', 0)
+E             Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:537: AssertionError
+______________ test_dynamic_selector_resolves_each_real_push[per] ______________
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d7882b0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_dynamic_selector_resolves_each_real_push(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        selector = torch.device("cuda")
+        owner.device = selector
+        for index in (0, 1):
+            owner.clear()
+            simulated_cuda.selected = index
+            simulated_cuda.events.clear()
+            _push(owner, _rows(), recorded=True)
+            events = list(simulated_cuda.events)
+            assert owner.device is selector
+            assert owner.observations is not None and owner.observations.device == torch.device("cuda", index)
+            assert torch.equal(owner.observations.cpu(), _rows()["observations"])
+>           assert [event for event in events if event[0] == "current"] == [("current", index)]
+E           AssertionError: assert [] == [('current', 0)]
+E             
+E             Right contains one more item: ('current', 0)
+E             Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:537: AssertionError
+____ test_push_inventories_retained_secondary_source_and_destination[flat] _____
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d788510>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_push_inventories_retained_secondary_source_and_destination(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.device = torch.device("cuda:1")
+        rows = _rows()
+        rows["observations"] += 10
+        rows["next_observations"] += 10
+        rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 2)
+        simulated_cuda.events.clear()
+        _push(owner, rows, recorded=True)
+        events = list(simulated_cuda.events)
+        assert owner.observations is not None and owner.observations.device == torch.device("cuda:0")
+        assert torch.equal(owner.observations.cpu(), rows["observations"])
+>       _assert_local(events, (0, 1, 2))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:555: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'isfinite', (2,), False), ('finished', 'isfinite', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,)), ...]
+devices = (0, 1, 2)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0, 1, 2)]
+E         
+E         Right contains one more item: (0, 1, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+_____ test_push_inventories_retained_secondary_source_and_destination[per] _____
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2db1fd10>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_push_inventories_retained_secondary_source_and_destination(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.device = torch.device("cuda:1")
+        rows = _rows()
+        rows["observations"] += 10
+        rows["next_observations"] += 10
+        rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 2)
+        simulated_cuda.events.clear()
+        _push(owner, rows, recorded=True)
+        events = list(simulated_cuda.events)
+        assert owner.observations is not None and owner.observations.device == torch.device("cuda:0")
+        assert torch.equal(owner.observations.cpu(), rows["observations"])
+>       _assert_local(events, (0, 1, 2))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:555: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'isfinite', (2,), False), ('finished', 'isfinite', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,)), ...]
+devices = (0, 1, 2)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0, 1, 2)]
+E         
+E         Right contains one more item: (0, 1, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+__ test_install_inventories_issuer_material_without_selector_migration[flat] ___
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8f0f30>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_install_inventories_issuer_material_without_selector_migration(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+        owner.device = torch.device("cuda:2")
+        simulated_cuda.events.clear()
+        owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
+        assert owner.observations is not None and owner.observations.device == torch.device("cuda:1")
+        _assert_tree_equal(owner.serialize(), state)
+>       assert _syncs(events) == (0, 1)
+E       assert (0,) == (0, 1)
+E         
+E         Right contains one more item: 1
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:571: AssertionError
+___ test_install_inventories_issuer_material_without_selector_migration[per] ___
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8f1bf0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_install_inventories_issuer_material_without_selector_migration(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+        owner.device = torch.device("cuda:2")
+        simulated_cuda.events.clear()
+        owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
+        assert owner.observations is not None and owner.observations.device == torch.device("cuda:1")
+        _assert_tree_equal(owner.serialize(), state)
+>       assert _syncs(events) == (0, 1)
+E       assert (0,) == (0, 1)
+E         
+E         Right contains one more item: 1
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:571: AssertionError
+________ test_empty_prepare_install_ignores_unused_cuda_selector[flat] _________
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8b8850>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_empty_prepare_install_ignores_unused_cuda_selector(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        state = owner.serialize()
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        candidate = owner.prepare_serialized(state, expected_obs_dim=None, lineage=None)
+        owner.load_prepared(candidate, lineage=None)
+>       assert simulated_cuda.events == []
+E       AssertionError: assert [('sync', 0), ('sync', 0)] == []
+E         
+E         Left contains 2 more items, first extra item: ('sync', 0)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:583: AssertionError
+_________ test_empty_prepare_install_ignores_unused_cuda_selector[per] _________
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8b8b50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_empty_prepare_install_ignores_unused_cuda_selector(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        state = owner.serialize()
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        candidate = owner.prepare_serialized(state, expected_obs_dim=None, lineage=None)
+        owner.load_prepared(candidate, lineage=None)
+>       assert simulated_cuda.events == []
+E       AssertionError: assert [('sync', 0), ('sync', 0)] == []
+E         
+E         Left contains 2 more items, first extra item: ('sync', 0)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:583: AssertionError
+_______ test_archive_only_prepare_install_keeps_unused_target_lazy[flat] _______
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dbdf890>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_archive_only_prepare_install_keeps_unused_target_lazy(family: str, simulated_cuda: _SimCUDA) -> None:
+        legacy = _legacy_transport(family)
+        owner = _owner(family, torch.device("cuda:0"))
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        candidate = owner.prepare_serialized(legacy, expected_obs_dim=2, lineage=None)
+        owner.load_prepared(candidate, lineage=None)
+>       assert simulated_cuda.events == []
+E       AssertionError: assert [('sync', 0), ('sync', 0)] == []
+E         
+E         Left contains 2 more items, first extra item: ('sync', 0)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:619: AssertionError
+_______ test_archive_only_prepare_install_keeps_unused_target_lazy[per] ________
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dbdf020>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_archive_only_prepare_install_keeps_unused_target_lazy(family: str, simulated_cuda: _SimCUDA) -> None:
+        legacy = _legacy_transport(family)
+        owner = _owner(family, torch.device("cuda:0"))
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        candidate = owner.prepare_serialized(legacy, expected_obs_dim=2, lineage=None)
+        owner.load_prepared(candidate, lineage=None)
+>       assert simulated_cuda.events == []
+E       AssertionError: assert [('sync', 0), ('sync', 0)] == []
+E         
+E         Left contains 2 more items, first extra item: ('sync', 0)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:619: AssertionError
+____ test_per_declaration_distinguishes_allocating_and_noop_branches[False] ____
+
+matching = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dbc1390>
+
+    @pytest.mark.parametrize("matching", [False, True])
+    def test_per_declaration_distinguishes_allocating_and_noop_branches(matching: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner("per", torch.device("cuda:0"))
+        assert isinstance(owner, PrioritizedReplayBuffer)
+        if matching:
+            owner.declare_unconstrained_action_dim(action_dim=2)
+            owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        owner.declare_unconstrained_action_dim(action_dim=2)
+        events = list(simulated_cuda.events)
+        assert owner.action_dim == 2
+        if matching:
+            assert events == []
+        else:
+            assert owner.next_action_masks is not None and tuple(owner.next_action_masks.shape) == (4, 2)
+>           _assert_local(events, (0,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:639: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'ones', (0,), False), ('work', 'zeros', (0,), False), ('work', '__getitem__', (0,), False), ('finished', '__getitem__', (0,)), ('work', 'fill_', (0,), False), ('finished', 'fill_', (0,))]
+devices = (0,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0,)]
+E         
+E         Right contains one more item: (0,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+_ test_zero_push_inventories_secondary_validation_without_target_allocation[flat] _
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dc8fd40>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_zero_push_inventories_secondary_validation_without_target_allocation(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        owner.device = torch.device("cuda:3")
+        rows = {name: value[:0] for name, value in _rows().items()}
+        rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 2)
+        simulated_cuda.events.clear()
+        _push(owner, rows, recorded=True)
+        events = list(simulated_cuda.events)
+        assert len(owner) == 0 and owner.observations is None
+>       _assert_local(events, (2,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:652: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'isfinite', (2,), False), ('finished', 'isfinite', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,))]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+_ test_zero_push_inventories_secondary_validation_without_target_allocation[per] _
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2db0e510>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_zero_push_inventories_secondary_validation_without_target_allocation(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        owner.device = torch.device("cuda:3")
+        rows = {name: value[:0] for name, value in _rows().items()}
+        rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 2)
+        simulated_cuda.events.clear()
+        _push(owner, rows, recorded=True)
+        events = list(simulated_cuda.events)
+        assert len(owner) == 0 and owner.observations is None
+>       _assert_local(events, (2,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:652: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'isfinite', (2,), False), ('finished', 'isfinite', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,))]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+__________ test_priority_update_uses_actual_error_source[True-False] ___________
+
+stable = False, cuda_input = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2db7fb70>
+
+    @pytest.mark.parametrize("stable", [False, True])
+    @pytest.mark.parametrize("cuda_input", [False, True])
+    def test_priority_update_uses_actual_error_source(stable: bool, cuda_input: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner("per", torch.device("cpu") if cuda_input else torch.device("cuda:0"))
+        assert isinstance(owner, PrioritizedReplayBuffer)
+        _push(owner, _rows(), recorded=True)
+        errors = torch.tensor([0.5])
+        if cuda_input:
+            errors = _CUDAData(errors, 2)
+        update = owner.update_unit_priorities if stable else owner.update_priorities
+        simulated_cuda.events.clear()
+        update(np.array([0], dtype=np.int64), errors)
+        events = list(simulated_cuda.events)
+        assert owner.priorities[0] == np.float32(0.500001)
+        if cuda_input:
+>           _assert_local(events, (2,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:671: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'is_complex', (2,), False), ('finished', 'is_complex', (2,)), ('work', 'detach', (2,), False), ('finished', 'detach', (2,)), ('work', 'to', (2,), False)]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+___________ test_priority_update_uses_actual_error_source[True-True] ___________
+
+stable = True, cuda_input = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dbd3110>
+
+    @pytest.mark.parametrize("stable", [False, True])
+    @pytest.mark.parametrize("cuda_input", [False, True])
+    def test_priority_update_uses_actual_error_source(stable: bool, cuda_input: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner("per", torch.device("cpu") if cuda_input else torch.device("cuda:0"))
+        assert isinstance(owner, PrioritizedReplayBuffer)
+        _push(owner, _rows(), recorded=True)
+        errors = torch.tensor([0.5])
+        if cuda_input:
+            errors = _CUDAData(errors, 2)
+        update = owner.update_unit_priorities if stable else owner.update_priorities
+        simulated_cuda.events.clear()
+        update(np.array([0], dtype=np.int64), errors)
+        events = list(simulated_cuda.events)
+        assert owner.priorities[0] == np.float32(0.500001)
+        if cuda_input:
+>           _assert_local(events, (2,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:671: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'is_complex', (2,), False), ('finished', 'is_complex', (2,)), ('work', 'detach', (2,), False), ('finished', 'detach', (2,)), ('work', 'to', (2,), False)]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+___ test_read_routes_inventory_accessed_fields_not_selector[readiness-flat] ____
+
+family = 'flat', route = 'readiness'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dbd14f0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["readiness", "serialize"])
+    def test_read_routes_inventory_accessed_fields_not_selector(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 2)
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        result = owner.readiness(_request(family)) if route == "readiness" else owner.serialize()
+        events = list(simulated_cuda.events)
+        assert result.ready if route == "readiness" else torch.equal(result["observations"], _rows()["observations"])
+>       _assert_local(events, (2,) if route == "readiness" else (0, 2))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:694: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', '__getitem__', (2,), False), ('finished', '__getitem__', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,))]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+____ test_read_routes_inventory_accessed_fields_not_selector[readiness-per] ____
+
+family = 'per', route = 'readiness'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d869fd0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["readiness", "serialize"])
+    def test_read_routes_inventory_accessed_fields_not_selector(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 2)
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        result = owner.readiness(_request(family)) if route == "readiness" else owner.serialize()
+        events = list(simulated_cuda.events)
+        assert result.ready if route == "readiness" else torch.equal(result["observations"], _rows()["observations"])
+>       _assert_local(events, (2,) if route == "readiness" else (0, 2))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:694: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', '__getitem__', (2,), False), ('finished', '__getitem__', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,))]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+___ test_read_routes_inventory_accessed_fields_not_selector[serialize-flat] ____
+
+family = 'flat', route = 'serialize'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d909ed0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["readiness", "serialize"])
+    def test_read_routes_inventory_accessed_fields_not_selector(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 2)
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        result = owner.readiness(_request(family)) if route == "readiness" else owner.serialize()
+        events = list(simulated_cuda.events)
+        assert result.ready if route == "readiness" else torch.equal(result["observations"], _rows()["observations"])
+>       _assert_local(events, (2,) if route == "readiness" else (0, 2))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:694: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', '__getitem__', (0,), False), ('finished', '__getitem__', (0,)), ('work', '__getitem__', (0,), False), ('finished', '__getitem__', (0,)), ('work', 'cat', (0,), False), ('finished', 'cat', (0,)), ...]
+devices = (0, 2)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0, 2)]
+E         
+E         Right contains one more item: (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+____ test_read_routes_inventory_accessed_fields_not_selector[serialize-per] ____
+
+family = 'per', route = 'serialize'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d820650>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["readiness", "serialize"])
+    def test_read_routes_inventory_accessed_fields_not_selector(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 2)
+        owner.device = torch.device("cuda:3")
+        simulated_cuda.events.clear()
+        result = owner.readiness(_request(family)) if route == "readiness" else owner.serialize()
+        events = list(simulated_cuda.events)
+        assert result.ready if route == "readiness" else torch.equal(result["observations"], _rows()["observations"])
+>       _assert_local(events, (2,) if route == "readiness" else (0, 2))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:694: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', '__getitem__', (0,), False), ('finished', '__getitem__', (0,)), ('work', 'detach', (0,), False), ('finished', 'detach', (0,)), ('work', 'cpu', (0,), False), ('work', '__getitem__', (0,), False), ...]
+devices = (0, 2)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0, 2)]
+E         
+E         Right contains one more item: (0, 2)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+________________ test_archive_inventory_precedes_clone_on_read _________________
+
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d801b00>
+
+    def test_archive_inventory_precedes_clone_on_read(simulated_cuda: _SimCUDA) -> None:
+        archive = _archive_on(3)  # Legitimate owning construction before observation.
+        owner = _owner("flat", torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        owner.device = torch.device("cuda:1")
+        simulated_cuda.events.clear()
+        owner.install_historical_archive(archive)
+        events = list(simulated_cuda.events)
+        assert owner.historical_archives[0].source_digest == archive.source_digest
+>       _assert_local(events, (3,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:724: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,)), ('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ...]
+devices = (3,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(3,)]
+E         
+E         Right contains one more item: (3,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+_______ test_completion_keeps_actual_mutation_excluded[False-False-flat] _______
+
+family = 'flat', local = False, body_error = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8038c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+            assert reached.wait(2), "Actual producer never reached CUDA completion"
+            if body_error and not local:
+                assert started_work.is_set(), "Body failure preceded the genuine selected-row tensor operation"
+            competitor.start()
+            assert attempted.wait(2), "Competitor did not attempt its actual clear"
+>           assert not finished.wait(0.1), "Owner was released before completion"
+E           AssertionError: Owner was released before completion
+E           assert not True
+E            +  where True = wait(0.1)
+E            +    where wait = <threading.Event at 0x7fac2d8f3df0: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:793: AssertionError
+_______ test_completion_keeps_actual_mutation_excluded[False-False-per] ________
+
+family = 'per', local = False, body_error = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8000c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+            assert reached.wait(2), "Actual producer never reached CUDA completion"
+            if body_error and not local:
+                assert started_work.is_set(), "Body failure preceded the genuine selected-row tensor operation"
+            competitor.start()
+            assert attempted.wait(2), "Competitor did not attempt its actual clear"
+>           assert not finished.wait(0.1), "Owner was released before completion"
+E           AssertionError: Owner was released before completion
+E           assert not True
+E            +  where True = wait(0.1)
+E            +    where wait = <threading.Event at 0x7fac2d875d30: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:793: AssertionError
+_______ test_completion_keeps_actual_mutation_excluded[False-True-flat] ________
+
+family = 'flat', local = True, body_error = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d801a20>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+>           assert reached.wait(2), "Actual producer never reached CUDA completion"
+E           AssertionError: Actual producer never reached CUDA completion
+E           assert False
+E            +  where False = wait(2)
+E            +    where wait = <threading.Event at 0x7fac2db0f590: unset>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:788: AssertionError
+________ test_completion_keeps_actual_mutation_excluded[False-True-per] ________
+
+family = 'per', local = True, body_error = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d801be0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+>           assert reached.wait(2), "Actual producer never reached CUDA completion"
+E           AssertionError: Actual producer never reached CUDA completion
+E           assert False
+E            +  where False = wait(2)
+E            +    where wait = <threading.Event at 0x7fac2db0a250: unset>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:788: AssertionError
+_______ test_completion_keeps_actual_mutation_excluded[True-False-flat] ________
+
+family = 'flat', local = False, body_error = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d801710>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+            assert reached.wait(2), "Actual producer never reached CUDA completion"
+            if body_error and not local:
+                assert started_work.is_set(), "Body failure preceded the genuine selected-row tensor operation"
+            competitor.start()
+            assert attempted.wait(2), "Competitor did not attempt its actual clear"
+>           assert not finished.wait(0.1), "Owner was released before completion"
+E           AssertionError: Owner was released before completion
+E           assert not True
+E            +  where True = wait(0.1)
+E            +    where wait = <threading.Event at 0x7fac2d85e1b0: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:793: AssertionError
+________ test_completion_keeps_actual_mutation_excluded[True-False-per] ________
+
+family = 'per', local = False, body_error = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d802a50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+            assert reached.wait(2), "Actual producer never reached CUDA completion"
+            if body_error and not local:
+                assert started_work.is_set(), "Body failure preceded the genuine selected-row tensor operation"
+            competitor.start()
+            assert attempted.wait(2), "Competitor did not attempt its actual clear"
+>           assert not finished.wait(0.1), "Owner was released before completion"
+E           AssertionError: Owner was released before completion
+E           assert not True
+E            +  where True = wait(0.1)
+E            +    where wait = <threading.Event at 0x7fac2d85f410: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:793: AssertionError
+________ test_completion_keeps_actual_mutation_excluded[True-True-flat] ________
+
+family = 'flat', local = True, body_error = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d802820>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+>           assert reached.wait(2), "Actual producer never reached CUDA completion"
+E           AssertionError: Actual producer never reached CUDA completion
+E           assert False
+E            +  where False = wait(2)
+E            +    where wait = <threading.Event at 0x7fac2d85f8f0: unset>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:788: AssertionError
+________ test_completion_keeps_actual_mutation_excluded[True-True-per] _________
+
+family = 'per', local = True, body_error = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dbc6350>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    @pytest.mark.parametrize("body_error", [False, True])
+    def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        reached, release = Event(), Event()
+        started_work = Event()
+        outcomes: list[BaseException] = []
+        primary = ValueError("controlled failure after a real selected-row tensor operation")
+    
+        def synchronize(index: int) -> None:
+            reached.set()
+            release.wait(5)
+    
+        simulated_cuda.on_sync = synchronize
+    
+        def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
+            if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
+                started_work.set()
+                raise primary
+    
+        if body_error and not local:
+            simulated_cuda.after_tensor = after_tensor
+    
+        def run() -> None:
+            try:
+                if local:
+                    if body_error:
+                        rows = _rows()
+                        rows["next_action_masks"][0].fill_(False)
+                        rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
+                        rows["dones"] = _CUDAData(rows["dones"], 0)
+                        _push(owner, rows, recorded=True)
+                    else:
+                        owner.serialize()
+                else:
+                    owner.sample(2, lineage=None)
+            except BaseException as error:
+                outcomes.append(error)
+    
+        worker = Thread(target=run)
+        competitor, attempted, finished, competitor_errors = _competing_clear(owner)
+        worker.start()
+        try:
+>           assert reached.wait(2), "Actual producer never reached CUDA completion"
+E           AssertionError: Actual producer never reached CUDA completion
+E           assert False
+E            +  where False = wait(2)
+E            +    where wait = <threading.Event at 0x7fac2db79550: unset>.wait
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:788: AssertionError
+_______ test_clean_body_error_keeps_identity_and_owner_health[True-flat] _______
+
+family = 'flat', local = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8df230>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fac2dafcb40>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    def test_clean_body_error_keeps_identity_and_owner_health(
+        family: str, local: bool, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        primary = ValueError("controlled external tensor/sampler body failure")
+    
+        def fail(*args: Any, **kwargs: Any) -> Any:
+            raise primary
+    
+        with monkeypatch.context() as scoped:
+            if local:
+                scoped.setattr(torch, "isfinite", fail)
+            elif family == "flat":
+                scoped.setattr(torch, "randperm", fail)
+            else:
+                scoped.setattr(np.random, "choice", fail)
+            simulated_cuda.events.clear()
+            with pytest.raises(ValueError) as caught:
+                if local:
+                    rows = _rows()
+                    rows["observations"] = _CUDAData(rows["observations"], 0)
+                    _push(owner, rows, recorded=True)
+                else:
+                    owner.sample(2, lineage=None)
+            events = list(simulated_cuda.events)
+        assert caught.value is primary
+        _assert_tree_equal(owner.serialize(), before)
+        owner.clear()
+        if local:
+>           _assert_local(events, (0,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [], devices = (0,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0,)]
+E         
+E         Right contains one more item: (0,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+_______ test_clean_body_error_keeps_identity_and_owner_health[True-per] ________
+
+family = 'per', local = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8df700>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fac2d8def90>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("local", [False, True])
+    def test_clean_body_error_keeps_identity_and_owner_health(
+        family: str, local: bool, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        primary = ValueError("controlled external tensor/sampler body failure")
+    
+        def fail(*args: Any, **kwargs: Any) -> Any:
+            raise primary
+    
+        with monkeypatch.context() as scoped:
+            if local:
+                scoped.setattr(torch, "isfinite", fail)
+            elif family == "flat":
+                scoped.setattr(torch, "randperm", fail)
+            else:
+                scoped.setattr(np.random, "choice", fail)
+            simulated_cuda.events.clear()
+            with pytest.raises(ValueError) as caught:
+                if local:
+                    rows = _rows()
+                    rows["observations"] = _CUDAData(rows["observations"], 0)
+                    _push(owner, rows, recorded=True)
+                else:
+                    owner.sample(2, lineage=None)
+            events = list(simulated_cuda.events)
+        assert caught.value is primary
+        _assert_tree_equal(owner.serialize(), before)
+        owner.clear()
+        if local:
+>           _assert_local(events, (0,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:842: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [], devices = (0,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(0,)]
+E         
+E         Right contains one more item: (0,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+_______ test_preflight_retains_exclusion_through_parent_completion[flat] _______
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dafd710>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_preflight_retains_exclusion_through_parent_completion(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        competitor, attempted, finished, errors = _competing_clear(owner)
+        observed: list[tuple[int, bool]] = []
+        try:
+>           with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"), torch.device("cuda:1"))):
+                 ^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ReplayBuffer' object has no attribute 'cuda_preflight'
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:905: AttributeError
+_______ test_preflight_retains_exclusion_through_parent_completion[per] ________
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8dfd20>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_preflight_retains_exclusion_through_parent_completion(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        competitor, attempted, finished, errors = _competing_clear(owner)
+        observed: list[tuple[int, bool]] = []
+        try:
+>           with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"), torch.device("cuda:1"))):
+                 ^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'PrioritizedReplayBuffer' object has no attribute 'cuda_preflight'
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:905: AttributeError
+__ test_preflight_undeclared_target_refuses_before_draw_or_data_effect[flat] ___
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dafcb40>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_preflight_undeclared_target_refuses_before_draw_or_data_effect(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+>       with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"),)):
+             ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'ReplayBuffer' object has no attribute 'cuda_preflight'
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:958: AttributeError
+___ test_preflight_undeclared_target_refuses_before_draw_or_data_effect[per] ___
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8dc670>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_preflight_undeclared_target_refuses_before_draw_or_data_effect(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+>       with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"),)):
+             ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'PrioritizedReplayBuffer' object has no attribute 'cuda_preflight'
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:958: AttributeError
+__ test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal[flat] __
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8dee40>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        validated = owner.validate_serialized(_legacy_transport(family), expected_obs_dim=2)
+        assert isinstance(validated.legacy_state, dict)
+        validated.legacy_state["malformed_extra"] = _CUDAData(torch.tensor([7.0]), 3)
+        before = owner.serialize()
+        python_before, numpy_before, torch_before = random.getstate(), np.random.get_state(), torch.get_rng_state().clone()
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError, match="key set mismatch"):
+            owner.materialize_validated(validated, lineage=None)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+        assert random.getstate() == python_before
+        _assert_numpy_state(np.random.get_state(), numpy_before)
+        assert torch.equal(torch.get_rng_state(), torch_before)
+>       _assert_cloned_then_completed(events, (3,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1005: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,))]
+devices = (3,)
+
+    def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
+        for index in devices:
+            assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
+>       assert _syncs(events) == devices
+E       assert () == (3,)
+E         
+E         Right contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:972: AssertionError
+__ test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal[per] ___
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8df0e0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        validated = owner.validate_serialized(_legacy_transport(family), expected_obs_dim=2)
+        assert isinstance(validated.legacy_state, dict)
+        validated.legacy_state["malformed_extra"] = _CUDAData(torch.tensor([7.0]), 3)
+        before = owner.serialize()
+        python_before, numpy_before, torch_before = random.getstate(), np.random.get_state(), torch.get_rng_state().clone()
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError, match="key set mismatch"):
+            owner.materialize_validated(validated, lineage=None)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+        assert random.getstate() == python_before
+        _assert_numpy_state(np.random.get_state(), numpy_before)
+        assert torch.equal(torch.get_rng_state(), torch_before)
+>       _assert_cloned_then_completed(events, (3,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1005: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,))]
+devices = (3,)
+
+    def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
+        for index in devices:
+            assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
+>       assert _syncs(events) == devices
+E       assert () == (3,)
+E         
+E         Right contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:972: AssertionError
+_ test_stale_gpu_candidate_stages_sources_before_currentness_refusal[False-flat] _
+
+family = 'flat', with_archive = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8dd400>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("with_archive", [False, True])
+    def test_stale_gpu_candidate_stages_sources_before_currentness_refusal(family: str, with_archive: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        transport = owner.serialize()
+        if with_archive:
+            transport["historical_archives"] = [history._record(_family_archive(family, 3))]
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(transport, expected_obs_dim=2, lineage=None)
+        owner.clear()  # Invalidates owner revision; issuer-held GPU material survives.
+        owner.device = torch.device("cuda:4")
+        before = owner.serialize()
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError, match="destination changed"):
+            owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+>       _assert_cloned_then_completed(events, (1, 3) if with_archive else (1,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1044: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (1,), False), ('finished', 'detach', (1,)), ('work', 'clone', (1,), False), ('finished', 'clone', (1,)), ('work', 'detach', (1,), False), ('finished', 'detach', (1,)), ...]
+devices = (1,)
+
+    def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
+        for index in devices:
+            assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
+>       assert _syncs(events) == devices
+E       assert (0,) == (1,)
+E         
+E         At index 0 diff: 0 != 1
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:972: AssertionError
+_ test_stale_gpu_candidate_stages_sources_before_currentness_refusal[False-per] _
+
+family = 'per', with_archive = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8dd710>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("with_archive", [False, True])
+    def test_stale_gpu_candidate_stages_sources_before_currentness_refusal(family: str, with_archive: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        transport = owner.serialize()
+        if with_archive:
+            transport["historical_archives"] = [history._record(_family_archive(family, 3))]
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(transport, expected_obs_dim=2, lineage=None)
+        owner.clear()  # Invalidates owner revision; issuer-held GPU material survives.
+        owner.device = torch.device("cuda:4")
+        before = owner.serialize()
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError, match="destination changed"):
+            owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+>       _assert_cloned_then_completed(events, (1, 3) if with_archive else (1,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1044: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (1,), False), ('finished', 'detach', (1,)), ('work', 'clone', (1,), False), ('finished', 'clone', (1,)), ('work', 'detach', (1,), False), ('finished', 'detach', (1,)), ...]
+devices = (1,)
+
+    def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
+        for index in devices:
+            assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
+>       assert _syncs(events) == devices
+E       assert (0,) == (1,)
+E         
+E         At index 0 diff: 0 != 1
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:972: AssertionError
+_ test_stale_gpu_candidate_stages_sources_before_currentness_refusal[True-flat] _
+
+family = 'flat', with_archive = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8dde80>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("with_archive", [False, True])
+    def test_stale_gpu_candidate_stages_sources_before_currentness_refusal(family: str, with_archive: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        transport = owner.serialize()
+        if with_archive:
+            transport["historical_archives"] = [history._record(_family_archive(family, 3))]
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(transport, expected_obs_dim=2, lineage=None)
+        owner.clear()  # Invalidates owner revision; issuer-held GPU material survives.
+        owner.device = torch.device("cuda:4")
+        before = owner.serialize()
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError, match="destination changed"):
+            owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+>       _assert_cloned_then_completed(events, (1, 3) if with_archive else (1,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1044: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,)), ('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ...]
+devices = (1, 3)
+
+    def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
+        for index in devices:
+            assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
+>       assert _syncs(events) == devices
+E       assert (0,) == (1, 3)
+E         
+E         At index 0 diff: 0 != 1
+E         Right contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:972: AssertionError
+_ test_stale_gpu_candidate_stages_sources_before_currentness_refusal[True-per] _
+
+family = 'per', with_archive = True
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8de660>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("with_archive", [False, True])
+    def test_stale_gpu_candidate_stages_sources_before_currentness_refusal(family: str, with_archive: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        transport = owner.serialize()
+        if with_archive:
+            transport["historical_archives"] = [history._record(_family_archive(family, 3))]
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(transport, expected_obs_dim=2, lineage=None)
+        owner.clear()  # Invalidates owner revision; issuer-held GPU material survives.
+        owner.device = torch.device("cuda:4")
+        before = owner.serialize()
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError, match="destination changed"):
+            owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+>       _assert_cloned_then_completed(events, (1, 3) if with_archive else (1,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1044: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,)), ('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ...]
+devices = (1, 3)
+
+    def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
+        for index in devices:
+            assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
+>       assert _syncs(events) == devices
+E       assert (0,) == (1, 3)
+E         
+E         At index 0 diff: 0 != 1
+E         Right contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:972: AssertionError
+___ test_archive_original_state_clone_precedes_nested_content_refusal[flat] ____
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8df150>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_archive_original_state_clone_precedes_nested_content_refusal(family: str, simulated_cuda: _SimCUDA) -> None:
+        record = history._record(_family_archive(family, 3))
+        assert set(record) == {
+            "source_formats",
+            "original_state",
+            "source_digest",
+            "archived_row_count",
+            "reward_semantics",
+            "approval_reference",
+        }
+        record["original_state"]["malformed_extra"] = _CUDAData(torch.tensor([7.0]), 4)
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        transport = {**before, "historical_archives": [record]}
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError):
+            owner.validate_serialized(transport, expected_obs_dim=2)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+>       _assert_local(events, (3, 4))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1068: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,)), ('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ...]
+devices = (3, 4)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(3, 4)]
+E         
+E         Right contains one more item: (3, 4)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+____ test_archive_original_state_clone_precedes_nested_content_refusal[per] ____
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8df700>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_archive_original_state_clone_precedes_nested_content_refusal(family: str, simulated_cuda: _SimCUDA) -> None:
+        record = history._record(_family_archive(family, 3))
+        assert set(record) == {
+            "source_formats",
+            "original_state",
+            "source_digest",
+            "archived_row_count",
+            "reward_semantics",
+            "approval_reference",
+        }
+        record["original_state"]["malformed_extra"] = _CUDAData(torch.tensor([7.0]), 4)
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        transport = {**before, "historical_archives": [record]}
+        simulated_cuda.events.clear()
+        with pytest.raises(ValueError):
+            owner.validate_serialized(transport, expected_obs_dim=2)
+        events = list(simulated_cuda.events)
+        _assert_tree_equal(owner.serialize(), before)
+>       _assert_local(events, (3, 4))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1068: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,)), ('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ...]
+devices = (3, 4)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(3, 4)]
+E         
+E         Right contains one more item: (3, 4)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dynamic_selector_resolves_each_real_push[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dynamic_selector_resolves_each_real_push[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_push_inventories_retained_secondary_source_and_destination[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_push_inventories_retained_secondary_source_and_destination[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_prepare_install_ignores_unused_cuda_selector[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_prepare_install_ignores_unused_cuda_selector[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_only_prepare_install_keeps_unused_target_lazy[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_only_prepare_install_keeps_unused_target_lazy[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_declaration_distinguishes_allocating_and_noop_branches[False]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_zero_push_inventories_secondary_validation_without_target_allocation[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_zero_push_inventories_secondary_validation_without_target_allocation[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_priority_update_uses_actual_error_source[True-False]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_priority_update_uses_actual_error_source[True-True]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[readiness-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[readiness-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[serialize-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[serialize-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_inventory_precedes_clone_on_read
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-False-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-False-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-True-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-True-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-False-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-False-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-True-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-True-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_clean_body_error_keeps_identity_and_owner_health[True-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_clean_body_error_keeps_identity_and_owner_health[True-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_retains_exclusion_through_parent_completion[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_retains_exclusion_through_parent_completion[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_undeclared_target_refuses_before_draw_or_data_effect[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_undeclared_target_refuses_before_draw_or_data_effect[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[False-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[False-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[True-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[True-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_original_state_clone_precedes_nested_content_refusal[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_original_state_clone_precedes_nested_content_refusal[per]
+======================== 46 failed, 32 passed in 9.58s =========================

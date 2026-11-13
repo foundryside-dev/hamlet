@@ -1,0 +1,273 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+  "unique_node_phase_failures": 46,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "Use -v to get more diff",
+      "count": 30,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_prepare_install_ignores_unused_cuda_selector[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_inventory_precedes_clone_on_read",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_zero_push_inventories_secondary_validation_without_target_allocation[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dynamic_selector_resolves_each_real_push[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_only_prepare_install_keeps_unused_target_lazy[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_clean_body_error_keeps_identity_and_owner_health[True-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_priority_update_uses_actual_error_source[True-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[False-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dynamic_selector_resolves_each_real_push[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_prepare_install_ignores_unused_cuda_selector[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_zero_push_inventories_secondary_validation_without_target_allocation[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_original_state_clone_precedes_nested_content_refusal[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[True-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[readiness-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[serialize-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[True-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[serialize-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_push_inventories_retained_secondary_source_and_destination[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_stale_gpu_candidate_stages_sources_before_currentness_refusal[False-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_priority_update_uses_actual_error_source[True-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_original_state_clone_precedes_nested_content_refusal[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_declaration_distinguishes_allocating_and_noop_branches[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[readiness-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_clean_body_error_keeps_identity_and_owner_health[True-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_push_inventories_retained_secondary_source_and_destination[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_only_prepare_install_keeps_unused_target_lazy[per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AssertionError: Replay unexpectedly accessed torch.cuda.is_initialized",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'PrioritizedReplayBuffer' object has no attribute 'cuda_preflight'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_undeclared_target_refuses_before_draw_or_data_effect[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_retains_exclusion_through_parent_completion[per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'ReplayBuffer' object has no attribute 'cuda_preflight'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_undeclared_target_refuses_before_draw_or_data_effect[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_retains_exclusion_through_parent_completion[flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: CUDA replay custody requires an explicit initialized device index",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2d85e1b0: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-False-flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2db79550: unset>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-True-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2db0f590: unset>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-True-flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2d85f8f0: unset>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-True-flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2d875d30: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-False-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2d8f3df0: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-False-flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2db0a250: unset>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[False-True-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fac2d85f410: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_completion_keeps_actual_mutation_excluded[True-False-per]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

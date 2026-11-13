@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r92-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-fixture-prerequisites",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fixture-prerequisites",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

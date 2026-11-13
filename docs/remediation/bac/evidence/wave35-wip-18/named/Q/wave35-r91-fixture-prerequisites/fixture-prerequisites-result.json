@@ -1,0 +1,25 @@
+{
+  "name": "fixture-prerequisites",
+  "exit_code": 1,
+  "seconds": 4.442766427993774,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r91-fixture-prerequisites/fixture-prerequisites.log",
+  "sha256": "1dfb972ab21fca09739e47e0682665f3292af43d05672300b6b385173cb02733",
+  "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

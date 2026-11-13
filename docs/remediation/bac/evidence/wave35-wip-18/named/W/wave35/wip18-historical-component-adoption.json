@@ -1,0 +1,19 @@
+{
+  "schema": "bac-root-historical-component-adoption-v1",
+  "time": "2026-11-13T16:19:01.952771+00:00",
+  "component": {
+    "root": "W",
+    "path": "evidence-management/wip18-r90-r95-staged-history-component.json",
+    "sha256": "f0f1e37e95e357dda57c621d55d871250a58e852caf443bae6c7cd4457aa9d4f",
+    "bytes": 22919
+  },
+  "disposition": "ACCEPTED AS HISTORICAL INPUT ONLY",
+  "direct_unique_refs_rehashed": 39,
+  "basis": "Root reviewed bounded history and source/result dispositions against existing R90-R95 observations; all direct hash-bound references rechecked. The component retains failed/unrun/dependency states and overlap boundaries.",
+  "scope": "May be named as required historical component in finite WIP18 contract. Not terminal A repair approval, source qualification, publication seal or package completion.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

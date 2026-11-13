@@ -1,0 +1,69 @@
+{
+  "schema": "bac-publication-document-proposal-v1",
+  "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "status": "PROPOSED; SOURCE-VERIFIED REVIEW REQUIRED BEFORE APPLICATION",
+  "scope": "Explicit WIP only; I5/B/type/hardware/CI failures retained; no producer or package acceptance.",
+  "changes": [
+    {
+      "target": "docs/remediation/bac/STATUS.md",
+      "before_sha256": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6",
+      "draft": {
+        "root": "W",
+        "path": "evidence-management/wip18-document-drafts/STATUS.md",
+        "sha256": "d7ef31d33a56ce6203582c5558c84bcee0177166550c4380a7e8302f2b4002c4",
+        "bytes": 96328
+      },
+      "lines": 292
+    },
+    {
+      "target": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "before_sha256": "7d636f52831debe6ae33e1d3ec3e6aad8662cf22ac1f1d12a26d125062380237",
+      "draft": {
+        "root": "W",
+        "path": "evidence-management/wip18-document-drafts/EVIDENCE-INDEX.md",
+        "sha256": "72b86c0763dc8e297efcc5cd5988b5b37fad28d91a436d61ae166af575698b7e",
+        "bytes": 6943
+      },
+      "lines": 35
+    },
+    {
+      "target": "README.md",
+      "before_sha256": "020a4d5dbad1519d25d6c3e536fc142044088a84c3b444b942c1b1392b647187",
+      "draft": {
+        "root": "W",
+        "path": "evidence-management/wip18-document-drafts/README.md",
+        "sha256": "fe172c53b4e34beb9723698d9b827e3cbb9175fdf498c63851216d5ec0f5c70a",
+        "bytes": 31735
+      },
+      "lines": 551
+    },
+    {
+      "target": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "before_sha256": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1",
+      "draft": {
+        "root": "W",
+        "path": "evidence-management/wip18-document-drafts/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+        "sha256": "259f78f91209cd917412941a7f60e3eef557899414110306ac4d9f75bfa9a9a7",
+        "bytes": 39808
+      },
+      "lines": 210
+    },
+    {
+      "target": "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+      "before_sha256": "80f6fcede2e7a60ff9548746849e2b31d172807fd8f529420fe43e543028e275",
+      "draft": {
+        "root": "W",
+        "path": "evidence-management/wip18-document-drafts/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+        "sha256": "00082f3cc8dfca251de21ae3e6a41e814f1698f4054aebce0a81ebf4cc57222b",
+        "bytes": 11552
+      },
+      "lines": 65
+    }
+  ],
+  "diff": {
+    "root": "W",
+    "path": "evidence-management/wip18-publication-documents.diff",
+    "sha256": "6bcb44d6d0667967593ac653c2e38d42363ce91fb647efd4cca2966c27f1811d",
+    "bytes": 14472
+  }
+}

@@ -1,0 +1,398 @@
+diff --git a/src/townlet/training/prioritized_replay_buffer.py b/src/townlet/training/prioritized_replay_buffer.py
+index d0f9d57e..0fc35080 100644
+--- a/src/townlet/training/prioritized_replay_buffer.py
++++ b/src/townlet/training/prioritized_replay_buffer.py
+@@ -11,7 +11,7 @@ from __future__ import annotations
+ import copy
+ import math
+ from collections.abc import Mapping
+-from dataclasses import dataclass
++from dataclasses import dataclass, fields
+ from types import MappingProxyType
+ from typing import TYPE_CHECKING, Any
+ 
+@@ -195,12 +195,8 @@ class PrioritizedReplayBuffer(ReplayCustody):
+     )
+ 
+     def _replay_children(self, value: object) -> tuple[object, ...]:
+-        if isinstance(value, (_ValidatedPrioritizedState, _PrioritizedRestoreCandidate)):
+-            return (
+-                *(getattr(value, name) for name in _STORAGE_FIELDS),
+-                value.archives,
+-                value.legacy_state if isinstance(value, _ValidatedPrioritizedState) else None,
+-            )
++        if isinstance(value, (_ValidatedPrioritizedState, _PrioritizedRestoreCandidate, _SamplerConfiguration)):
++            return tuple(getattr(value, field.name) for field in fields(value))
+         if type(value) is history.HistoricalReplayArchive:
+             return (object.__getattribute__(value, "original_state"),)
+         return super()._replay_children(value)
+@@ -210,22 +206,12 @@ class PrioritizedReplayBuffer(ReplayCustody):
+     ) -> tuple[torch.device | None, tuple[object, ...]]:
+         retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
+         if route in ("push", "push_recorded"):
+-            rewards = args[2] if len(args) > 2 else kwargs.get("rewards")
+-            values = (
+-                *args,
+-                *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
+-                *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
+-            )
+-            observations = args[0] if args else kwargs.get("observations")
+-            count = observations.shape[0] if isinstance(observations, torch.Tensor) and observations.ndim else 0
+-            if count:
+-                return self.device, (*values, *retained)
+-            return None, (*values, self.actions if route == "push_recorded" or self.action_dim is not None else None)
++            return self._push_inventory(route, args, kwargs, retained)
+         if route == "declare_unconstrained_action_dim":
+             width = kwargs.get("action_dim")
+             return (self.device, (self.actions,)) if self.action_dim is None and type(width) is int and width > 0 else (None, ())
+         if route in ("update_priorities", "update_unit_priorities"):
+-            return None, (args[1] if len(args) > 1 else kwargs.get("td_errors"),)
++            return None, (self._replay_argument(args, kwargs, 1, "td_errors"),)
+         if route == "readiness":
+             return None, (self.legality_recorded,)
+         if route == "serialize":
+@@ -233,32 +219,50 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         if route == "historical_archives":
+             return None, (self._historical_archives,)
+         if route == "install_historical_archive":
+-            return None, (self._historical_archives, args[0] if args else kwargs.get("archive"))
++            return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
+         if route in ("validate_serialized", "prepare_serialized"):
+-            state = args[0] if args else kwargs.get("state")
++            state = self._replay_argument(args, kwargs, 0, "state")
+             if not isinstance(state, Mapping):
+                 return None, ()
+             version = state.get("format_version")
+-            keys = _LEGACY_STATE_KEYS if version == 4 else _CAPTURED_STATE_KEYS if version == 5 else PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
+-            if type(version) is not int or version not in (4, 5, PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION) or set(state) != keys:
+-                return None, ()
+-            prepare = route == "prepare_serialized"
+-            target = (
+-                self.device if prepare and version != 4 and type(state.get("size_current")) is int and state["size_current"] > 0 else None
+-            )
+-            return target, (state, *(retained if prepare else ()))
++            if type(version) is not int:
++                return None, (version,)
++            if version == 4:
++                keys = _LEGACY_STATE_KEYS
++            elif version == 5:
++                keys = _CAPTURED_STATE_KEYS
++            elif version == PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
++                keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
++            else:
++                return None, (version,)
++            if any(not isinstance(key, str) for key in state) or set(state) != keys:
++                return None, tuple(state)
++            if route == "prepare_serialized":
++                values = (state, *retained, self._historical_archives)
++                if version != 4:
++                    return self._transport_target(state, "size_current", strict=False), values
++                return None, values
++            return None, (state,)
+         if route == "materialize_validated":
+-            state = args[0] if args else kwargs.get("state")
+-            target = (
+-                self.device if isinstance(state, _ValidatedPrioritizedState) and state.legacy_state is None and state.size_current else None
+-            )
+-            return target, (state, *retained, self._historical_archives)
++            state = self._replay_argument(args, kwargs, 0, "state")
++            if not isinstance(state, _ValidatedPrioritizedState):
++                return None, ()
++            values = (state, *retained, self._historical_archives)
++            count = state.size_current
++            if state.legacy_state is None and isinstance(count, int) and not isinstance(count, bool) and count > 0:
++                return self.device, values
++            return None, values
+         if route in ("sample", "sample_batch"):
+-            request = args[0] if args else kwargs.get("request" if route == "sample_batch" else "batch_size")
+-            count = request.batch_size if isinstance(request, ReplayRequest) else request
+-            valid = isinstance(count, (int, np.integer)) and not isinstance(count, (bool, np.bool_)) and count > 0
+-            allocated = self.observations is not None and valid and (count <= self.size_current or route == "sample_batch")
+-            return self.device if allocated else None, retained if allocated or route == "sample_batch" else ()
++            return self._sample_inventory(
++                route,
++                args,
++                kwargs,
++                retained,
++                size=self.size_current,
++                mode=self._sampler.mode,
++                with_replacement=route == "sample_batch" and self._sampler.mode == "independent_with_replacement",
++                strict=False,
++            )
+         return None, (*retained, self._historical_archives)
+ 
+     def __init__(self, capacity: int, alpha: float, beta: float, beta_annealing: bool, device: torch.device):
+diff --git a/src/townlet/training/replay_buffer.py b/src/townlet/training/replay_buffer.py
+index 3cf3c6d6..11f49e2e 100644
+--- a/src/townlet/training/replay_buffer.py
++++ b/src/townlet/training/replay_buffer.py
+@@ -8,7 +8,7 @@ Pre-capture replay is inspectable history and never becomes active experience.
+ from __future__ import annotations
+ 
+ from collections.abc import Mapping
+-from dataclasses import dataclass
++from dataclasses import dataclass, fields
+ from types import MappingProxyType
+ from typing import TYPE_CHECKING, Any
+ 
+@@ -143,11 +143,7 @@ class ReplayBuffer(ReplayCustody):
+ 
+     def _replay_children(self, value: object) -> tuple[object, ...]:
+         if isinstance(value, (_ValidatedReplayState, _ReplayRestoreCandidate)):
+-            return (
+-                *(getattr(value, name) for name in _STORAGE_FIELDS),
+-                value.archives,
+-                value.legacy_state if isinstance(value, _ValidatedReplayState) else None,
+-            )
++            return tuple(getattr(value, field.name) for field in fields(value))
+         if type(value) is history.HistoricalReplayArchive:
+             return (object.__getattribute__(value, "original_state"),)
+         return super()._replay_children(value)
+@@ -157,17 +153,7 @@ class ReplayBuffer(ReplayCustody):
+     ) -> tuple[torch.device | None, tuple[object, ...]]:
+         retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
+         if route in ("push", "push_recorded"):
+-            rewards = args[2] if len(args) > 2 else kwargs.get("rewards")
+-            values = (
+-                *args,
+-                *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
+-                *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
+-            )
+-            observations = args[0] if args else kwargs.get("observations")
+-            count = observations.shape[0] if isinstance(observations, torch.Tensor) and observations.ndim else 0
+-            if count:
+-                return self.device, (*values, *retained)
+-            return None, (*values, self.actions if route == "push_recorded" or self.action_dim is not None else None)
++            return self._push_inventory(route, args, kwargs, retained)
+         if route == "readiness":
+             return None, (self.legality_recorded,)
+         if route == "serialize":
+@@ -175,27 +161,40 @@ class ReplayBuffer(ReplayCustody):
+         if route == "historical_archives":
+             return None, (self._historical_archives,)
+         if route == "install_historical_archive":
+-            return None, (self._historical_archives, args[0] if args else kwargs.get("archive"))
++            return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
+         if route in ("validate_serialized", "prepare_serialized", "load_for_mode"):
+-            state = args[0] if args else kwargs.get("state")
++            state = self._replay_argument(args, kwargs, 0, "state")
+             if not isinstance(state, Mapping):
+                 return None, ()
+             version = state.get("format_version")
+-            keys = _LEGACY_STATE_KEYS if version == 4 else REPLAY_BUFFER_STATE_KEYS
+-            if type(version) is not int or version not in (4, REPLAY_BUFFER_FORMAT_VERSION) or set(state) != keys:
+-                return None, ()
+-            prepare = route == "prepare_serialized"
+-            target = self.device if prepare and version != 4 and type(state.get("size")) is int and state["size"] > 0 else None
+-            return target, (state, *(retained if prepare else ()))
++            if type(version) is not int:
++                return None, (version,)
++            if version == 4:
++                keys = _LEGACY_STATE_KEYS
++            elif version == REPLAY_BUFFER_FORMAT_VERSION:
++                keys = REPLAY_BUFFER_STATE_KEYS
++            else:
++                return None, (version,)
++            if any(not isinstance(key, str) for key in state) or set(state) != keys:
++                return None, tuple(state)
++            if route == "prepare_serialized":
++                values = (state, *retained, self._historical_archives)
++                if version != 4:
++                    return self._transport_target(state, "size", strict=True), values
++                return None, values
++            return None, (state,)
+         if route == "materialize_validated":
+-            state = args[0] if args else kwargs.get("state")
+-            target = self.device if isinstance(state, _ValidatedReplayState) and state.legacy_state is None and state.size else None
+-            return target, (state, *retained, self._historical_archives)
++            state = self._replay_argument(args, kwargs, 0, "state")
++            if not isinstance(state, _ValidatedReplayState):
++                return None, ()
++            values = (state, *retained, self._historical_archives)
++            if state.legacy_state is None and type(state.size) is int and state.size > 0:
++                return self.device, values
++            return None, values
+         if route in ("sample", "sample_batch"):
+-            request = args[0] if args else kwargs.get("request" if route == "sample_batch" else "batch_size")
+-            count = request.batch_size if isinstance(request, ReplayRequest) else request
+-            allocated = self.observations is not None and type(count) is int and 0 <= count <= self.size
+-            return self.device if allocated else None, retained if allocated or route == "sample_batch" else ()
++            return self._sample_inventory(
++                route, args, kwargs, retained, size=self.size, mode="uniform_without_replacement", with_replacement=False, strict=True
++            )
+         return None, (*retained, self._historical_archives)
+ 
+     def __init__(self, capacity: int, device: torch.device):
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index dc87e593..4c5d442c 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -7,7 +7,6 @@ No missing-mask inference is performed here. Explicitly unconstrained adapters
+ must supply their declared all-legal mask; constrained old history is archival.
+ """
+ 
+-from collections import OrderedDict
+ from collections.abc import Callable, Iterator, Mapping
+ from contextlib import ExitStack, contextmanager
+ from dataclasses import dataclass, fields, replace
+@@ -48,6 +47,11 @@ class ReplayCustody:
+     """One process lease before one replay owner's mutation exclusion."""
+ 
+     device: torch.device
++    capacity: int
++    action_dim: int | None
++    actions: Tensor | None
++    observations: Tensor | None
++    legality_recorded: Tensor | None
+     _local_cuda_contracts: Mapping[str, str]
+ 
+     def _init_custody(self, device: torch.device) -> None:
+@@ -112,12 +116,91 @@ class ReplayCustody:
+         raise NotImplementedError("Device producer must supply its source-owned inventory")
+ 
+     def _replay_children(self, value: object) -> tuple[object, ...]:
+-        if type(value) in (dict, OrderedDict) and isinstance(value, Mapping):
++        if isinstance(value, Mapping):
+             return tuple(item for pair in value.items() for item in pair)
+         if type(value) in (tuple, list) and isinstance(value, (tuple, list)):
+             return tuple(value)
+         return ()
+ 
++    @staticmethod
++    def _replay_argument(args: tuple[object, ...], kwargs: Mapping[str, object], index: int, name: str) -> object:
++        if len(args) > index:
++            return args[index]
++        return kwargs.get(name)
++
++    def _push_inventory(
++        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...]
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        observations = self._replay_argument(args, kwargs, 0, "observations")
++        prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
++        if not isinstance(observations, Tensor) or observations.ndim != 2 or observations.dtype != torch.float32:
++            return None, prefix
++        if observations.shape[1] < 1 or observations.shape[0] > self.capacity:
++            return None, prefix
++        rewards = self._replay_argument(args, kwargs, 2, "rewards")
++        values = (
++            *args,
++            *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
++            *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
++        )
++        if observations.shape[0]:
++            return self.device, (*values, *retained)
++        if route == "push_recorded" or self.action_dim is not None:
++            return None, (*values, self.actions)
++        return None, values
++
++    def _transport_target(self, state: Mapping[str, object], size_field: str, *, strict: bool) -> torch.device | None:
++        capacity = state.get("capacity")
++        if strict and type(capacity) is not int:
++            return None
++        if not isinstance(capacity, int) or isinstance(capacity, bool) or capacity != self.capacity:
++            return None
++        count = state.get(size_field)
++        if strict and type(count) is not int:
++            return None
++        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
++            return None
++        return self.device
++
++    def _sample_inventory(
++        self,
++        route: str,
++        args: tuple[object, ...],
++        kwargs: Mapping[str, object],
++        retained: tuple[object, ...],
++        *,
++        size: int,
++        mode: str,
++        with_replacement: bool,
++        strict: bool,
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        count: object
++        if route == "sample_batch":
++            request = self._replay_argument(args, kwargs, 0, "request")
++            if not isinstance(request, ReplayRequest):
++                return None, ()
++            if (request.sequence_mode, request.sequence_objective, request.sequence_length) != (
++                "feedforward",
++                "transition",
++                1,
++            ) or request.sampling_mode != mode:
++                return None, ()
++            if self.action_dim is None or self.legality_recorded is None:
++                return None, ()
++            count = request.batch_size
++            if size < request.min_transitions or size == 0 or (not with_replacement and count > size):
++                return None, (self.legality_recorded,)
++        else:
++            count = self._replay_argument(args, kwargs, 0, "batch_size")
++        if strict:
++            if type(count) is not int or count < 0:
++                return None, ()
++        elif not isinstance(count, (int, np.integer)) or isinstance(count, (bool, np.bool_)) or count <= 0:
++            return None, ()
++        if self.observations is None or (not with_replacement and count > size):
++            return None, ()
++        return self.device, retained
++
+     def _completion_devices(self, sources: tuple[int, ...], device: torch.device | None) -> tuple[int, ...]:
+         if device is not None and device.type == "cuda":
+             index = device.index
+@@ -174,9 +257,10 @@ class ReplayCustody:
+                     return
+             contract = getattr(rng_custody, self._local_cuda_contracts[route])
+             with process_rng_domain().local_cuda_access(participant=self._replay_participant, contract=contract) as gate:
+-                effective = (
+-                    torch.device("cuda", gate.resolve_cuda(device=device)) if device is not None and device.type == "cuda" else device
+-                )
++                if device is not None and device.type == "cuda":
++                    effective = torch.device("cuda", gate.resolve_cuda(device=device))
++                else:
++                    effective = device
+                 for index in sources:
+                     gate.resolve_cuda(device=torch.device("cuda", index))
+                 with self._owner_operation(mutation=False):
+@@ -200,14 +284,17 @@ class ReplayCustody:
+     def _device_operation(
+         self, kind: str, lineage: RNGOperation | None, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool
+     ) -> Iterator[RNGOperation]:
++        if self._replay_scope is not None and self._replay_scope[0] is current_thread():
++            raise RuntimeError("Unrelated replay lifecycle reentry")
+         domain = process_rng_domain()
+         with domain.admission(lineage=lineage) as gate:
+             while True:
+                 with self._owner_operation(mutation=False):
+                     device, sources = self._device_plan(route, args, kwargs, admitted=True)
+-                effective = (
+-                    torch.device("cuda", gate.resolve_cuda(device=device)) if device is not None and device.type == "cuda" else device
+-                )
++                if device is not None and device.type == "cuda":
++                    effective = torch.device("cuda", gate.resolve_cuda(device=device))
++                else:
++                    effective = device
+                 for index in sources:
+                     gate.resolve_cuda(device=torch.device("cuda", index))
+                 with self._owner_operation(mutation=False):
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+index 8ff7cdff..3d1b8de1 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -1463,10 +1463,13 @@ def test_tensor_version_refuses_without_metadata_tensor_effects(family: str, sim
+     before = owner.serialize()
+     malformed = {**before, "format_version": _CUDAData(torch.tensor(5, dtype=torch.int64), 2)}
+     selected, devices = _metadata_plan(owner, "validate_serialized", (malformed,), False, simulated_cuda)
+-    assert selected is None and devices == ()
+-    with pytest.raises(ValueError, match="format_version"):
++    assert selected is None and devices == (2,)
++    with pytest.raises(ValueError, match="format_version") as error:
+         owner.validate_serialized(malformed, expected_obs_dim=2)
+-    assert simulated_cuda.events == []
++    events = list(simulated_cuda.events)
++    assert "5" in str(error.value)
++    assert any(event[:3] == ("work", "__repr__", (2,)) for event in events)
++    _assert_local(events, (2,))
+     _assert_tree_equal(owner.serialize(), before)
+ 
+ 

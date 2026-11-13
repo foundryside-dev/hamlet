@@ -1,0 +1,123 @@
+{
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "checkpoint_id": "wave35-wip-18",
+  "series": "wave35",
+  "interval": [
+    90,
+    98
+  ],
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip18-checkpoint-contract.json",
+    "sha256": "9605f9c3c1f5dd4389d1749789ce523211ebadf365709cb8e904aca3e9ec96cf",
+    "bytes": 4145
+  },
+  "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r98-candidate.json",
+    "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+    "bytes": 203565
+  },
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "ac43971770acfc44dc4b4df51c8ba518e187c7a8",
+    "tests": "2e81f46f181e1d9170131b289ad7d6db421fce15"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip18-r90-r98-complete-receipt-input-v5.json",
+    "sha256": "a9b071249c20ec340c510c25b28c46567d9c114439d73c52004000e3b5c6f2b0",
+    "bytes": 514436
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Finite R90-R98 WIP durability evidence. Only 24 named R98 CPU controls qualify their bounded assertions; source review CHANGES REQUIRED, I5 materially open. No A/B/producer/hardware/programme acceptance.",
+  "required_next": [
+    "I5 structural branch-class repair and causal tests; no waiver or A acceptance.",
+    "Core B invocation/outcome/local contracts and missing B type API.",
+    "Actual applicable producer runtime, ten producer poison children, outer parent integration and real GPU one-/two-device proof.",
+    "Existing global 15 oracle6/POP9 errors remain; new owned B type error is separate, not an invented global recount.",
+    "Required ordinary runner/integration/full/default/coverage\u226570/slow/learning, fresh54/22 review and exact final remote CI."
+  ],
+  "source_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX2-IMPLEMENTATION-REVIEW.md",
+    "sha256": "c7b71870e33e3656f8ac531ed9deee65d55c597307b9e77073a0818fb2b7d84f",
+    "bytes": 9138,
+    "disposition": "CHANGES REQUIRED; I5 materially open; source review is not terminal evidence-integrity review."
+  },
+  "root_adoption": {
+    "producer": "/root",
+    "metadata_author": "/root/bac_astra_wip18_checkpoint",
+    "proposed_reviewer": "/root/bac_astra_wip18_terminal",
+    "independence": "Fresh reviewer did not author source, tests, metadata, document drafts or previous source reviews. Source reviewer remains independently attributed; terminal review is evidence/publication-scope only.",
+    "historical_component": {
+      "root": "W",
+      "path": "wave35/wip18-historical-component-adoption.json",
+      "sha256": "90354c9e81adc8bfec55f0688585820b3cdcdf01e7a12d9df77eecc1ce64a966",
+      "bytes": 920
+    },
+    "r98_component": {
+      "root": "W",
+      "path": "wave35/wip18-r98-component-adoption.json",
+      "sha256": "a1d551aea30ef31aaf20aeacefeeba6bf95bdff9cb2813f2d9b1cb7c906345ef",
+      "bytes": 959
+    },
+    "durability_ruling": {
+      "root": "W",
+      "path": "wave35/wip18-durability-publication-ruling.json",
+      "sha256": "3deca867b584c8fb8c8278bdd89b1756db8109fb50955b0b980ad68da986ac8d",
+      "bytes": 1402
+    }
+  },
+  "document_review_status": {
+    "review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP18-DOCUMENT-REVIEW.md",
+      "sha256": "4f9415f3ff0c21e1449c21c413d8909ec28d3b4a24080e97fdedc041001c84c8",
+      "bytes": 4137
+    },
+    "proposal": {
+      "root": "W",
+      "path": "evidence-management/wip18-publication-document-proposal.json",
+      "sha256": "66e768e2cf7d7a1e88d8798e254faa53e4b775848a68519ad2740ad0e4d06120",
+      "bytes": 2622
+    },
+    "application": {
+      "root": "W",
+      "path": "evidence-management/wip18-reviewed-document-application.json",
+      "sha256": "19bfaa13816248306ca7616984a34b68cf10fc00b789f94bd53ab3864664791f",
+      "bytes": 1877
+    },
+    "equivalence": {
+      "root": "W",
+      "path": "evidence-management/wip18-preassembly-source-equivalence.json",
+      "sha256": "295bae951fab0fdcc21ea59510d9741e808717cbd21541668c8282d80b7bed82",
+      "bytes": 1976
+    },
+    "scope": "Exact five approved documents applied; only two guarded prose deltas. Source/test/config/script/ratchet subtrees equal executed R98. Future WIP18 links must resolve before publication."
+  },
+  "source_delta_archive": {
+    "root": "W",
+    "path": "evidence-management/wip18-source-deltas/manifest.json",
+    "sha256": "4eaf682653ff54ae5cfbcbc7d5170338ad13e69237e499392d6605df67b782f7",
+    "bytes": 7744
+  },
+  "root_input_integrity": {
+    "unique_direct_refs_rehashed": 334,
+    "mismatches": 0,
+    "qualification": "Integrity check only, not terminal review."
+  },
+  "pending_inputs": [
+    "Independent terminal evidence review and its attestation; final receipt seal, root selection/assembly, exact stage/commit/push/remote-CI verification."
+  ],
+  "no_source_execution_after_r98": "No application runtime after approved documentation application; source equivalence is separately recorded. Do not rerun historical generic verifiers against intentionally changed approved docs as if those were executed bytes."
+}

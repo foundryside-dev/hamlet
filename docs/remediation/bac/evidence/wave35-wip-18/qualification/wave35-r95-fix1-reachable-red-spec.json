@@ -1,0 +1,40 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r95-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r95-fix1-reachable-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix1-reachable-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mapping_view_inventory_preserves_accepted_transport[False-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mapping_view_inventory_preserves_accepted_transport[False-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[flat-position]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[flat-size]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[per-position]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[per-size_current]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[per-priorities]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_tensor_version_refuses_without_metadata_tensor_effects[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_tensor_version_refuses_without_metadata_tensor_effects[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[capacity-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[capacity-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[unready-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[unready-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[sample-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[sample-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[prepare-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[prepare-per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

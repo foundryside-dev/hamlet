@@ -1,0 +1,29 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: _CUDAData.__torch_function__() missing 1 required positional argument: 'kwargs'",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

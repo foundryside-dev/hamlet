@@ -1,0 +1,18 @@
+{
+  "name": "black-owned",
+  "exit_code": 0,
+  "seconds": 0.4418764114379883,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-static/black-owned.log",
+  "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+  "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

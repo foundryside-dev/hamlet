@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r97-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r97-fix2-prefix-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix2-prefix-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

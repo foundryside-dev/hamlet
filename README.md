@@ -383,6 +383,8 @@ BAC remediation remains in progress: 28 qualified, 38 remaining, 66 total. The b
 
 The RNG custody core now provides scoped CUDA admission and idle enrollment, explicit per-invocation device operations, and source-bound local CUDA completion. Its bounded CPU/protocol component is qualified at R89; see [the core contract](docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) for exact APIs and evidence. The production local-GPU contract manifest remains empty; B6 producer integration and real GPU qualification remain required. Programme accounting stays28 qualified/38 remaining/66 total.
 
+Subsequent flat/PER CUDA producer work is staged and incomplete. The R98 checkpoint retains an open validation-prefix defect and required core integration; see [BAC status](docs/remediation/bac/STATUS.md) and the [evidence index](docs/remediation/bac/EVIDENCE-INDEX.md). It does not extend R89 qualification or advance package acceptance.
+
 T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
 row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each
 row's descriptor and live payload through Linear → ReLU → Linear with an explicit positive

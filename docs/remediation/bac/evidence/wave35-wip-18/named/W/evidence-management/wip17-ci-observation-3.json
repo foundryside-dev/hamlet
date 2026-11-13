@@ -1,0 +1,71 @@
+{
+  "schema": "bac-ci-observation-v1",
+  "observed_at": "2026-11-13T14:09:46.388Z",
+  "head": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "test_run": {
+    "id": 43432685903,
+    "status": "completed",
+    "conclusion": "failure",
+    "updated_at": "2026-11-13T14:06:43Z"
+  },
+  "test_jobs": [
+    {
+      "id": 131909869631,
+      "name": "unit",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up uv",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate configs first (fail-fast before pytest)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run fast test suite",
+          "conclusion": "failure"
+        },
+        {
+          "name": "Post Set up uv",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Set up Python",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Checkout",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "test_log_retrieval": {
+    "status": "transport_closed",
+    "cause_unclassified": true
+  },
+  "lint_job": 131909872585,
+  "lint_log": "wip17-hosted-lint.log",
+  "scope": "Tests CI now completed failure at fast suite step; test cause not yet established. Actual hosted lint log obtained."
+}

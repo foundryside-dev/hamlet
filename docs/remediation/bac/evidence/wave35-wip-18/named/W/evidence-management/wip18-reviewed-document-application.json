@@ -1,0 +1,39 @@
+{
+  "schema": "bac-reviewed-document-application-v1",
+  "execution_candidate": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "proposal": {
+    "root": "W",
+    "path": "evidence-management/wip18-publication-document-proposal.json",
+    "sha256": "66e768e2cf7d7a1e88d8798e254faa53e4b775848a68519ad2740ad0e4d06120",
+    "bytes": 2622
+  },
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP18-DOCUMENT-REVIEW.md",
+    "sha256": "4f9415f3ff0c21e1449c21c413d8909ec28d3b4a24080e97fdedc041001c84c8",
+    "bytes": 4137
+  },
+  "changes": {
+    "docs/remediation/bac/STATUS.md": {
+      "before_sha256": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6",
+      "after_sha256": "d7ef31d33a56ce6203582c5558c84bcee0177166550c4380a7e8302f2b4002c4"
+    },
+    "docs/remediation/bac/EVIDENCE-INDEX.md": {
+      "before_sha256": "7d636f52831debe6ae33e1d3ec3e6aad8662cf22ac1f1d12a26d125062380237",
+      "after_sha256": "72b86c0763dc8e297efcc5cd5988b5b37fad28d91a436d61ae166af575698b7e"
+    },
+    "README.md": {
+      "before_sha256": "020a4d5dbad1519d25d6c3e536fc142044088a84c3b444b942c1b1392b647187",
+      "after_sha256": "fe172c53b4e34beb9723698d9b827e3cbb9175fdf498c63851216d5ec0f5c70a"
+    },
+    "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+      "before_sha256": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1",
+      "after_sha256": "259f78f91209cd917412941a7f60e3eef557899414110306ac4d9f75bfa9a9a7"
+    },
+    "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md": {
+      "before_sha256": "80f6fcede2e7a60ff9548746849e2b31d172807fd8f529420fe43e543028e275",
+      "after_sha256": "00082f3cc8dfca251de21ae3e6a41e814f1698f4054aebce0a81ebf4cc57222b"
+    }
+  },
+  "method": "Exact five approved draft bytes applied; no content substitutions. Future manifest/plan links remain publication prerequisites."
+}

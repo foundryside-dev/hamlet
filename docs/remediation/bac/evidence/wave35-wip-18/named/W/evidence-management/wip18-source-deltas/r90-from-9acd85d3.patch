@@ -1,0 +1,327 @@
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..2eda9f860eca376ed23bbe30b35bbda79ced03d5
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -0,0 +1,321 @@
++"""Flat/PER producer controls; CUDA hardware qualification is separate.
++
++The constructor sentinel catches eager CUDA access. CPU controls exercise real
++storage, sampling and issuer-owned preparation without enabling local policies.
++"""
++
++import copy
++import random
++from collections.abc import Iterator
++from typing import Any
++
++import numpy as np
++import pytest
++import torch
++
++from townlet.exploration.rng_custody import process_rng_domain
++from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
++from townlet.training.replay_buffer import ReplayBuffer
++from townlet.training.replay_contract import PreparedReplay, ReplayRequest
++from townlet.training.state import RewardTensor
++
++
++class _NoCUDA:
++    """Fail on CUDA access, while allowing ordinary object introspection."""
++
++    def __getattr__(self, name: str) -> Any:
++        if name.startswith("__") and name.endswith("__"):
++            raise AttributeError(name)
++        raise AssertionError(f"Replay unexpectedly accessed torch.cuda.{name}")
++
++
++@pytest.fixture(autouse=True)
++def preserve_cpu_rng() -> Iterator[None]:
++    python_state = random.getstate()
++    numpy_state = np.random.get_state()
++    torch_state = torch.get_rng_state().clone()
++    try:
++        yield
++    finally:
++        random.setstate(python_state)
++        np.random.set_state(numpy_state)
++        torch.set_rng_state(torch_state)
++
++
++def _owner(family: str, device: torch.device) -> ReplayBuffer | PrioritizedReplayBuffer:
++    if family == "flat":
++        return ReplayBuffer(capacity=4, device=device)
++    assert family == "per"
++    return PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=device)
++
++
++def _rows() -> dict[str, torch.Tensor]:
++    return {
++        "observations": torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]], dtype=torch.float32),
++        "actions": torch.tensor([0, 1, 0, 1], dtype=torch.int64),
++        "rewards": torch.tensor([10.0, 20.0, 30.0, 40.0], dtype=torch.float32),
++        "rewards_extrinsic": torch.tensor([1.0, 2.0, 3.0, 4.0], dtype=torch.float32),
++        "rewards_shaping": torch.tensor([0.5, 0.5, 0.5, 0.5], dtype=torch.float32),
++        "next_observations": torch.tensor([[1.5, 2.5], [3.5, 4.5], [5.5, 6.5], [7.5, 8.5]], dtype=torch.float32),
++        "dones": torch.tensor([False, False, False, True], dtype=torch.bool),
++        "next_action_masks": torch.tensor([[True, False], [False, True], [True, True], [False, False]], dtype=torch.bool),
++    }
++
++
++def _push(owner: ReplayBuffer | PrioritizedReplayBuffer, rows: dict[str, torch.Tensor], *, recorded: bool) -> None:
++    rewards = RewardTensor(
++        rows["rewards"],
++        extrinsic=rows["rewards_extrinsic"],
++        intrinsic=None,
++        shaping=rows["rewards_shaping"],
++        is_composed=False,
++    )
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    if recorded:
++        owner.push_recorded(*arguments, rows["next_action_masks"])
++    else:
++        owner.push(*arguments)
++
++
++def _request(family: str) -> ReplayRequest:
++    mode = "uniform_without_replacement" if family == "flat" else "successive_without_replacement"
++    return ReplayRequest(
++        batch_size=2,
++        sequence_length=1,
++        min_transitions=0,
++        sampling_mode=mode,
++        sequence_mode="feedforward",
++        sequence_objective="transition",
++    )
++
++
++def _assert_numpy_state(actual: tuple, expected: tuple) -> None:
++    assert actual[0] == expected[0]
++    assert np.array_equal(actual[1], expected[1])
++    assert actual[2:] == expected[2:]
++
++
++def _assert_tree_equal(actual: Any, expected: Any) -> None:
++    if isinstance(expected, torch.Tensor):
++        assert isinstance(actual, torch.Tensor)
++        assert actual.dtype == expected.dtype
++        assert actual.device == expected.device
++        assert torch.equal(actual, expected)
++    elif isinstance(expected, np.ndarray):
++        assert isinstance(actual, np.ndarray)
++        assert actual.dtype == expected.dtype
++        assert np.array_equal(actual, expected)
++    elif isinstance(expected, dict):
++        assert isinstance(actual, dict)
++        assert actual.keys() == expected.keys()
++        for key, value in expected.items():
++            _assert_tree_equal(actual[key], value)
++    elif isinstance(expected, (list, tuple)):
++        assert type(actual) is type(expected)
++        assert len(actual) == len(expected)
++        for left, right in zip(actual, expected, strict=True):
++            _assert_tree_equal(left, right)
++    else:
++        assert actual == expected
++
++
++def _assert_selected_rows(result: dict[str, torch.Tensor], rows: dict[str, torch.Tensor], selected: torch.Tensor) -> None:
++    for field in ("observations", "actions", "rewards", "next_observations", "dones", "next_action_masks"):
++        assert torch.equal(result[field], rows[field][selected])
++    assert torch.equal(result["legality_recorded"], torch.ones(len(selected), dtype=torch.bool))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
++def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    """Eager initialization/index validation breaks metadata-only construction."""
++    device = torch.device(selector)
++    domain = process_rng_domain()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner(family, device)
++        assert owner.device is device
++        assert len(owner) == 0
++        participant = owner.rng_participant
++        assert owner.rng_participant is participant
++        # The actual domain authenticates this lifetime registration; no fake
++        # participant or replacement domain stands in for constructor behavior.
++        with domain.device_operation(participant=participant, operation_kind="sample", lineage=None, cuda_devices=()):
++            assert owner.device is device
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_cpu_local_and_admitted_routes_stay_cuda_free(family: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    """CPU storage, actual sampling and current prepare/install need no CUDA."""
++    rows = _rows()
++    request = _request(family)
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner(family, torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        assert len(owner) == owner.retained_transitions == 4
++        assert owner.readiness(request).ready
++        assert owner.stats()["device"] == "cpu"
++        assert owner.historical_archives == ()
++        state = owner.serialize()
++        for field, expected in rows.items():
++            assert torch.equal(state[field], expected)
++        assert state["rewards_intrinsic"] is None
++        assert torch.equal(state["rewards_extrinsic_present"], torch.ones(4, dtype=torch.bool))
++        assert torch.equal(state["rewards_intrinsic_present"], torch.zeros(4, dtype=torch.bool))
++        assert torch.equal(state["rewards_shaping_present"], torch.ones(4, dtype=torch.bool))
++
++        validated = owner.validate_serialized(state, expected_obs_dim=2)
++        candidate = owner.materialize_validated(validated, lineage=None)
++        assert isinstance(candidate, PreparedReplay)
++        owner.load_prepared(candidate, lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
++        owner.load_prepared(candidate, lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++        owner.load_for_mode(state, requested_mode="auto", lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++        owner.load_from_serialized(state, lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++
++        direct = owner.sample(2, lineage=None)
++        selected = ((direct["observations"][:, 0] - 1) / 2).to(torch.int64)
++        assert len(torch.unique(selected)) == 2
++        _assert_selected_rows(direct, rows, selected)
++        batch = owner.sample_batch(request, lineage=None)
++        selected = torch.from_numpy(batch.sampling.indices.copy())
++        assert len(torch.unique(selected)) == 2
++        assert torch.equal(batch.observations, rows["observations"][selected])
++        assert torch.equal(batch.rewards, rows["rewards"][selected])
++        assert torch.equal(batch.rewards_extrinsic, rows["rewards_extrinsic"][selected])
++        assert batch.rewards_intrinsic is None
++        assert torch.equal(batch.rewards_shaping, rows["rewards_shaping"][selected])
++        assert torch.equal(batch.next_action_masks, rows["next_action_masks"][selected])
++        assert torch.equal(batch.loss_mask, torch.ones(2, dtype=torch.bool))
++        assert torch.equal(batch.lengths, torch.ones(2, dtype=torch.int64))
++        assert torch.equal(batch.weights, torch.ones(2, dtype=torch.float64))
++
++        if isinstance(owner, PrioritizedReplayBuffer):
++            configured = np.random.default_rng(812)
++            original_generator_state = copy.deepcopy(configured.bit_generator.state)
++            owner.configure_sampling(sampling_mode="successive_without_replacement", rng=configured, origin="authored")
++            _assert_tree_equal(configured.bit_generator.state, original_generator_state)
++            owner.update_priorities(np.array([0, 1], dtype=np.int64), torch.tensor([0.5, 1.5]))
++            owner.update_unit_priorities(np.array([0], dtype=np.int64), torch.tensor([0.25]))
++            assert owner.serialize()["priorities"][0] == np.float32(0.250001)
++            assert owner.serialize()["priorities"][1] == np.float32(1.500001)
++            owner.anneal_beta(total_steps=10, current_step=5)
++            assert owner.size() == 4
++
++        owner.clear()
++        assert len(owner) == 0
++        assert not owner.readiness(request).ready
++        _push(owner, rows, recorded=False)
++        assert len(owner) == 4
++        if isinstance(owner, PrioritizedReplayBuffer):
++            owner.declare_unconstrained_action_dim(action_dim=2)
++            assert owner.readiness(request).ready
++            assert torch.equal(owner.serialize()["next_action_masks"], torch.ones((4, 2), dtype=torch.bool))
++        else:
++            assert not owner.readiness(request).ready
++        direct = owner.sample(2, lineage=None)
++        assert direct["observations"].shape == (2, 2)
++        owner.clear()
++        assert len(owner) == 0
++
++
++@pytest.mark.parametrize("adapter", ["direct", "batch"])
++def test_flat_sampling_preserves_selected_cpu_torch_stream(adapter: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    """A NumPy law or a private/reseeded Torch draw changes rows/continuation."""
++    rows = _rows()
++    torch.random.default_generator.manual_seed(29)
++    oracle = torch.Generator(device="cpu")
++    oracle.set_state(torch.get_rng_state())
++    expected_indices = torch.randperm(4, generator=oracle)[:2]
++    numpy_before = np.random.get_state()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner("flat", torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        if adapter == "direct":
++            result = owner.sample(2, lineage=None)
++            _assert_selected_rows(result, rows, expected_indices)
++        else:
++            batch = owner.sample_batch(_request("flat"), lineage=None)
++            assert torch.equal(batch.observations, rows["observations"][expected_indices])
++            assert np.array_equal(batch.sampling.indices, expected_indices.numpy())
++            assert np.array_equal(batch.sampling.conditional_draw_probabilities, np.array([0.25, 1.0 / 3.0]))
++        assert torch.equal(torch.get_rng_state(), oracle.get_state())
++        _assert_numpy_state(np.random.get_state(), numpy_before)
++
++
++def test_per_direct_retains_vectorized_global_law_with_owned_sampler(monkeypatch: pytest.MonkeyPatch) -> None:
++    """Configuring owned sampling must not reroute the public direct adapter."""
++    rows = _rows()
++    np.random.seed(113)
++    oracle = np.random.RandomState()
++    oracle.set_state(np.random.get_state())
++    expected_indices = oracle.choice(4, 2, p=np.array([0.25, 0.25, 0.25, 0.25]), replace=False)
++    torch_before = torch.get_rng_state().clone()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        owner.configure_sampling(sampling_mode="successive_without_replacement", rng=np.random.default_rng(81), origin="authored")
++        sampler_before = owner.serialize()["sampling_rng"]
++        result = owner.sample(2, lineage=None)
++        assert np.array_equal(result["indices"], expected_indices)
++        assert torch.equal(result["weights"], torch.ones(2, dtype=torch.float32))
++        _assert_selected_rows(result, rows, torch.from_numpy(expected_indices))
++        _assert_tree_equal(owner.serialize()["sampling_rng"], sampler_before)
++        _assert_numpy_state(np.random.get_state(), oracle.get_state())
++        assert torch.equal(torch.get_rng_state(), torch_before)
++
++
++def test_per_batch_external_sampler_retains_vectorized_global_law(monkeypatch: pytest.MonkeyPatch) -> None:
++    """The qualified external sampler keeps the actual vectorized NumPy law."""
++    rows = _rows()
++    np.random.seed(307)
++    oracle = np.random.RandomState()
++    oracle.set_state(np.random.get_state())
++    expected_indices = oracle.choice(4, 2, p=np.array([0.25, 0.25, 0.25, 0.25]), replace=False)
++    torch_before = torch.get_rng_state().clone()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner("per", torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        batch = owner.sample_batch(_request("per"), lineage=None)
++        assert np.array_equal(batch.sampling.indices, expected_indices)
++        assert torch.equal(batch.observations, rows["observations"][torch.from_numpy(expected_indices)])
++        assert torch.equal(batch.weights, torch.ones(2, dtype=torch.float64))
++        _assert_numpy_state(np.random.get_state(), oracle.get_state())
++        assert torch.equal(torch.get_rng_state(), torch_before)
++
++
++def test_per_batch_owned_sampler_retains_residual_draw_law(monkeypatch: pytest.MonkeyPatch) -> None:
++    """Qualified owned successive sampling draws once per residual support."""
++    rows = _rows()
++    configured = np.random.default_rng(919)
++    configured_before = copy.deepcopy(configured.bit_generator.state)
++    oracle = np.random.default_rng(919)
++    first = int(oracle.choice(np.array([0, 1, 2, 3]), p=np.array([0.25, 0.25, 0.25, 0.25]), replace=False))
++    remaining = np.array([index for index in (0, 1, 2, 3) if index != first])
++    second = int(oracle.choice(remaining, p=np.array([1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]), replace=False))
++    expected_indices = np.array([first, second], dtype=np.int64)
++    numpy_before = np.random.get_state()
++    torch_before = torch.get_rng_state().clone()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        owner.configure_sampling(sampling_mode="successive_without_replacement", rng=configured, origin="authored")
++        batch = owner.sample_batch(_request("per"), lineage=None)
++        assert np.array_equal(batch.sampling.indices, expected_indices)
++        assert np.array_equal(batch.sampling.conditional_draw_probabilities, np.array([0.25, 1.0 / 3.0]))
++        assert torch.equal(batch.unit_ids, torch.from_numpy(expected_indices))
++        assert torch.equal(batch.observations, rows["observations"][torch.from_numpy(expected_indices)])
++        assert torch.equal(batch.weights, torch.ones(2, dtype=torch.float64))
++        _assert_tree_equal(owner.serialize()["sampling_rng"]["state"], oracle.bit_generator.state)
++        _assert_tree_equal(configured.bit_generator.state, configured_before)
++        _assert_numpy_state(np.random.get_state(), numpy_before)
++        assert torch.equal(torch.get_rng_state(), torch_before)

@@ -1,0 +1,11 @@
+{
+  "kind": "prospective-inert-review-source-preservation",
+  "recorded_at": "2026-11-13T14:50:51.269076+00:00",
+  "git_blob": "fccea7dc9733f8184713d806e0b92cecec33ddd0",
+  "source_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+  "inert_review_snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-before-test_replay_spawn_verifier.py.txt",
+  "sha256": "fdf75f6072f625d8788c5ae4ebe9efc9cfa693f7469aa2db6c339f9816ead683",
+  "bytes": 30444,
+  "limitation": "WIP17 catalog contains original and pre-fix synthetic-test snapshots but not this final fdf75f60 body. Preserved now from still-present exact hash source, before next extension. This does not claim original runtime snapshot time or rewrite old publication. Include current exact historical body and clarification next checkpoint. Verifier872ed3a1 itself is already published exact. No qualification/count changes.",
+  "scope": "Git blob plus inert .py.txt review artifact only; no executable checkout/copy/branch/worktree created."
+}

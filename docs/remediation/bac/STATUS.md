@@ -1,8 +1,16 @@
 # BAC implementation status
 
+## 2026-11-13 — flat/PER CUDA producer work in progress at R98
+
+R98 is a durability checkpoint, not producer acceptance. At candidate `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, based on `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, 24 reachable CPU controls pass and 129 tests collect. Owned-file Ruff/Black and the unchanged global defaults600 gate pass. Owned-three mypy fails only on the required, not-yet-implemented core `device_invocation` API. Collection and simulated CUDA controls are not hardware evidence.
+
+Independent Astra review remains **CHANGES REQUIRED**. Source repairs cover archive/Mapping/DTO inventory, protected diagnostic rendering, same-owner reentry and the reported annotation errors. I5 remains open: metadata-determinable refusal paths still inventory unused sources or destinations. The next repair must cover the complete bounded validation prefixes, not only the reported examples. Full producer runtime, concrete local-contract activation, invocation outcomes, ten producer poison children and parent completion handoff remain owed.
+
+The [evidence index](EVIDENCE-INDEX.md) preserves the R90–R98 failed attempts, exact source identities and overlapping controls. The child-verification tool is independently qualified; its synthetic checks do not qualify the unrun producer children. Real one-/two-device CUDA, required runner and remaining integration work, global typing, full suites, coverage, slow/learning scenarios, fresh final review and exact final CI remain required. **28 qualified / 38 remaining / 66 original packages** is unchanged.
+
 ## 2026-11-13 — CUDA custody core CPU component qualified at R89
 
-R89 bounded core CPU/protocol component qualified: root1515 unique PASS (67 core +1290 coherent +109 replay +49 owner), with two CUDA-hardware SKIP and one prior required ordinary-runner deselection still owed. Independent Astra's same67 PASS overlap root's67. Ten qualified spawn children and two real inherited-gate fork trials retain strict ancestry/source custody; the rejected initial two-worker batch is preserved and corrected one-worker runs supply accepted qualification. Owned/public types and global Ruff/Black/defaults600 PASS; global mypy still fails15 required oracle6/POP-lineage9 errors. B6 concrete producer/hardware integration and full-programme38 remaining packages stay open;28/38/66 accounting is unchanged. Application execution is closed.
+R89 bounded core CPU/protocol component qualified: root1515 unique PASS (67 core +1290 coherent +109 replay +49 owner), with two CUDA-hardware SKIP and one prior required ordinary-runner deselection still owed. Independent Astra's same67 PASS overlap root's67. Ten qualified spawn children and two real inherited-gate fork trials retain strict ancestry/source custody; the rejected initial two-worker batch is preserved and corrected one-worker runs supply accepted qualification. Owned/public types and global Ruff/Black/defaults600 PASS; global mypy still fails15 required oracle6/POP-lineage9 errors. B6 concrete producer/hardware integration and full-programme38 remaining packages stay open;28/38/66 accounting is unchanged. R89 qualification execution is closed.
 
 See the [core contract](CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md) for exact scope and publication identity.
 

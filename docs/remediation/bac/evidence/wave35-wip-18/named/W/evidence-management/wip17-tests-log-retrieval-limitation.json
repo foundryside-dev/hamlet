@@ -1,0 +1,10 @@
+{
+  "head": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "run_id": 43432685903,
+  "job_id": 131909869631,
+  "attempts": 2,
+  "tool": "github_fetch_workflow_job_logs",
+  "both_results": "Transport closed",
+  "time_of_record": "2026-11-13T14:31:23.515514+00:00",
+  "classification": "Tests CI completedfailure in fastsuite step; exact failures unclassified. No passing inference or waiver; hostedlint separately retrieved/classified."
+}

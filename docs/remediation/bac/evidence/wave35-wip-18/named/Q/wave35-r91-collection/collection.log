@@ -1,0 +1,82 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 65 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_replay_cuda_producer.py>
+            <Function test_empty_constructor_has_no_cuda_access[cpu-flat]>
+            <Function test_empty_constructor_has_no_cuda_access[cpu-per]>
+            <Function test_empty_constructor_has_no_cuda_access[cuda-flat]>
+            <Function test_empty_constructor_has_no_cuda_access[cuda-per]>
+            <Function test_empty_constructor_has_no_cuda_access[cuda:3-flat]>
+            <Function test_empty_constructor_has_no_cuda_access[cuda:3-per]>
+            <Function test_cpu_local_and_admitted_routes_stay_cuda_free[flat]>
+            <Function test_cpu_local_and_admitted_routes_stay_cuda_free[per]>
+            <Function test_flat_sampling_preserves_selected_cpu_torch_stream[direct]>
+            <Function test_flat_sampling_preserves_selected_cpu_torch_stream[batch]>
+            <Function test_per_direct_retains_vectorized_global_law_with_owned_sampler>
+            <Function test_per_batch_external_sampler_retains_vectorized_global_law>
+            <Function test_per_batch_owned_sampler_retains_residual_draw_law>
+            <Function test_simulated_fixture_runs_real_producer_values[flat]>
+            <Function test_simulated_fixture_runs_real_producer_values[per]>
+            <Function test_dynamic_selector_resolves_each_real_push[flat]>
+            <Function test_dynamic_selector_resolves_each_real_push[per]>
+            <Function test_push_inventories_retained_secondary_source_and_destination[flat]>
+            <Function test_push_inventories_retained_secondary_source_and_destination[per]>
+            <Function test_install_inventories_issuer_material_without_selector_migration[flat]>
+            <Function test_install_inventories_issuer_material_without_selector_migration[per]>
+            <Function test_empty_prepare_install_ignores_unused_cuda_selector[flat]>
+            <Function test_empty_prepare_install_ignores_unused_cuda_selector[per]>
+            <Function test_archive_only_prepare_install_keeps_unused_target_lazy[flat]>
+            <Function test_archive_only_prepare_install_keeps_unused_target_lazy[per]>
+            <Function test_per_declaration_distinguishes_allocating_and_noop_branches[False]>
+            <Function test_per_declaration_distinguishes_allocating_and_noop_branches[True]>
+            <Function test_zero_push_inventories_secondary_validation_without_target_allocation[flat]>
+            <Function test_zero_push_inventories_secondary_validation_without_target_allocation[per]>
+            <Function test_priority_update_uses_actual_error_source[False-False]>
+            <Function test_priority_update_uses_actual_error_source[False-True]>
+            <Function test_priority_update_uses_actual_error_source[True-False]>
+            <Function test_priority_update_uses_actual_error_source[True-True]>
+            <Function test_read_routes_inventory_accessed_fields_not_selector[readiness-flat]>
+            <Function test_read_routes_inventory_accessed_fields_not_selector[readiness-per]>
+            <Function test_read_routes_inventory_accessed_fields_not_selector[serialize-flat]>
+            <Function test_read_routes_inventory_accessed_fields_not_selector[serialize-per]>
+            <Function test_archive_fixture_owns_real_rows_before_observation>
+            <Function test_archive_inventory_precedes_clone_on_read>
+            <Function test_completion_keeps_actual_mutation_excluded[False-False-flat]>
+            <Function test_completion_keeps_actual_mutation_excluded[False-False-per]>
+            <Function test_completion_keeps_actual_mutation_excluded[False-True-flat]>
+            <Function test_completion_keeps_actual_mutation_excluded[False-True-per]>
+            <Function test_completion_keeps_actual_mutation_excluded[True-False-flat]>
+            <Function test_completion_keeps_actual_mutation_excluded[True-False-per]>
+            <Function test_completion_keeps_actual_mutation_excluded[True-True-flat]>
+            <Function test_completion_keeps_actual_mutation_excluded[True-True-per]>
+            <Function test_clean_body_error_keeps_identity_and_owner_health[False-flat]>
+            <Function test_clean_body_error_keeps_identity_and_owner_health[False-per]>
+            <Function test_clean_body_error_keeps_identity_and_owner_health[True-flat]>
+            <Function test_clean_body_error_keeps_identity_and_owner_health[True-per]>
+            <Function test_failed_preparation_keeps_live_data_and_original_streams[False-flat]>
+            <Function test_failed_preparation_keeps_live_data_and_original_streams[False-per]>
+            <Function test_failed_preparation_keeps_live_data_and_original_streams[True-flat]>
+            <Function test_failed_preparation_keeps_live_data_and_original_streams[True-per]>
+            <Function test_same_parent_owner_revision_is_independent_of_core_currentness[False-flat]>
+            <Function test_same_parent_owner_revision_is_independent_of_core_currentness[False-per]>
+            <Function test_same_parent_owner_revision_is_independent_of_core_currentness[True-flat]>
+            <Function test_same_parent_owner_revision_is_independent_of_core_currentness[True-per]>
+            <Function test_preflight_retains_exclusion_through_parent_completion[flat]>
+            <Function test_preflight_retains_exclusion_through_parent_completion[per]>
+            <Function test_sibling_sampling_stales_core_currency_without_target_mutation[flat]>
+            <Function test_sibling_sampling_stales_core_currency_without_target_mutation[per]>
+            <Function test_preflight_undeclared_target_refuses_before_draw_or_data_effect[flat]>
+            <Function test_preflight_undeclared_target_refuses_before_draw_or_data_effect[per]>
+
+========================= 65 tests collected in 0.17s ==========================

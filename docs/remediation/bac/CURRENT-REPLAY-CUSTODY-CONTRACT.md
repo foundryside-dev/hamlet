@@ -1,5 +1,7 @@
 # Shared and flat/PER replay custody — R81 source contract, R84 status
 
+The R81 source capsule below is historical. R98 stages later CUDA producer changes with an open validation-prefix defect and core dependencies; see the [evidence index](EVIDENCE-INDEX.md). The old source hashes, CPU results and CUDA limitations do not qualify the later source.
+
 Current recurrent behavior and R84 CPU component evidence are documented in the [recurrent replay custody contract](CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md). The shared and flat/PER interfaces below retain their R81 source basis. R84 supersedes this document's historical pending recurrent-B/defaults/style work; CUDA, owner/caller integration and programme gates remain open. See [BAC status](STATUS.md) for current gate outcomes.
 
 2026-11-13. This capsule records the bounded fixed shared-contract/flat/PER producer at R81 tree `4bcb26ec56bc2664949baab7d6b14e3c1da76b01`, base `678513c7540a61114d59a17d1b1e0eb8a06ce0a2`, manifest SHA256 `f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e`. It supplements the historical Stage B capsule, which is preserved unchanged. It is not whole-replay, CUDA or programme acceptance.

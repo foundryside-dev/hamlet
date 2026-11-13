@@ -1,0 +1,1438 @@
+{
+  "schema": "bac-historical-evidence-inventory-preparation-v1",
+  "status": "HISTORICAL INVENTORY ONLY; NOT CHECKPOINT SELECTION INPUT OR ACCEPTANCE",
+  "process": {
+    "path": "/workspace/hamlet/docs/remediation/bac/EVIDENCE-PROCESS.md",
+    "sha256": "409d31fd8fecc91237d90f3424447cb812258f3b42699faca0d121008461ef75",
+    "bytes": 14570
+  },
+  "previous_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r91-r92-evidence-inventory.json",
+    "sha256": "48986c0ad1f69a36f72fa325db83a94bebfe14af24edd07596d56402d8740b6f",
+    "bytes": 90522
+  },
+  "rounds": [
+    {
+      "round": 93,
+      "manifest": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-candidate.json",
+        "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+        "bytes": 203416
+      },
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+      "manifest_source_hashes": {
+        "src/townlet/exploration/rng_custody.py": "0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477",
+        "src/townlet/training/replay_contract.py": "8de53fc6814a16bafb703728ed396d7b9a1298afdb415be4ec8d1d85ac1502a1",
+        "src/townlet/training/replay_buffer.py": "817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214",
+        "src/townlet/training/prioritized_replay_buffer.py": "b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py": "c450390e461b0828c33189c176d8ea3c6f6161e95fec68fefa33db1b5bdd0ab3"
+      },
+      "preflight": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-fixture-resource-preflight.json",
+        "sha256": "a6861b9d5597623b21891bb1f1ca7177f1b8245e3621fb2aa36168b0e9bc2097",
+        "bytes": 3030
+      },
+      "attempts": [
+        {
+          "check_id": "r93-collection",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection-spec.json",
+            "sha256": "873fe7df3e4788303f37e7410b0573ec2052ff60394407387299c521a57c3ddf",
+            "bytes": 582
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-candidate.json",
+            "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+            "bytes": 203416
+          },
+          "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection-result.json",
+            "sha256": "f2db6dfad9ae8e7ad640ed2499fa176971f274a20a7d2ac7e6b89cad9ce08dff",
+            "bytes": 831
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection.log",
+            "sha256": "c95d21a2127e5323b0ed1a96b9b8a2a7a684f0a8703394987253c46c04f7a5da",
+            "bytes": 8520
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection-custody.json",
+            "sha256": "1f4b7a72d9be1af0ca51a54de04e3953c2b21025ceeb896feeb4f7734fc7590f",
+            "bytes": 642
+          },
+          "exit_code": 0,
+          "seconds": 5.6464855670928955,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "warnings": 0
+          },
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "collection",
+          "collected": 88,
+          "collection_summary": "========================= 88 tests collected in 0.20s =========================="
+        },
+        {
+          "check_id": "r93-fixture-prerequisites",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites-spec.json",
+            "sha256": "a351715633cf2a244f98d87962cbdc02e9f1f2a24b1cd60b79b7040fcdae303f",
+            "bytes": 1023
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-candidate.json",
+            "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+            "bytes": 203416
+          },
+          "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites-result.json",
+            "sha256": "704bf9a79fa1a6c2bad39e1318ab594136766adf2aa0d977f44e71b6999a25b8",
+            "bytes": 1273
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites.log",
+            "sha256": "9cff9de859cb9746c20e2430b85ea695e13d6d725ad3ec019e464038f672ea38",
+            "bytes": 773
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites-custody.json",
+            "sha256": "1819bb5fc2e052caac718b9c8e1a38b30aa7534d47c921b54ad957a28ea4ba06",
+            "bytes": 651
+          },
+          "exit_code": 0,
+          "seconds": 4.42415452003479,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": {
+            "passed": 4,
+            "skipped": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "warnings": 0
+          },
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "runtime"
+        },
+        {
+          "check_id": "r93-owned",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-owned-spec.json",
+            "sha256": "f870e63d1d6850225e19c958f0162d99f4b03a9f8578045a31aeb1ec8fc7129e",
+            "bytes": 704
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r93-owned"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-owned",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-candidate.json",
+            "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+            "bytes": 203416
+          },
+          "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "UNRUN",
+          "result": null,
+          "exit_code": null,
+          "seconds": null,
+          "counts": null,
+          "reason": "Generated owned default template; no output/result exists. Not the producer selection and not execution evidence."
+        },
+        {
+          "check_id": "r93-ruff-owned",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static-spec.json",
+            "sha256": "272937a20f28f28afd596d17c8939d37dcc3773d636772dd79ba2673b5d19fd5",
+            "bytes": 636
+          },
+          "planned_args": [
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "harness_workers": 2,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-candidate.json",
+            "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+            "bytes": 203416
+          },
+          "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/ruff-owned-result.json",
+            "sha256": "a5b356a4cbf36d40d2f3b5ee8419e2c772028955c71eba1bda90f1fe39324d27",
+            "bytes": 720
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+            "bytes": 19
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/static-custody.json",
+            "sha256": "1d523097f3d0b49b3ab1a09e6372522f1992a3ac42eb16827665d0ad1e2c9e71",
+            "bytes": 995
+          },
+          "exit_code": 0,
+          "seconds": 0.08993959426879883,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": null,
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "static"
+        },
+        {
+          "check_id": "r93-black-owned",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static-spec.json",
+            "sha256": "272937a20f28f28afd596d17c8939d37dcc3773d636772dd79ba2673b5d19fd5",
+            "bytes": 636
+          },
+          "planned_args": [
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "harness_workers": 2,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-candidate.json",
+            "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+            "bytes": 203416
+          },
+          "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/black-owned-result.json",
+            "sha256": "8e10980174b07aa7dd8a6848caa2f702ee9cf5f083dde450c4610dc23e947aaf",
+            "bytes": 723
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/black-owned.log",
+            "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+            "bytes": 55
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/static-custody.json",
+            "sha256": "1d523097f3d0b49b3ab1a09e6372522f1992a3ac42eb16827665d0ad1e2c9e71",
+            "bytes": 995
+          },
+          "exit_code": 0,
+          "seconds": 0.656207799911499,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": null,
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "static"
+        }
+      ],
+      "qualification_tops": [
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-capture.log",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-capture.log",
+              "sha256": "82e26767eb95ae345d25166c5d4de0eb3ec993f5e5d337a22ec146543c939437",
+              "bytes": 4764
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection",
+          "descendants": [
+            {
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection",
+              "kind": "directory"
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection/identity-controller.json",
+              "sha256": "710a522e81a660fa4138ef857e51c0570078f4797a3769c06cec56b1de58b4f7",
+              "bytes": 246
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection-custody.json",
+              "sha256": "1f4b7a72d9be1af0ca51a54de04e3953c2b21025ceeb896feeb4f7734fc7590f",
+              "bytes": 642
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection-result.json",
+              "sha256": "f2db6dfad9ae8e7ad640ed2499fa176971f274a20a7d2ac7e6b89cad9ce08dff",
+              "bytes": 831
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection.log",
+              "sha256": "c95d21a2127e5323b0ed1a96b9b8a2a7a684f0a8703394987253c46c04f7a5da",
+              "bytes": 8520
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection-spec.json",
+              "sha256": "873fe7df3e4788303f37e7410b0573ec2052ff60394407387299c521a57c3ddf",
+              "bytes": 582
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites",
+          "descendants": [
+            {
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites",
+              "kind": "directory"
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites/identity-controller.json",
+              "sha256": "710a522e81a660fa4138ef857e51c0570078f4797a3769c06cec56b1de58b4f7",
+              "bytes": 246
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites-custody.json",
+              "sha256": "1819bb5fc2e052caac718b9c8e1a38b30aa7534d47c921b54ad957a28ea4ba06",
+              "bytes": 651
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites-result.json",
+              "sha256": "704bf9a79fa1a6c2bad39e1318ab594136766adf2aa0d977f44e71b6999a25b8",
+              "bytes": 1273
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites.log",
+              "sha256": "9cff9de859cb9746c20e2430b85ea695e13d6d725ad3ec019e464038f672ea38",
+              "bytes": 773
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites-spec.json",
+              "sha256": "a351715633cf2a244f98d87962cbdc02e9f1f2a24b1cd60b79b7040fcdae303f",
+              "bytes": 1023
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-owned-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-owned-spec.json",
+              "sha256": "f870e63d1d6850225e19c958f0162d99f4b03a9f8578045a31aeb1ec8fc7129e",
+              "bytes": 704
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/black-owned-result.json",
+              "sha256": "8e10980174b07aa7dd8a6848caa2f702ee9cf5f083dde450c4610dc23e947aaf",
+              "bytes": 723
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/black-owned.log",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+              "bytes": 55
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/ruff-owned-result.json",
+              "sha256": "a5b356a4cbf36d40d2f3b5ee8419e2c772028955c71eba1bda90f1fe39324d27",
+              "bytes": 720
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static/static-custody.json",
+              "sha256": "1d523097f3d0b49b3ab1a09e6372522f1992a3ac42eb16827665d0ad1e2c9e71",
+              "bytes": 995
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-static-spec.json",
+              "sha256": "272937a20f28f28afd596d17c8939d37dcc3773d636772dd79ba2673b5d19fd5",
+              "bytes": 636
+            }
+          ]
+        }
+      ],
+      "executed_result_commands": 4,
+      "unrun_generated_templates": 1,
+      "summary": "88 collected; Ruff/Black2PASS; fixture4PASS; ten producer children UNRUN."
+    },
+    {
+      "round": 94,
+      "manifest": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+        "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+        "bytes": 203565
+      },
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+      "manifest_source_hashes": {
+        "src/townlet/exploration/rng_custody.py": "0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477",
+        "src/townlet/training/replay_contract.py": "5b9001092323c777228bedadccedb9b6dcb8e64d705dd5292b7f126ee485ca66",
+        "src/townlet/training/replay_buffer.py": "1c6000e1938e58de0bf77d92be9dc9cff00f4ef8aa454f613c8ff41993b2a0fd",
+        "src/townlet/training/prioritized_replay_buffer.py": "9d34c07e117c27b37842ec4a99d17c12e71c198e7ab13e36ebfd43f2374cee6f",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py": "c450390e461b0828c33189c176d8ea3c6f6161e95fec68fefa33db1b5bdd0ab3"
+      },
+      "preflight": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-fixture-resource-preflight.json",
+        "sha256": "5678fb15104a92c6ab999b5f5a42350211d17453b324e11d4b73db89cc7f6e61",
+        "bytes": 3030
+      },
+      "attempts": [
+        {
+          "check_id": "r94-collection",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection-spec.json",
+            "sha256": "491249dfa48f6d6e04633f14b88793482ec35bc4767a4d00c756c3bcf5390358",
+            "bytes": 582
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection-result.json",
+            "sha256": "257c144d69ac751133c8af23512f9811b4207468f635381ef64fd27f3791ca0d",
+            "bytes": 830
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection.log",
+            "sha256": "046bc1d8482d565a458ce0f7d4e841104d6adee9d7b8ff1a7e6a5f52f547219d",
+            "bytes": 8520
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection-custody.json",
+            "sha256": "b1b24357f30fb09402aefaeaa2655c61b6fe92a88912cb1e3332b19a8859e22f",
+            "bytes": 641
+          },
+          "exit_code": 0,
+          "seconds": 4.893642425537109,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "warnings": 0
+          },
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "collection",
+          "collected": 88,
+          "collection_summary": "========================= 88 tests collected in 0.09s =========================="
+        },
+        {
+          "check_id": "r94-constructors",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors-spec.json",
+            "sha256": "f52984cf0171ae88e205fecabd0ff974d5cd989f780e9a3d4f75ca60710ea2e2",
+            "bytes": 603
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors-result.json",
+            "sha256": "a6dba4fb3b5a92b0801f7edd7a2e85cc8b24b8926f6807706ddcd6ecf39be4e8",
+            "bytes": 857
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors.log",
+            "sha256": "0cb353fe094742b1a51c6a6edcf8e4e0e1d722a76003a8767568ec9ba1829ec7",
+            "bytes": 773
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors-custody.json",
+            "sha256": "12fb0f77648c3db8503aaae1a8a96d5c9f3d6d1d7b5ff6949a81b9011a5bb31a",
+            "bytes": 643
+          },
+          "exit_code": 0,
+          "seconds": 4.688844203948975,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": {
+            "passed": 6,
+            "skipped": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "warnings": 0
+          },
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "runtime"
+        },
+        {
+          "check_id": "r94-dependency-probes",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes-spec.json",
+            "sha256": "9ba2cd26a6c8f537975656ed3e3a8a0ec85f1f772716cda158f1d6a06e0a696b",
+            "bytes": 758
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "FAILED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes-result.json",
+            "sha256": "448191164206d69d825b0e6ce36870bb35bddaee9bc37eb92d069a85399f96b0",
+            "bytes": 1013
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes.log",
+            "sha256": "fbeacb903cb19d217cbbc98928e2ee82b8afb649d5cb0298c8d353fc7101a053",
+            "bytes": 8390
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes-negative-custody.json",
+            "sha256": "81dad3ac9657ad636340d3da7279260432ecae8f0433997b1c704009782f9e4e",
+            "bytes": 958
+          },
+          "exit_code": 1,
+          "seconds": 4.531635284423828,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": {
+            "failed": 2,
+            "passed": 0,
+            "skipped": 0,
+            "errors": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "warnings": 0
+          },
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "runtime",
+          "failure_index": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes-failure-index.json",
+            "sha256": "49ee8985d0e3562650db0cb791131dd7e32b2359e572b9ee1754543167771e95",
+            "bytes": 1092
+          }
+        },
+        {
+          "check_id": "r94-owned",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-owned-spec.json",
+            "sha256": "74fa46f254795bed2257c72431856f9c007f584486be9623c5bb3dfe68b5757c",
+            "bytes": 704
+          },
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r94-owned"
+          ],
+          "harness_workers": 1,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-owned",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "UNRUN",
+          "result": null,
+          "exit_code": null,
+          "seconds": null,
+          "counts": null,
+          "reason": "Generated owned default template; no output/result exists. Not the producer selection and not execution evidence."
+        },
+        {
+          "check_id": "r94-ruff-owned",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static-spec.json",
+            "sha256": "e8c7be59440e303de4f1312ce886d5de22f7c28786bca0b6a2d9cfcde427555f",
+            "bytes": 1213
+          },
+          "planned_args": [
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "harness_workers": 2,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/ruff-owned-result.json",
+            "sha256": "0675a7e9db477bf25268de670063a38f2afa4f5827cedb2f4a144a95fa520c20",
+            "bytes": 869
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/ruff-owned.log",
+            "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+            "bytes": 19
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/static-custody.json",
+            "sha256": "cff4590c03e58738c38ca153392d726a2320063bfe55ca467226ea02b6ce2f8c",
+            "bytes": 1277
+          },
+          "exit_code": 0,
+          "seconds": 0.06358742713928223,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": null,
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "static"
+        },
+        {
+          "check_id": "r94-black-owned",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static-spec.json",
+            "sha256": "e8c7be59440e303de4f1312ce886d5de22f7c28786bca0b6a2d9cfcde427555f",
+            "bytes": 1213
+          },
+          "planned_args": [
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "harness_workers": 2,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "PASSED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/black-owned-result.json",
+            "sha256": "43d50627a07dd337e860138af5f9c5b61b035b345babe9158355da0dfa63e76e",
+            "bytes": 872
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/black-owned.log",
+            "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+            "bytes": 56
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/static-custody.json",
+            "sha256": "cff4590c03e58738c38ca153392d726a2320063bfe55ca467226ea02b6ce2f8c",
+            "bytes": 1277
+          },
+          "exit_code": 0,
+          "seconds": 1.080017328262329,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": null,
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "static"
+        },
+        {
+          "check_id": "r94-no-defaults",
+          "spec": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static-spec.json",
+            "sha256": "e8c7be59440e303de4f1312ce886d5de22f7c28786bca0b6a2d9cfcde427555f",
+            "bytes": 1213
+          },
+          "planned_args": [
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "harness_workers": 2,
+          "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static",
+          "candidate_manifest": {
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-candidate.json",
+            "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+            "bytes": 203565
+          },
+          "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "started_at": null,
+          "ended_at": null,
+          "status": "FAILED",
+          "result": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/no-defaults-result.json",
+            "sha256": "ab056f62de135a3690ae80f6972ab67b470c7fcf49ae10bac4c6ef12a4934ea2",
+            "bytes": 777
+          },
+          "log": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/no-defaults.log",
+            "sha256": "012c423727dede893e72a674aa68653f9761916c15a08f2ed8503f031512c349",
+            "bytes": 440
+          },
+          "custody": {
+            "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/static-custody.json",
+            "sha256": "cff4590c03e58738c38ca153392d726a2320063bfe55ca467226ea02b6ce2f8c",
+            "bytes": 1277
+          },
+          "exit_code": 1,
+          "seconds": 1.3153066635131836,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "counts": null,
+          "custody_status": "PASS",
+          "absolute_time_unavailable_reason": "Result supplies elapsed seconds, not absolute UTC start/end; none inferred.",
+          "qualification_scope": "Named historical check only; custody integrity is separate from application acceptance.",
+          "kind": "static"
+        }
+      ],
+      "qualification_tops": [
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-capture.log",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-capture.log",
+              "sha256": "ad6013dcfff3b07777fba0690d0697bf54cfa0e6d2bb7f9130fb079b763e3517",
+              "bytes": 4764
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection",
+          "descendants": [
+            {
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection",
+              "kind": "directory"
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection/identity-controller.json",
+              "sha256": "4c92cefa6bece9da13e780ae3dfa145f268c5927b074e9a925b0bf1272952f64",
+              "bytes": 246
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection-custody.json",
+              "sha256": "b1b24357f30fb09402aefaeaa2655c61b6fe92a88912cb1e3332b19a8859e22f",
+              "bytes": 641
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection-result.json",
+              "sha256": "257c144d69ac751133c8af23512f9811b4207468f635381ef64fd27f3791ca0d",
+              "bytes": 830
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection/collection.log",
+              "sha256": "046bc1d8482d565a458ce0f7d4e841104d6adee9d7b8ff1a7e6a5f52f547219d",
+              "bytes": 8520
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-collection-spec.json",
+              "sha256": "491249dfa48f6d6e04633f14b88793482ec35bc4767a4d00c756c3bcf5390358",
+              "bytes": 582
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors",
+          "descendants": [
+            {
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors",
+              "kind": "directory"
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors/identity-controller.json",
+              "sha256": "4c92cefa6bece9da13e780ae3dfa145f268c5927b074e9a925b0bf1272952f64",
+              "bytes": 246
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors-custody.json",
+              "sha256": "12fb0f77648c3db8503aaae1a8a96d5c9f3d6d1d7b5ff6949a81b9011a5bb31a",
+              "bytes": 643
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors-result.json",
+              "sha256": "a6dba4fb3b5a92b0801f7edd7a2e85cc8b24b8926f6807706ddcd6ecf39be4e8",
+              "bytes": 857
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors/constructors.log",
+              "sha256": "0cb353fe094742b1a51c6a6edcf8e4e0e1d722a76003a8767568ec9ba1829ec7",
+              "bytes": 773
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-constructors-spec.json",
+              "sha256": "f52984cf0171ae88e205fecabd0ff974d5cd989f780e9a3d4f75ca60710ea2e2",
+              "bytes": 603
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes",
+          "descendants": [
+            {
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes",
+              "kind": "directory"
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes/failure-controller-727d0470600ec014.json",
+              "sha256": "9147035d6ac92ca6b17d0334e7db6e4cc12e1be2efccf00ae98b15b59dd50475",
+              "bytes": 3102
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes/failure-controller-e425997810fdd692.json",
+              "sha256": "7e1c069abc5fc4c0fce4f2db00a4a0d58229d17a28e711ad16c14308ce36a109",
+              "bytes": 4691
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes/identity-controller.json",
+              "sha256": "4c92cefa6bece9da13e780ae3dfa145f268c5927b074e9a925b0bf1272952f64",
+              "bytes": 246
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes-failure-index.json",
+              "sha256": "49ee8985d0e3562650db0cb791131dd7e32b2359e572b9ee1754543167771e95",
+              "bytes": 1092
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes-negative-custody.json",
+              "sha256": "81dad3ac9657ad636340d3da7279260432ecae8f0433997b1c704009782f9e4e",
+              "bytes": 958
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes-result.json",
+              "sha256": "448191164206d69d825b0e6ce36870bb35bddaee9bc37eb92d069a85399f96b0",
+              "bytes": 1013
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes/dependency-probes.log",
+              "sha256": "fbeacb903cb19d217cbbc98928e2ee82b8afb649d5cb0298c8d353fc7101a053",
+              "bytes": 8390
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-dependency-probes-spec.json",
+              "sha256": "9ba2cd26a6c8f537975656ed3e3a8a0ec85f1f772716cda158f1d6a06e0a696b",
+              "bytes": 758
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-owned-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-owned-spec.json",
+              "sha256": "74fa46f254795bed2257c72431856f9c007f584486be9623c5bb3dfe68b5757c",
+              "bytes": 704
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/black-owned-result.json",
+              "sha256": "43d50627a07dd337e860138af5f9c5b61b035b345babe9158355da0dfa63e76e",
+              "bytes": 872
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/black-owned.log",
+              "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+              "bytes": 56
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/no-defaults-result.json",
+              "sha256": "ab056f62de135a3690ae80f6972ab67b470c7fcf49ae10bac4c6ef12a4934ea2",
+              "bytes": 777
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/no-defaults.log",
+              "sha256": "012c423727dede893e72a674aa68653f9761916c15a08f2ed8503f031512c349",
+              "bytes": 440
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/ruff-owned-result.json",
+              "sha256": "0675a7e9db477bf25268de670063a38f2afa4f5827cedb2f4a144a95fa520c20",
+              "bytes": 869
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static/static-custody.json",
+              "sha256": "cff4590c03e58738c38ca153392d726a2320063bfe55ca467226ea02b6ce2f8c",
+              "bytes": 1277
+            }
+          ]
+        },
+        {
+          "top": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static-spec.json",
+          "descendants": [
+            {
+              "kind": "file",
+              "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r94-static-spec.json",
+              "sha256": "e8c7be59440e303de4f1312ce886d5de22f7c28786bca0b6a2d9cfcde427555f",
+              "bytes": 1213
+            }
+          ]
+        }
+      ],
+      "executed_result_commands": 6,
+      "unrun_generated_templates": 1,
+      "summary": "88 collected; Ruff/BlackPASS; defaultsFAIL2 ASG002 with620 whitelisted; constructors6PASS; dependency probes2FAIL missing core APIs; all recorded custodyPASS. No mypy/full run."
+    }
+  ],
+  "metadata_references": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R93-SNAPSHOT.txt",
+      "sha256": "a07047a82c019e8e08c63b28f83b40c2b837fd4ac6cf0c0ebcfb68cc0f649b74",
+      "bytes": 42636
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md",
+      "sha256": "431b41aa512ec673e243794688a1f766cdb04cfd15317be997011d0b5dfd2206",
+      "bytes": 55855
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-POISON-TESTS-REVIEW.md",
+      "sha256": "afecfe9e7dbdd1dcaace343d2bc39b55dfed7007dbd01db63a33bf1a45f525af",
+      "bytes": 10542
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-IMPLEMENTATION-REVIEW.md",
+      "sha256": "9f03268384b3d07414ec1bebd6cb0035d55d4e01e6e7b3ac7035f41cc159b446",
+      "bytes": 15285
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-TESTS-R93-POISON.diff",
+      "sha256": "b75630a2044e9e6f86f4853c63a10186075f5e1606064e04bd16937320cd2239",
+      "bytes": 18606
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-IMPLEMENTATION-R94.diff",
+      "sha256": "2b6a495759fbb71445bf29e3195b638f769052523226f6c31a84ff5021d7553e",
+      "bytes": 75530
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-POISON-CHILD-API-R93-SNAPSHOT.txt",
+      "sha256": "b75dc03552347f4b14d66567901c43377bb210d016248c877345d27b2285dd0e",
+      "bytes": 14885
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-POISON-CHILD-API.md",
+      "sha256": "e5072eb3ab320566faa705831de4927e4d358b2ecc01786014601a13d8898e9e",
+      "bytes": 16664
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-REPORT.md",
+      "sha256": "4d9f76076db90af06458c7eaa7cc7e312fe33589b46d5d8a20f05417a3df4014",
+      "bytes": 7908
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-INDEPENDENT-REVIEW.md",
+      "sha256": "2d62ffcda679785a1346a016bb93ab9f6a572827d9b4d5dd4e399659b34eccc3",
+      "bytes": 5351
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-REVIEW.diff",
+      "sha256": "3d2ead4468bd49914dae3f3080522e057600f88208773c2841db15d938e3ac56",
+      "bytes": 25854
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-black.log",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c",
+      "bytes": 56
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-green-initial.log",
+      "sha256": "139748dc0791e1d6a43c1624249891f5fa17397e0c6fb9b176ee79b6d0678285",
+      "bytes": 156
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-green.log",
+      "sha256": "98e72c82c54b3478cda3f4e0f3e2aba9859cefd997def30f545778c2d6dd34c3",
+      "bytes": 157
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-red.log",
+      "sha256": "e3e5550d57baf22a5f7e92ca3bdac18a00f4e6f6730d18717685b482f83694fd",
+      "bytes": 11764
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-black.log",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c",
+      "bytes": 56
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-synthetic.log",
+      "sha256": "a67bb2f5d9bd72d7689f60acc6026945af184ca3a260c4e8df7e7f8ef493a60a",
+      "bytes": 157
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-repeat.json",
+      "sha256": "90e2848672c2bd39c1da694b14b685f6cf558caf966ebb77aa849883312e1b76",
+      "bytes": 2009
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-commands.json",
+      "sha256": "0bda302cfc93469f99dd09a1f4075d37d7194e57b37b305b6eef76033021a28d",
+      "bytes": 2061
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-synthetic-test-source-preservation.json",
+      "sha256": "aa45f7b28e18f56085e02a1472767fe7f6a27ec8ec05ea24e36fe236bd65a9e0",
+      "bytes": 1138
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-before-test_replay_spawn_verifier.py.txt",
+      "sha256": "fdf75f6072f625d8788c5ae4ebe9efc9cfa693f7469aa2db6c339f9816ead683",
+      "bytes": 30444
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/harness-selfhash-clarification.json",
+      "sha256": "a24e2fecb7aa48c62d04e35bcaeb9ef5b037665a917aca6cc65b3c55807b05dc",
+      "bytes": 5002
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r93-producer-child-verifier-qualification.json",
+      "sha256": "49f323d63ff7f599c8c07edc74defc1f44c9c31781462da54744ce0f4d3247e4",
+      "bytes": 1788
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r94-a-implementation-fix1-grant.json",
+      "sha256": "b5391fd71171b5b2a70bb3b4ec25a2321e7b9d4e02ea0f7e9d71f8c692558732",
+      "bytes": 1256
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R94-SNAPSHOT.txt",
+      "sha256": "431b41aa512ec673e243794688a1f766cdb04cfd15317be997011d0b5dfd2206",
+      "bytes": 55855
+    }
+  ],
+  "report_versions": {
+    "r93": {
+      "snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R93-SNAPSHOT.txt",
+        "sha256": "a07047a82c019e8e08c63b28f83b40c2b837fd4ac6cf0c0ebcfb68cc0f649b74",
+        "bytes": 42636
+      },
+      "literal_prefix_of_current_report": true
+    },
+    "r94": {
+      "current_report": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md",
+        "sha256": "431b41aa512ec673e243794688a1f766cdb04cfd15317be997011d0b5dfd2206",
+        "bytes": 55855
+      },
+      "expected_sha256": "431b41aa512ec673e243794688a1f766cdb04cfd15317be997011d0b5dfd2206",
+      "snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R94-SNAPSHOT.txt",
+        "sha256": "431b41aa512ec673e243794688a1f766cdb04cfd15317be997011d0b5dfd2206",
+        "bytes": 55855
+      },
+      "limitation": "Current appendable report is measured now; no historical timestamp inferred. Preserve exact version before later append."
+    }
+  },
+  "review_disposition": {
+    "r93_poison_test_source": "SPEC/QUALITY PASS afecfe9e; source/protocol only, no child or production approval.",
+    "r94_implementation": "9f032683 requires I1-I7 fixes; root authorized tests-first fix1. No repaired result inferred.",
+    "tooling": "49f323d6 qualification: author58PASS and root58PASS overlap; independent2d62ffcd seven mutations refused. Tool qualification only; no actual producer child execution."
+  },
+  "producer_children": {
+    "status": "UNRUN",
+    "cases": [
+      "flat_local_single",
+      "flat_local_distinct",
+      "flat_local_same",
+      "flat_admitted_single",
+      "flat_admitted_same",
+      "per_local_single",
+      "per_local_distinct",
+      "per_local_same",
+      "per_admitted_single",
+      "per_admitted_same"
+    ],
+    "reason": "Authentic A/B production prerequisites and fresh individual qualified execution remain owed. Collection is not execution.",
+    "counts": null,
+    "actual_result_refs": []
+  },
+  "diagnostics": {
+    "status": "UNQUALIFIED DIAGNOSTIC ONLY",
+    "refs": [
+      {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r94-defaults-diagnostic.log",
+        "sha256": "75af9be4ac00597d6e908261e9db6de5ca79d738333dddb7cd256b6c01f4f179",
+        "bytes": 117688
+      },
+      {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r94-defaults-owned-diagnostic.txt",
+        "sha256": "1ae374bf6ded6c62c94e678c32ba7d4b1f5730278f27a1c49d5ef7a4c1d95aa9",
+        "bytes": 5352
+      }
+    ],
+    "help_artifact": null,
+    "limitation": "No separately named help artifact found in direct evidence-management metadata inventory. Retained diagnostic/extract are not locked-harness candidate/source-custody evidence. Frozen-source context supplied by root is not runtime attestation; no linter source body read."
+  },
+  "accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66,
+    "overlap_policy": "Do not sum collection, fixture/constructor/probe subsets, historical repeated tests or author/root tooling repeats. No aggregate application PASS total or package promotion asserted."
+  },
+  "limitations": [
+    "No current-workspace equality claim; only exact historical manifests/results/custody referenced.",
+    "No code-body read, app/helper execution, Git/index action, selector/assembly/publication or previous artifact modification.",
+    "All actual result log hashes, command/spec arrays, base/tree/manifest hashes and custody candidate bindings compared as JSON/data; source/config/artifact custody is attributed to sealed verifier records, not rerun.",
+    "Harness result emits self-reported on-disk harness digest; see prospective clarification. This is not signed in-memory execution proof.",
+    "Missing absolute timestamps remain unavailable. No manufactured mypy/full-run or CUDA hardware pass.",
+    "Required next steps remain finite Afix1 source/review, authentic B APIs, actual ten children, outer-parent outcome ownership, hardware/integration/programme gates."
+  ]
+}

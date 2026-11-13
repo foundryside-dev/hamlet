@@ -1,0 +1,834 @@
+# Flat/PER CUDA producer A — initial tests-only freeze
+
+2026-11-13. Root granted only the first two independent capsule groups:
+metadata-only constructors and genuine healthy CPU current-route/stream-law
+controls. Created only the focused test body below and this required report.
+No production edit, application execution/import/probe, pytest collection,
+lint/type execution, manifest monkeypatch, Git write, source copy, branch,
+worktree or delegation. All behavioral outcomes below are EXPECTED / UNRUN.
+Root retains collection/RED/CPU capture and the next writer grant.
+
+## Exact frozen bodies
+
+| Body | Lines | SHA256 | Ceiling |
+| --- | ---: | --- | ---: |
+| `src/townlet/training/replay_contract.py` | 374 | `8de53fc6814a16bafb703728ed396d7b9a1298afdb415be4ec8d1d85ac1502a1` | 650 |
+| `src/townlet/training/replay_buffer.py` | 728 | `817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214` | 850 |
+| `src/townlet/training/prioritized_replay_buffer.py` | 1164 | `b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8` | 1300 |
+| `tests/test_townlet/regressions/bac/test_replay_cuda_producer.py` | 321 | `c1fd932e18638fd475360a4d31a0ff6c9c902611044f10df4dea0ca5d8725084` | 1000 |
+
+Remeasured four-body total2587, below planned3800 / four and hard5000 / five.
+All three production hashes remain exactly the initial capsule/base hashes.
+No old test/helper/recurrent/core body was read. The source classification
+capsule remains frozen SHA256
+`3f9bbd459f2bdee7b4ec27ce46eea334fc800be4b968ad4d58370e352fab7416`.
+
+## Fixture causality
+
+`_NoCUDA` replaces the `torch.cuda` module only within a MonkeyPatch context
+inside each test. It uses ordinary `__getattr__`, leaves real `__class__` and
+other existing object introspection untouched, and answers absent dunder
+lookups with AttributeError. Non-dunder CUDA attribute lookup raises the
+specific sentinel AssertionError. Thus pytest setup need not inspect a hostile
+`__class__`, and context unwinding restores the original module before pytest
+formats a constructor exception. The actual production constructors, sole
+domain, owner registration and an authenticated real `device_operation` with
+empty completion tuple remain intact. No replacement domain/participant or
+artificial local-contract authority is installed.
+
+The six constructor cases preserve the exact selector object, check empty
+length and stable participant identity, then exercise real domain admission
+on that participant. They cover CPU, unindexed CUDA and explicit cuda:3 without
+assuming real device count or initialization. Expected baseline RED is four
+CUDA cases: unindexed selectors encounter current structural rejection;
+indexed selectors encounter current eager initialized-device validation and
+the sentinel. CPU constructor cases are healthy controls. A failure during
+pytest plumbing/collection rather than the actual constructor is not causal
+RED and must be corrected before any production grant.
+
+CPU row fixtures are real dense CPU tensors, two-action masks with a terminal
+empty mask, independent optional reward components and total rewards that
+must not be recomposed. `RewardTensor` is constructed using the supplier's
+exact signature, explicitly passing all five fields. Actual push_recorded,
+readiness, serialization, validation DTO materialization, issuer-generated
+PreparedReplay, installation, both current load adapters and direct/typed
+sampling run unchanged algorithms. State comparisons include all serialized
+tensor/NumPy/container/scalar fields. PER controls also exercise explicit
+Generator ownership, physical/stable priority update, beta method, size,
+unconstrained push and action-vocabulary declaration; both families clear and
+repopulate. The empty historical archive property is exercised; nonempty GPU
+archives and scratch/recurrent paths are not claimed by this group.
+
+Independent stream-law expectations use standard-library samplers directly:
+flat uses a separate CPU Torch Generator with the same initial state and one
+randperm; PER external routes use an independent RandomState with one
+vectorized without-replacement choice; PER owned successive uses two explicit
+Generator choices over hand-enumerated residual supports. All priorities are
+initially equal, giving literal probabilities1/4 then1/3 and beta0 unit weights.
+Returned real rows, indices/receipts, owned Generator state and actual ambient
+continuation distinguish wrong RNG ownership/draw schedules. No producer or
+per_sampling helper computes its own expected answer. A fixture restores
+Python/global NumPy/CPU Torch state after each test; no CUDA RNG state is read.
+
+## Exact prospective nodes for root capture
+
+These13 node IDs are derived from the written parametrization, not a collected
+manifest. Root must verify actual collection before adopting them. Prefix each
+suffix below with
+`tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::`.
+
+1. `test_empty_constructor_has_no_cuda_access[cpu-flat]`
+2. `test_empty_constructor_has_no_cuda_access[cpu-per]`
+3. `test_empty_constructor_has_no_cuda_access[cuda-flat]`
+4. `test_empty_constructor_has_no_cuda_access[cuda-per]`
+5. `test_empty_constructor_has_no_cuda_access[cuda:3-flat]`
+6. `test_empty_constructor_has_no_cuda_access[cuda:3-per]`
+7. `test_cpu_local_and_admitted_routes_stay_cuda_free[flat]`
+8. `test_cpu_local_and_admitted_routes_stay_cuda_free[per]`
+9. `test_flat_sampling_preserves_selected_cpu_torch_stream[direct]`
+10. `test_flat_sampling_preserves_selected_cpu_torch_stream[batch]`
+11. `test_per_direct_retains_vectorized_global_law_with_owned_sampler`
+12. `test_per_batch_external_sampler_retains_vectorized_global_law`
+13. `test_per_batch_owned_sampler_retains_residual_draw_law`
+
+Expected baseline split is four causal constructor REDs and nine healthy CPU
+controls. This author claims neither collection nor PASS/FAIL counts. Root
+will retain actual same-byte outcomes and grant any fixture correction before
+production work. No hardware skips or GPU qualification are encoded here.
+
+## Supplier deltas and finite remaining work
+
+Read prose-only `T18e-R0-CUDA-ARCHIVE-INPUT-INVENTORY-FACTS.md`, root-supplied
+SHA256 `e8eaf1472efacbe5ade2605f41311e640000495cc96a045047b99a0126bf8adc`.
+It closes initial capsule's narrow canonical archive inventory and RewardTensor
+field feasibility questions without reading either supplier implementation:
+exact canonical archive direct `object.__getattribute__(archive,
+"original_state")` is metadata-only internal slot access; do not mutate/escape
+the returned data or invoke clone-on-read accessors before completion.
+RewardTensor exact-class fields are five ordinary mutable slots; inventory
+every independent tensor component. Ordinary-data/hook limitations remain.
+Root supplied exact constructor facts through
+`T18e-R0-CUDA-REWARD-TENSOR-CONSTRUCTOR-CAPSULE.md`, SHA256
+`9fbfdab0ab2ac0c56f378ca79e85e5d5fd9800f313e089742f855ccc75003391`.
+
+Root correction to the initial capsule's completion test row: all declared
+LOCAL gate completions must be attempted. Existing generic parent/device
+operation completion failure policy is unchanged; this test stage neither
+freezes an early-stop suffix as a new API nor expands generic cleanup. Scoped
+admitted completion-outcome design is separately owned; no private accessor
+or quarantine-on-every-body-error is assumed.
+
+Dynamic current-device resolution, retained/input/candidate inventory,
+completion/owner exclusion, mutation/currentness, failed preparation purity,
+preflight and authentic activated local dispatch remain UNRUN and unwritten
+under this narrow test grant. No premature missing-API stubs/imports were
+added. A remains staged until production implementation, B's exact activation,
+required separate core/test updates and independent review. Real CUDA
+initialization/query effects, asynchronous one-/two-device qualification,
+remaining parent/caller/native integration and programme gates remain owed.
+No capability removal, compatibility fallback, acceptance or accounting change.
+
+## R91 tests-only extension freeze
+
+Root reports R90 closed at the original321-line test hash:13 collected,
+9 healthy CPU controls PASS and4 genuine constructor RED, no errors/skips/
+warnings. The unindexed pair failed at actual producer structural rejection;
+the indexed pair reached actual is_initialized and the sentinel. Root reports
+Ruff/Black PASS and818/573/13/14MAIN1 source/config/artifact/controller runtime,
+index/import custody verified; receipt `wave35/r90-flat-per-initial-tests-receipt.json`
+SHA256 prefix `f9dbac48`, initial test review prefix `6c657dd1`. These are
+attributed root results at old bytes, not this author's execution or R91 evidence.
+
+Before append, preserved the complete prior report as inert prose
+`T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R90-SNAPSHOT.txt`, SHA256
+`7fee1d8de10c3f2481b16b45f1585e6a6eb7f3bb3120b9ff252755f182b40836`.
+No source/test copy was made. The original report text above remains intact.
+
+Root granted the same test body only for nonpoisoning remaining A controls.
+Current new test is930 lines, SHA256
+`85d685821ff39c2f70232ccd813d3d7e6699c9ddc19be82b76a4219f6aeea880`.
+Production remains374/728/1164 at the exact three hashes in the initial table.
+Current four-body total3196, below planned3800 and hard5000/five. Test reserve
+is70 lines; production growth reserve remains534. Stop/reslice before exceeding
+any ceiling; do not conceal poison protocol or other controls in hidden helpers.
+
+No application execution, import/probe, collection, style/type execution,
+production edit, Git write, new child protocol, sync-failure injection, poison
+reset/replacement or source delegation occurred. Initial13 test definitions
+remain;52 prospective nodes were added, for65 prospective total. Actual R91
+collection/fixture qualification and all R91 outcomes remain UNRUN here.
+
+### Source/review and supplier inputs
+
+Consumed preflight review `T18e-R0-CUDA-FLAT-PER-A-PREFLIGHT-REVIEW.md`
+(root prefix `8de4fd87`): F1 separates local all-device completion from generic
+operation semantics; F2 preserves required later parent-outcome ownership;
+F3 supplies branch-specific laziness; F4 requires independent secondary fields
+and archive-before-copy inventory; F5 requires actual competitor attempts and
+independent owner/core currentness controls. No excluded implementation body
+was read to implement these controls.
+
+Consumed adopted `T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1.md`, root prefix
+`e18de5be` (peer prefix `71b14345`, adoption receipt prefix `bd124da0`). Its
+`device_invocation`/single-use RNGDeviceInvocation implementation belongs to B;
+scope-specific completion_failed is read only after that invocation exits while
+the producer retains its owner lock. The new tests neither import nonexistent
+symbols at module level nor fabricate that API. Existing generic operation
+completion policy is unchanged. Parent outer outcome handling remains its
+separate actual owner/device-reachability handoff, not blanket quarantine.
+
+Consumed prose-only `T18e-R0-CUDA-CORE-RUNTIME-SUPPLIER-INTERFACE.md`, SHA256
+`5fa9d3cfd842d3841cd07cc99e85bf0a7989ee39a88d26830abd302979a85509`.
+Its five exact current CUDA methods are the entire runtime stand-in surface:
+is_initialized -> actual bool True, device_count -> actual int5, init forbidden
+in these already initialized fixtures, current_device -> the explicit selected
+bounded index, synchronize(positional int) -> successful completion callback.
+No guessed CUDA RNG/availability/seed/device-context interfaces were added.
+
+### Simulation and causal prerequisites
+
+`_CUDAData` uses real CPU tensor storage with explicit simulated device
+metadata. Its Tensor operations unwrap to genuine CPU operations and preserve
+metadata on outputs; allocation/transfer seams redirect only requested CUDA
+destinations to those CPU-backed tensors. Actual push/validation/sampling/
+materialization/install/archive algorithms and outputs remain production code.
+This is protocol evidence only; it does not qualify arbitrary Tensor subclasses,
+custom hooks, actual GPU mixed-device algorithms or CUDA RNG/completion effects.
+Do not change production input validation to accommodate the fixture.
+
+Fixture setup uses indexed cuda:0 with an explicitly initialized finite runtime.
+This reaches actual later producer routes without rediscovering the known
+constructor refusal. Run `test_simulated_fixture_runs_real_producer_values`
+for both families FIRST; each checks actual push/storage values, readiness,
+real sample rows and real DTO/materialization/prepared install roundtrip.
+Separately run `test_archive_fixture_owns_real_rows_before_observation` before
+the archive protocol witness; it constructs a legitimate owned format4 archive,
+checks actual row query values and retained metadata device3. Any failure in
+these prerequisites is fixture evidence, not producer RED.
+
+The LocalCUDAGate.complete observer forwards the existing authentic public
+method. It records arm only after real tuple validation, then observes tensor
+work while that genuine completion scope is armed. No manifest, class binding,
+contract, gate issuer, membership or local permission is replaced. With the
+current empty manifest, missing producer dispatch can run visible old local
+algorithms and fail absent-arm/completion assertions; after A dispatch changes,
+missing B constants remain explicit staged failures, never manufactured GREEN.
+
+Inventory witnesses cover selected0->1 across real clear/repopulate calls;
+retained0/source secondary shaping2/destination1; candidate material1 with
+retained0 and unused selector2; readiness legality2 versus serialized rows0+2;
+CPU-destination td_errors2 versus CPU errors with unrelated retained0; zero
+push with only secondary validation source2 and unused target3; and legitimate
+archive source3 copied while active rows0/selector1 remain unused. Assertions
+inspect actual real results before protocol obligations where possible and
+capture event windows before assertion-side/public ownership copies. No device
+count-wide completion or clone-on-read pre-inventory is accepted.
+
+Branch controls distinguish empty and archive-only preparation/install with
+unused CUDA selector, empty first PER legality allocation versus matching
+vocabulary no-op, and normal invalid priority-ID/shape failures. Actual local
+validation body-error exclusion uses matching CUDA-backed masks/dones so it
+reaches genuine CUDA metadata work, rather than a CPU-only rejection branch.
+
+Completion exclusion uses an actual sample or local serialize/invalid-mask
+push, a successful synchronize barrier, and a real competing clear. The peer
+signals its actual attempted mutation before the test checks blocking. Release
+and thread joins occur in finally. Assertions about missing exclusion occur in
+the observing thread, not inside synchronize, so expected RED does not poison
+the sole domain. The synchronize callback never raises. Clean body-error
+identity tests inject only the external tensor/sampler operation failure, keep
+completion successful, compare the exact outward exception object, compare
+full live data and prove local clear remains usable. No completion-based
+quarantine is inferred merely from a body error.
+
+Currentness controls use real prepared authority, real same-parent lineage,
+pure reads/no-op initialized resolution, and an independent genuine core probe
+token validated after owner-only mutation. Target mutation must reject the
+candidate while the core probe stays current. A separate sibling owner samples
+under the parent to stale core currency without mutating the target owner;
+fresh prepare/install is the recovery control. Failed materialization cases
+cover caller-mutated DTO masks and a changed live observation width, preserve
+full live data plus Python/NumPy/CPU Torch states, then prepare fresh material.
+
+Preflight controls are late public producer method calls, not module-import
+stubs. Declared switching retains actual competing-clear exclusion through
+the nested return and outer parent completion. A separate undeclared device4
+request must refuse before draws/data effects. These controls are currently
+RED on the missing public producer preflight, assuming fixture prerequisites
+pass; they do not establish parent failure/quarantine ownership.
+
+### Exact prospective added nodes
+
+Prefix each suffix with
+`tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::`.
+These52 IDs are derived from source parametrization; root collection must
+confirm them. The original13 IDs remain listed above.
+
+| Function suffix | Parameter IDs (one node each; absent means unparameterized) |
+| --- | --- |
+| `test_simulated_fixture_runs_real_producer_values` | `[flat]`, `[per]` |
+| `test_dynamic_selector_resolves_each_real_push` | `[flat]`, `[per]` |
+| `test_push_inventories_retained_secondary_source_and_destination` | `[flat]`, `[per]` |
+| `test_install_inventories_issuer_material_without_selector_migration` | `[flat]`, `[per]` |
+| `test_empty_prepare_install_ignores_unused_cuda_selector` | `[flat]`, `[per]` |
+| `test_archive_only_prepare_install_keeps_unused_target_lazy` | `[flat]`, `[per]` |
+| `test_per_declaration_distinguishes_allocating_and_noop_branches` | `[False]`, `[True]` |
+| `test_zero_push_inventories_secondary_validation_without_target_allocation` | `[flat]`, `[per]` |
+| `test_priority_update_uses_actual_error_source` | `[False-False]`, `[False-True]`, `[True-False]`, `[True-True]` |
+| `test_read_routes_inventory_accessed_fields_not_selector` | `[readiness-flat]`, `[readiness-per]`, `[serialize-flat]`, `[serialize-per]` |
+| `test_archive_fixture_owns_real_rows_before_observation` | absent |
+| `test_archive_inventory_precedes_clone_on_read` | absent |
+| `test_completion_keeps_actual_mutation_excluded` | `[False-False-flat]`, `[False-False-per]`, `[False-True-flat]`, `[False-True-per]`, `[True-False-flat]`, `[True-False-per]`, `[True-True-flat]`, `[True-True-per]` |
+| `test_clean_body_error_keeps_identity_and_owner_health` | `[False-flat]`, `[False-per]`, `[True-flat]`, `[True-per]` |
+| `test_failed_preparation_keeps_live_data_and_original_streams` | `[False-flat]`, `[False-per]`, `[True-flat]`, `[True-per]` |
+| `test_same_parent_owner_revision_is_independent_of_core_currentness` | `[False-flat]`, `[False-per]`, `[True-flat]`, `[True-per]` |
+| `test_preflight_retains_exclusion_through_parent_completion` | `[flat]`, `[per]` |
+| `test_sibling_sampling_stales_core_currency_without_target_mutation` | `[flat]`, `[per]` |
+| `test_preflight_undeclared_target_refuses_before_draw_or_data_effect` | `[flat]`, `[per]` |
+
+### Required next-stage tests remain pending
+
+Per root's isolation constraint, no synchronization failure is intentionally
+raised in this file. No new poison-spawn protocol/test has been written under
+this grant. Existing qualified poison regression is retained externally.
+Required future isolated source-custodied controls still include: local all-
+declared-device completion after first failure, primary/completion identity
+and ordered deduplication, same exception object used for body and completion,
+authentic invocation-scoped failed-completion outcome, and quarantine before
+owner unlock. They must use the genuine sole domain and production policy;
+no private reset/heal/replacement domain can make their runner reusable.
+
+The child-success/parent-outer-failure schedule and justified affected-owner
+response before preflight unlock remain REQUIRED in the bounded parent
+handoff, with successful-parent and unrelated-owner controls. No current child
+receipt or successful completion test closes that responsibility. B activation,
+separate core/existing-test updates, actual outcome implementation and authentic
+local route qualification remain required. Real one-/two-device hardware and
+all remaining integration/programme gates are unchanged. No PASS, integrated
+healthy-GPU qualification, capability deletion or accounting change is claimed.
+
+## R91 review fix round1 — tests-only freeze
+
+Root's actual R91 collection found65 nodes; Ruff passed and Black failed.
+Root then ran exactly three fixture prerequisites and all three failed before
+their intended producer assertions. Consumed the exact log at
+`/workspace/bac-review-2026-11-01/qualification/wave35-r91-fixture-prerequisites/fixture-prerequisites.log`:
+flat/PER initial push and archive construction all reached the real Tensor
+detach/clone path and raised `_CUDAData.__torch_function__() missing 1 required
+positional argument: 'kwargs'`. The log reports3 failed in0.32s. Those are
+fixture failures, not producer RED. Root reports sessions closed and custody
+verified before this fix writer grant. No application runtime was run by this
+author, and no R91 result is rebound to the new bytes below.
+
+Read verbatim `T18e-R0-CUDA-FLAT-PER-A-EXTENDED-TESTS-REVIEW.md`, root SHA256
+prefix `12b61777`, and the source-qualified prose
+`T18e-R0-FLAT-PER-PARENT-ALIAS-FACTS.md`, SHA256
+`85d9fb537b0e4fb8f341bf14e11cd4be8f2b0922019fe5a3a2228beef422ab25`.
+No new implementation body was read. Applied systematic debugging to the
+actual hook failure and the review's finite E1–E3 causal corrections.
+
+Preserved the complete previous report as inert prose
+`T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R91-SNAPSHOT.txt`, SHA256
+`4bf65ba1a3f63cefd94fc4a2dd95b5574cf4fc5ce1c709a8a044ba81bc6b2948`.
+All preceding report text remains unchanged. No source/test copy was made.
+
+Root regranted this same test body ceiling1400, retaining production ceilings
+650/850/1300 and four-body projected4200, hard5000/five. Final test is1069
+lines, SHA256
+`e39d73f7dfb2c3fef573d3c36da6dc6fe2918626485cad5f6c7eb37ab23b2e81`.
+Production is unchanged374/728/1164 with the original three hashes. Actual
+four-body total3335; test reserve331. No new helper body or source writer was
+introduced. No domain state healing/replacement, Git/index action, branch,
+worktree, delegation or application import/probe/test execution occurred.
+
+### Hook repair and formatter evidence
+
+Restored canonical Torch callback defaults `args=(), kwargs=None` and explained
+the mandatory upstream convention in the test source. The observed C-method
+call omits kwargs; a required argument was incompatible. Root supplied the
+actual no-defaults command from `.github/workflows/lint.yml:62`:
+`python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet`.
+The test adapter lies outside that production gate. No exemption, whitelist,
+guard change or production fallback/restriction was invented; no guard body
+was read. The default change repairs this test protocol only.
+
+Root explicitly authorized Black on this one test. First formatter invocation
+could not initialize uv's read-only `/home/agent/.cache/uv`. Retried with
+`UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black tests/test_townlet/regressions/bac/test_replay_cuda_producer.py`;
+it exited0 and reported exactly one file reformatted. This is formatter
+execution, not application/runtime qualification. Root still owns final
+collection/static and fixture prerequisite checks.
+
+### E1 — actual clone-before-refusal versus untouched extra input
+
+Added13 prospective nodes using actual producer validation/materialization,
+genuine prepared handles and legitimate family-specific archives:
+
+* Mutated validated legacy DTOs carry an extra CUDA-metadata tensor3 in the
+  ordinary mutable legacy_state mapping. Materialization must execute that
+  source clone before exact-schema refusal; no handle is returned or live
+  state published. The test checks full live data and original Python/NumPy/
+  CPU Torch states, records the clone finishing and exact completion3.
+* Direct plain transport extra keys use the separate validate and prepare
+  routes, with extra tensor3 and unused selector4. Top-level key-set rejection
+  must touch no CUDA runtime/tensor/completion event; it must not recursively
+  scan/copy the unrelated extra field or resolve the unused destination.
+* Stale genuine candidate material1 is retained while clear invalidates the
+  owner revision and drops live rows. Install must stage its real clone before
+  final owner-currentness refusal and complete source1. The archive variant
+  additionally stages/merges owned source3 and completes exactly1,3. The
+  unused current selector4 must not migrate storage or hide issuer-held work.
+* Malformed embedded archive records retain all six accepted outer fields.
+  An extra tensor4 is inserted only inside original_state alongside legitimate
+  source3. Canonical construction must own/clone before nested content refusal.
+  The real local complete observer requires authentic arming before that work,
+  all observed CUDA tensor work inside the arm, and exact successful3,4
+  completion. Live transport remains unchanged. No unknown outer-key
+  acceptance/order is assumed.
+
+Added a positive PER archive ownership/query-value prerequisite for those
+PER-specific archive cases. Existing two real producer-value prerequisites
+and the original flat archive prerequisite remain. Root should first rerun
+its original three, then the PER archive prerequisite before interpreting the
+new dependent archive failures. No successful fixture result is claimed here.
+
+The common legacy fixture now returns explicit ordinary literal transport;
+the existing archive-only control retains its data/algorithm. Clone observation
+records a finished real CPU tensor operation before rewrapping simulated
+metadata; no clone or sampler output is fabricated. Admitted clone controls
+check source clones followed by exact successful completion. Local embedded
+archive controls additionally check authentic pre-work completion arming.
+
+### E2 — admitted body error now follows started source work
+
+Replaced sample(5)'s no-work size refusal in the admitted/body-error exclusion
+variants with sample(2) plus a narrow post-operation observation hook. The
+real selected-row `__getitem__` executes on retained CUDA-metadata0 and returns
+a genuine2x2 CPU-backed result. Only then does the seam set the started-work
+event and raise a particular ValueError object. The test asserts that event
+before starting/checking its actual competing clear and compares exact
+outward exception identity afterward. Synchronize remains successful and its
+callback never raises. Local matching-device invalid-mask reduction variants
+remain intact. No unnecessary no-work synchronization is adopted as an API
+requirement, and no poison/quarantine conclusion follows from these schedules.
+
+### E3 — nested switching and outer union now have distinct witnesses
+
+The preflight test now captures the actual nested call window. It requires
+one current-device resolution to1, real selected-device randperm allocation
+(flat) or tensor allocation (PER), selected mask/weights metadata1, retained
+observation storage0, and nested completion exactly0,1. These assertions cannot
+pass merely because rows retain the expected shape on index0.
+
+A separate cleared outer-exit window requires the parent union exactly0,1
+while the actual competing clear remains blocked. Existing before/during-
+outer completion observations and bounded finally joins remain. The fixture
+does not claim general real mixed-device kernel legality or silently migrate
+retained rows. Child-success/outer-failure handling remains the required
+separate parent ownership handoff, not a passing result of this success case.
+
+### Exact prospective added IDs and remaining qualification
+
+Original65 node IDs remain, with E2/E3 behavior strengthened in place. Prefix
+the following13 new suffixes with
+`tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::`:
+
+| Function suffix | Parameter IDs |
+| --- | --- |
+| `test_per_archive_fixture_preserves_real_legacy_rows` | absent |
+| `test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal` | `[flat]`, `[per]` |
+| `test_direct_extra_transport_key_refuses_without_touching_gpu_value` | `[False-flat]`, `[False-per]`, `[True-flat]`, `[True-per]` |
+| `test_stale_gpu_candidate_stages_sources_before_currentness_refusal` | `[False-flat]`, `[False-per]`, `[True-flat]`, `[True-per]` |
+| `test_archive_original_state_clone_precedes_nested_content_refusal` | `[flat]`, `[per]` |
+
+Total prospective78, not a collected manifest. Root owns actual collection,
+Ruff/Black/static checks, original three fixture prerequisites and the new PER
+archive prerequisite before broader causal RED capture at these exact bytes.
+
+Dedicated isolated completion-failure/poison/ordered aggregation/same-object
+collision/quarantine-before-unlock tests remain required and unwritten under
+this nonpoisoning grant. No completion failure is intentionally injected.
+Multi-owner preflight order/pinning/unwind, missing-lineage and remaining
+initial-plan cases remain explicitly owed; these controls do not silently
+qualify every PER archive leaf. Parent outer-failure ownership, B authentic
+activation/outcome implementation, paired core/existing-test updates, final-
+byte independent CPU review, hardware and all programme gates remain open.
+
+## R92 frozen-source failure classification
+
+Read-only source/test classification, 2026-11-13. No source/test write or
+application execution. Root reports all four fixture prerequisites PASS,
+collection78 and Ruff/Black PASS, then full selection46 FAIL/32 PASS with no
+errors/skips/warnings and custody PASS. Four prerequisites overlap the full
+selection; they are not four additional unique cases. Root also reports scoped
+fix1 SPEC/QUALITY approval (review prefix `59ded757`), E1–E3 addressed.
+
+Directly consumed actual
+`/workspace/bac-review-2026-11-01/qualification/wave35-r92-producer-contract-red/producer-contract-red.log`,
+1776 lines, SHA256
+`d267b9f49a9bda81f64cb2bb360dc72d5e3a76b2f4e9ce47b1c98184a2388b2b`.
+Its summary is46 failed/32 passed in9.58s. The paired result JSON records exit1,
+wall13.719441413879395s, base `9acd85d3ccd897051288a13fd16e610b9ee1fca1`,
+candidate tree `f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34`, manifest SHA256
+`8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de`,
+harness SHA256 `180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791`.
+These are captured metadata, not an independent Git/custody-verifier run by
+this author. The command is the actual full focused test, no covariance claim
+or broader replay suite inference.
+
+Reverified frozen test1069 SHA256
+`e39d73f7dfb2c3fef573d3c36da6dc6fe2918626485cad5f6c7eb37ab23b2e81`;
+three production hashes remain exactly those in the initial table. Four-body
+total3335, test ceiling1400, projected4200/four, hard5000/five.
+
+### Finite failing groups — exact total46
+
+All IDs below have the common focused-file prefix already given above.
+Flat/PER means both `[flat]` and `[per]` unless explicit IDs are shown.
+
+| Group / node suffixes | Count | Actual first failure and causal limit |
+| --- | ---: | --- |
+| `test_empty_constructor_has_no_cuda_access[cuda-flat/cuda-per/cuda:3-flat/cuda:3-per]` | 4 | Actual unindexed constructor refusal; indexed constructors access is_initialized sentinel. Genuine lazy-construction gaps, matching earlier R90 defects. |
+| `test_dynamic_selector_resolves_each_real_push` flat/PER | 2 | Real index0 push/value checks pass, then no authenticated current-device query event exists. Genuine missing gate resolution. Loop stops at0: index1 and later local-completion assertions are NOT established. |
+| Missing local arming: retained/secondary/destination push2; first PER declaration1; zero-secondary push2; CUDA-error-source priorities2 (`[True-False]`, `[True-True]`); readiness/serialize4; archive install1; local clean-error2 (`[True-flat]`, `[True-per]`); malformed archive original_state2 | 16 | All fail first at absent authentic arm. Logs show real operations/values on their supported paths, including unarmed tensor work. Exact later completion tuples and all-work-inside-arm checks remain blocked at this first assertion. This is missing producer local dispatch, not a fabricated policy success. |
+| `test_install_inventories_issuer_material_without_selector_migration` flat/PER | 2 | Actual candidate device1 installation and full data equality pass; completion is historical member0 instead of0,1. Genuine source/material inventory gap; selector2 does not migrate storage. |
+| Empty prepare/install2 and archive-only prepare/install2 | 4 | Actual CPU/no-target work succeeds but completes historical0 twice. Genuine full-member overcompletion instead of truthful empty subset; no new initialization failure is demonstrated. |
+| Mutated legacy DTO2; stale GPU candidate4 (`[False-flat/per]`, `[True-flat/per]`) | 6 | Actual required schema/currentness refusal, live-state preservation and each required clone-presence assertion pass. DTO clone3 completes no devices; stale material1 or1,3 completes only historical0. Genuine clone-before-refusal coverage defects, not fixture errors. |
+| `test_completion_keeps_actual_mutation_excluded[False-False-flat/per]` and `[True-False-flat/per]` | 4 | Admitted synchronization barrier reached; actual competing clear completes while completion is blocked. The body-error pair additionally passes started-work assertion after real selected-row operation. Genuine owner-exclusion lifetime RED. |
+| Same completion test local cases `[False-True-flat/per]`, `[True-True-flat/per]` | 4 | No synchronize is reached within the bound. Genuine missing local-completion dispatch consistent with inspected source. Peer exclusion and later worker/error assertions are NOT exercised by this timeout. |
+| `test_preflight_retains_exclusion_through_parent_completion` and `test_preflight_undeclared_target_refuses_before_draw_or_data_effect`, flat/PER | 4 | AttributeError on actual missing cuda_preflight. Genuine absent API only. Nested selection/allocation, declared tuple/outer union, retained exclusion and undeclared-before-draw assertions remain downstream/unqualified. |
+
+The local-arming16 row names exactly these functions: `test_push_inventories_retained_secondary_source_and_destination`,
+`test_per_declaration_distinguishes_allocating_and_noop_branches[False]`,
+`test_zero_push_inventories_secondary_validation_without_target_allocation`,
+`test_priority_update_uses_actual_error_source[True-False/True-True]`,
+`test_read_routes_inventory_accessed_fields_not_selector[readiness-flat/readiness-per/serialize-flat/serialize-per]`,
+`test_archive_inventory_precedes_clone_on_read`,
+`test_clean_body_error_keeps_identity_and_owner_health[True-flat/True-per]`,
+and `test_archive_original_state_clone_precedes_nested_content_refusal`.
+
+Parameter order in the completion test is **body_error-local-family**. For E2,
+`[True-False-flat]` and `[True-False-per]` pass reached.wait and
+started_work.is_set before failing at line793, Owner was released before
+completion. The narrow hook sets started_work only after a real2x2 selected-row
+operation returns. These are not no-completion cases or a repeat of the R91
+Tensor-hook fixture error. Their later exact outward exception identity and
+post-unwind assertions are after the failed exclusion assertion and therefore
+are not runtime-established by these nodes. Finally release/join runs; the log
+does not establish any poisoned/quarantined outcome.
+
+The separate local clean-error nodes already pass exact primary exception
+identity, full live-data equality and a healthy clear before failing absent
+arm. The separate admitted clean-error nodes pass entirely. This preserves the
+distinction between a clean body error and completion uncertainty without
+asserting an unexecuted later oracle. In malformed embedded archive cases,
+the log prints clone work on source3 and fails absent arm before the later
+clone3,4/tuple checks; do not label those later assertions passed.
+
+### Controls and remaining causal boundaries
+
+All32 passing nodes are: nine initial CPU/stream-law controls; four fixture
+prerequisites; matching PER vocabulary no-op1; CPU error source with unrelated
+CUDA storage2; failed CPU materialization/purity4; same-parent owner/core
+currentness4; sibling-owner currency2; untouched direct extra-key refusal4;
+and admitted clean-error identity/health2. This totals32 and includes the
+four fixture prerequisites once. Paired untouched-extra refusals pass with no
+CUDA event while mutated DTO clones actually execute: the E1 distinction is
+causal. No observed hook/type/oracle prerequisite failure remains in R92.
+
+This supports the finite production repair scope: lazy registration, admitted
+per-call resolution/subset inventory, local authentic route dispatch/completion,
+completion retained under owner exclusion and new producer preflight. It does
+not establish the assertions blocked behind first failures or activate B's
+currently absent production contracts/outcome API. Repeat downstream controls
+after those changes; do not relabel every intended witness as already run.
+CPU-backed simulation remains CPU protocol evidence only.
+
+### Prospective isolated-poison budget only
+
+Consumed prose `T18e-R0-CUDA-PRODUCER-CHILD-CUSTODY-SUPPLIER.md`, SHA256
+`dd31a7d4d24b06e59182e872eb4a21a14bc399728ed2c8774f3de095db3a4e80`.
+No helper/core/old-test body was read. Current allowlists admit no new producer
+poison role; no enum, message, node/schema or child protocol is assigned here.
+
+Estimate five behavior schedules x two families =10 fresh spawned cases:
+local single completion failure; local body plus two distinct completion
+failures; local same-object body/completion collision; admitted completion-only
+failure; admitted started-body/same-object completion failure. Each applicable
+case retains actual-source completion attempts, exact exception identity/order,
+owner quarantine before peer admission and unaffected CPU-local continuation/
+ambient refusal assertions. Generic operation cleanup policy stays unchanged;
+all-declared-device attempts are a local guarantee only. Each fresh process
+uses genuine authority and emits observations only after genuine assertions;
+no private state reset/heal or old role reuse.
+
+Same-file growth estimate260–320 lines: roughly80–100 case/peer assertions,
+45–55 child identity/import/hash observations,65–80 parent spawn/queue/result/
+owned cleanup and baseline checks, and70–85 fixture-context reuse/parameter
+mapping/emission glue. Upper bound320 yields test1389 (<1400), projected
+four-body4189 (<4200), actual four-body3655 before production growth. This is
+an estimate, not a grant or compressed implementation promise. Root must
+freeze exact CHILD-API/import/hash emission and separately approve/qualify the
+strict verifier extension before execution; no uncounted helper or guessed
+child schema may solve a budget overrun. If actual code exceeds331 remaining
+test lines, stop for reslicing. Parent outer-failure ownership, final outcome
+implementation/activation and real CUDA qualification remain separately owed.
+
+## R93 ten-case source freeze — children UNRUN
+
+Root granted exactly ten fresh-spawn schedules in this same test body, with
+role `cuda_producer_poison` and the literal flat/PER x local_single,
+local_distinct, local_same, admitted_single, admitted_same case set. The exact
+source/protocol artifact is
+`T18e-R0-CUDA-PRODUCER-POISON-CHILD-API.md`, SHA256
+`b75dc03552347f4b14d66567901c43377bb210d016248c877345d27b2285dd0e`.
+It specifies exact job/node/target/args/message mappings, actual import paths/
+hashes, child preflight/final records, parent before/after state observations,
+failure-versus-success shapes and genuine PID/PPID/Process/queue pairing.
+It supplies no verifier approval or application execution authority.
+
+Before append, preserved prior report bytes as inert prose
+`T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R92-SNAPSHOT.txt`, SHA256
+`e75092fb22942c77a416cbec9b8aa84e102e83631f88ce10d9e99e3f72477d68`.
+No source/test copy was made; all earlier report text remains intact.
+
+Final focused test1389 SHA256
+`c450390e461b0828c33189c176d8ea3c6f6161e95fec68fefa33db1b5bdd0ab3`.
+Three production bodies remain374/728/1164 at the original exact hashes;
+actual four-body3655, projected4189 with production ceilings, test ceiling1400,
+planned4200/four, hard5000/five. Remaining source reservation is534 production
+lines plus11 test lines. Do not compress or use hidden helpers to exceed it.
+
+The existing CUDA fixture implementation is reused through a counted same-file
+context manager, preserving the78 earlier definitions and algorithms. Child
+identity uses only the supplied genuine bootstrap callable. The new child
+records actual missing-API/constant preflight failures without queueing success.
+Fault schedules use actual tensor work, true local gates/real invocation
+objects, exact original exception identities/order and local all-device cleanup.
+A real waiting clear peer and a forwarding observation inside the real owner
+guard finally establish quarantine before actual owner unlock; no private core
+state, fabricated contract, alternate domain or poison reset is used.
+
+Parent baselines follow source-qualified public facts
+`T18e-R0-CUDA-PARENT-BASELINE-SUPPLIER.md`, SHA256
+`2f3f3a103b11f640ad460b0251f613342082995884de8a59c9b1994aefcf2581`:
+real weak lifetime owner/registration, genuine baseline operation per direct
+snapshot, actual Python/NumPy/CPU Torch and already-initialized CUDA state
+comparisons, status healthy-bit checks, idle retirement and owned child cleanup.
+Normal operation revisions/generation are not confused with RNG-state changes.
+
+Black preview projected1389 before formatting; the authorized single-file
+formatter completed successfully with the known writable uv cache. No
+application import/probe/test/child execution, Git/index action, new body,
+branch/worktree or delegation was performed by this author.
+
+Root reports R93 actual collection88, Ruff/Black PASS, all four fixture
+prerequisites PASS and custody PASS at these bytes. Those four overlap the
+88 collected selection. The ten new child nodes remain UNRUN. R92's46 causal
+producer RED/32 controls remain historical evidence at its e39d73f7 test bytes,
+not a full-suite execution at this new hash.
+
+Sequencing is explicit: do not repeatedly run these ten into known missing B
+contracts/outcome APIs. Root first qualifies the finite new role/schema/tool
+extension, production A/B and authentic prerequisites, then performs fresh
+child execution and strong custody verification at final source hashes.
+Missing dependencies are not poisoning assertion evidence. Parent outer-failure
+ownership, other pending preflight cases, actual hardware and programme gates
+remain open; no poison, integrated healthy-GPU or acceptance claim is made.
+
+## Accepted A implementation map / sole writer baton
+
+Root granted the production baton after the finite R92 causal RED and R93 test
+approval. Preserved preceding report bytes as inert
+`T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R93-SNAPSHOT.txt`, SHA256
+`a07047a82c019e8e08c63b28f83b40c2b837fd4ac6cf0c0ebcfb68cc0f649b74`.
+No source copy. No implementation/test/helper/core body outside the original
+four is added. Child API encoding supplement now has SHA256
+`e5072eb3ab320566faa705831de4927e4d358b2ecc01786014601a13d8898e9e`;
+its preceding b75dc035 bytes remain separately preserved inert prose.
+
+| Body | Exact starting budget | Finite implementation |
+| --- | --- | --- |
+| replay_contract.py |374 -> <=650, reserve276 | Empty registration; scoped effective device; ordinary tensor/container metadata walker; explicit local/device guards; domain-before-owner bootstrap/plan recheck; owner-held genuine completion/outcome/quarantine; single/multi-owner retained preflight. |
+| replay_buffer.py |728 -> <=850, reserve122 | Exact source-owned route/constant map and family metadata traversal; branch-specific selected/retained/input/DTO/issuer/archive plan; explicit effective-device allocations; new guards on classified leaves and genuine prepare/install. |
+| prioritized_replay_buffer.py |1164 -> <=1300, reserve136 | Same family integration, plus independent reward components, errors-only priorities, matching-vocabulary no-op, detached archive validator, exact sampler/ID preservation. |
+| focused test |1389 -> <=1400, reserve11 | Frozen88 definitions; no additional tests under this production baton. |
+
+Growth stop is per-body BEFORE crossing, then root reslices; estimated production
+growth430–505 is a reservation, not permission to compress code. Actual starting
+four-body3655, projected ceilings4200, hard5000/five.
+
+All family local constant names remain the18 fixed capsule identities, obtained
+only for actual CUDA routes from the core-owned exports. No generic issuer,
+caller purity flag, fabricated policy or missing-name fallback. All new admitted
+flat/PER scopes use adopted device_invocation with explicit lineage/devices;
+completion outcome is read and quarantine applied while the real owner guard
+still holds. The actual B constants/outcome API are deliberately absent: A is
+staged, including admitted CPU invocations until B, and cannot claim integrated
+PASS. Avoid eager imports of absent identities so unrelated CPU/local imports
+remain usable. Existing out-of-packet recurrent guards remain real current
+consumers of unchanged full-member core operations; do not migrate their
+unread algorithm or introduce compatibility aliases in A.
+
+Planning distinguishes raw top-level schema rejection before copies from DTO
+and embedded archive clone-before-refusal. Canonical archive storage uses the
+supplier-qualified metadata-only direct slot read, never public clone-on-read
+before arming. Family code extracts known RewardTensor slots/DTO fields;
+shared code does not add a new state/history import cycle. Each actual call
+recollects retained and issuer-held sources under owner exclusion. Resolve
+needed target/readiness before owner-held bootstrap; recheck changed metadata
+plans before effects. CPU-only branches execute under their original owner
+custody with zero CUDA access; dynamic effective selection is invocation-local.
+
+Keep original issuer-owned material/revision/token, full destination/content
+revalidation, post-staging final checks, one-use publication and actual sampler
+laws. No source refresh of stale tokens or cleanup rollback fiction. Preflight
+holds one domain gate then stable ordered replay locks/pins through parent
+completion; parent call sites/outcome ownership remain a separate bounded task.
+
+No new capsule fact blocks the finite ordinary-data implementation. Arbitrary
+hooks/raw aliases retain the existing cooperative boundary, not fabricated
+purity. B activation/core-test update, local purity, ten actual poison children,
+parent outer-failure ownership, remaining preflight controls and real hardware
+remain explicitly owed. Root subsequently reports verifier/tool qualification
+complete (receipt prefix49f323d6); ten children still UNRUN until genuine A/B.
+
+## A production freeze — deliberately staged before B
+
+2026-11-13. Implemented only the three authorized production bodies. No
+application import/probe/test, core/recurrent/helper/parent source read/edit,
+Git/index action, branch/worktree/source copy or delegation. Black alone
+parsed/formatted the exact owned three; previews reserved per-body headroom
+before writes. No lint/type/runtime PASS is claimed by this author.
+
+| Frozen body | Lines / ceiling | SHA256 |
+| --- | ---: | --- |
+| replay_contract.py |596/650|`5b9001092323c777228bedadccedb9b6dcb8e64d705dd5292b7f126ee485ca66`|
+| replay_buffer.py |805/850|`1c6000e1938e58de0bf77d92be9dc9cff00f4ef8aa454f613c8ff41993b2a0fd`|
+| prioritized_replay_buffer.py |1253/1300|`9d34c07e117c27b37842ec4a99d17c12e71c198e7ab13e36ebfd43f2374cee6f`|
+| focused test, unchanged |1389/1400|`c450390e461b0828c33189c176d8ea3c6f6161e95fec68fefa33db1b5bdd0ab3`|
+
+Actual4043/4200/four, hard5000/five. Production growth222+77+89=388 lines;
+remaining reserves54/45/47 production plus11 test. No implementation/test
+body was split, hidden, compressed into another file or deleted to fit.
+
+### Actual source/API handoff
+
+Flat/PER explicitly select `_init_device_custody`, registering empty membership
+without CUDA queries and preserving public self.device. The existing base
+initializer/full-member guards remain for actual out-of-packet current
+consumers pending their own migration; this is explicit source opt-in, not a
+missing-method/compatibility fallback. `_PrioritizedArchiveValidator` retains
+its actual no-enrollment override and undecorated detached validation path.
+
+New typed guards are `replay_local(*, mutation: bool)`,
+`replay_device_sample(method)` and `replay_device_prepare(method)`. Public
+family signatures/required lineage/PreparedReplay result transformation remain.
+The private family `_replay_inventory` returns selected target or None plus
+known ordinary source values. `_replay_children` identifies family DTO/material
+fields and exact canonical archive original_state slots without clone-on-read;
+shared traversal collects independent tensor indices through ordinary builtin
+containers, including mapping keys copied by the clone helper. No generic
+object-property recursion or imported helper implementation is used.
+
+The18 fixed local constant names remain exactly those in the initial capsule;
+family route maps are immutable MappingProxyType values. They are looked up
+from the actual core module only for real CUDA local routes, never issued,
+fabricated, inferred from status or replaced by a CPU fixture contract.
+Metadata-only and genuinely CPU local branches retain owner-only custody and
+do not look up a CUDA contract. Both direct positional and keyword push inputs
+include total and every independent optional RewardTensor field.
+
+Ordinary top-level type/version/key-set refusals avoid untouched payload and
+target devices. DTO materialization includes full ordinary clone inputs,
+including malformed extra legacy-state tensors; embedded records include
+nested original_state before ownership reconstruction. Issuer-held materials
+are recollected for admitted scopes, including stale candidate/archive sources
+which installation stages before final refusal. Empty/archive-only restores,
+zero-size validation, matching PER vocabulary and CPU priority sources avoid
+unused target/storage completion. Retained/current selected devices remain
+separate; all allocation/transfer sites use the invocation's concrete private
+effective device, never permanently rewrite self.device or migrate old rows.
+
+CPU local planning/work stays under one owner guard. CUDA plans are read as
+metadata, release that initial guard before obtaining new gate/bootstrap
+authority, resolve needed selection/readiness, then recheck under gate/owner
+custody before effects. Changed selection plans retry before work. Actual
+local complete surrounds body work while the real owner guard remains held;
+its genuine outcome causes quarantine/revision advance before unlock.
+
+All new flat/PER admitted scopes call adopted `domain.device_invocation` with
+participant/kind/explicit lineage/exact tuple; they retain the real owner guard
+through invocation exit, its authentic completion outcome and quarantine.
+Active-parent membership refusal is diagnosed as requiring idle preflight,
+without implicit None lineage or enrollment. Body errors are not interpreted
+as completion evidence. No same-exception identity comparison or blanket
+quarantine is used. `_readiness` is a private shared algorithm within each
+family, so sample_batch reuses its real logic without opening a public local
+gate or admitting arbitrary callback reentry under an existing scope.
+
+Owner revisions advance before actual mutation bodies; successful local gates
+do not stand in for core currentness. Original issuer material/token/revision,
+DTO content/destination revalidation, post-staging final validation, one-use
+publication and partial-publication quarantine remain. Flat Torch randperm,
+PER direct global vectorized sampling and configured owned-Generator laws,
+weights/IDs/origins and offside reconstruction remain the original algorithms.
+
+Public parent APIs are now source-implemented with required arguments:
+`ReplayCustody.cuda_preflight(*, anticipated_devices: tuple[torch.device, ...])`
+and `replay_cuda_preflight(*, owners: tuple[ReplayCustody, ...],
+anticipated_devices: tuple[torch.device, ...])`, both synchronous context
+managers yielding None. One idle actual admission gate authenticates/pins
+participants with empty no-op enrollments before resolution/owner locks;
+strong owner references and stable identity-ordered RLocks are retained,
+actual retained/issuer inventories enrolled and locks released in reverse
+order after caller's parent completion. New parent callers must enter this
+outside their own lifecycle locks and forward exact active lineage. Nested
+calls resolve current selection anew; preflight does not pin the first index.
+
+### Required coherent next steps / honest limits
+
+R89 core is unchanged and intentionally lacks both the18 source-owned local
+contracts and adopted device_invocation implementation. A therefore cannot run
+integrated CUDA OR admitted CPU scopes yet; CPU/local imports and owner-only
+routes remain usable. No eager import of absent capability identities and no
+old-operation fallback makes this temporary stage appear GREEN. B must review
+these actual source leaves, issue the exact canonical class/route bindings,
+implement authentic scoped outcomes and publish updated source/hash/type facts.
+Its separate core/existing-test update, resolver/cache/fork state review and
+final-byte core/producer/owner gates remain required.
+
+The inventory/purity claim is the already accepted ordinary Tensor/container/
+DTO profile. Arbitrary Mapping/Tensor/RewardTensor subclasses, custom copy/
+attribute hooks and raw mutable aliases do not gain purity or asynchronous
+quiescence from these collectors; no new broad input rejection was added to
+pretend otherwise. Newly established concrete supported extensions must return
+through the finite source/supplier review boundary. Post-poison GPU permission,
+actual CUDA initialization/query effects, mixed-device kernel legality and
+hardware completion are not qualified by source or CPU simulation.
+
+R92's46 causal RED and R93's source/test/protocol checks justify this repair
+stage; no test was run on these new production hashes. Root owns exact-source
+capture, fresh independent source/spec/quality review and checks. Ten new
+poison children remain UNRUN until actual A/B prerequisites exist; the now
+qualified tool is not application evidence. Parent outer-failure ownership,
+multi-owner/missing-lineage/unwind controls, remaining callers/native/runner,
+one-/two-device hardware and programme gates stay open. No package accounting
+change, capability removal, waiver, B6 closure or deployment claim is made.
+
+### R94 initial root checks — source frozen pending finite review fix
+
+Root reports collection88 and Ruff/Black PASS. The actual no-defaults gate
+fails at shared178/209 ASG002 ternary source forms and reports allowed-pattern
+count620 against established600; no guard/whitelist/ratchet weakening is
+authorized. Root is completing constructor/dependency probes and independent
+review before one bundled fix grant. Source remains frozen at the table above.
+
+Reviewer identified a concrete raw prepare_serialized inventory omission:
+the family raw-prepare branch includes input state and retained row tensors
+but not already installed historical archives, while materialization merges/
+copies those archives. The materialize_validated branch already includes them.
+This requires a finite source correction, not a helper/core read or new scope.
+No edit/runtime was performed after root's freeze. This attributed status
+supersedes any inference that the staged A bytes have passed required checks;
+preceding report seal was7be89583eed773584fb832e3a6031304157158a34b30a13d1ffc57434da48af8.

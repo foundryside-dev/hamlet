@@ -1,0 +1,38 @@
+{
+  "time": "2026-11-13T14:58:35.604470+00:00",
+  "results": "58syntheticPASS in1.495s;RuffBlackPASS; actual shell session completedexit0",
+  "scope": "Tooling-only tests with mocked repository subprocesses. No actual app/child/poison/hardware qualification; same58 authorcases overlap. Independent source review remains pending.",
+  "source_hash_observation": "Measured after repeat and equals author frozenseals; not a signed in-memory runtime proof.",
+  "artifacts": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "sha256": "8639eae953abe0961a4d4af941c15fbf4d3c85b9bd342d4409158a629e0eae7e",
+      "bytes": 29949
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+      "sha256": "36ed3c3ae1d4b0a7c5835ff95ed705a30a8ca4b548826b406eb9957d8cf4c14c",
+      "bytes": 42860
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-synthetic.log",
+      "sha256": "a67bb2f5d9bd72d7689f60acc6026945af184ca3a260c4e8df7e7f8ef493a60a",
+      "bytes": 157
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-black.log",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c",
+      "bytes": 56
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-commands.json",
+      "sha256": "0bda302cfc93469f99dd09a1f4075d37d7194e57b37b305b6eef76033021a28d",
+      "bytes": 2061
+    }
+  ]
+}

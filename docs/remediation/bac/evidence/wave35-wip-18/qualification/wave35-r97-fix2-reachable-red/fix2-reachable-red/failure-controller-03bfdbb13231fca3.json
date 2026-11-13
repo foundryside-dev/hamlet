@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[flat]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "family = 'flat'\nsimulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115eca3f0>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115d7d5e0>\n\n    @pytest.mark.parametrize(\"family\", [\"flat\", \"per\"])\n    def test_bad_plain_push_refuses_before_unused_gpu_dones(family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch) -> None:\n        owner = _owner(family, torch.device(\"cpu\"))\n        before = owner.serialize()\n        rows = _rows()\n        rows[\"observations\"] = torch.ones(4, dtype=torch.float32)\n        rows[\"dones\"] = _CUDAData(rows[\"dones\"], 2)\n        rewards = RewardTensor(rows[\"rewards\"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)\n        arguments = (rows[\"observations\"], rows[\"actions\"], rewards, rows[\"next_observations\"], rows[\"dones\"])\n        owner.device = torch.device(\"cuda:3\")\n        assert owner.action_dim is None\n        selected, devices = _metadata_plan(owner, \"push\", arguments, False, simulated_cuda)\n>       assert selected is None and devices == (), \"Plain no-vocabulary push rejects observations before reading dones\"\nE       AssertionError: Plain no-vocabulary push rejects observations before reading dones\nE       assert (None is None and (2,) == ()\nE         \nE         Left contains one more item: 2\nE         Use -v to get more diff)\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1632: AssertionError",
+  "candidate_tree": "56366b475edb05238a1f54e0b6b2b4ac316296ad"
+}

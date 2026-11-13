@@ -1,0 +1,31 @@
+{
+  "name": "cpu-controls",
+  "exit_code": 0,
+  "seconds": 6.659604072570801,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cpu-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cpu-per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_flat_sampling_preserves_selected_cpu_torch_stream[direct]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_flat_sampling_preserves_selected_cpu_torch_stream[batch]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_direct_retains_vectorized_global_law_with_owned_sampler",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_batch_external_sampler_retains_vectorized_global_law",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_batch_owned_sampler_retains_residual_draw_law",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls/cpu-controls.log",
+  "sha256": "02bdac62cb6d973982a5b6ee3b7aa3b536c1a9a4bb9638b0df934627d27c1a4f",
+  "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "bac-capture-precondition-failure-v1",
+  "round": 90,
+  "status": "FAILED BEFORE MANIFEST/RUNTIME",
+  "error": "qualified document guard ceiling150 below reviewed206-line core contract",
+  "log": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-capture.log",
+    "sha256": "da3f8fe505083d91e00df2d2d364c884b652c3be2196ede91f4f711ba43bbf52",
+    "bytes": 370
+  },
+  "staging": "Known paths were staged before inventory assertion; no candidate/runtime produced.",
+  "repair": "Update single readonly document-guard reservation150->206 to exact already independently reviewed/published WIP17 contract09f60d3c. All implementation/read scopes remeasured within declared ceilings and hard5/5000; no source or acceptance change.",
+  "review": "wave35-preparation/T18e-R0-CUDA-CORE-DOCS-REVIEW.md06d8c211",
+  "next": "Retry same new R90 capture with separate output log, preserving failed log."
+}

@@ -1,0 +1,679 @@
+{
+  "before": {
+    "content": [],
+    "structuredContent": {
+      "metadata": {
+        "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+        "layout": "document",
+        "symbol": null,
+        "title": "BAC Work Completed and Remaining",
+        "preview": "Updated 13 November 2026. WIP17 is published and remotely verified. The CUDA custody core is implemented and boundedly CPU-qualified at R89: 1,515 unique root passes, including 67 core cases repeated independently. Production local-GPU cont",
+        "creator_account_user_id": "user-Q5uUjii1uD0UZd7E3FcMiyKo",
+        "owner_workspace_id": null,
+        "parent": null,
+        "drive_scope": "personal",
+        "drive_space_id": null,
+        "library_container_id": "fde3_cGFnZV82ZmZmZmNiOTY3ZmM4MTkxYTM1NGZiZTM2NjFlNGNiOA_1d4ac5aec98c819182c7e3b6f1975b6c",
+        "file_upload_page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+        "position": 1394114892403712,
+        "created_at": "2026-11-10T14:07:57.502017Z",
+        "updated_at": "2026-11-13T13:24:40.990937Z",
+        "deleted_at": null,
+        "current_sequence": 40,
+        "projection_through_sequence": 40,
+        "access": {
+          "can_read": true,
+          "can_comment": true,
+          "can_write": true,
+          "can_share": true,
+          "can_delete": true,
+          "sources": [
+            "library"
+          ]
+        },
+        "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8"
+      },
+      "content": {
+        "schema_version": 2,
+        "symbol": null,
+        "title": "BAC Work Completed and Remaining",
+        "title_hash": "ebba8e74ef12d5779bc102be4e55023ba2c9120e6785dddf5caf9787b0703278",
+        "blocks": [
+          {
+            "id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+            "kind": "markdown",
+            "markdown": "Updated 13 November 2026. WIP17 is published and remotely verified. The CUDA custody core is implemented and boundedly CPU-qualified at R89: 1,515 unique root passes, including 67 core cases repeated independently. Production local-GPU contracts remain empty; producer integration, real CUDA execution and programme acceptance remain open.",
+            "hash": "ef2fe358525b7994afd0c971590cc883bc2be43dcbccdcd46462ad7bec4d2884",
+            "metadata": {}
+          },
+          {
+            "id": "4dd2cd78-69ab-4d71-a50c-b787c9630d0a",
+            "kind": "markdown",
+            "markdown": "BAC has **28 qualified releases out of the original 66 packages**, with **38 original packages still requiring qualification**. WIP17 publishes independently reviewed CUDA-core CPU behavior and evidence, retaining earlier replay and owner qualification. This is bounded component delivery, not a package closure or whole-BAC release.",
+            "hash": "21b5dc7a6672f5b965b7cb6ed0bb589d2ce2d1ed7cdec835feeb6e8bc97d092b",
+            "metadata": {}
+          },
+          {
+            "id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "kind": "markdown",
+            "markdown": "# Current position",
+            "hash": "e4695ccbc31408393a7eccd6a2e5474e236a54bcbc449f80aa5d9d8650e929c7",
+            "metadata": {}
+          },
+          {
+            "id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "kind": "markdown",
+            "markdown": "| Area | Status | What this means |\n| --- | --- | --- |\n| Original package releases | 28 qualified, 38 remaining | All 66 canonical package IDs remain unchanged; final acceptance on one common source revision is still owed. |\n| Later component delivery | Bounded BANK/owner CPU component qualified | Managed RNG admission occurs before the BANK lock; authentic lineage reaches private/shared operations. Native state and gradients are captured together, saved native configuration is reconstructed offside, required owners stay alive through publication, and final currency plus uncertain-completion checks fail closed. See the [BANK contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md). |\n| Current work | R89 CUDA-core CPU component qualified; producer A classification next | Root1,515 unique passes = core67 + coherent1,290 + replay109 + owner49. Independent67 repeats the same core cases and is not added. Core source/API and documentation review approved. Two CUDA skips and one required ordinary-runner deselection remain explicit gaps. The production local-GPU manifest is empty; no replay/parent GPU integration or hardware qualification follows. |\n| Published checkpoint | [WIP17 9acd85d3](https://github.com/foundryside-dev/hamlet/commit/9acd85d3ccd897051288a13fd16e610b9ee1fca1) | Exact remote API verified commit 9acd85d3ccd897051288a13fd16e610b9ee1fca1, publication tree15449d035b6d247fd2ecbe0d004ca1dd8620b676, parent e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32. [WIP17 evidence](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) preserves execution/publication identity distinctions. At 2026-11-13 13:22:34 UTC, [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43432685907) completed at 13:21:23 UTC; [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432686305/job/131909872585) completed at 13:20:53 UTC with Ruff PASS, Black PASS, Mypy FAIL and defaults SKIPPED. [Tests](https://github.com/foundryside-dev/hamlet/actions/runs/43432685903) remain IN_PROGRESS. Exact hosted mypy error text/count has not been retrieved and is not inferred from the local 15-error result; no green CI claim. Prior WIP16 [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43416361760), [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361832/job/131855159288) and [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361686), test cause unclassified. Its Ruff/Black passed; mypy reported15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. WIP15 Config PASS/Lint FAIL and its last-observed Tests IN_PROGRESS, and WIP14 Config PASS/Lint FAIL6oracle/Tests FAIL with inaccessible raw-log cause, remain historical observations. |\n| Evidence and review | R89 core CPU source/runtime/API and documentation approved; terminal evidence published | [Current recurrent contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md) and [shared replay contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md) record bounded behavior. R85 root158 = replay109 + owner49; first-node1 and independentowner49 overlap, not additional coverage. R84 independentrecurrent55 overlaps its root selection. Actual child PID/PPID, parent Process PID, source/spec/result/import/profile identities were verified. R89 adds the bounded core evidence: root1,515 unique and independent same67, not1,582. The component receipt dda5f267\u2026 and final terminal FIX2 review556e7056 bind the published account. Earlier failures and UNRUN attempts are retained; no real CUDA, external-caller or programme acceptance follows. |\n| Overall BAC acceptance | Integration and final repository gates remain open | The bounded core CPU component is qualified; no global-mypy pass is claimed. The15 known global mypy errors remain required work. CUDA B6 producer/device integration, the empty production contract manifest, external BANK/ENV/POP/native/runner migration, full current-parent restoration, the required runner deselection, two CUDA skips, full repository/coverage, slow/hardware, learning, final54 requirements/22 lenses and exact-final-remote green CI remain required. |",
+            "hash": "1d2f12b6cbdb33e4583c3fb67ae691111f884b2b004f822e2459d0a7e2a6861c",
+            "metadata": {}
+          },
+          {
+            "id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+            "kind": "markdown",
+            "markdown": "The accepted conversion component supports explicit fresh-private initialization and cloning learned state while preserving the complete source archive as inactive history. Native inherited counters and future per-world counters remain distinct, with explicit origin and epoch provenance. Ordered native dictionaries and Torch metadata survive owned transport. The native metadata repair passed 16 cases in both root and independent Astra runs; the repaired existing owner suite passed 31 cases in each run, with one CUDA skip each. The earlier combined 973-pass result included the none-scale repair; that earlier coherent component suite had 1,123 passes and three CUDA skips. These selections overlap and must not be added together. These results qualify the bounded component; actual population, runner, native-parent admission and captured-replay sampling and learning remain open.",
+            "hash": "3fcf63b2455e6b7b4a5dfbab370fd4caa3f147f032057653b847c25d814e617b",
+            "metadata": {}
+          },
+          {
+            "id": "f44db084-bed6-4f09-9f2f-2eb887ec1c6d",
+            "kind": "markdown",
+            "markdown": "# Work completed",
+            "hash": "3b09248a6101db446fc488205a1622a69b49af99de4818ee5a3ef0cec9ee1b7b",
+            "metadata": {}
+          },
+          {
+            "id": "790d9963-7e47-4651-b23e-e999eac52208",
+            "kind": "markdown",
+            "markdown": "The 28 qualified original releases cover these delivered areas:",
+            "hash": "a00b9b7365ac68cc0dee42d259b5b71ee1836a2c28b6957fb9b8538bfe0fae30",
+            "metadata": {}
+          },
+          {
+            "id": "52e90f4c-0329-4f5d-8ea3-2abe9f3cc6d0",
+            "kind": "markdown",
+            "markdown": "| Delivered behavior | Qualified package IDs |\n| --- | --- |\n| Finite authored numerics, portable options, exploration resolution, effective identity, historical archive and fresh-buffer import, lossless sidecar lowering, canonical launch and CLI transport, canonical discovery | T01, T02, T18a, T03, T03a, T04, T05, T06, T07 |\n| Legal action selection and successor masks, completed-lane action gating, uniform and prioritized replay, real short windows, matching PER estimators, recurrent PER, production collection and learner readiness | T08, T08a, T09, T09a, T10, T11, T12, T13, T14, T15 |\n| Effective runner warmup, descriptor/value interactions, bounded RND service and tails, count novelty, ICM, completion envelopes and clock ledger | T16, T17, T18, T18b, T18c, T19 |\n| Explicit curiosity scope and seeds, private RNG foundations, recording work that survives shutdown | PW01, PW02, T33 |",
+            "hash": "5ce7f9e137572c6e8f556b4b73ca81295cde2ae741160f73f675f1464e039fd5",
+            "metadata": {}
+          },
+          {
+            "id": "a2c94ffc-738d-49e5-a702-456dbfe804db",
+            "kind": "markdown",
+            "markdown": "Later accepted component work is tracked separately:",
+            "hash": "103e1b3dca7dbce0f7bbc364d5e28bcd9af7a7089b4fb94dfb19912af7ec2052",
+            "metadata": {}
+          },
+          {
+            "id": "3485f73f-6f82-4f7a-872e-dc14dc24def8",
+            "kind": "markdown",
+            "markdown": "- **Curriculum and world foundations:** completion-driven curriculum and option/factory producers, compiled roster and identity/state maintenance, and world-state owner components. Their actual joint runtime routing remains open.",
+            "hash": "d9199263b2097e12e522d20fb3dd7ebd5fc431fa31402b8761be2f4c57ab0c02",
+            "metadata": {}
+          },
+          {
+            "id": "0765a558-d180-4df7-93d1-dad2fd27a1a4",
+            "kind": "markdown",
+            "markdown": "- **Provider construction and service:** typed events and local clocks, RNG binding, the five-provider factory and separate policy selector; RND, ICM and adaptive providers perform real updates using their declared local service and native-state contracts.",
+            "hash": "b0a4521edbfafdc6f2c60157e5020a9f00df95954d41fd3bcf84bb4a22883de4",
+            "metadata": {}
+          },
+          {
+            "id": "326c6942-06b3-483d-a07e-439d9dd11a98",
+            "kind": "markdown",
+            "markdown": "- **Private curiosity bank:** independently owned state for all five provider families, local replay and service, completion publication and failure custody. The explicit shared alternative retains grouped behavior. The bounded bank passed 84 root and 84 independent cases, with 551 covering passes and three CUDA skips.",
+            "hash": "4d693120964c1ebce90b339c0b9a49adc356d4e8770df4fbf18dd87ebdf11749",
+            "metadata": {}
+          },
+          {
+            "id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "kind": "markdown",
+            "markdown": "- **Same-scope checkpoint component:** off-side validation and preparation of models, gradients, optimizer, RNG, clocks, phases, caches and history; strict identity checks, owned installation and current replay-component preservation. It passed 147 root and 147 independent cases, with 635 covering passes and three CUDA skips. These overlapping selections are not added together.",
+            "hash": "4d40636ec9fcc5555ba2d55de785541ab567b95bbd4088060b89b6af1da48d7b",
+            "metadata": {}
+          },
+          {
+            "id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+            "kind": "markdown",
+            "markdown": "These bank and checkpoint results use bounded component fixtures. They do not prove complete DQN/runner parent admission, captured replay sampling or ordinary end-to-end resume. The [published qualification evidence](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/evidence/wave34-wip-01.json) and [runtime contract](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/CURRENT-EXPLORATION-RUNTIME-CONTRACT.md) record the reviewed runtime component and current curriculum consumer repair. The runtime component passed 150 independent tests and a coherent 1,123-pass selection with three CUDA skips, plus independent source/specification and documentation truth review. The repair uses the real completed-event API, with no compatibility-only adapter: 52 migrated cases and 175 event regressions passed, for 227 passes. Compiler CLI validation also passed for 34 packs across 35 processes with verified source, import and thread identities. The subsequent full-repository run at the exact pushed source failed after 2,003.7499 seconds. Verification covered 797 source files, 573 configurations, 13 artifacts, all five pytest processes, the index and registry custody; the separately verified poisoning child also passed its assertions. Failure triage identifies 1,241 deduplicated failed test-node/phase records across 160 affected source files and 15 terminal-signature groups, chiefly missing world-identity constructor inputs, required reservation/activation, old curriculum/provider calls and stale option/schema assertions. These records are not 1,241 independent algorithmic defects. Repair causal prerequisites until tests reach their intended assertions before another broad run. The failed baseline and triage are now published in the [earlier checkpoint evidence](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/evidence/wave35-wip-01.json). The [intrinsic-scale composer contract](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/CURRENT-INTRINSIC-SCALE-COMPOSER-CONTRACT.md) records the new bounded math/API component: raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produces intrinsic reward 0.5 and total reward 1.6 in the tested case. At that earlier checkpoint, compiler CLI validation passed for 34 packs across 35 processes in 171.4223 seconds, with 798-source, import and thread identity verification. Four cheap guards pass. These checks do not establish current full-repository or all-family end-to-end qualification. The [new published evidence](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/evidence/wave35-wip-02.json) and [canonical reward-flow contract](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md) now record actual environment-to-parent delivery. The same 75 cases passed independently with no errors, skips or warnings: all five families and both scopes, phase and identity transport, canonical replay, pre-physics claim, real active-effect and pending-cancellation cases, retirement, and the original single-batch commitment/reset failure controls. Actual raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produced intrinsic reward 0.5 and total 1.6. A late runtime/callback rebinding defect was found and repaired; nine binding cases pass. Current compiler CLI validation passed 34 packs across 35 verified processes in 152.12084 seconds. These bounded results do not qualify complete native restore, genuine end-to-end learning or an integrated package release.",
+            "hash": "61121fb1a105438d9f79a0cdce587b81ab519a6f528513d25587e4f1bd421948",
+            "metadata": {}
+          },
+          {
+            "id": "7efeee03-c539-44ff-9668-db208c111cda",
+            "kind": "markdown",
+            "markdown": "# Work remaining",
+            "hash": "56abee5feafa9f64972dfb9e03e83619b2cfa2a56b707c0d6288427e4b54f638",
+            "metadata": {}
+          },
+          {
+            "id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "kind": "markdown",
+            "markdown": "Every one of the 38 original packages still awaiting qualification appears once below. Some contain accepted components; each still owes its full package behavior and integration evidence.",
+            "hash": "3e285b1d7dd12ab0cc1f8e183d80785f8f5254c3c070eb3e816bbaebc5e88215",
+            "metadata": {}
+          },
+          {
+            "id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+            "kind": "markdown",
+            "markdown": "| Workstream and packages | Remaining deliverable and completion condition |\n| --- | --- |\n| Provider foundations \u2014 PW04, PW03, PW05, PW06 | Complete backend/native consumer coherence, factory and bank runtime use, and strict checkpoint integration. Pass the real ordinary runner checkpoint and full owner suites; component approval alone does not close these packages. |\n| Explicit conversion \u2014 PW07 | Bounded fresh-private and learned-template conversion, current-owner checks and the combined component gate have passed independent review. Complete real native-parent and runner integration and full package qualification, preserving source archives, compatible state and truthful origin/counter semantics. |\n| Runtime curiosity routing \u2014 T18d, T18e, PW08a, PW08, T18f | Complete population, runner and native-parent integration around the reviewed runtime and canonical environment reward flow. The primitive's 29-case proof, published 75-case environment/parent checkpoint and later 78-case selection are bounded evidence. Original commitment/reset findings and the additional exact multi-batch retry and prepare/install binding defects are repaired and independently approved within their tested limits. Native learning reset is implemented in the three model providers and independently source/API approved; its 61 cases pass within the now-published coherent 139-case run. Count/None native reset now has source and final contract truth approval, with 154 root and 154 overlapping independent passes published at d4426803. The shared/private RNG custody core is now boundedly qualified at 11ec9885. WIP14 now qualifies bounded CPU BANK/checkpoint adoption of domain-before-lock custody, authentic lineage, atomic native/gradient capture, saved-native restoration, owner lifetime and final currency. All five families and both scopes have restored-learning and equal-authentic-input BANK witnesses. Full native-parent correlation, enrolled direct consumers, joint publication and the ordinary runner remain open. The earlier _Run/VFS fixture checkpoint had 298 passes and four unqualified CUDA skips; the new core API requires current-owner requalification. Its world-only transport did not establish full native learner restore. The initial-participation environment producer now has 57 root and 57 overlapping independent passes at 7a96f86d. The additional read-only environment participation validator is now implemented and reviewed at 00889036, with 80 root and 80 overlapping independent passes; active validation remains unchanged. The population consumer, private pre-Q seal and owned public-query checks are now implemented and reviewed at d152425f. Its bounded proof includes active-world learning/replay, inactive-world privacy, mixed closure and the next cycle. Broader mixed-participation coverage, stable role-owner completed restore, native transfer/reset and history/cache/clock correlation remain required. Complete broader environment and lifecycle witnesses, captured-replay learning and ordinary checkpoint smoke before package qualification. |\n| Curriculum integration \u2014 T20, T21, T22, T23 | Integrate accepted curriculum producers and provenance, implement per-world dynamics, and prove each world's completion and controller decisions reach its own mechanics through population and runner. |\n| Checkpoint and restart \u2014 T24, PW09, T25, T26 | Finish boundary/schema and selection, scope/binding dispatch, full predictor/replay/clock restoration and one episode-end transaction. Prove atomic refusal, captured replay preservation and usable sampling/readiness, plus durable intent/effect reentry. |\n| Transfer and serving \u2014 T27, T28, T29, T30, PW10, T31, T32 | Deliver explicit evaluation modes and reset, truthful partial and strict transfer, effective artifact identity, schema-aware target-state policy, explicit private source-world selection, process-isolated serving, and a current all-family evaluator. |\n| Outputs and diagnostics \u2014 T34, T35, T36, PW11 | Own recorder failures during runner cleanup; preserve sink units and outcomes, effective hyperparameters and intervention reporting, and per-world scope, origin and scale diagnostics. A scalar summary must never replace per-world reward scales. |\n| Isolation and lifecycle proof \u2014 PW12, PW13, PW14, PW15 | Inventory actual simulator state owners; prove private rewards and state across real curiosity updates, reset/resume/conversion and archived history; verify each controller lane and the declared shared-Q feedback boundary. |\n| Joint acceptance and learning \u2014 T37, T38, T39, PW16, T40 | Complete learning-support, restart/transfer/serve/discovery and persisted-output matrices; prove truthful shared/private support and run the finite original learning protocol plus the strict cohort after integrity gates pass. |",
+            "hash": "4d83d08e5ee06824a2191f43b88a9ef9b97b18d7b672c953efeffbff9af2533b",
+            "metadata": {}
+          },
+          {
+            "id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "kind": "markdown",
+            "markdown": "# Next delivery steps",
+            "hash": "e22a243cd4c9cb5f85ea9a68c73bfa8e24883d5fed953b1ad9018bbadce93398",
+            "metadata": {}
+          },
+          {
+            "id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "kind": "markdown",
+            "markdown": "1. Begin producer A classification after the durable WIP17 checkpoint: A flat/PER producer integration, B exact source-owned core activation and separate core/test ownership plus independent review, C recurrent producer integration, then D exact activation with its separate core/test review. Preserve the five-body/5,000-line limit; the current combined five production bodies total5,017 and require fresh bounded slices. The stage-specific empty-manifest assertion and actual resolver/cache guard coverage must be updated at activation without weakening authorization. Continue external BANK/ENV/POP/native/runner integration, full current-parent restoration and joint all-child publication/failure handling, preserving genuine sampling/readiness and learning, current authority and owner lifetime.",
+            "hash": "077f87f9db97ae96b2c0b8c7290b3ea0c2100b03255ee2f00ca43659af04eeb4",
+            "metadata": {}
+          },
+          {
+            "id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "kind": "markdown",
+            "markdown": "2. Repair and qualify the required ordinary runner/oracle integration, direct-consumer enrollment, stable-role/full-D behavior and T26 durability. The known ordinary-runner case was excluded only from R72's bounded selection and remains required. Preserve saved native/optimizer/gradient configuration, SOURCE archive/TARGET initialization semantics, bare-Adam/manual-replacement/signed-offset support and alias-quiescence boundaries. C10/K01 do not require independent exact simulator trajectory continuation.",
+            "hash": "7625a7cd50c99699fc9605146edd5b6b1e16f7d0ee1907d352884a29904fe938",
+            "metadata": {}
+          },
+          {
+            "id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+            "kind": "markdown",
+            "markdown": "3. Resolve the exact WIP16 remote mypy failures through genuine current owner/caller contracts: six oracle-driver errors and nine missing-lineage errors in population replay preparation/install/sampling calls. Preserve scripted RNG/mechanics and pinned-reference capability. WIP16 Ruff and Black passed; defaults was skipped after mypy failed. Complete full/default, coverage, slow, applicable hardware, learning, final 54-requirement/22-lens review and exact-final-remote CI; bounded passes do not establish final acceptance.",
+            "hash": "760cfd58487e32d6d800b18ed6a211bb722b26f2b8012c3685fc3658f22a9fac",
+            "metadata": {}
+          },
+          {
+            "id": "72d91648-057a-434c-8622-0fcc6854e284",
+            "kind": "markdown",
+            "markdown": "4. Finish curriculum, checkpoint/restart, transfer/serving and diagnostics packages in dependency order, followed by the complete isolation and joint acceptance evidence.",
+            "hash": "325b0ec8cfa2ab7b85edf9ae9f94d0858511947fde7c66efb2bcf628ee1ecf6a",
+            "metadata": {}
+          },
+          {
+            "id": "036067cf-c969-4097-8055-a24521614dac",
+            "kind": "markdown",
+            "markdown": "# Final completion criteria",
+            "hash": "613112c7498f3ff7768f6f38bf56f6997799ce5589cc47f541150befa9699d7e",
+            "metadata": {}
+          },
+          {
+            "id": "034bd0e9-6539-46d9-9d90-819adb48e034",
+            "kind": "markdown",
+            "markdown": "- All **54 effective requirements**, **22 fresh final design and implementation review lenses**, and independent synthesis pass on the final common immutable source, with no unresolved P1/P2 findings or unapproved in-scope gaps.",
+            "hash": "b4c0be69182c1c0bd763822dc5d0880d41dc3089c7ac9552557cc512b830abf2",
+            "metadata": {}
+          },
+          {
+            "id": "8e7d6d6c-b262-4b9e-941a-09a148ca2189",
+            "kind": "markdown",
+            "markdown": "- Real runtime evidence covers all four Q families, all five curiosity providers and both scopes through compilation, rollout, updates, save/load and serving. Private isolation uses real local learning and complete named state owners, including lifecycle and controlled shared-Q cases.",
+            "hash": "cafea870237351f239a375895511748a9fa35f97285903eb6841c808496500a6",
+            "metadata": {}
+          },
+          {
+            "id": "df5664ae-4b97-428d-81e8-0a124170561d",
+            "kind": "markdown",
+            "markdown": "- The original T40 learning protocol is retained. The additional strict cohort is exactly **12 runs**: four families \u00d7 seeds 11, 29 and 47, each with 10,000 eligible training transitions and 20 evaluation episodes per seed, using explicit per-world adaptive RND and actual local predictor updates. Record controls, metrics, failures and deviations; do not infer a causal shared/private comparison from differing settings.",
+            "hash": "fb675a0258901eb75357caa61d14bb23a1d202a4e60f1bc3f7ec629c809f3e9a",
+            "metadata": {}
+          },
+          {
+            "id": "a86e859a-0056-4712-8404-c85c3ba765e9",
+            "kind": "markdown",
+            "markdown": "- Required default full-repository, coverage of at least 70%, slow, applicable hardware, static and exact-final-remote CI checks pass. Source-verified documentation and supported end-to-end scenarios agree with the actual behavior.",
+            "hash": "aea9259c68c9a233c84cd5fa9e083b2e9c638900c7c41723cf062287b8325cf6",
+            "metadata": {}
+          },
+          {
+            "id": "3595d5d3-c721-48c6-8944-1bdcbda6aaa3",
+            "kind": "markdown",
+            "markdown": "The [accepted per-world requirements](https://github.com/foundryside-dev/hamlet/blob/a7c4cd0b19c410114aaabdd9284888fef159e84e/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md) define the finite isolation and learning obligations. Current tracking reflects later accepted amendments, including the 54-requirement and 22-lens totals.",
+            "hash": "f96efd5009d93bb268c71fadcc7dbdf454a0c53e50d917f1bc025e1c9375e6d9",
+            "metadata": {}
+          },
+          {
+            "id": "08d6fbb6-b262-4acb-84ac-d3c973974444",
+            "kind": "markdown",
+            "markdown": "# Decisions and boundaries",
+            "hash": "a8861f6a6fdf52295a935dfc980630fcf8fff7fd6e3451a4d438dc26c340f6ac",
+            "metadata": {}
+          },
+          {
+            "id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+            "kind": "markdown",
+            "markdown": "**No user decision blocks current CPU integration work.** The offered16-worker CUDA server is expected later, but access, resources and GPU count are not yet verified. The implemented CUDA custody core is boundedly CPU-qualified; its production local-GPU manifest is empty and real hardware execution remains UNRUN. Astra's accepted additive design and finite producer slices preserve lazy construction, dynamic unindexed device selection, exact device inventory, owner exclusion through completion and currentness. Root allocates runners only after actual CPU/RAM/GPU/source measurement, with bounded job/device concurrency and immutable process/receipt custody. One GPU cannot qualify two-device selection/retention/completion. Preserve historical hashed helpers and attempts. Hardware availability alone closes no gate. Strict per-world curiosity is required, with the explicit shared alternative preserved; omitted scope retains shared behavior. Shared Q and policy feedback remain permitted under the declared controlled-trace isolation guarantee.",
+            "hash": "ed6bb9a2358e32eeb6c435a9e32e90af9eb3de2c29517f741db8ea9bf5ec1e31",
+            "metadata": {}
+          },
+          {
+            "id": "f9b84af3-e043-4879-bf57-df25750f714b",
+            "kind": "markdown",
+            "markdown": "Current producers, callers, tests and documentation evolve together without legacy adapters or compatibility loaders. Preserve historical artifacts, backups, source archives and current captured replay. C10/K01's simulator-continuation deferral remains explicit. The [current evidence index](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-INDEX.md), [WIP17 manifest](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) and [evidence process](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-PROCESS.md) publish58 checks,68 attempts,64 result commands and4 UNRUN specs, plus a separate capture failure. These are evidence/command counts, not unique tests. Nine ACTUAL LATE generic verifications add no tests; all10 batch strong-rejection attempts remain retained. Publication retains489 objects:470 new /4,690,563 bytes and19 reused, with834 logical aliases. Final terminal FIX2 review556e7056 approved the bounded evidence account. Manifest SHA-256200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226; plan5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6; final receipt a072ce25c32ce1bc713f86e61ac1d60ed6a35e9e60fdbc042fdf87867137b5b7; exact remote verification422a4f24fbcd894584c4cec636a7886a4335a7f3f65e73dc63a06e00007c31cc. [WIP16 evidence](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/evidence/wave35-wip-16.json) retains R82 genuine RED and fixture failures, R83 prerequisite corrections, R84's failed owner gate, R85's qualified repair and its exact failed publication attempts; earlier checkpoints remain unchanged. Publication durability does not close outstanding package, hardware, CI or programme gates.",
+            "hash": "e3dd86589d81f5670cc2c96c4ce5559c8c75e38f8164567ac1a7907ee229aa77",
+            "metadata": {}
+          },
+          {
+            "id": "31f00378-a589-46b2-887c-0784684dabd2",
+            "kind": "markdown",
+            "markdown": "This is a private tracking Page. Its repository links remain subject to the viewer's GitHub access. It records the stated snapshot and is not configured for automatic updates.\n",
+            "hash": "1d248423a7ef3bf54265dbe467dcedbe0d0e6a9489abf9b69aca7a1e982ce67a",
+            "metadata": {}
+          }
+        ],
+        "markdown": "Updated 13 November 2026. WIP17 is published and remotely verified. The CUDA custody core is implemented and boundedly CPU-qualified at R89: 1,515 unique root passes, including 67 core cases repeated independently. Production local-GPU contracts remain empty; producer integration, real CUDA execution and programme acceptance remain open.\n\nBAC has **28 qualified releases out of the original 66 packages**, with **38 original packages still requiring qualification**. WIP17 publishes independently reviewed CUDA-core CPU behavior and evidence, retaining earlier replay and owner qualification. This is bounded component delivery, not a package closure or whole-BAC release.\n\n# Current position\n\n| Area | Status | What this means |\n| --- | --- | --- |\n| Original package releases | 28 qualified, 38 remaining | All 66 canonical package IDs remain unchanged; final acceptance on one common source revision is still owed. |\n| Later component delivery | Bounded BANK/owner CPU component qualified | Managed RNG admission occurs before the BANK lock; authentic lineage reaches private/shared operations. Native state and gradients are captured together, saved native configuration is reconstructed offside, required owners stay alive through publication, and final currency plus uncertain-completion checks fail closed. See the [BANK contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md). |\n| Current work | R89 CUDA-core CPU component qualified; producer A classification next | Root1,515 unique passes = core67 + coherent1,290 + replay109 + owner49. Independent67 repeats the same core cases and is not added. Core source/API and documentation review approved. Two CUDA skips and one required ordinary-runner deselection remain explicit gaps. The production local-GPU manifest is empty; no replay/parent GPU integration or hardware qualification follows. |\n| Published checkpoint | [WIP17 9acd85d3](https://github.com/foundryside-dev/hamlet/commit/9acd85d3ccd897051288a13fd16e610b9ee1fca1) | Exact remote API verified commit 9acd85d3ccd897051288a13fd16e610b9ee1fca1, publication tree15449d035b6d247fd2ecbe0d004ca1dd8620b676, parent e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32. [WIP17 evidence](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) preserves execution/publication identity distinctions. At 2026-11-13 13:22:34 UTC, [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43432685907) completed at 13:21:23 UTC; [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432686305/job/131909872585) completed at 13:20:53 UTC with Ruff PASS, Black PASS, Mypy FAIL and defaults SKIPPED. [Tests](https://github.com/foundryside-dev/hamlet/actions/runs/43432685903) remain IN_PROGRESS. Exact hosted mypy error text/count has not been retrieved and is not inferred from the local 15-error result; no green CI claim. Prior WIP16 [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43416361760), [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361832/job/131855159288) and [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361686), test cause unclassified. Its Ruff/Black passed; mypy reported15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. WIP15 Config PASS/Lint FAIL and its last-observed Tests IN_PROGRESS, and WIP14 Config PASS/Lint FAIL6oracle/Tests FAIL with inaccessible raw-log cause, remain historical observations. |\n| Evidence and review | R89 core CPU source/runtime/API and documentation approved; terminal evidence published | [Current recurrent contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md) and [shared replay contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md) record bounded behavior. R85 root158 = replay109 + owner49; first-node1 and independentowner49 overlap, not additional coverage. R84 independentrecurrent55 overlaps its root selection. Actual child PID/PPID, parent Process PID, source/spec/result/import/profile identities were verified. R89 adds the bounded core evidence: root1,515 unique and independent same67, not1,582. The component receipt dda5f267\u2026 and final terminal FIX2 review556e7056 bind the published account. Earlier failures and UNRUN attempts are retained; no real CUDA, external-caller or programme acceptance follows. |\n| Overall BAC acceptance | Integration and final repository gates remain open | The bounded core CPU component is qualified; no global-mypy pass is claimed. The15 known global mypy errors remain required work. CUDA B6 producer/device integration, the empty production contract manifest, external BANK/ENV/POP/native/runner migration, full current-parent restoration, the required runner deselection, two CUDA skips, full repository/coverage, slow/hardware, learning, final54 requirements/22 lenses and exact-final-remote green CI remain required. |\n\nThe accepted conversion component supports explicit fresh-private initialization and cloning learned state while preserving the complete source archive as inactive history. Native inherited counters and future per-world counters remain distinct, with explicit origin and epoch provenance. Ordered native dictionaries and Torch metadata survive owned transport. The native metadata repair passed 16 cases in both root and independent Astra runs; the repaired existing owner suite passed 31 cases in each run, with one CUDA skip each. The earlier combined 973-pass result included the none-scale repair; that earlier coherent component suite had 1,123 passes and three CUDA skips. These selections overlap and must not be added together. These results qualify the bounded component; actual population, runner, native-parent admission and captured-replay sampling and learning remain open.\n\n# Work completed\n\nThe 28 qualified original releases cover these delivered areas:\n\n| Delivered behavior | Qualified package IDs |\n| --- | --- |\n| Finite authored numerics, portable options, exploration resolution, effective identity, historical archive and fresh-buffer import, lossless sidecar lowering, canonical launch and CLI transport, canonical discovery | T01, T02, T18a, T03, T03a, T04, T05, T06, T07 |\n| Legal action selection and successor masks, completed-lane action gating, uniform and prioritized replay, real short windows, matching PER estimators, recurrent PER, production collection and learner readiness | T08, T08a, T09, T09a, T10, T11, T12, T13, T14, T15 |\n| Effective runner warmup, descriptor/value interactions, bounded RND service and tails, count novelty, ICM, completion envelopes and clock ledger | T16, T17, T18, T18b, T18c, T19 |\n| Explicit curiosity scope and seeds, private RNG foundations, recording work that survives shutdown | PW01, PW02, T33 |\n\nLater accepted component work is tracked separately:\n\n- **Curriculum and world foundations:** completion-driven curriculum and option/factory producers, compiled roster and identity/state maintenance, and world-state owner components. Their actual joint runtime routing remains open.\n\n- **Provider construction and service:** typed events and local clocks, RNG binding, the five-provider factory and separate policy selector; RND, ICM and adaptive providers perform real updates using their declared local service and native-state contracts.\n\n- **Private curiosity bank:** independently owned state for all five provider families, local replay and service, completion publication and failure custody. The explicit shared alternative retains grouped behavior. The bounded bank passed 84 root and 84 independent cases, with 551 covering passes and three CUDA skips.\n\n- **Same-scope checkpoint component:** off-side validation and preparation of models, gradients, optimizer, RNG, clocks, phases, caches and history; strict identity checks, owned installation and current replay-component preservation. It passed 147 root and 147 independent cases, with 635 covering passes and three CUDA skips. These overlapping selections are not added together.\n\nThese bank and checkpoint results use bounded component fixtures. They do not prove complete DQN/runner parent admission, captured replay sampling or ordinary end-to-end resume. The [published qualification evidence](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/evidence/wave34-wip-01.json) and [runtime contract](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/CURRENT-EXPLORATION-RUNTIME-CONTRACT.md) record the reviewed runtime component and current curriculum consumer repair. The runtime component passed 150 independent tests and a coherent 1,123-pass selection with three CUDA skips, plus independent source/specification and documentation truth review. The repair uses the real completed-event API, with no compatibility-only adapter: 52 migrated cases and 175 event regressions passed, for 227 passes. Compiler CLI validation also passed for 34 packs across 35 processes with verified source, import and thread identities. The subsequent full-repository run at the exact pushed source failed after 2,003.7499 seconds. Verification covered 797 source files, 573 configurations, 13 artifacts, all five pytest processes, the index and registry custody; the separately verified poisoning child also passed its assertions. Failure triage identifies 1,241 deduplicated failed test-node/phase records across 160 affected source files and 15 terminal-signature groups, chiefly missing world-identity constructor inputs, required reservation/activation, old curriculum/provider calls and stale option/schema assertions. These records are not 1,241 independent algorithmic defects. Repair causal prerequisites until tests reach their intended assertions before another broad run. The failed baseline and triage are now published in the [earlier checkpoint evidence](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/evidence/wave35-wip-01.json). The [intrinsic-scale composer contract](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/CURRENT-INTRINSIC-SCALE-COMPOSER-CONTRACT.md) records the new bounded math/API component: raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produces intrinsic reward 0.5 and total reward 1.6 in the tested case. At that earlier checkpoint, compiler CLI validation passed for 34 packs across 35 processes in 171.4223 seconds, with 798-source, import and thread identity verification. Four cheap guards pass. These checks do not establish current full-repository or all-family end-to-end qualification. The [new published evidence](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/evidence/wave35-wip-02.json) and [canonical reward-flow contract](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md) now record actual environment-to-parent delivery. The same 75 cases passed independently with no errors, skips or warnings: all five families and both scopes, phase and identity transport, canonical replay, pre-physics claim, real active-effect and pending-cancellation cases, retirement, and the original single-batch commitment/reset failure controls. Actual raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produced intrinsic reward 0.5 and total 1.6. A late runtime/callback rebinding defect was found and repaired; nine binding cases pass. Current compiler CLI validation passed 34 packs across 35 verified processes in 152.12084 seconds. These bounded results do not qualify complete native restore, genuine end-to-end learning or an integrated package release.\n\n# Work remaining\n\nEvery one of the 38 original packages still awaiting qualification appears once below. Some contain accepted components; each still owes its full package behavior and integration evidence.\n\n| Workstream and packages | Remaining deliverable and completion condition |\n| --- | --- |\n| Provider foundations \u2014 PW04, PW03, PW05, PW06 | Complete backend/native consumer coherence, factory and bank runtime use, and strict checkpoint integration. Pass the real ordinary runner checkpoint and full owner suites; component approval alone does not close these packages. |\n| Explicit conversion \u2014 PW07 | Bounded fresh-private and learned-template conversion, current-owner checks and the combined component gate have passed independent review. Complete real native-parent and runner integration and full package qualification, preserving source archives, compatible state and truthful origin/counter semantics. |\n| Runtime curiosity routing \u2014 T18d, T18e, PW08a, PW08, T18f | Complete population, runner and native-parent integration around the reviewed runtime and canonical environment reward flow. The primitive's 29-case proof, published 75-case environment/parent checkpoint and later 78-case selection are bounded evidence. Original commitment/reset findings and the additional exact multi-batch retry and prepare/install binding defects are repaired and independently approved within their tested limits. Native learning reset is implemented in the three model providers and independently source/API approved; its 61 cases pass within the now-published coherent 139-case run. Count/None native reset now has source and final contract truth approval, with 154 root and 154 overlapping independent passes published at d4426803. The shared/private RNG custody core is now boundedly qualified at 11ec9885. WIP14 now qualifies bounded CPU BANK/checkpoint adoption of domain-before-lock custody, authentic lineage, atomic native/gradient capture, saved-native restoration, owner lifetime and final currency. All five families and both scopes have restored-learning and equal-authentic-input BANK witnesses. Full native-parent correlation, enrolled direct consumers, joint publication and the ordinary runner remain open. The earlier _Run/VFS fixture checkpoint had 298 passes and four unqualified CUDA skips; the new core API requires current-owner requalification. Its world-only transport did not establish full native learner restore. The initial-participation environment producer now has 57 root and 57 overlapping independent passes at 7a96f86d. The additional read-only environment participation validator is now implemented and reviewed at 00889036, with 80 root and 80 overlapping independent passes; active validation remains unchanged. The population consumer, private pre-Q seal and owned public-query checks are now implemented and reviewed at d152425f. Its bounded proof includes active-world learning/replay, inactive-world privacy, mixed closure and the next cycle. Broader mixed-participation coverage, stable role-owner completed restore, native transfer/reset and history/cache/clock correlation remain required. Complete broader environment and lifecycle witnesses, captured-replay learning and ordinary checkpoint smoke before package qualification. |\n| Curriculum integration \u2014 T20, T21, T22, T23 | Integrate accepted curriculum producers and provenance, implement per-world dynamics, and prove each world's completion and controller decisions reach its own mechanics through population and runner. |\n| Checkpoint and restart \u2014 T24, PW09, T25, T26 | Finish boundary/schema and selection, scope/binding dispatch, full predictor/replay/clock restoration and one episode-end transaction. Prove atomic refusal, captured replay preservation and usable sampling/readiness, plus durable intent/effect reentry. |\n| Transfer and serving \u2014 T27, T28, T29, T30, PW10, T31, T32 | Deliver explicit evaluation modes and reset, truthful partial and strict transfer, effective artifact identity, schema-aware target-state policy, explicit private source-world selection, process-isolated serving, and a current all-family evaluator. |\n| Outputs and diagnostics \u2014 T34, T35, T36, PW11 | Own recorder failures during runner cleanup; preserve sink units and outcomes, effective hyperparameters and intervention reporting, and per-world scope, origin and scale diagnostics. A scalar summary must never replace per-world reward scales. |\n| Isolation and lifecycle proof \u2014 PW12, PW13, PW14, PW15 | Inventory actual simulator state owners; prove private rewards and state across real curiosity updates, reset/resume/conversion and archived history; verify each controller lane and the declared shared-Q feedback boundary. |\n| Joint acceptance and learning \u2014 T37, T38, T39, PW16, T40 | Complete learning-support, restart/transfer/serve/discovery and persisted-output matrices; prove truthful shared/private support and run the finite original learning protocol plus the strict cohort after integrity gates pass. |\n\n# Next delivery steps\n\n1. Begin producer A classification after the durable WIP17 checkpoint: A flat/PER producer integration, B exact source-owned core activation and separate core/test ownership plus independent review, C recurrent producer integration, then D exact activation with its separate core/test review. Preserve the five-body/5,000-line limit; the current combined five production bodies total5,017 and require fresh bounded slices. The stage-specific empty-manifest assertion and actual resolver/cache guard coverage must be updated at activation without weakening authorization. Continue external BANK/ENV/POP/native/runner integration, full current-parent restoration and joint all-child publication/failure handling, preserving genuine sampling/readiness and learning, current authority and owner lifetime.\n\n2. Repair and qualify the required ordinary runner/oracle integration, direct-consumer enrollment, stable-role/full-D behavior and T26 durability. The known ordinary-runner case was excluded only from R72's bounded selection and remains required. Preserve saved native/optimizer/gradient configuration, SOURCE archive/TARGET initialization semantics, bare-Adam/manual-replacement/signed-offset support and alias-quiescence boundaries. C10/K01 do not require independent exact simulator trajectory continuation.\n\n3. Resolve the exact WIP16 remote mypy failures through genuine current owner/caller contracts: six oracle-driver errors and nine missing-lineage errors in population replay preparation/install/sampling calls. Preserve scripted RNG/mechanics and pinned-reference capability. WIP16 Ruff and Black passed; defaults was skipped after mypy failed. Complete full/default, coverage, slow, applicable hardware, learning, final 54-requirement/22-lens review and exact-final-remote CI; bounded passes do not establish final acceptance.\n\n4. Finish curriculum, checkpoint/restart, transfer/serving and diagnostics packages in dependency order, followed by the complete isolation and joint acceptance evidence.\n\n# Final completion criteria\n\n- All **54 effective requirements**, **22 fresh final design and implementation review lenses**, and independent synthesis pass on the final common immutable source, with no unresolved P1/P2 findings or unapproved in-scope gaps.\n\n- Real runtime evidence covers all four Q families, all five curiosity providers and both scopes through compilation, rollout, updates, save/load and serving. Private isolation uses real local learning and complete named state owners, including lifecycle and controlled shared-Q cases.\n\n- The original T40 learning protocol is retained. The additional strict cohort is exactly **12 runs**: four families \u00d7 seeds 11, 29 and 47, each with 10,000 eligible training transitions and 20 evaluation episodes per seed, using explicit per-world adaptive RND and actual local predictor updates. Record controls, metrics, failures and deviations; do not infer a causal shared/private comparison from differing settings.\n\n- Required default full-repository, coverage of at least 70%, slow, applicable hardware, static and exact-final-remote CI checks pass. Source-verified documentation and supported end-to-end scenarios agree with the actual behavior.\n\nThe [accepted per-world requirements](https://github.com/foundryside-dev/hamlet/blob/a7c4cd0b19c410114aaabdd9284888fef159e84e/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md) define the finite isolation and learning obligations. Current tracking reflects later accepted amendments, including the 54-requirement and 22-lens totals.\n\n# Decisions and boundaries\n\n**No user decision blocks current CPU integration work.** The offered16-worker CUDA server is expected later, but access, resources and GPU count are not yet verified. The implemented CUDA custody core is boundedly CPU-qualified; its production local-GPU manifest is empty and real hardware execution remains UNRUN. Astra's accepted additive design and finite producer slices preserve lazy construction, dynamic unindexed device selection, exact device inventory, owner exclusion through completion and currentness. Root allocates runners only after actual CPU/RAM/GPU/source measurement, with bounded job/device concurrency and immutable process/receipt custody. One GPU cannot qualify two-device selection/retention/completion. Preserve historical hashed helpers and attempts. Hardware availability alone closes no gate. Strict per-world curiosity is required, with the explicit shared alternative preserved; omitted scope retains shared behavior. Shared Q and policy feedback remain permitted under the declared controlled-trace isolation guarantee.\n\nCurrent producers, callers, tests and documentation evolve together without legacy adapters or compatibility loaders. Preserve historical artifacts, backups, source archives and current captured replay. C10/K01's simulator-continuation deferral remains explicit. The [current evidence index](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-INDEX.md), [WIP17 manifest](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) and [evidence process](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-PROCESS.md) publish58 checks,68 attempts,64 result commands and4 UNRUN specs, plus a separate capture failure. These are evidence/command counts, not unique tests. Nine ACTUAL LATE generic verifications add no tests; all10 batch strong-rejection attempts remain retained. Publication retains489 objects:470 new /4,690,563 bytes and19 reused, with834 logical aliases. Final terminal FIX2 review556e7056 approved the bounded evidence account. Manifest SHA-256200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226; plan5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6; final receipt a072ce25c32ce1bc713f86e61ac1d60ed6a35e9e60fdbc042fdf87867137b5b7; exact remote verification422a4f24fbcd894584c4cec636a7886a4335a7f3f65e73dc63a06e00007c31cc. [WIP16 evidence](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/evidence/wave35-wip-16.json) retains R82 genuine RED and fixture failures, R83 prerequisite corrections, R84's failed owner gate, R85's qualified repair and its exact failed publication attempts; earlier checkpoints remain unchanged. Publication durability does not close outstanding package, hardware, CI or programme gates.\n\nThis is a private tracking Page. Its repository links remain subject to the viewer's GitHub access. It records the stated snapshot and is not configured for automatic updates.\n",
+        "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8"
+      }
+    },
+    "isError": false
+  },
+  "edit": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"new_sequence\":41,\"through_sequence\":41,\"operation_results\":[{\"operation_index\":0,\"preceding_block_id\":\"efba1b4f-fa4c-42ad-80b1-f0bbf679df4c\",\"created_block_ids\":[],\"continuation_position\":{\"block_id\":\"f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a\",\"relative_position_base64\":\"AL+M+KELkw5B\"},\"affected_blocks\":[{\"block_id\":\"f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a\",\"hash\":\"bc3dd836236f68335857d45302ca9627f0d0ea17a1470dff95e0422c73f7215b\"}]}]}"
+      },
+      {
+        "type": "text",
+        "text": "Show this Page in your response with this standalone preview:\n::page-preview{page_id=\"page_6ffffcb967fc8191a354fbe3661e4cb8\"}\nUse ordinary links for source citations."
+      }
+    ],
+    "structuredContent": {
+      "new_sequence": 41,
+      "through_sequence": 41,
+      "operation_results": [
+        {
+          "operation_index": 0,
+          "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+          "created_block_ids": [],
+          "continuation_position": {
+            "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "relative_position_base64": "AL+M+KELkw5B"
+          },
+          "affected_blocks": [
+            {
+              "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+              "hash": "bc3dd836236f68335857d45302ca9627f0d0ea17a1470dff95e0422c73f7215b"
+            }
+          ]
+        }
+      ]
+    },
+    "isError": false
+  },
+  "after": {
+    "content": [],
+    "structuredContent": {
+      "metadata": {
+        "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+        "layout": "document",
+        "symbol": null,
+        "title": "BAC Work Completed and Remaining",
+        "preview": "Updated 13 November 2026. WIP17 is published and remotely verified. The CUDA custody core is implemented and boundedly CPU-qualified at R89: 1,515 unique root passes, including 67 core cases repeated independently. Production local-GPU cont",
+        "creator_account_user_id": "user-Q5uUjii1uD0UZd7E3FcMiyKo",
+        "owner_workspace_id": null,
+        "parent": null,
+        "drive_scope": "personal",
+        "drive_space_id": null,
+        "library_container_id": "fde3_cGFnZV82ZmZmZmNiOTY3ZmM4MTkxYTM1NGZiZTM2NjFlNGNiOA_1d4ac5aec98c819182c7e3b6f1975b6c",
+        "file_upload_page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+        "position": 1394114892403712,
+        "created_at": "2026-11-10T14:07:57.502017Z",
+        "updated_at": "2026-11-13T13:24:40.990937Z",
+        "deleted_at": null,
+        "current_sequence": 41,
+        "projection_through_sequence": 41,
+        "access": {
+          "can_read": true,
+          "can_comment": true,
+          "can_write": true,
+          "can_share": true,
+          "can_delete": true,
+          "sources": [
+            "library"
+          ]
+        },
+        "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8"
+      },
+      "content": {
+        "schema_version": 2,
+        "symbol": null,
+        "title": "BAC Work Completed and Remaining",
+        "title_hash": "ebba8e74ef12d5779bc102be4e55023ba2c9120e6785dddf5caf9787b0703278",
+        "blocks": [
+          {
+            "id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+            "kind": "markdown",
+            "markdown": "Updated 13 November 2026. WIP17 is published and remotely verified. The CUDA custody core is implemented and boundedly CPU-qualified at R89: 1,515 unique root passes, including 67 core cases repeated independently. Production local-GPU contracts remain empty; producer integration, real CUDA execution and programme acceptance remain open.",
+            "hash": "ef2fe358525b7994afd0c971590cc883bc2be43dcbccdcd46462ad7bec4d2884",
+            "metadata": {}
+          },
+          {
+            "id": "4dd2cd78-69ab-4d71-a50c-b787c9630d0a",
+            "kind": "markdown",
+            "markdown": "BAC has **28 qualified releases out of the original 66 packages**, with **38 original packages still requiring qualification**. WIP17 publishes independently reviewed CUDA-core CPU behavior and evidence, retaining earlier replay and owner qualification. This is bounded component delivery, not a package closure or whole-BAC release.",
+            "hash": "21b5dc7a6672f5b965b7cb6ed0bb589d2ce2d1ed7cdec835feeb6e8bc97d092b",
+            "metadata": {}
+          },
+          {
+            "id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+            "kind": "markdown",
+            "markdown": "# Current position",
+            "hash": "e4695ccbc31408393a7eccd6a2e5474e236a54bcbc449f80aa5d9d8650e929c7",
+            "metadata": {}
+          },
+          {
+            "id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "kind": "markdown",
+            "markdown": "| Area | Status | What this means |\n| --- | --- | --- |\n| Original package releases | 28 qualified, 38 remaining | All 66 canonical package IDs remain unchanged; final acceptance on one common source revision is still owed. |\n| Later component delivery | Bounded BANK/owner CPU component qualified | Managed RNG admission occurs before the BANK lock; authentic lineage reaches private/shared operations. Native state and gradients are captured together, saved native configuration is reconstructed offside, required owners stay alive through publication, and final currency plus uncertain-completion checks fail closed. See the [BANK contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md). |\n| Current work | R89 CUDA-core CPU component qualified; producer A classification next | Root1,515 unique passes = core67 + coherent1,290 + replay109 + owner49. Independent67 repeats the same core cases and is not added. Core source/API and documentation review approved. Two CUDA skips and one required ordinary-runner deselection remain explicit gaps. The production local-GPU manifest is empty; no replay/parent GPU integration or hardware qualification follows. |\n| Published checkpoint | [WIP17 9acd85d3](https://github.com/foundryside-dev/hamlet/commit/9acd85d3ccd897051288a13fd16e610b9ee1fca1) | Exact remote API verified commit 9acd85d3ccd897051288a13fd16e610b9ee1fca1, publication tree15449d035b6d247fd2ecbe0d004ca1dd8620b676, parent e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32. [WIP17 evidence](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) preserves execution/publication identity distinctions. At 2026-11-13 14:09:46 UTC, [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43432685907) remains completed; [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432686305/job/131909872585) has actual hosted-log evidence: Ruff PASS, Black PASS, mypy15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432685903) at the fast-suite step; the run updated at 14:06:43 UTC. Test-log retrieval returned transport_closed, so the test failure cause remains unclassified. No green CI claim. Prior WIP16 [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43416361760), [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361832/job/131855159288) and [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361686), test cause unclassified. Its Ruff/Black passed; mypy reported15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. WIP15 Config PASS/Lint FAIL and its last-observed Tests IN_PROGRESS, and WIP14 Config PASS/Lint FAIL6oracle/Tests FAIL with inaccessible raw-log cause, remain historical observations. |\n| Evidence and review | R89 core CPU source/runtime/API and documentation approved; terminal evidence published | [Current recurrent contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md) and [shared replay contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md) record bounded behavior. R85 root158 = replay109 + owner49; first-node1 and independentowner49 overlap, not additional coverage. R84 independentrecurrent55 overlaps its root selection. Actual child PID/PPID, parent Process PID, source/spec/result/import/profile identities were verified. R89 adds the bounded core evidence: root1,515 unique and independent same67, not1,582. The component receipt dda5f267\u2026 and final terminal FIX2 review556e7056 bind the published account. Earlier failures and UNRUN attempts are retained; no real CUDA, external-caller or programme acceptance follows. |\n| Overall BAC acceptance | Integration and final repository gates remain open | The bounded core CPU component is qualified; no global-mypy pass is claimed. The15 known global mypy errors remain required work. CUDA B6 producer/device integration, the empty production contract manifest, external BANK/ENV/POP/native/runner migration, full current-parent restoration, the required runner deselection, two CUDA skips, full repository/coverage, slow/hardware, learning, final54 requirements/22 lenses and exact-final-remote green CI remain required. |",
+            "hash": "bc3dd836236f68335857d45302ca9627f0d0ea17a1470dff95e0422c73f7215b",
+            "metadata": {}
+          },
+          {
+            "id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+            "kind": "markdown",
+            "markdown": "The accepted conversion component supports explicit fresh-private initialization and cloning learned state while preserving the complete source archive as inactive history. Native inherited counters and future per-world counters remain distinct, with explicit origin and epoch provenance. Ordered native dictionaries and Torch metadata survive owned transport. The native metadata repair passed 16 cases in both root and independent Astra runs; the repaired existing owner suite passed 31 cases in each run, with one CUDA skip each. The earlier combined 973-pass result included the none-scale repair; that earlier coherent component suite had 1,123 passes and three CUDA skips. These selections overlap and must not be added together. These results qualify the bounded component; actual population, runner, native-parent admission and captured-replay sampling and learning remain open.",
+            "hash": "3fcf63b2455e6b7b4a5dfbab370fd4caa3f147f032057653b847c25d814e617b",
+            "metadata": {}
+          },
+          {
+            "id": "f44db084-bed6-4f09-9f2f-2eb887ec1c6d",
+            "kind": "markdown",
+            "markdown": "# Work completed",
+            "hash": "3b09248a6101db446fc488205a1622a69b49af99de4818ee5a3ef0cec9ee1b7b",
+            "metadata": {}
+          },
+          {
+            "id": "790d9963-7e47-4651-b23e-e999eac52208",
+            "kind": "markdown",
+            "markdown": "The 28 qualified original releases cover these delivered areas:",
+            "hash": "a00b9b7365ac68cc0dee42d259b5b71ee1836a2c28b6957fb9b8538bfe0fae30",
+            "metadata": {}
+          },
+          {
+            "id": "52e90f4c-0329-4f5d-8ea3-2abe9f3cc6d0",
+            "kind": "markdown",
+            "markdown": "| Delivered behavior | Qualified package IDs |\n| --- | --- |\n| Finite authored numerics, portable options, exploration resolution, effective identity, historical archive and fresh-buffer import, lossless sidecar lowering, canonical launch and CLI transport, canonical discovery | T01, T02, T18a, T03, T03a, T04, T05, T06, T07 |\n| Legal action selection and successor masks, completed-lane action gating, uniform and prioritized replay, real short windows, matching PER estimators, recurrent PER, production collection and learner readiness | T08, T08a, T09, T09a, T10, T11, T12, T13, T14, T15 |\n| Effective runner warmup, descriptor/value interactions, bounded RND service and tails, count novelty, ICM, completion envelopes and clock ledger | T16, T17, T18, T18b, T18c, T19 |\n| Explicit curiosity scope and seeds, private RNG foundations, recording work that survives shutdown | PW01, PW02, T33 |",
+            "hash": "5ce7f9e137572c6e8f556b4b73ca81295cde2ae741160f73f675f1464e039fd5",
+            "metadata": {}
+          },
+          {
+            "id": "a2c94ffc-738d-49e5-a702-456dbfe804db",
+            "kind": "markdown",
+            "markdown": "Later accepted component work is tracked separately:",
+            "hash": "103e1b3dca7dbce0f7bbc364d5e28bcd9af7a7089b4fb94dfb19912af7ec2052",
+            "metadata": {}
+          },
+          {
+            "id": "3485f73f-6f82-4f7a-872e-dc14dc24def8",
+            "kind": "markdown",
+            "markdown": "- **Curriculum and world foundations:** completion-driven curriculum and option/factory producers, compiled roster and identity/state maintenance, and world-state owner components. Their actual joint runtime routing remains open.",
+            "hash": "d9199263b2097e12e522d20fb3dd7ebd5fc431fa31402b8761be2f4c57ab0c02",
+            "metadata": {}
+          },
+          {
+            "id": "0765a558-d180-4df7-93d1-dad2fd27a1a4",
+            "kind": "markdown",
+            "markdown": "- **Provider construction and service:** typed events and local clocks, RNG binding, the five-provider factory and separate policy selector; RND, ICM and adaptive providers perform real updates using their declared local service and native-state contracts.",
+            "hash": "b0a4521edbfafdc6f2c60157e5020a9f00df95954d41fd3bcf84bb4a22883de4",
+            "metadata": {}
+          },
+          {
+            "id": "326c6942-06b3-483d-a07e-439d9dd11a98",
+            "kind": "markdown",
+            "markdown": "- **Private curiosity bank:** independently owned state for all five provider families, local replay and service, completion publication and failure custody. The explicit shared alternative retains grouped behavior. The bounded bank passed 84 root and 84 independent cases, with 551 covering passes and three CUDA skips.",
+            "hash": "4d693120964c1ebce90b339c0b9a49adc356d4e8770df4fbf18dd87ebdf11749",
+            "metadata": {}
+          },
+          {
+            "id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+            "kind": "markdown",
+            "markdown": "- **Same-scope checkpoint component:** off-side validation and preparation of models, gradients, optimizer, RNG, clocks, phases, caches and history; strict identity checks, owned installation and current replay-component preservation. It passed 147 root and 147 independent cases, with 635 covering passes and three CUDA skips. These overlapping selections are not added together.",
+            "hash": "4d40636ec9fcc5555ba2d55de785541ab567b95bbd4088060b89b6af1da48d7b",
+            "metadata": {}
+          },
+          {
+            "id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+            "kind": "markdown",
+            "markdown": "These bank and checkpoint results use bounded component fixtures. They do not prove complete DQN/runner parent admission, captured replay sampling or ordinary end-to-end resume. The [published qualification evidence](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/evidence/wave34-wip-01.json) and [runtime contract](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/CURRENT-EXPLORATION-RUNTIME-CONTRACT.md) record the reviewed runtime component and current curriculum consumer repair. The runtime component passed 150 independent tests and a coherent 1,123-pass selection with three CUDA skips, plus independent source/specification and documentation truth review. The repair uses the real completed-event API, with no compatibility-only adapter: 52 migrated cases and 175 event regressions passed, for 227 passes. Compiler CLI validation also passed for 34 packs across 35 processes with verified source, import and thread identities. The subsequent full-repository run at the exact pushed source failed after 2,003.7499 seconds. Verification covered 797 source files, 573 configurations, 13 artifacts, all five pytest processes, the index and registry custody; the separately verified poisoning child also passed its assertions. Failure triage identifies 1,241 deduplicated failed test-node/phase records across 160 affected source files and 15 terminal-signature groups, chiefly missing world-identity constructor inputs, required reservation/activation, old curriculum/provider calls and stale option/schema assertions. These records are not 1,241 independent algorithmic defects. Repair causal prerequisites until tests reach their intended assertions before another broad run. The failed baseline and triage are now published in the [earlier checkpoint evidence](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/evidence/wave35-wip-01.json). The [intrinsic-scale composer contract](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/CURRENT-INTRINSIC-SCALE-COMPOSER-CONTRACT.md) records the new bounded math/API component: raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produces intrinsic reward 0.5 and total reward 1.6 in the tested case. At that earlier checkpoint, compiler CLI validation passed for 34 packs across 35 processes in 171.4223 seconds, with 798-source, import and thread identity verification. Four cheap guards pass. These checks do not establish current full-repository or all-family end-to-end qualification. The [new published evidence](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/evidence/wave35-wip-02.json) and [canonical reward-flow contract](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md) now record actual environment-to-parent delivery. The same 75 cases passed independently with no errors, skips or warnings: all five families and both scopes, phase and identity transport, canonical replay, pre-physics claim, real active-effect and pending-cancellation cases, retirement, and the original single-batch commitment/reset failure controls. Actual raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produced intrinsic reward 0.5 and total 1.6. A late runtime/callback rebinding defect was found and repaired; nine binding cases pass. Current compiler CLI validation passed 34 packs across 35 verified processes in 152.12084 seconds. These bounded results do not qualify complete native restore, genuine end-to-end learning or an integrated package release.",
+            "hash": "61121fb1a105438d9f79a0cdce587b81ab519a6f528513d25587e4f1bd421948",
+            "metadata": {}
+          },
+          {
+            "id": "7efeee03-c539-44ff-9668-db208c111cda",
+            "kind": "markdown",
+            "markdown": "# Work remaining",
+            "hash": "56abee5feafa9f64972dfb9e03e83619b2cfa2a56b707c0d6288427e4b54f638",
+            "metadata": {}
+          },
+          {
+            "id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+            "kind": "markdown",
+            "markdown": "Every one of the 38 original packages still awaiting qualification appears once below. Some contain accepted components; each still owes its full package behavior and integration evidence.",
+            "hash": "3e285b1d7dd12ab0cc1f8e183d80785f8f5254c3c070eb3e816bbaebc5e88215",
+            "metadata": {}
+          },
+          {
+            "id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+            "kind": "markdown",
+            "markdown": "| Workstream and packages | Remaining deliverable and completion condition |\n| --- | --- |\n| Provider foundations \u2014 PW04, PW03, PW05, PW06 | Complete backend/native consumer coherence, factory and bank runtime use, and strict checkpoint integration. Pass the real ordinary runner checkpoint and full owner suites; component approval alone does not close these packages. |\n| Explicit conversion \u2014 PW07 | Bounded fresh-private and learned-template conversion, current-owner checks and the combined component gate have passed independent review. Complete real native-parent and runner integration and full package qualification, preserving source archives, compatible state and truthful origin/counter semantics. |\n| Runtime curiosity routing \u2014 T18d, T18e, PW08a, PW08, T18f | Complete population, runner and native-parent integration around the reviewed runtime and canonical environment reward flow. The primitive's 29-case proof, published 75-case environment/parent checkpoint and later 78-case selection are bounded evidence. Original commitment/reset findings and the additional exact multi-batch retry and prepare/install binding defects are repaired and independently approved within their tested limits. Native learning reset is implemented in the three model providers and independently source/API approved; its 61 cases pass within the now-published coherent 139-case run. Count/None native reset now has source and final contract truth approval, with 154 root and 154 overlapping independent passes published at d4426803. The shared/private RNG custody core is now boundedly qualified at 11ec9885. WIP14 now qualifies bounded CPU BANK/checkpoint adoption of domain-before-lock custody, authentic lineage, atomic native/gradient capture, saved-native restoration, owner lifetime and final currency. All five families and both scopes have restored-learning and equal-authentic-input BANK witnesses. Full native-parent correlation, enrolled direct consumers, joint publication and the ordinary runner remain open. The earlier _Run/VFS fixture checkpoint had 298 passes and four unqualified CUDA skips; the new core API requires current-owner requalification. Its world-only transport did not establish full native learner restore. The initial-participation environment producer now has 57 root and 57 overlapping independent passes at 7a96f86d. The additional read-only environment participation validator is now implemented and reviewed at 00889036, with 80 root and 80 overlapping independent passes; active validation remains unchanged. The population consumer, private pre-Q seal and owned public-query checks are now implemented and reviewed at d152425f. Its bounded proof includes active-world learning/replay, inactive-world privacy, mixed closure and the next cycle. Broader mixed-participation coverage, stable role-owner completed restore, native transfer/reset and history/cache/clock correlation remain required. Complete broader environment and lifecycle witnesses, captured-replay learning and ordinary checkpoint smoke before package qualification. |\n| Curriculum integration \u2014 T20, T21, T22, T23 | Integrate accepted curriculum producers and provenance, implement per-world dynamics, and prove each world's completion and controller decisions reach its own mechanics through population and runner. |\n| Checkpoint and restart \u2014 T24, PW09, T25, T26 | Finish boundary/schema and selection, scope/binding dispatch, full predictor/replay/clock restoration and one episode-end transaction. Prove atomic refusal, captured replay preservation and usable sampling/readiness, plus durable intent/effect reentry. |\n| Transfer and serving \u2014 T27, T28, T29, T30, PW10, T31, T32 | Deliver explicit evaluation modes and reset, truthful partial and strict transfer, effective artifact identity, schema-aware target-state policy, explicit private source-world selection, process-isolated serving, and a current all-family evaluator. |\n| Outputs and diagnostics \u2014 T34, T35, T36, PW11 | Own recorder failures during runner cleanup; preserve sink units and outcomes, effective hyperparameters and intervention reporting, and per-world scope, origin and scale diagnostics. A scalar summary must never replace per-world reward scales. |\n| Isolation and lifecycle proof \u2014 PW12, PW13, PW14, PW15 | Inventory actual simulator state owners; prove private rewards and state across real curiosity updates, reset/resume/conversion and archived history; verify each controller lane and the declared shared-Q feedback boundary. |\n| Joint acceptance and learning \u2014 T37, T38, T39, PW16, T40 | Complete learning-support, restart/transfer/serve/discovery and persisted-output matrices; prove truthful shared/private support and run the finite original learning protocol plus the strict cohort after integrity gates pass. |",
+            "hash": "4d83d08e5ee06824a2191f43b88a9ef9b97b18d7b672c953efeffbff9af2533b",
+            "metadata": {}
+          },
+          {
+            "id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+            "kind": "markdown",
+            "markdown": "# Next delivery steps",
+            "hash": "e22a243cd4c9cb5f85ea9a68c73bfa8e24883d5fed953b1ad9018bbadce93398",
+            "metadata": {}
+          },
+          {
+            "id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "kind": "markdown",
+            "markdown": "1. Begin producer A classification after the durable WIP17 checkpoint: A flat/PER producer integration, B exact source-owned core activation and separate core/test ownership plus independent review, C recurrent producer integration, then D exact activation with its separate core/test review. Preserve the five-body/5,000-line limit; the current combined five production bodies total5,017 and require fresh bounded slices. The stage-specific empty-manifest assertion and actual resolver/cache guard coverage must be updated at activation without weakening authorization. Continue external BANK/ENV/POP/native/runner integration, full current-parent restoration and joint all-child publication/failure handling, preserving genuine sampling/readiness and learning, current authority and owner lifetime.",
+            "hash": "077f87f9db97ae96b2c0b8c7290b3ea0c2100b03255ee2f00ca43659af04eeb4",
+            "metadata": {}
+          },
+          {
+            "id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+            "kind": "markdown",
+            "markdown": "2. Repair and qualify the required ordinary runner/oracle integration, direct-consumer enrollment, stable-role/full-D behavior and T26 durability. The known ordinary-runner case was excluded only from R72's bounded selection and remains required. Preserve saved native/optimizer/gradient configuration, SOURCE archive/TARGET initialization semantics, bare-Adam/manual-replacement/signed-offset support and alias-quiescence boundaries. C10/K01 do not require independent exact simulator trajectory continuation.",
+            "hash": "7625a7cd50c99699fc9605146edd5b6b1e16f7d0ee1907d352884a29904fe938",
+            "metadata": {}
+          },
+          {
+            "id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+            "kind": "markdown",
+            "markdown": "3. Resolve the exact WIP16 remote mypy failures through genuine current owner/caller contracts: six oracle-driver errors and nine missing-lineage errors in population replay preparation/install/sampling calls. Preserve scripted RNG/mechanics and pinned-reference capability. WIP16 Ruff and Black passed; defaults was skipped after mypy failed. Complete full/default, coverage, slow, applicable hardware, learning, final 54-requirement/22-lens review and exact-final-remote CI; bounded passes do not establish final acceptance.",
+            "hash": "760cfd58487e32d6d800b18ed6a211bb722b26f2b8012c3685fc3658f22a9fac",
+            "metadata": {}
+          },
+          {
+            "id": "72d91648-057a-434c-8622-0fcc6854e284",
+            "kind": "markdown",
+            "markdown": "4. Finish curriculum, checkpoint/restart, transfer/serving and diagnostics packages in dependency order, followed by the complete isolation and joint acceptance evidence.",
+            "hash": "325b0ec8cfa2ab7b85edf9ae9f94d0858511947fde7c66efb2bcf628ee1ecf6a",
+            "metadata": {}
+          },
+          {
+            "id": "036067cf-c969-4097-8055-a24521614dac",
+            "kind": "markdown",
+            "markdown": "# Final completion criteria",
+            "hash": "613112c7498f3ff7768f6f38bf56f6997799ce5589cc47f541150befa9699d7e",
+            "metadata": {}
+          },
+          {
+            "id": "034bd0e9-6539-46d9-9d90-819adb48e034",
+            "kind": "markdown",
+            "markdown": "- All **54 effective requirements**, **22 fresh final design and implementation review lenses**, and independent synthesis pass on the final common immutable source, with no unresolved P1/P2 findings or unapproved in-scope gaps.",
+            "hash": "b4c0be69182c1c0bd763822dc5d0880d41dc3089c7ac9552557cc512b830abf2",
+            "metadata": {}
+          },
+          {
+            "id": "8e7d6d6c-b262-4b9e-941a-09a148ca2189",
+            "kind": "markdown",
+            "markdown": "- Real runtime evidence covers all four Q families, all five curiosity providers and both scopes through compilation, rollout, updates, save/load and serving. Private isolation uses real local learning and complete named state owners, including lifecycle and controlled shared-Q cases.",
+            "hash": "cafea870237351f239a375895511748a9fa35f97285903eb6841c808496500a6",
+            "metadata": {}
+          },
+          {
+            "id": "df5664ae-4b97-428d-81e8-0a124170561d",
+            "kind": "markdown",
+            "markdown": "- The original T40 learning protocol is retained. The additional strict cohort is exactly **12 runs**: four families \u00d7 seeds 11, 29 and 47, each with 10,000 eligible training transitions and 20 evaluation episodes per seed, using explicit per-world adaptive RND and actual local predictor updates. Record controls, metrics, failures and deviations; do not infer a causal shared/private comparison from differing settings.",
+            "hash": "fb675a0258901eb75357caa61d14bb23a1d202a4e60f1bc3f7ec629c809f3e9a",
+            "metadata": {}
+          },
+          {
+            "id": "a86e859a-0056-4712-8404-c85c3ba765e9",
+            "kind": "markdown",
+            "markdown": "- Required default full-repository, coverage of at least 70%, slow, applicable hardware, static and exact-final-remote CI checks pass. Source-verified documentation and supported end-to-end scenarios agree with the actual behavior.",
+            "hash": "aea9259c68c9a233c84cd5fa9e083b2e9c638900c7c41723cf062287b8325cf6",
+            "metadata": {}
+          },
+          {
+            "id": "3595d5d3-c721-48c6-8944-1bdcbda6aaa3",
+            "kind": "markdown",
+            "markdown": "The [accepted per-world requirements](https://github.com/foundryside-dev/hamlet/blob/a7c4cd0b19c410114aaabdd9284888fef159e84e/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md) define the finite isolation and learning obligations. Current tracking reflects later accepted amendments, including the 54-requirement and 22-lens totals.",
+            "hash": "f96efd5009d93bb268c71fadcc7dbdf454a0c53e50d917f1bc025e1c9375e6d9",
+            "metadata": {}
+          },
+          {
+            "id": "08d6fbb6-b262-4acb-84ac-d3c973974444",
+            "kind": "markdown",
+            "markdown": "# Decisions and boundaries",
+            "hash": "a8861f6a6fdf52295a935dfc980630fcf8fff7fd6e3451a4d438dc26c340f6ac",
+            "metadata": {}
+          },
+          {
+            "id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+            "kind": "markdown",
+            "markdown": "**No user decision blocks current CPU integration work.** The offered16-worker CUDA server is expected later, but access, resources and GPU count are not yet verified. The implemented CUDA custody core is boundedly CPU-qualified; its production local-GPU manifest is empty and real hardware execution remains UNRUN. Astra's accepted additive design and finite producer slices preserve lazy construction, dynamic unindexed device selection, exact device inventory, owner exclusion through completion and currentness. Root allocates runners only after actual CPU/RAM/GPU/source measurement, with bounded job/device concurrency and immutable process/receipt custody. One GPU cannot qualify two-device selection/retention/completion. Preserve historical hashed helpers and attempts. Hardware availability alone closes no gate. Strict per-world curiosity is required, with the explicit shared alternative preserved; omitted scope retains shared behavior. Shared Q and policy feedback remain permitted under the declared controlled-trace isolation guarantee.",
+            "hash": "ed6bb9a2358e32eeb6c435a9e32e90af9eb3de2c29517f741db8ea9bf5ec1e31",
+            "metadata": {}
+          },
+          {
+            "id": "f9b84af3-e043-4879-bf57-df25750f714b",
+            "kind": "markdown",
+            "markdown": "Current producers, callers, tests and documentation evolve together without legacy adapters or compatibility loaders. Preserve historical artifacts, backups, source archives and current captured replay. C10/K01's simulator-continuation deferral remains explicit. The [current evidence index](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-INDEX.md), [WIP17 manifest](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) and [evidence process](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-PROCESS.md) publish58 checks,68 attempts,64 result commands and4 UNRUN specs, plus a separate capture failure. These are evidence/command counts, not unique tests. Nine ACTUAL LATE generic verifications add no tests; all10 batch strong-rejection attempts remain retained. Publication retains489 objects:470 new /4,690,563 bytes and19 reused, with834 logical aliases. Final terminal FIX2 review556e7056 approved the bounded evidence account. Manifest SHA-256200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226; plan5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6; final receipt a072ce25c32ce1bc713f86e61ac1d60ed6a35e9e60fdbc042fdf87867137b5b7; exact remote verification422a4f24fbcd894584c4cec636a7886a4335a7f3f65e73dc63a06e00007c31cc. [WIP16 evidence](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/evidence/wave35-wip-16.json) retains R82 genuine RED and fixture failures, R83 prerequisite corrections, R84's failed owner gate, R85's qualified repair and its exact failed publication attempts; earlier checkpoints remain unchanged. Publication durability does not close outstanding package, hardware, CI or programme gates.",
+            "hash": "e3dd86589d81f5670cc2c96c4ce5559c8c75e38f8164567ac1a7907ee229aa77",
+            "metadata": {}
+          },
+          {
+            "id": "31f00378-a589-46b2-887c-0784684dabd2",
+            "kind": "markdown",
+            "markdown": "This is a private tracking Page. Its repository links remain subject to the viewer's GitHub access. It records the stated snapshot and is not configured for automatic updates.\n",
+            "hash": "1d248423a7ef3bf54265dbe467dcedbe0d0e6a9489abf9b69aca7a1e982ce67a",
+            "metadata": {}
+          }
+        ],
+        "markdown": "Updated 13 November 2026. WIP17 is published and remotely verified. The CUDA custody core is implemented and boundedly CPU-qualified at R89: 1,515 unique root passes, including 67 core cases repeated independently. Production local-GPU contracts remain empty; producer integration, real CUDA execution and programme acceptance remain open.\n\nBAC has **28 qualified releases out of the original 66 packages**, with **38 original packages still requiring qualification**. WIP17 publishes independently reviewed CUDA-core CPU behavior and evidence, retaining earlier replay and owner qualification. This is bounded component delivery, not a package closure or whole-BAC release.\n\n# Current position\n\n| Area | Status | What this means |\n| --- | --- | --- |\n| Original package releases | 28 qualified, 38 remaining | All 66 canonical package IDs remain unchanged; final acceptance on one common source revision is still owed. |\n| Later component delivery | Bounded BANK/owner CPU component qualified | Managed RNG admission occurs before the BANK lock; authentic lineage reaches private/shared operations. Native state and gradients are captured together, saved native configuration is reconstructed offside, required owners stay alive through publication, and final currency plus uncertain-completion checks fail closed. See the [BANK contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md). |\n| Current work | R89 CUDA-core CPU component qualified; producer A classification next | Root1,515 unique passes = core67 + coherent1,290 + replay109 + owner49. Independent67 repeats the same core cases and is not added. Core source/API and documentation review approved. Two CUDA skips and one required ordinary-runner deselection remain explicit gaps. The production local-GPU manifest is empty; no replay/parent GPU integration or hardware qualification follows. |\n| Published checkpoint | [WIP17 9acd85d3](https://github.com/foundryside-dev/hamlet/commit/9acd85d3ccd897051288a13fd16e610b9ee1fca1) | Exact remote API verified commit 9acd85d3ccd897051288a13fd16e610b9ee1fca1, publication tree15449d035b6d247fd2ecbe0d004ca1dd8620b676, parent e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32. [WIP17 evidence](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) preserves execution/publication identity distinctions. At 2026-11-13 14:09:46 UTC, [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43432685907) remains completed; [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432686305/job/131909872585) has actual hosted-log evidence: Ruff PASS, Black PASS, mypy15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432685903) at the fast-suite step; the run updated at 14:06:43 UTC. Test-log retrieval returned transport_closed, so the test failure cause remains unclassified. No green CI claim. Prior WIP16 [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43416361760), [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361832/job/131855159288) and [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43416361686), test cause unclassified. Its Ruff/Black passed; mypy reported15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. WIP15 Config PASS/Lint FAIL and its last-observed Tests IN_PROGRESS, and WIP14 Config PASS/Lint FAIL6oracle/Tests FAIL with inaccessible raw-log cause, remain historical observations. |\n| Evidence and review | R89 core CPU source/runtime/API and documentation approved; terminal evidence published | [Current recurrent contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md) and [shared replay contract](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md) record bounded behavior. R85 root158 = replay109 + owner49; first-node1 and independentowner49 overlap, not additional coverage. R84 independentrecurrent55 overlaps its root selection. Actual child PID/PPID, parent Process PID, source/spec/result/import/profile identities were verified. R89 adds the bounded core evidence: root1,515 unique and independent same67, not1,582. The component receipt dda5f267\u2026 and final terminal FIX2 review556e7056 bind the published account. Earlier failures and UNRUN attempts are retained; no real CUDA, external-caller or programme acceptance follows. |\n| Overall BAC acceptance | Integration and final repository gates remain open | The bounded core CPU component is qualified; no global-mypy pass is claimed. The15 known global mypy errors remain required work. CUDA B6 producer/device integration, the empty production contract manifest, external BANK/ENV/POP/native/runner migration, full current-parent restoration, the required runner deselection, two CUDA skips, full repository/coverage, slow/hardware, learning, final54 requirements/22 lenses and exact-final-remote green CI remain required. |\n\nThe accepted conversion component supports explicit fresh-private initialization and cloning learned state while preserving the complete source archive as inactive history. Native inherited counters and future per-world counters remain distinct, with explicit origin and epoch provenance. Ordered native dictionaries and Torch metadata survive owned transport. The native metadata repair passed 16 cases in both root and independent Astra runs; the repaired existing owner suite passed 31 cases in each run, with one CUDA skip each. The earlier combined 973-pass result included the none-scale repair; that earlier coherent component suite had 1,123 passes and three CUDA skips. These selections overlap and must not be added together. These results qualify the bounded component; actual population, runner, native-parent admission and captured-replay sampling and learning remain open.\n\n# Work completed\n\nThe 28 qualified original releases cover these delivered areas:\n\n| Delivered behavior | Qualified package IDs |\n| --- | --- |\n| Finite authored numerics, portable options, exploration resolution, effective identity, historical archive and fresh-buffer import, lossless sidecar lowering, canonical launch and CLI transport, canonical discovery | T01, T02, T18a, T03, T03a, T04, T05, T06, T07 |\n| Legal action selection and successor masks, completed-lane action gating, uniform and prioritized replay, real short windows, matching PER estimators, recurrent PER, production collection and learner readiness | T08, T08a, T09, T09a, T10, T11, T12, T13, T14, T15 |\n| Effective runner warmup, descriptor/value interactions, bounded RND service and tails, count novelty, ICM, completion envelopes and clock ledger | T16, T17, T18, T18b, T18c, T19 |\n| Explicit curiosity scope and seeds, private RNG foundations, recording work that survives shutdown | PW01, PW02, T33 |\n\nLater accepted component work is tracked separately:\n\n- **Curriculum and world foundations:** completion-driven curriculum and option/factory producers, compiled roster and identity/state maintenance, and world-state owner components. Their actual joint runtime routing remains open.\n\n- **Provider construction and service:** typed events and local clocks, RNG binding, the five-provider factory and separate policy selector; RND, ICM and adaptive providers perform real updates using their declared local service and native-state contracts.\n\n- **Private curiosity bank:** independently owned state for all five provider families, local replay and service, completion publication and failure custody. The explicit shared alternative retains grouped behavior. The bounded bank passed 84 root and 84 independent cases, with 551 covering passes and three CUDA skips.\n\n- **Same-scope checkpoint component:** off-side validation and preparation of models, gradients, optimizer, RNG, clocks, phases, caches and history; strict identity checks, owned installation and current replay-component preservation. It passed 147 root and 147 independent cases, with 635 covering passes and three CUDA skips. These overlapping selections are not added together.\n\nThese bank and checkpoint results use bounded component fixtures. They do not prove complete DQN/runner parent admission, captured replay sampling or ordinary end-to-end resume. The [published qualification evidence](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/evidence/wave34-wip-01.json) and [runtime contract](https://github.com/foundryside-dev/hamlet/blob/30a802a996fe8bf7cd63e53d211fa8b2cd028f77/docs/remediation/bac/CURRENT-EXPLORATION-RUNTIME-CONTRACT.md) record the reviewed runtime component and current curriculum consumer repair. The runtime component passed 150 independent tests and a coherent 1,123-pass selection with three CUDA skips, plus independent source/specification and documentation truth review. The repair uses the real completed-event API, with no compatibility-only adapter: 52 migrated cases and 175 event regressions passed, for 227 passes. Compiler CLI validation also passed for 34 packs across 35 processes with verified source, import and thread identities. The subsequent full-repository run at the exact pushed source failed after 2,003.7499 seconds. Verification covered 797 source files, 573 configurations, 13 artifacts, all five pytest processes, the index and registry custody; the separately verified poisoning child also passed its assertions. Failure triage identifies 1,241 deduplicated failed test-node/phase records across 160 affected source files and 15 terminal-signature groups, chiefly missing world-identity constructor inputs, required reservation/activation, old curriculum/provider calls and stale option/schema assertions. These records are not 1,241 independent algorithmic defects. Repair causal prerequisites until tests reach their intended assertions before another broad run. The failed baseline and triage are now published in the [earlier checkpoint evidence](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/evidence/wave35-wip-01.json). The [intrinsic-scale composer contract](https://github.com/foundryside-dev/hamlet/blob/31beef58892fe651daf6c9965f372b3643523ce2/docs/remediation/bac/CURRENT-INTRINSIC-SCALE-COMPOSER-CONTRACT.md) records the new bounded math/API component: raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produces intrinsic reward 0.5 and total reward 1.6 in the tested case. At that earlier checkpoint, compiler CLI validation passed for 34 packs across 35 processes in 171.4223 seconds, with 798-source, import and thread identity verification. Four cheap guards pass. These checks do not establish current full-repository or all-family end-to-end qualification. The [new published evidence](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/evidence/wave35-wip-02.json) and [canonical reward-flow contract](https://github.com/foundryside-dev/hamlet/blob/1938f7cac6dca6ecb31952c9f31cc74248024dd0/docs/remediation/bac/CURRENT-CANONICAL-REWARD-FLOW-CONTRACT.md) now record actual environment-to-parent delivery. The same 75 cases passed independently with no errors, skips or warnings: all five families and both scopes, phase and identity transport, canonical replay, pre-physics claim, real active-effect and pending-cancellation cases, retirement, and the original single-batch commitment/reset failure controls. Actual raw reward 2 \u00d7 scale 0.5 \u00d7 weight 0.25 \u00d7 modifier 2 produced intrinsic reward 0.5 and total 1.6. A late runtime/callback rebinding defect was found and repaired; nine binding cases pass. Current compiler CLI validation passed 34 packs across 35 verified processes in 152.12084 seconds. These bounded results do not qualify complete native restore, genuine end-to-end learning or an integrated package release.\n\n# Work remaining\n\nEvery one of the 38 original packages still awaiting qualification appears once below. Some contain accepted components; each still owes its full package behavior and integration evidence.\n\n| Workstream and packages | Remaining deliverable and completion condition |\n| --- | --- |\n| Provider foundations \u2014 PW04, PW03, PW05, PW06 | Complete backend/native consumer coherence, factory and bank runtime use, and strict checkpoint integration. Pass the real ordinary runner checkpoint and full owner suites; component approval alone does not close these packages. |\n| Explicit conversion \u2014 PW07 | Bounded fresh-private and learned-template conversion, current-owner checks and the combined component gate have passed independent review. Complete real native-parent and runner integration and full package qualification, preserving source archives, compatible state and truthful origin/counter semantics. |\n| Runtime curiosity routing \u2014 T18d, T18e, PW08a, PW08, T18f | Complete population, runner and native-parent integration around the reviewed runtime and canonical environment reward flow. The primitive's 29-case proof, published 75-case environment/parent checkpoint and later 78-case selection are bounded evidence. Original commitment/reset findings and the additional exact multi-batch retry and prepare/install binding defects are repaired and independently approved within their tested limits. Native learning reset is implemented in the three model providers and independently source/API approved; its 61 cases pass within the now-published coherent 139-case run. Count/None native reset now has source and final contract truth approval, with 154 root and 154 overlapping independent passes published at d4426803. The shared/private RNG custody core is now boundedly qualified at 11ec9885. WIP14 now qualifies bounded CPU BANK/checkpoint adoption of domain-before-lock custody, authentic lineage, atomic native/gradient capture, saved-native restoration, owner lifetime and final currency. All five families and both scopes have restored-learning and equal-authentic-input BANK witnesses. Full native-parent correlation, enrolled direct consumers, joint publication and the ordinary runner remain open. The earlier _Run/VFS fixture checkpoint had 298 passes and four unqualified CUDA skips; the new core API requires current-owner requalification. Its world-only transport did not establish full native learner restore. The initial-participation environment producer now has 57 root and 57 overlapping independent passes at 7a96f86d. The additional read-only environment participation validator is now implemented and reviewed at 00889036, with 80 root and 80 overlapping independent passes; active validation remains unchanged. The population consumer, private pre-Q seal and owned public-query checks are now implemented and reviewed at d152425f. Its bounded proof includes active-world learning/replay, inactive-world privacy, mixed closure and the next cycle. Broader mixed-participation coverage, stable role-owner completed restore, native transfer/reset and history/cache/clock correlation remain required. Complete broader environment and lifecycle witnesses, captured-replay learning and ordinary checkpoint smoke before package qualification. |\n| Curriculum integration \u2014 T20, T21, T22, T23 | Integrate accepted curriculum producers and provenance, implement per-world dynamics, and prove each world's completion and controller decisions reach its own mechanics through population and runner. |\n| Checkpoint and restart \u2014 T24, PW09, T25, T26 | Finish boundary/schema and selection, scope/binding dispatch, full predictor/replay/clock restoration and one episode-end transaction. Prove atomic refusal, captured replay preservation and usable sampling/readiness, plus durable intent/effect reentry. |\n| Transfer and serving \u2014 T27, T28, T29, T30, PW10, T31, T32 | Deliver explicit evaluation modes and reset, truthful partial and strict transfer, effective artifact identity, schema-aware target-state policy, explicit private source-world selection, process-isolated serving, and a current all-family evaluator. |\n| Outputs and diagnostics \u2014 T34, T35, T36, PW11 | Own recorder failures during runner cleanup; preserve sink units and outcomes, effective hyperparameters and intervention reporting, and per-world scope, origin and scale diagnostics. A scalar summary must never replace per-world reward scales. |\n| Isolation and lifecycle proof \u2014 PW12, PW13, PW14, PW15 | Inventory actual simulator state owners; prove private rewards and state across real curiosity updates, reset/resume/conversion and archived history; verify each controller lane and the declared shared-Q feedback boundary. |\n| Joint acceptance and learning \u2014 T37, T38, T39, PW16, T40 | Complete learning-support, restart/transfer/serve/discovery and persisted-output matrices; prove truthful shared/private support and run the finite original learning protocol plus the strict cohort after integrity gates pass. |\n\n# Next delivery steps\n\n1. Begin producer A classification after the durable WIP17 checkpoint: A flat/PER producer integration, B exact source-owned core activation and separate core/test ownership plus independent review, C recurrent producer integration, then D exact activation with its separate core/test review. Preserve the five-body/5,000-line limit; the current combined five production bodies total5,017 and require fresh bounded slices. The stage-specific empty-manifest assertion and actual resolver/cache guard coverage must be updated at activation without weakening authorization. Continue external BANK/ENV/POP/native/runner integration, full current-parent restoration and joint all-child publication/failure handling, preserving genuine sampling/readiness and learning, current authority and owner lifetime.\n\n2. Repair and qualify the required ordinary runner/oracle integration, direct-consumer enrollment, stable-role/full-D behavior and T26 durability. The known ordinary-runner case was excluded only from R72's bounded selection and remains required. Preserve saved native/optimizer/gradient configuration, SOURCE archive/TARGET initialization semantics, bare-Adam/manual-replacement/signed-offset support and alias-quiescence boundaries. C10/K01 do not require independent exact simulator trajectory continuation.\n\n3. Resolve the exact WIP16 remote mypy failures through genuine current owner/caller contracts: six oracle-driver errors and nine missing-lineage errors in population replay preparation/install/sampling calls. Preserve scripted RNG/mechanics and pinned-reference capability. WIP16 Ruff and Black passed; defaults was skipped after mypy failed. Complete full/default, coverage, slow, applicable hardware, learning, final 54-requirement/22-lens review and exact-final-remote CI; bounded passes do not establish final acceptance.\n\n4. Finish curriculum, checkpoint/restart, transfer/serving and diagnostics packages in dependency order, followed by the complete isolation and joint acceptance evidence.\n\n# Final completion criteria\n\n- All **54 effective requirements**, **22 fresh final design and implementation review lenses**, and independent synthesis pass on the final common immutable source, with no unresolved P1/P2 findings or unapproved in-scope gaps.\n\n- Real runtime evidence covers all four Q families, all five curiosity providers and both scopes through compilation, rollout, updates, save/load and serving. Private isolation uses real local learning and complete named state owners, including lifecycle and controlled shared-Q cases.\n\n- The original T40 learning protocol is retained. The additional strict cohort is exactly **12 runs**: four families \u00d7 seeds 11, 29 and 47, each with 10,000 eligible training transitions and 20 evaluation episodes per seed, using explicit per-world adaptive RND and actual local predictor updates. Record controls, metrics, failures and deviations; do not infer a causal shared/private comparison from differing settings.\n\n- Required default full-repository, coverage of at least 70%, slow, applicable hardware, static and exact-final-remote CI checks pass. Source-verified documentation and supported end-to-end scenarios agree with the actual behavior.\n\nThe [accepted per-world requirements](https://github.com/foundryside-dev/hamlet/blob/a7c4cd0b19c410114aaabdd9284888fef159e84e/docs/remediation/bac/PER-WORLD-CURIOSITY-ADDENDUM.md) define the finite isolation and learning obligations. Current tracking reflects later accepted amendments, including the 54-requirement and 22-lens totals.\n\n# Decisions and boundaries\n\n**No user decision blocks current CPU integration work.** The offered16-worker CUDA server is expected later, but access, resources and GPU count are not yet verified. The implemented CUDA custody core is boundedly CPU-qualified; its production local-GPU manifest is empty and real hardware execution remains UNRUN. Astra's accepted additive design and finite producer slices preserve lazy construction, dynamic unindexed device selection, exact device inventory, owner exclusion through completion and currentness. Root allocates runners only after actual CPU/RAM/GPU/source measurement, with bounded job/device concurrency and immutable process/receipt custody. One GPU cannot qualify two-device selection/retention/completion. Preserve historical hashed helpers and attempts. Hardware availability alone closes no gate. Strict per-world curiosity is required, with the explicit shared alternative preserved; omitted scope retains shared behavior. Shared Q and policy feedback remain permitted under the declared controlled-trace isolation guarantee.\n\nCurrent producers, callers, tests and documentation evolve together without legacy adapters or compatibility loaders. Preserve historical artifacts, backups, source archives and current captured replay. C10/K01's simulator-continuation deferral remains explicit. The [current evidence index](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-INDEX.md), [WIP17 manifest](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/evidence/wave35-wip-17.json) and [evidence process](https://github.com/foundryside-dev/hamlet/blob/9acd85d3ccd897051288a13fd16e610b9ee1fca1/docs/remediation/bac/EVIDENCE-PROCESS.md) publish58 checks,68 attempts,64 result commands and4 UNRUN specs, plus a separate capture failure. These are evidence/command counts, not unique tests. Nine ACTUAL LATE generic verifications add no tests; all10 batch strong-rejection attempts remain retained. Publication retains489 objects:470 new /4,690,563 bytes and19 reused, with834 logical aliases. Final terminal FIX2 review556e7056 approved the bounded evidence account. Manifest SHA-256200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226; plan5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6; final receipt a072ce25c32ce1bc713f86e61ac1d60ed6a35e9e60fdbc042fdf87867137b5b7; exact remote verification422a4f24fbcd894584c4cec636a7886a4335a7f3f65e73dc63a06e00007c31cc. [WIP16 evidence](https://github.com/foundryside-dev/hamlet/blob/e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32/docs/remediation/bac/evidence/wave35-wip-16.json) retains R82 genuine RED and fixture failures, R83 prerequisite corrections, R84's failed owner gate, R85's qualified repair and its exact failed publication attempts; earlier checkpoints remain unchanged. Publication durability does not close outstanding package, hardware, CI or programme gates.\n\nThis is a private tracking Page. Its repository links remain subject to the viewer's GitHub access. It records the stated snapshot and is not configured for automatic updates.\n",
+        "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8"
+      }
+    },
+    "isError": false
+  },
+  "patch": {
+    "old": "At 2026-11-13 13:22:34 UTC, [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43432685907) completed at 13:21:23 UTC; [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432686305/job/131909872585) completed at 13:20:53 UTC with Ruff PASS, Black PASS, Mypy FAIL and defaults SKIPPED. [Tests](https://github.com/foundryside-dev/hamlet/actions/runs/43432685903) remain IN_PROGRESS. Exact hosted mypy error text/count has not been retrieved and is not inferred from the local 15-error result; no green CI claim.",
+    "new": "At 2026-11-13 14:09:46 UTC, [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43432685907) remains completed; [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432686305/job/131909872585) has actual hosted-log evidence: Ruff PASS, Black PASS, mypy15 errors (oracle6 + population missing-lineage9), defaults SKIPPED. [Tests completed FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43432685903) at the fast-suite step; the run updated at 14:06:43 UTC. Test-log retrieval returned transport_closed, so the test failure cause remains unclassified. No green CI claim.",
+    "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a"
+  },
+  "verification": {
+    "changed_indices": [
+      3
+    ],
+    "block_count": 32,
+    "all_other_block_bytes_and_order_unchanged": true,
+    "canonical_package_ids": [
+      "PW01",
+      "PW02",
+      "PW03",
+      "PW04",
+      "PW05",
+      "PW06",
+      "PW07",
+      "PW08",
+      "PW08a",
+      "PW09",
+      "PW10",
+      "PW11",
+      "PW12",
+      "PW13",
+      "PW14",
+      "PW15",
+      "PW16",
+      "T01",
+      "T02",
+      "T03",
+      "T03a",
+      "T04",
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "T08a",
+      "T09",
+      "T09a",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T15",
+      "T16",
+      "T17",
+      "T18",
+      "T18a",
+      "T18b",
+      "T18c",
+      "T18d",
+      "T18e",
+      "T18f",
+      "T19",
+      "T20",
+      "T21",
+      "T22",
+      "T23",
+      "T24",
+      "T25",
+      "T26",
+      "T27",
+      "T28",
+      "T29",
+      "T30",
+      "T31",
+      "T32",
+      "T33",
+      "T34",
+      "T35",
+      "T36",
+      "T37",
+      "T38",
+      "T39",
+      "T40"
+    ],
+    "package_accounting": {
+      "qualified": 28,
+      "remaining": 38,
+      "total": 66
+    },
+    "before_markdown_sha256": "63879ccac63cf73f04adeea263da73168537e612495a8bea67fea5e7ffc1c699",
+    "after_markdown_sha256": "09293dcd6759f252825b2c43e2af8d65a6a23d41b17aa6c826eb5b96a261c81d",
+    "local_receipt_check_note": "Initial package-ID extraction omitted lowercase suffixes; corrected metadata regex includes them. No page retry or extra edit occurred."
+  },
+  "sources": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-ci-observation-3.json",
+      "sha256": "5b2767f7310289b65f3de66ab9828054899eea4a9229689e9b6e4c0c12ca2e65",
+      "bytes": 1741
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-hosted-lint.log",
+      "sha256": "51109a3b680164ad6ba36c89ffbf028a6d442f869780a21217e435601967f049",
+      "bytes": 28796
+    }
+  ],
+  "skill": "pages:maintain-space"
+}

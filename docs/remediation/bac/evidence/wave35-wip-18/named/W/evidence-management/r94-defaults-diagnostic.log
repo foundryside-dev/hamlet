@@ -1,0 +1,1254 @@
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+
+=== Whitelisted Violations (not counted as errors) ===
+src/townlet/agent/networks.py:101:27: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/agent/networks.py::DuelingQNetwork::__init__::value_activation
+src/townlet/agent/networks.py:102:31: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/agent/networks.py::DuelingQNetwork::__init__::advantage_activation
+src/townlet/agent/networks.py:71:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/agent/networks.py::DuelingQNetwork::__init__
+src/townlet/agent/token_diagnostics.py:96:0: DEF001: Function 'cold_token_injection' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/agent/token_diagnostics.py::cold_token_injection
+src/townlet/agent/token_diagnostics.py:151:0: DEF001: Function 'token_diagnostic_metrics' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/agent/token_diagnostics.py::token_diagnostic_metrics
+src/townlet/config/actions_config.py:50:36: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/actions_config.py::CustomActionConfig
+src/townlet/config/actions_config.py:57:30: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/actions_config.py::CustomActionConfig
+src/townlet/config/affordances_v2_config.py:60:39: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/affordances_v2_config.py::OpeningHoursConfig
+src/townlet/config/affordances_v2_config.py:81:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/affordances_v2_config.py::DeploymentConfig
+src/townlet/config/affordances_v2_config.py:115:30: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/affordances_v2_config.py::AffordanceParamConfig
+src/townlet/config/affordances_v2_config.py:120:39: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/affordances_v2_config.py::AffordanceParamConfig
+src/townlet/config/affordances_v2_config.py:144:33: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/affordances_v2_config.py::AffordanceParamConfig
+src/townlet/config/base.py:49:29: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/config/base.py::load_yaml_section::available_sections
+src/townlet/config/brain_config.py:121:28: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::SetAggregatorConfig
+src/townlet/config/brain_config.py:203:28: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ScheduleConfig
+src/townlet/config/brain_config.py:204:26: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ScheduleConfig
+src/townlet/config/brain_config.py:207:24: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ScheduleConfig
+src/townlet/config/brain_config.py:208:28: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ScheduleConfig
+src/townlet/config/brain_config.py:247:31: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:248:31: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:249:29: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:252:33: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:253:32: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:256:34: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:257:32: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::OptimizerConfig
+src/townlet/config/brain_config.py:314:32: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::LossConfig
+src/townlet/config/brain_config.py:343:44: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ArchitectureConfig
+src/townlet/config/brain_config.py:344:40: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ArchitectureConfig
+src/townlet/config/brain_config.py:345:36: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ArchitectureConfig
+src/townlet/config/brain_config.py:346:39: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ArchitectureConfig
+src/townlet/config/brain_config.py:384:35: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ReplayConfig
+src/townlet/config/brain_config.py:390:34: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ReplayConfig
+src/townlet/config/brain_config.py:396:43: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/brain_config.py::ReplayConfig
+src/townlet/config/drive_as_code.py:70:22: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ModifierConfig
+src/townlet/config/drive_as_code.py:71:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ModifierConfig
+src/townlet/config/drive_as_code.py:193:32: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:194:40: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:195:50: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:198:25: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:199:22: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:202:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:205:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::ExtrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:238:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::IntrinsicStrategyConfig
+src/townlet/config/drive_as_code.py:551:22: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::CompositionConfig
+src/townlet/config/drive_as_code.py:552:36: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::CompositionConfig
+src/townlet/config/drive_as_code.py:553:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::CompositionConfig
+src/townlet/config/drive_as_code.py:554:26: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::CompositionConfig
+src/townlet/config/drive_as_code.py:583:19: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::DriveAsCodeConfig
+src/townlet/config/drive_as_code.py:584:43: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::DriveAsCodeConfig
+src/townlet/config/drive_as_code.py:587:40: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::DriveAsCodeConfig
+src/townlet/config/drive_as_code.py:588:37: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/drive_as_code.py::DriveAsCodeConfig
+src/townlet/config/effects_config.py:125:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/effects_config.py::CommandConfig
+src/townlet/config/effects_config.py:130:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/effects_config.py::CommandConfig
+src/townlet/config/effects_config.py:137:33: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/effects_config.py::CommandConfig
+src/townlet/config/effects_config.py:154:36: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/effects_config.py::CommandConfig
+src/townlet/config/effects_config.py:283:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/effects_config.py::EffectDefinitionConfig
+src/townlet/config/effects_config.py:316:72: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/effects_config.py::EffectsConfig
+src/townlet/config/items_config.py:30:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemCustomCommand
+src/townlet/config/items_config.py:31:36: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemCustomCommand
+src/townlet/config/items_config.py:75:38: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemInteractionsConfig
+src/townlet/config/items_config.py:80:35: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemInteractionsConfig
+src/townlet/config/items_config.py:85:36: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemInteractionsConfig
+src/townlet/config/items_config.py:91:46: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemInteractionsConfig
+src/townlet/config/items_config.py:95:50: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemInteractionsConfig
+src/townlet/config/items_config.py:151:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemTypeConfig
+src/townlet/config/items_config.py:157:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemTypeConfig
+src/townlet/config/items_config.py:163:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemTypeConfig
+src/townlet/config/items_config.py:266:68: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:271:25: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:277:29: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:283:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:289:25: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:295:25: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:301:28: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnScheduleConfig
+src/townlet/config/items_config.py:313:59: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnPlacementConfig
+src/townlet/config/items_config.py:318:52: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnPlacementConfig
+src/townlet/config/items_config.py:323:31: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnPlacementConfig
+src/townlet/config/items_config.py:329:42: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::SpawnPlacementConfig
+src/townlet/config/items_config.py:344:45: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemAppearanceRuleConfig
+src/townlet/config/items_config.py:349:43: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemAppearanceRuleConfig
+src/townlet/config/items_config.py:354:28: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemAppearanceRuleConfig
+src/townlet/config/items_config.py:361:23: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemAppearanceRuleConfig
+src/townlet/config/items_config.py:367:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemAppearanceRuleConfig
+src/townlet/config/items_config.py:377:44: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/config/items_config.py::ItemsAppearanceConfig
+src/townlet/config/training_v2_config.py:427:23: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::load_training_v2_config::training_section
+src/townlet/config/training_v2_config.py:278:54: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::CurriculumStrategyConfig
+src/townlet/config/training_v2_config.py:316:29: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::RecordingConfig
+src/townlet/config/training_v2_config.py:317:33: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::RecordingConfig
+src/townlet/config/training_v2_config.py:318:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::RecordingConfig
+src/townlet/config/training_v2_config.py:319:38: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::RecordingConfig
+src/townlet/config/training_v2_config.py:384:45: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::TrainingV2Config
+src/townlet/config/training_v2_config.py:385:40: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/training_v2_config.py::TrainingV2Config
+src/townlet/config/transition_rules_config.py:86:24: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/transition_rules_config.py::TransitionRuleWriteConfig
+src/townlet/config/transition_rules_config.py:91:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/transition_rules_config.py::TransitionRuleWriteConfig
+src/townlet/config/transition_rules_config.py:97:34: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/transition_rules_config.py::TransitionRuleWriteConfig
+src/townlet/config/transition_rules_config.py:138:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/config/transition_rules_config.py::TransitionRuleConfig
+src/townlet/curriculum/adversarial.py:343:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/curriculum/adversarial.py::CompletionCurriculum::_validate_lane::low,high
+src/townlet/curriculum/adversarial.py:523:4: DEF001: Function 'get_stage_info' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/curriculum/adversarial.py::AdversarialCurriculum::get_stage_info
+src/townlet/demo/database.py:566:4: DEF001: Function 'get_latest_episodes' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/database.py::DemoDatabase::get_latest_episodes
+src/townlet/demo/database.py:652:4: DEF001: Function 'insert_position_heatmap' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/database.py::DemoDatabase::insert_position_heatmap
+src/townlet/demo/database.py:754:4: DEF001: Function 'list_recordings' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/database.py::DemoDatabase::list_recordings
+src/townlet/demo/live_inference.py:506:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::websocket_endpoint::action_labels
+src/townlet/demo/live_inference.py:605:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_handle_command::status
+src/townlet/demo/live_inference.py:679:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_run_single_episode::agent_snapshot
+src/townlet/demo/live_inference.py:750:31: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_run_single_episode::final_agent_snapshot
+src/townlet/demo/live_inference.py:879:39: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_broadcast_state_update::interaction_progress_raw
+src/townlet/demo/live_inference.py:1242:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::checkpoint_dir
+src/townlet/demo/live_inference.py:1243:11: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::port
+src/townlet/demo/live_inference.py:1244:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::step_delay
+src/townlet/demo/live_inference.py:1245:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::total_episodes
+src/townlet/demo/live_inference.py:1246:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::config_dir
+src/townlet/demo/live_inference.py:1247:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::level_name
+src/townlet/demo/live_inference.py:728:38: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_run_single_episode
+src/townlet/demo/live_inference.py:846:55: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_broadcast_state_update
+src/townlet/demo/live_inference.py:1026:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_handle_list_recordings
+src/townlet/demo/live_inference.py:1031:16: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_handle_list_recordings
+src/townlet/demo/live_inference.py:46:0: DEF001: Function 'build_agent_telemetry_payload' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::build_agent_telemetry_payload
+src/townlet/demo/live_inference.py:66:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::__init__
+src/townlet/demo/live_inference.py:790:4: DEF001: Function '_broadcast_state_update' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::LiveInferenceServer::_broadcast_state_update
+src/townlet/demo/live_inference.py:1186:0: DEF001: Function 'run_server' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/live_inference.py::run_server
+src/townlet/demo/runner.py:930:39: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run::annealing_active
+src/townlet/demo/runner.py:931:39: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run::annealing_status
+src/townlet/demo/runner.py:954:46: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run::total_interaction_ticks
+src/townlet/demo/runner.py:955:43: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run::total_custom_actions
+src/townlet/demo/runner.py:691:38: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run
+src/townlet/demo/runner.py:692:47: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run
+src/townlet/demo/runner.py:709:37: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::run
+src/townlet/demo/runner.py:88:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/runner.py::DemoRunner::__init__
+src/townlet/demo/unified_server.py:97:30: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/demo/unified_server.py::UnifiedServer::__init__::checkpoint_dir
+src/townlet/demo/unified_server.py:49:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/demo/unified_server.py::UnifiedServer::__init__
+src/townlet/effects/catalog.py:121:37: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/catalog.py::EffectCatalog::from_config::suffix
+src/townlet/effects/catalog.py:142:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/catalog.py::EffectCatalog::from_config::budget
+src/townlet/effects/catalog.py:173:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/effects/catalog.py::EffectCatalog::get_effect_index
+src/townlet/effects/catalog.py:81:4: DEF001: Function 'from_config' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/catalog.py::EffectCatalog::from_config
+src/townlet/effects/collections.py:33:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/collections.py::_resolve_inventory_items::value
+src/townlet/effects/collections.py:44:14: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/effects/collections.py::_resolve_active_effects
+src/townlet/effects/collections.py:61:0: DEF001: Function 'resolve_collection' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/collections.py::resolve_collection
+src/townlet/effects/compiler.py:209:21: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/effects/compiler.py::CommandCompiler::_compile_command::params
+src/townlet/effects/compiler.py:370:23: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/effects/compiler.py::CommandCompiler::_compile_command::branches
+src/townlet/effects/compiler.py:432:30: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/effects/compiler.py::CommandCompiler::_compile_command::simple_position
+src/townlet/effects/compiler.py:240:31: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/compiler.py::CommandCompiler::_compile_command::expr
+src/townlet/effects/compiler.py:249:23: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/compiler.py::CommandCompiler::_compile_command::expr
+src/townlet/effects/context.py:299:26: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/context.py::ExecutionContext::set_path::write_value
+src/townlet/effects/context.py:308:14: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/context.py::ExecutionContext::set_path::row
+src/townlet/effects/context.py:41:36: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/effects/context.py::ExecutionContext
+src/townlet/effects/executor.py:405:21: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_execute_sample::param_asts
+src/townlet/effects/executor.py:39:11: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::_restrict::mask
+src/townlet/effects/executor.py:386:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_execute_sample::base_seed
+src/townlet/effects/executor.py:387:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_execute_sample::tick_seed
+src/townlet/effects/executor.py:442:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_execute_sample::sample_count
+src/townlet/effects/executor.py:444:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_execute_sample::result
+src/townlet/effects/executor.py:485:25: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_run_branch::branch_context
+src/townlet/effects/executor.py:650:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_execute_delay::scope
+src/townlet/effects/executor.py:687:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_make_eval_context::active_effect
+src/townlet/effects/executor.py:688:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_make_eval_context::device
+src/townlet/effects/executor.py:696:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_make_eval_context::row
+src/townlet/effects/executor.py:705:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_make_eval_context::item_state
+src/townlet/effects/executor.py:717:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_make_eval_context::affordance_positions
+src/townlet/effects/executor.py:674:4: DEF001: Function '_make_eval_context' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/executor.py::CommandExecutor::_make_eval_context
+src/townlet/effects/manager.py:128:25: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::__init__::scheduler
+src/townlet/effects/manager.py:623:23: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::tick::item_manager
+src/townlet/effects/manager.py:205:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::spawn_effect::live
+src/townlet/effects/manager.py:368:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::_spawn_effect::merged_intensity
+src/townlet/effects/manager.py:373:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::_spawn_effect::active
+src/townlet/effects/manager.py:519:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::get_observable_agent_effects
+src/townlet/effects/manager.py:108:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::__init__
+src/townlet/effects/manager.py:150:4: DEF001: Function 'spawn_effect' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::spawn_effect
+src/townlet/effects/manager.py:446:4: DEF001: Function '_lifecycle_context' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::_lifecycle_context
+src/townlet/effects/manager.py:588:4: DEF001: Function 'tick' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::tick
+src/townlet/effects/manager.py:765:4: DEF001: Function '_despawn_effect' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::_despawn_effect
+src/townlet/effects/manager.py:816:4: DEF001: Function 'cancel_effect' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/manager.py::EffectManager::cancel_effect
+src/townlet/effects/scheduler.py:52:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/effects/scheduler.py::Scheduler::schedule::anchor
+src/townlet/effects/scheduler.py:68:8: CALL001: 'setdefault(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/effects/scheduler.py::Scheduler::schedule
+src/townlet/effects/scheduler.py:19:40: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/effects/scheduler.py::ScheduledItem
+src/townlet/effects/scheduler.py:29:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/scheduler.py::Scheduler::__init__
+src/townlet/effects/scheduler.py:34:4: DEF001: Function 'schedule' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/scheduler.py::Scheduler::schedule
+src/townlet/effects/scheduler.py:100:4: DEF001: Function 'reset' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/effects/scheduler.py::Scheduler::reset
+src/townlet/environment/action_config.py:81:30: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/environment/action_config.py::ActionConfig
+src/townlet/environment/action_executor.py:196:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/action_executor.py::ActionExecutor::_handle_interactions::cost_mode
+src/townlet/environment/action_executor.py:223:16: CALL001: 'setdefault(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_executor.py::ActionExecutor::_handle_interactions
+src/townlet/environment/action_labels.py:287:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:288:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:293:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:294:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:295:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:296:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:301:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:302:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:303:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:304:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:305:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:306:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:311:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:312:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:313:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:314:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:315:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:316:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:317:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:318:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:353:33: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:354:29: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::_filter_labels_for_substrate
+src/townlet/environment/action_labels.py:169:0: DEF001: Function 'get_labels' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/action_labels.py::get_labels
+src/townlet/environment/affordance_engine.py:103:30: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::__init__::effect_manager
+src/townlet/environment/affordance_engine.py:104:28: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::__init__::item_manager
+src/townlet/environment/affordance_engine.py:362:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::can_afford::costs
+src/townlet/environment/affordance_engine.py:428:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::_get_meter_idx::ctx_msg
+src/townlet/environment/affordance_engine.py:131:31: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::__init__
+src/townlet/environment/affordance_engine.py:56:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::__init__
+src/townlet/environment/affordance_engine.py:337:4: DEF001: Function 'can_afford' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::can_afford
+src/townlet/environment/affordance_engine.py:414:4: DEF001: Function '_get_meter_idx' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::_get_meter_idx
+src/townlet/environment/affordance_engine.py:432:4: DEF001: Function '_execute_affordance_effects' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/affordance_engine.py::AffordanceEngine::_execute_affordance_effects
+src/townlet/environment/dac_engine.py:161:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:189:26: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base_reward
+src/townlet/environment/dac_engine.py:223:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:252:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:283:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:317:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:352:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:383:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:413:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_compile_extrinsic::base
+src/townlet/environment/dac_engine.py:904:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_same_device::a_idx
+src/townlet/environment/dac_engine.py:905:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::_same_device::b_idx
+src/townlet/environment/dac_engine.py:472:47: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/dac_engine.py::DACEngine::compute_approach_reward
+src/townlet/environment/observation_encoder.py:200:12: CALL001: 'setdefault(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/observation_encoder.py::TokenObservationEncoder::__init__
+src/townlet/environment/observation_encoder.py:251:33: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/observation_encoder.py::TokenObservationEncoder::encode
+src/townlet/environment/substrate_action_validator.py:15:24: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/environment/substrate_action_validator.py::ValidationResult
+src/townlet/environment/substrate_action_validator.py:16:26: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/environment/substrate_action_validator.py::ValidationResult
+src/townlet/environment/vectorized_env.py:340:34: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::__init__::day_length
+src/townlet/environment/vectorized_env.py:351:26: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::__init__::compiled_labels
+src/townlet/environment/vectorized_env.py:296:23: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::__init__::torch_device
+src/townlet/environment/vectorized_env.py:403:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::__init__::effect_manager
+src/townlet/environment/vectorized_env.py:583:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_affordance_layout::slot_refs
+src/townlet/environment/vectorized_env.py:586:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_affordance_layout::positions
+src/townlet/environment/vectorized_env.py:695:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_is_affordance_open::active_hour
+src/townlet/environment/vectorized_env.py:764:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_initialize_vfs_subsystem::items_per_world
+src/townlet/environment/vectorized_env.py:801:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_initialize_vfs_subsystem::expression_profiles
+src/townlet/environment/vectorized_env.py:853:25: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_initialize_item_subsystem::token_capacity
+src/townlet/environment/vectorized_env.py:980:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_reset_world_state::positions
+src/townlet/environment/vectorized_env.py:1201:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_effect_slot_batch::scope
+src/townlet/environment/vectorized_env.py:1499:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_evaluate_vfs_profiles::marks
+src/townlet/environment/vectorized_env.py:1528:30: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_evaluate_vfs_profiles::agent_marks
+src/townlet/environment/vectorized_env.py:1855:30: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::get_affordance_positions::positions
+src/townlet/environment/vectorized_env.py:439:31: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::__init__
+src/townlet/environment/vectorized_env.py:586:33: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_affordance_layout
+src/townlet/environment/vectorized_env.py:1193:12: CALL001: 'setdefault(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_effect_slot_batch
+src/townlet/environment/vectorized_env.py:1499:24: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_evaluate_vfs_profiles
+src/townlet/environment/vectorized_env.py:1528:30: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_evaluate_vfs_profiles
+src/townlet/environment/vectorized_env.py:689:4: DEF001: Function '_is_affordance_open' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_is_affordance_open
+src/townlet/environment/vectorized_env.py:1277:4: DEF001: Function 'step' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::step
+src/townlet/environment/vectorized_env.py:1614:4: DEF001: Function '_run_vtc_transition_phases' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/environment/vectorized_env.py::VectorizedHamletEnv::_run_vtc_transition_phases
+src/townlet/exploration/action_selection.py:11:0: DEF001: Function 'epsilon_greedy_action_selection' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/action_selection.py::epsilon_greedy_action_selection
+src/townlet/exploration/adaptive_intrinsic.py:218:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/exploration/adaptive_intrinsic.py::AdaptiveIntrinsicExploration::update_on_episode_end::weight
+src/townlet/exploration/adaptive_intrinsic.py:35:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/adaptive_intrinsic.py::AdaptiveIntrinsicExploration::__init__
+src/townlet/exploration/adaptive_intrinsic.py:159:4: DEF001: Function 'select_actions' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/adaptive_intrinsic.py::AdaptiveIntrinsicExploration::select_actions
+src/townlet/exploration/adaptive_intrinsic.py:177:4: DEF001: Function 'compute_intrinsic_rewards' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/adaptive_intrinsic.py::AdaptiveIntrinsicExploration::compute_intrinsic_rewards
+src/townlet/exploration/base.py:25:4: DEF001: Function 'select_actions' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/base.py::ExplorationStrategy::select_actions
+src/townlet/exploration/base.py:51:4: DEF001: Function 'compute_intrinsic_rewards' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/base.py::ExplorationStrategy::compute_intrinsic_rewards
+src/townlet/exploration/epsilon_greedy.py:58:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/epsilon_greedy.py::EpsilonGreedyExploration::__init__
+src/townlet/exploration/epsilon_greedy.py:76:4: DEF001: Function 'select_actions' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/epsilon_greedy.py::EpsilonGreedyExploration::select_actions
+src/townlet/exploration/epsilon_greedy.py:99:4: DEF001: Function 'compute_intrinsic_rewards' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/epsilon_greedy.py::EpsilonGreedyExploration::compute_intrinsic_rewards
+src/townlet/exploration/rnd.py:238:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/rnd.py::RunningMeanStd::__init__
+src/townlet/exploration/rnd.py:289:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/rnd.py::RNDNetwork::__init__
+src/townlet/exploration/rnd.py:323:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/rnd.py::RNDExploration::__init__
+src/townlet/exploration/rnd.py:419:4: DEF001: Function 'select_actions' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/rnd.py::RNDExploration::select_actions
+src/townlet/exploration/rnd.py:441:4: DEF001: Function 'compute_intrinsic_rewards' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/exploration/rnd.py::RNDExploration::compute_intrinsic_rewards
+src/townlet/items/action_handlers.py:55:30: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/items/action_handlers.py::ItemActionHandler::__init__::effect_manager
+src/townlet/items/action_handlers.py:306:23: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/action_handlers.py::ItemActionHandler::handle_custom_action
+src/townlet/items/action_handlers.py:315:19: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/action_handlers.py::ItemActionHandler::handle_custom_action
+src/townlet/items/action_handlers.py:31:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/action_handlers.py::ItemActionHandler::__init__
+src/townlet/items/action_handlers.py:62:4: DEF001: Function '_execute_interaction' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/action_handlers.py::ItemActionHandler::_execute_interaction
+src/townlet/items/instance.py:31:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/instance.py::ItemInstance
+src/townlet/items/inventory.py:23:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/inventory.py::InventoryState::__init__
+src/townlet/items/manager.py:807:22: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_placement_positions::spacing
+src/townlet/items/manager.py:816:21: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_placement_positions::script
+src/townlet/items/manager.py:866:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_schedule_allows_spawn::rate
+src/townlet/items/manager.py:883:24: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_schedule_allows_spawn::mean_tick
+src/townlet/items/manager.py:176:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::__init__::device
+src/townlet/items/manager.py:390:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_position_key::values
+src/townlet/items/manager.py:411:8: CALL001: 'setdefault(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_index_position
+src/townlet/items/manager.py:818:24: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_placement_positions
+src/townlet/items/manager.py:832:45: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_placement_positions
+src/townlet/items/manager.py:925:32: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::spawn_initial_items
+src/townlet/items/manager.py:1012:28: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_process_world_respawns
+src/townlet/items/manager.py:1040:40: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::_process_world_respawns
+src/townlet/items/manager.py:180:28: CALL002: os.getenv with default value [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::__init__
+src/townlet/items/manager.py:115:38: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:116:36: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:117:74: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:118:37: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:119:37: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:120:40: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:121:42: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:122:37: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/items/manager.py::WorldItemState
+src/townlet/items/manager.py:136:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::__init__
+src/townlet/items/manager.py:421:4: DEF001: Function 'find_spawn_location' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::find_spawn_location
+src/townlet/items/manager.py:479:4: DEF001: Function 'spawn_item' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::spawn_item
+src/townlet/items/manager.py:890:4: DEF001: Function 'spawn_initial_items' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::spawn_initial_items
+src/townlet/items/manager.py:942:4: DEF001: Function 'process_respawns' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/items/manager.py::ItemManager::process_respawns
+src/townlet/oracle/driver.py:181:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/oracle/driver.py::main
+src/townlet/oracle/driver.py:181:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/oracle/driver.py::main
+src/townlet/oracle/driver.py:70:0: DEF001: Function 'run_trace' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/oracle/driver.py::run_trace
+src/townlet/oracle/driver.py:171:0: DEF001: Function 'main' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/oracle/driver.py::main
+src/townlet/oracle/harness.py:620:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::main
+src/townlet/oracle/harness.py:627:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::main
+src/townlet/oracle/harness.py:155:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::_final_exception_text::block
+src/townlet/oracle/harness.py:387:25: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::run_cell::exception_text
+src/townlet/oracle/harness.py:671:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::main::detail
+src/townlet/oracle/harness.py:620:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::main
+src/townlet/oracle/harness.py:627:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::main
+src/townlet/oracle/harness.py:225:0: DEF001: Function 'run_side' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::run_side
+src/townlet/oracle/harness.py:617:0: DEF001: Function 'main' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/oracle/harness.py::main
+src/townlet/oracle/trace_io.py:200:37: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces::union_declared
+src/townlet/oracle/trace_io.py:257:39: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces::declared_streams
+src/townlet/oracle/trace_io.py:306:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces::max_abs_diff
+src/townlet/oracle/trace_io.py:307:36: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces::entry
+src/townlet/oracle/trace_io.py:208:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces
+src/townlet/oracle/trace_io.py:209:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces
+src/townlet/oracle/trace_io.py:172:0: DEF001: Function 'compare_traces' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/oracle/trace_io.py::compare_traces
+src/townlet/population/vectorized.py:2148:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_same_device::a_idx
+src/townlet/population/vectorized.py:2149:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_same_device::b_idx
+src/townlet/population/vectorized.py:2354:29: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_execute_population_step::last_rnd_loss
+src/townlet/population/vectorized.py:2377:39: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_execute_population_step::reason
+src/townlet/population/vectorized.py:192:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::__init__
+src/townlet/population/vectorized.py:2413:4: DEF001: Function 'build_telemetry_snapshot' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::build_telemetry_snapshot
+src/townlet/population/vectorized.py:2595:4: DEF001: Function '_validate_optimizer_checkpoint_state' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/population/vectorized.py::VectorizedPopulation::_validate_optimizer_checkpoint_state
+src/townlet/recording/__main__.py:39:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:40:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:46:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:52:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:73:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:74:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:75:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:81:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:87:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:98:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main::log_level
+src/townlet/recording/__main__.py:39:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:40:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:46:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:52:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:73:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:74:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:75:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:81:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/__main__.py:87:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/recording/__main__.py::main
+src/townlet/recording/criteria.py:38:26: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/criteria.py:39:31: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/criteria.py:40:40: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/criteria.py:41:34: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/criteria.py:42:39: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/criteria.py:49:22: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/criteria.py:108:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_periodic
+src/townlet/recording/criteria.py:111:19: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_periodic
+src/townlet/recording/criteria.py:122:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_transitions
+src/townlet/recording/criteria.py:132:24: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_transitions
+src/townlet/recording/criteria.py:133:23: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_transitions
+src/townlet/recording/criteria.py:147:11: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_transitions
+src/townlet/recording/criteria.py:157:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_performance
+src/townlet/recording/criteria.py:161:22: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_performance
+src/townlet/recording/criteria.py:166:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_performance
+src/townlet/recording/criteria.py:167:21: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_performance
+src/townlet/recording/criteria.py:200:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_boundaries
+src/townlet/recording/criteria.py:210:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_boundaries
+src/townlet/recording/criteria.py:217:11: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::_check_stage_boundaries
+src/townlet/recording/criteria.py:25:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/criteria.py::RecordingCriteria::__init__
+src/townlet/recording/recorder.py:181:25: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::EpisodeRecorder::_initialize
+src/townlet/recording/recorder.py:521:19: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::RecordingWriter::_should_record_episode
+src/townlet/recording/recorder.py:522:19: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::RecordingWriter::_should_record_episode
+src/townlet/recording/recorder.py:523:11: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::RecordingWriter::_should_record_episode
+src/townlet/recording/recorder.py:524:23: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::RecordingWriter::_should_record_episode
+src/townlet/recording/recorder.py:562:30: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::RecordingWriter::_write_episode
+src/townlet/recording/recorder.py:216:4: DEF001: Function 'record_step' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/recorder.py::EpisodeRecorder::record_step
+src/townlet/recording/replay.py:207:4: DEF001: Function 'list_recordings' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/replay.py::ReplayManager::list_recordings
+src/townlet/recording/video_export.py:20:0: DEF001: Function 'export_episode_video' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/video_export.py::export_episode_video
+src/townlet/recording/video_export.py:127:0: DEF001: Function '_encode_video_ffmpeg' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/video_export.py::_encode_video_ffmpeg
+src/townlet/recording/video_export.py:184:0: DEF001: Function 'batch_export_videos' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/video_export.py::batch_export_videos
+src/townlet/recording/video_renderer.py:168:20: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/video_renderer.py::EpisodeVideoRenderer::_render_grid
+src/townlet/recording/video_renderer.py:227:20: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/recording/video_renderer.py::EpisodeVideoRenderer::_render_meters
+src/townlet/recording/video_renderer.py:56:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/recording/video_renderer.py::EpisodeVideoRenderer::__init__
+src/townlet/substrate/continuous.py:323:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/continuous.py::ContinuousSubstrate::visible::wrap
+src/townlet/substrate/continuous.py:331:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/continuous.py::ContinuousSubstrate::egocentric_delta::wrap
+src/townlet/substrate/continuous.py:143:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/substrate/continuous.py::ContinuousSubstrate::coordinate_semantics
+src/townlet/substrate/continuousnd.py:313:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/continuousnd.py::ContinuousNDSubstrate::visible::wrap
+src/townlet/substrate/continuousnd.py:321:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/continuousnd.py::ContinuousNDSubstrate::egocentric_delta::wrap
+src/townlet/substrate/continuousnd.py:47:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/substrate/continuousnd.py::ContinuousNDSubstrate::__init__
+src/townlet/substrate/grid2d.py:399:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/grid2d.py::Grid2DSubstrate::visible::wrap
+src/townlet/substrate/grid2d.py:407:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/grid2d.py::Grid2DSubstrate::egocentric_delta::wrap
+src/townlet/substrate/grid2d.py:40:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/substrate/grid2d.py::Grid2DSubstrate::__init__
+src/townlet/substrate/grid3d.py:414:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/grid3d.py::Grid3DSubstrate::visible::wrap
+src/townlet/substrate/grid3d.py:422:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/grid3d.py::Grid3DSubstrate::egocentric_delta::wrap
+src/townlet/substrate/grid3d.py:43:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/substrate/grid3d.py::Grid3DSubstrate::__init__
+src/townlet/substrate/gridnd.py:369:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/gridnd.py::GridNDSubstrate::visible::wrap
+src/townlet/substrate/gridnd.py:377:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/substrate/gridnd.py::GridNDSubstrate::egocentric_delta::wrap
+src/townlet/substrate/gridnd.py:38:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/substrate/gridnd.py::GridNDSubstrate::__init__
+src/townlet/training/checkpoint_utils.py:309:0: DEF001: Function 'assert_checkpoint_dimensions' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/checkpoint_utils.py::assert_checkpoint_dimensions
+src/townlet/training/checkpoint_utils.py:662:0: DEF001: Function 'verify_checkpoint_digest' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/checkpoint_utils.py::verify_checkpoint_digest
+src/townlet/training/checkpoint_utils.py:697:0: DEF001: Function 'safe_torch_load' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/checkpoint_utils.py::safe_torch_load
+src/townlet/training/prioritized_replay_buffer.py:213:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::rewards
+src/townlet/training/prioritized_replay_buffer.py:219:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::observations
+src/townlet/training/prioritized_replay_buffer.py:220:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::count
+src/townlet/training/prioritized_replay_buffer.py:238:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::state
+src/townlet/training/prioritized_replay_buffer.py:242:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::keys
+src/townlet/training/prioritized_replay_buffer.py:247:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::target
+src/townlet/training/prioritized_replay_buffer.py:251:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::state
+src/townlet/training/prioritized_replay_buffer.py:253:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::target
+src/townlet/training/prioritized_replay_buffer.py:257:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::request
+src/townlet/training/prioritized_replay_buffer.py:258:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::count
+src/townlet/training/replay_buffer.py:160:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::rewards
+src/townlet/training/replay_buffer.py:166:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::observations
+src/townlet/training/replay_buffer.py:167:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::count
+src/townlet/training/replay_buffer.py:180:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::state
+src/townlet/training/replay_buffer.py:184:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::keys
+src/townlet/training/replay_buffer.py:188:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::target
+src/townlet/training/replay_buffer.py:191:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::state
+src/townlet/training/replay_buffer.py:192:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::target
+src/townlet/training/replay_buffer.py:195:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::request
+src/townlet/training/replay_buffer.py:196:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::count
+src/townlet/training/replay_buffer.py:511:26: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::stats::occupancy_ratio
+src/townlet/training/sequential_replay_buffer.py:286:26: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/sequential_replay_buffer.py::SequentialReplayBuffer::stats::occupancy_ratio
+src/townlet/training/sequential_replay_buffer.py:453:25: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/sequential_replay_buffer.py::SequentialReplayBuffer::sample_sequences::max_length
+src/townlet/training/sequential_replay_buffer.py:632:26: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/sequential_replay_buffer.py::SequentialReplayBuffer::_validate_legacy_serialized::current_obs_dim
+src/townlet/training/state.py:139:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/state.py::RewardTensor::__repr__::comp_str
+src/townlet/training/state.py:238:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/state.py::BatchedAgentState::__init__::info
+src/townlet/training/state.py:182:51: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/training/state.py::PopulationCheckpoint
+src/townlet/training/state.py:183:52: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/training/state.py::PopulationCheckpoint
+src/townlet/training/state.py:184:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/training/state.py::PopulationCheckpoint
+src/townlet/training/state.py:185:40: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/training/state.py::PopulationCheckpoint
+src/townlet/training/state.py:61:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/state.py::RewardTensor::__init__
+src/townlet/training/state.py:87:4: DEF001: Function 'from_dac' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/state.py::RewardTensor::from_dac
+src/townlet/training/state.py:209:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/state.py::BatchedAgentState::__init__
+src/townlet/training/tensorboard_logger.py:127:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_episode::agent_id
+src/townlet/training/tensorboard_logger.py:252:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_training_step::agent_id
+src/townlet/training/tensorboard_logger.py:285:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_meters::agent_id
+src/townlet/training/tensorboard_logger.py:316:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_network_stats::agent_id
+src/townlet/training/tensorboard_logger.py:353:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_affordance_usage::agent_id
+src/townlet/training/tensorboard_logger.py:373:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_custom_action_usage::agent_id
+src/townlet/training/tensorboard_logger.py:395:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_modifier_effects::agent_id
+src/townlet/training/tensorboard_logger.py:428:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_reward_components::agent_id
+src/townlet/training/tensorboard_logger.py:458:19: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_custom_metric::agent_id
+src/townlet/training/tensorboard_logger.py:128:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_episode::prefix
+src/townlet/training/tensorboard_logger.py:215:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions::prefix
+src/townlet/training/tensorboard_logger.py:253:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_training_step::prefix
+src/townlet/training/tensorboard_logger.py:286:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_meters::prefix
+src/townlet/training/tensorboard_logger.py:317:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_network_stats::prefix
+src/townlet/training/tensorboard_logger.py:354:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_affordance_usage::prefix
+src/townlet/training/tensorboard_logger.py:374:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_custom_action_usage::prefix
+src/townlet/training/tensorboard_logger.py:396:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_modifier_effects::prefix
+src/townlet/training/tensorboard_logger.py:429:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_reward_components::prefix
+src/townlet/training/tensorboard_logger.py:459:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_custom_metric::prefix
+src/townlet/training/tensorboard_logger.py:194:51: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_multi_agent_episode
+src/townlet/training/tensorboard_logger.py:195:50: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_multi_agent_episode
+src/townlet/training/tensorboard_logger.py:196:59: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_multi_agent_episode
+src/townlet/training/tensorboard_logger.py:214:27: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:216:53: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:217:61: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:218:65: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:219:55: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:221:29: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:225:32: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:226:32: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:227:31: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:228:38: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_curriculum_transitions
+src/townlet/training/tensorboard_logger.py:70:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::__init__
+src/townlet/training/tensorboard_logger.py:97:4: DEF001: Function 'log_episode' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_episode
+src/townlet/training/tensorboard_logger.py:232:4: DEF001: Function 'log_training_step' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_training_step
+src/townlet/training/tensorboard_logger.py:269:4: DEF001: Function 'log_meters' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_meters
+src/townlet/training/tensorboard_logger.py:295:4: DEF001: Function 'log_network_stats' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_network_stats
+src/townlet/training/tensorboard_logger.py:339:4: DEF001: Function 'log_affordance_usage' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_affordance_usage
+src/townlet/training/tensorboard_logger.py:359:4: DEF001: Function 'log_custom_action_usage' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_custom_action_usage
+src/townlet/training/tensorboard_logger.py:379:4: DEF001: Function 'log_modifier_effects' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_modifier_effects
+src/townlet/training/tensorboard_logger.py:401:4: DEF001: Function 'log_reward_components' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_reward_components
+src/townlet/training/tensorboard_logger.py:442:4: DEF001: Function 'log_custom_metric' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/training/tensorboard_logger.py::TensorBoardLogger::log_custom_metric
+src/townlet/universe/__main__.py:45:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::_build_parser
+src/townlet/universe/__main__.py:50:4: ARGP001: argparse add_argument(default=...) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::_build_parser
+src/townlet/universe/__main__.py:245:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::_cmd_inspect::recorded_pack
+src/townlet/universe/__main__.py:264:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::_cmd_inspect::source_origin
+src/townlet/universe/__main__.py:327:13: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::main::prefix
+src/townlet/universe/__main__.py:328:13: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::main::target
+src/townlet/universe/__main__.py:45:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::_build_parser
+src/townlet/universe/__main__.py:50:4: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::_build_parser
+src/townlet/universe/__main__.py:322:0: DEF001: Function 'main' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/__main__.py::main
+src/townlet/universe/compiled.py:1620:20: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_hydrate_command_asts::simple_target
+src/townlet/universe/compiled.py:1624:22: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_hydrate_command_asts::simple_position
+src/townlet/universe/compiled.py:936:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_validate_compiled_policy_coherence::variables
+src/townlet/universe/compiled.py:948:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_validate_compiled_policy_coherence::profile_type
+src/townlet/universe/compiled.py:1086:0: DEF001: Function '_action_space_metadata_from_plain' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_action_space_metadata_from_plain
+src/townlet/universe/compiled.py:1096:0: DEF001: Function '_runtime_action_space_from_plain' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_runtime_action_space_from_plain
+src/townlet/universe/compiled.py:1106:0: DEF001: Function '_meter_metadata_from_plain' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_meter_metadata_from_plain
+src/townlet/universe/compiled.py:1156:0: DEF001: Function '_affordance_metadata_from_plain' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/compiled.py::_affordance_metadata_from_plain
+src/townlet/universe/compiler.py:223:21: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/universe/compiler.py::UniverseCompiler::compile::base_brain
+src/townlet/universe/compiler.py:812:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compiler.py::UniverseCompiler::_validate_primary_level_exists::available
+src/townlet/universe/compiler.py:93:4: DEF001: Function 'compile' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/compiler.py::UniverseCompiler::compile
+src/townlet/universe/compilers/actions.py:146:26: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::enabled
+src/townlet/universe/compilers/actions.py:78:28: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::allowed_names_raw
+src/townlet/universe/compilers/actions.py:83:24: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::allowed_names
+src/townlet/universe/compilers/actions.py:119:25: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::enabled_custom
+src/townlet/universe/compilers/actions.py:142:26: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::action_type
+src/townlet/universe/compilers/actions.py:210:28: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::label_description
+src/townlet/universe/compilers/actions.py:211:23: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::build_action_space_metadata::label_domain
+src/townlet/universe/compilers/actions.py:46:8: DEF001: Function '_add' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/compilers/actions.py::ActionCompiler::_add
+src/townlet/universe/compilers/metadata.py:94:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/metadata.py::MetadataCompiler::build_universe_metadata::grid_cells
+src/townlet/universe/compilers/optimization.py:67:37: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/universe/compilers/optimization.py::OptimizationCompiler::build_optimization_data
+src/townlet/universe/compilers/vfs.py:40:11: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/compilers/vfs.py::_literal_tensor_default::fill
+src/townlet/universe/compilers/vfs.py:51:11: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/universe/compilers/vfs.py::_engine_tick_variable_def
+src/townlet/universe/compilers/vfs.py:103:15: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/universe/compilers/vfs.py::VFSCompiler::_variable_to_definition
+src/townlet/universe/dto/action_metadata.py:20:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::ActionMetadata
+src/townlet/universe/dto/action_metadata.py:24:44: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::ActionMetadata
+src/townlet/universe/dto/action_metadata.py:38:42: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::ActionSpaceMetadata
+src/townlet/universe/dto/action_metadata.py:39:32: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::ActionSpaceMetadata
+src/townlet/universe/dto/action_metadata.py:59:33: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::RuntimeAction
+src/townlet/universe/dto/action_metadata.py:60:35: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::RuntimeAction
+src/townlet/universe/dto/action_metadata.py:66:44: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/action_metadata.py::RuntimeAction
+src/townlet/universe/dto/token_spec.py:1015:14: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/universe/dto/token_spec.py::require_exposure_normalization::bounded
+src/townlet/universe/dto/token_spec.py:1112:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/dto/token_spec.py::normalize_declared_scalar::v
+src/townlet/universe/dto/token_spec.py:1133:11: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/dto/token_spec.py::normalization_param_vector::clip
+src/townlet/universe/dto/token_spec.py:1140:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/dto/token_spec.py::normalization_param_vector::scale
+src/townlet/universe/dto/universe_metadata.py:34:35: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/universe_metadata.py::UniverseMetadata
+src/townlet/universe/dto/universe_metadata.py:35:45: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/universe_metadata.py::UniverseMetadata
+src/townlet/universe/dto/universe_metadata.py:38:38: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/universe_metadata.py::UniverseMetadata
+src/townlet/universe/dto/universe_metadata.py:39:48: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/dto/universe_metadata.py::UniverseMetadata
+src/townlet/universe/errors.py:65:40: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/errors.py::CompilationErrorCollector
+src/townlet/universe/errors.py:66:23: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/errors.py::CompilationErrorCollector
+src/townlet/universe/errors.py:67:26: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/errors.py::CompilationErrorCollector
+src/townlet/universe/errors.py:32:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/errors.py::CompilationError::__init__
+src/townlet/universe/errors.py:77:4: DEF001: Function 'add' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/errors.py::CompilationErrorCollector::add
+src/townlet/universe/errors.py:90:4: DEF001: Function 'check_and_raise' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/errors.py::CompilationErrorCollector::check_and_raise
+src/townlet/universe/optimization.py:19:52: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/optimization.py::OptimizationData
+src/townlet/universe/optimization.py:20:44: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/optimization.py::OptimizationData
+src/townlet/universe/optimization.py:21:62: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/optimization.py::OptimizationData
+src/townlet/universe/raw_configs_v21.py:121:29: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/universe/raw_configs_v21.py::RawConfigsV21::from_declarations
+src/townlet/universe/raw_configs_v21.py:135:61: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/universe/raw_configs_v21.py::RawConfigsV21::from_declarations
+src/townlet/universe/raw_configs_v21.py:136:62: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/universe/raw_configs_v21.py::RawConfigsV21::from_declarations
+src/townlet/universe/source_map.py:60:0: DEF001: Function 'locate' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/source_map.py::locate
+src/townlet/universe/symbol_table.py:32:37: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/symbol_table.py:33:41: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/symbol_table.py:34:51: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/symbol_table.py:35:48: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/symbol_table.py:36:65: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/symbol_table.py:37:45: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/symbol_table.py:38:39: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/universe/symbol_table.py::UniverseSymbolTable
+src/townlet/universe/validation/limits.py:91:51: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/universe/validation/limits.py::validate_v21_limits
+src/townlet/universe/validation/references.py:25:23: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/universe/validation/references.py::_register::location
+src/townlet/universe/validation/references.py:16:0: DEF001: Function 'build_symbol_table' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/validation/references.py::build_symbol_table
+src/townlet/universe/validation/references.py:21:4: DEF001: Function '_register' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/validation/references.py::_register
+src/townlet/universe/validation/references.py:95:0: DEF001: Function 'validate_dac_references' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/validation/references.py::validate_dac_references
+src/townlet/universe/validation/references.py:291:0: DEF001: Function 'resolve_references' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/universe/validation/references.py::resolve_references
+src/townlet/vfs/evaluator.py:39:28: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/evaluator.py::VFSEvaluator::__init__::history_spec
+src/townlet/vfs/evaluator.py:40:48: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/evaluator.py::VFSEvaluator::__init__::_history
+src/townlet/vfs/evaluator.py:108:23: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/evaluator.py::VFSEvaluator::add_with_deps
+src/townlet/vfs/evaluator.py:69:4: DEF001: Function 'evaluate_global_profile' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/evaluator.py::VFSEvaluator::evaluate_global_profile
+src/townlet/vfs/history.py:124:32: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/history.py::expression_history
+src/townlet/vfs/history.py:146:40: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/history.py::collect_history_requirements
+src/townlet/vfs/profiles.py:274:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/profiles.py::VFSProfileCompiler::compile_profile::other_scope
+src/townlet/vfs/profiles.py:307:18: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/profiles.py::VFSProfileCompiler::compile_profile::context
+src/townlet/vfs/profiles.py:364:29: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/profiles.py::VFSProfileCompiler::_compile_profile_variable::expected_shape
+src/townlet/vfs/profiles.py:516:33: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/profiles.py::VFSProfileCompiler::compile_item_profile::var_schema
+src/townlet/vfs/profiles.py:249:4: DEF001: Function 'compile_profile' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/profiles.py::VFSProfileCompiler::compile_profile
+src/townlet/vfs/registry.py:135:45: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::__init__::item_profiles
+src/townlet/vfs/registry.py:623:15: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_initialize_tensor::mode
+src/townlet/vfs/registry.py:624:17: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_initialize_tensor::params
+src/townlet/vfs/registry.py:318:28: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_build_storage_tensor::default_value
+src/townlet/vfs/registry.py:598:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_build_vector_default::dtype
+src/townlet/vfs/registry.py:637:25: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_initialize_tensor
+src/townlet/vfs/registry.py:638:24: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_initialize_tensor
+src/townlet/vfs/registry.py:641:24: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_initialize_tensor
+src/townlet/vfs/registry.py:642:25: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::_initialize_tensor
+src/townlet/vfs/registry.py:887:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::get_item_variable_type
+src/townlet/vfs/registry.py:101:4: DEF001: Function '__init__' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/registry.py::VariableRegistry::__init__
+src/townlet/vfs/schema.py:216:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec::_bounds_are_ordered::min_values
+src/townlet/vfs/schema.py:217:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec::_bounds_are_ordered::max_values
+src/townlet/vfs/schema.py:228:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec::_contains_zero::values
+src/townlet/vfs/schema.py:108:38: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:112:38: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:118:39: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:122:38: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:127:27: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:132:29: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:137:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:142:31: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:147:31: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:152:24: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::NormalizationSpec
+src/townlet/vfs/schema.py:386:28: CALL003: Call provides 'default_factory=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema.py:412:23: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema.py:430:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema.py:435:100: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema.py:440:50: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema.py:445:46: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema.py:450:30: CALL003: Call provides 'default=' [WHITELISTED]
+  Context: src/townlet/vfs/schema.py::VariableDef
+src/townlet/vfs/schema_hashes.py:575:30: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/schema_hashes.py::_canonical_transition_rule::payload
+src/townlet/vfs/schema_hashes.py:424:0: DEF001: Function 'canonical_transition_graph_schema' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/schema_hashes.py::canonical_transition_graph_schema
+src/townlet/vfs/schema_hashes.py:462:0: DEF001: Function 'compute_transition_graph_hash' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/schema_hashes.py::compute_transition_graph_hash
+src/townlet/vfs/transition_schedule.py:106:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/transition_schedule.py::VTCTransitionRunner::run_phases::dones
+src/townlet/vfs/vtc.py:1607:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::VTCInteractionProgressProgram::apply::candidate_ticks
+src/townlet/vfs/vtc.py:1790:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::VTCTransitionRuleProgram::apply::bars
+src/townlet/vfs/vtc.py:2267:28: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::compile_vtc_transition_rules_with_phase_graph::condition_ast
+src/townlet/vfs/vtc.py:2391:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule::condition
+src/townlet/vfs/vtc.py:2401:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule::priority
+src/townlet/vfs/vtc.py:2434:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write::condition
+src/townlet/vfs/vtc.py:2438:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write::priority
+src/townlet/vfs/vtc.py:2442:17: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write::effect
+src/townlet/vfs/vtc.py:2496:13: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_transition_rule_telemetry_label::suffix
+src/townlet/vfs/vtc.py:2698:28: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_compile_vtc_action_writes_with_phase_graph::condition_ast
+src/townlet/vfs/vtc.py:2875:12: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::compile_vtc_threshold_cascades_with_phase_graph::expression
+src/townlet/vfs/vtc.py:3467:15: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_opening_hours_windows::schedule
+src/townlet/vfs/vtc.py:2431:26: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write
+src/townlet/vfs/vtc.py:2432:25: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write
+src/townlet/vfs/vtc.py:2435:26: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write
+src/townlet/vfs/vtc.py:2436:20: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_coerce_transition_rule_write
+src/townlet/vfs/vtc.py:2495:18: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_transition_rule_telemetry_label
+src/townlet/vfs/vtc.py:3489:15: CALL001: 'get(..., default)' provides a default [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_config_field
+src/townlet/vfs/vtc.py:1253:4: DEF001: Function 'apply' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::VTCThresholdCascadeProgram::apply
+src/townlet/vfs/vtc.py:1326:4: DEF001: Function 'apply' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::VTCPassiveDepletionProgram::apply
+src/townlet/vfs/vtc.py:1758:4: DEF001: Function 'apply' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::VTCTransitionRuleProgram::apply
+src/townlet/vfs/vtc.py:3487:0: DEF001: Function '_config_field' has parameter default(s) [WHITELISTED]
+  Context: src/townlet/vfs/vtc.py::_config_field
+src/townlet/world/expression/functions.py:379:16: ASG001: Logical OR used as a default (x = a or b) [WHITELISTED]
+  Context: src/townlet/world/expression/functions.py::_affordance_position::positions
+src/townlet/world/expression/functions.py:474:8: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/world/expression/functions.py::_eval_perlin::y
+src/townlet/world/expression/functions.py:475:11: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/world/expression/functions.py::_eval_perlin::seed
+src/townlet/world/expression/parser.py:109:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/world/expression/parser.py::ExpressionParser::make_function_call::args
+src/townlet/world/expression/type_checker.py:176:25: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/world/expression/type_checker.py::TypeChecker::resolve::key_prefix
+src/townlet/world/expression/type_checker.py:189:30: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/world/expression/type_checker.py::TypeChecker::resolve::next_prefix
+
+=== Non-Whitelisted Violations ===
+src/townlet/training/replay_contract.py:178:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+  Context: src/townlet/training/replay_contract.py::ReplayCustody::_local_operation::effective
+src/townlet/training/replay_contract.py:209:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+  Context: src/townlet/training/replay_contract.py::ReplayCustody::_device_operation::effective
+
+2 violation(s) found.
+(620 violation(s) whitelisted)

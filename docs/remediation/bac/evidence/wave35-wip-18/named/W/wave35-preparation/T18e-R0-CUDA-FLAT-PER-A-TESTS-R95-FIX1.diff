@@ -1,0 +1,212 @@
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+index 48a5cd8b0b827e4fdc51fe5dcabd3b30c3d60b66..8ff7cdffa6f824dfd2311d10e097100b09c27eb1 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -6,22 +6,24 @@ storage, sampling and issuer-owned preparation without enabling local policies.
+ 
+ import copy
+ import hashlib
+ import json
+ import multiprocessing
+ import os
+ import random
+ import sys
+ from collections.abc import Callable, Iterator
+ from contextlib import contextmanager
++from dataclasses import replace
+ from pathlib import Path
+ from threading import Event, Thread
++from types import MappingProxyType
+ from typing import Any
+ 
+ import numpy as np
+ import pytest
+ import torch
+ 
+ from townlet.exploration.rng_custody import LocalCUDAGate, process_rng_domain
+ from townlet.training import historical_checkpoint as history
+ from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+ from townlet.training.replay_buffer import ReplayBuffer
+@@ -1380,10 +1382,182 @@ def test_isolated_producer_poison(case: str) -> None:
+                         hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest() if qualified else None
+                     ),
+                     "before": before_record,
+                     "after": after_record,
+                     "success": success,
+                 },
+             )
+             queue.close()
+             queue.join_thread()
+             process.close()
++
++
++def _metadata_plan(owner: ReplayBuffer | PrioritizedReplayBuffer, route: str, args: tuple, admitted: bool, runtime: _SimCUDA) -> tuple:
++    runtime.events.clear()
++    with owner._owner_operation(mutation=False):
++        result = owner._device_plan(route, args, {}, admitted=admitted)
++    assert runtime.events == [], "Metadata planning executed Tensor/runtime work before arming"
++    return result
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("archive_only", [False, True])
++def test_raw_prepare_includes_installed_archive_sources(family: str, archive_only: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    incoming = _legacy_transport(family) if archive_only else owner.serialize()
++    owner.install_historical_archive(_family_archive(family, 3))  # Authentic B activation prerequisite.
++    before = owner.serialize()
++    simulated_cuda.events.clear()
++    prepared = owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++    events = list(simulated_cuda.events)
++    assert isinstance(prepared, PreparedReplay)
++    _assert_tree_equal(owner.serialize(), before)
++    _assert_cloned_then_completed(events, (3,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("prepare", [False, True])
++def test_mapping_view_inventory_preserves_accepted_transport(family: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    mapping = MappingProxyType({name: _CUDAData(value, 2) if isinstance(value, torch.Tensor) else value for name, value in before.items()})
++    simulated_cuda.events.clear()
++    if prepare:
++        result = owner.prepare_serialized(mapping, expected_obs_dim=2, lineage=None)
++        assert isinstance(result, PreparedReplay)
++    else:
++        result = owner.validate_serialized(mapping, expected_obs_dim=2)
++    events = list(simulated_cuda.events)
++    if not prepare:
++        assert torch.equal(result.observations.cpu(), _rows()["observations"])
++    _assert_tree_equal(owner.serialize(), before)
++    if not prepare:
++        _assert_local(events, (2,))
++    _assert_cloned_then_completed(events, (2,))
++
++
++@pytest.mark.parametrize(
++    "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
++)
++def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    dto = owner.validate_serialized(before, expected_obs_dim=2)
++    malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
++    _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
++    assert devices == (2,), "Owned DTO reconstruction clones this malformed metadata before refusing it"
++    simulated_cuda.events.clear()
++    with pytest.raises(ValueError):
++        owner.materialize_validated(malformed, lineage=None)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    _assert_cloned_then_completed(events, (2,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_tensor_version_refuses_without_metadata_tensor_effects(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    malformed = {**before, "format_version": _CUDAData(torch.tensor(5, dtype=torch.int64), 2)}
++    selected, devices = _metadata_plan(owner, "validate_serialized", (malformed,), False, simulated_cuda)
++    assert selected is None and devices == ()
++    with pytest.raises(ValueError, match="format_version"):
++        owner.validate_serialized(malformed, expected_obs_dim=2)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
++def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
++    family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        if branch == "capacity":
++            _push(owner, _rows(), recorded=True)
++            incoming = owner.serialize()
++            if family == "flat":
++                owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
++            else:
++                owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++            owner.device = torch.device("cuda:3")
++            with pytest.raises(ValueError, match="capacity"):
++                owner.validate_serialized(incoming, expected_obs_dim=2)
++            selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
++        elif branch == "rank":
++            rows = _rows()
++            rows["observations"] = torch.ones(4, dtype=torch.float32)
++            revision = owner._replay_revision
++            with pytest.raises(ValueError, match="observations"):
++                _push(owner, rows, recorded=True)
++            assert owner._replay_revision > revision and len(owner) == 0
++            rewards = RewardTensor(
++                rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
++            )
++            arguments = (
++                rows["observations"],
++                rows["actions"],
++                rewards,
++                rows["next_observations"],
++                rows["dones"],
++                rows["next_action_masks"],
++            )
++            owner.device = torch.device("cuda:3")
++            selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
++        else:
++            _push(owner, _rows(), recorded=False)
++            request = _request(family)
++            assert not owner.readiness(request).ready and len(owner) == 4
++            owner.device = torch.device("cuda:3")
++            selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
++        assert selected is None and devices == ()
++        if branch == "capacity":
++            with pytest.raises(ValueError, match="capacity"):
++                owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++        elif branch == "rank":
++            revision = owner._replay_revision
++            with pytest.raises(ValueError, match="observations"):
++                _push(owner, rows, recorded=True)
++            assert owner._replay_revision > revision
++        else:
++            with pytest.raises(ValueError, match="unavailable"):
++                owner.sample_batch(request, lineage=None)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("callback", ["sample", "prepare"])
++def test_local_callback_reentry_refuses_before_requesting_admission(family: str, callback: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    state = owner.serialize()
++    domain = process_rng_domain()
++    real_admission, real_clone = domain.admission, torch.Tensor.clone
++    requested, refused = [], []
++    entered = False
++
++    def admission(actual: Any, *, lineage: Any) -> Any:
++        requested.append(lineage)
++        return real_admission(lineage=lineage)  # Observe the request; retain real authentication/exclusion.
++
++    def clone(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
++        nonlocal entered
++        result = real_clone(value, *args, **kwargs)
++        if not entered:
++            entered = True
++            with pytest.raises(RuntimeError, match="reentry") as error:
++                owner.sample(2, lineage=None) if callback == "sample" else owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
++            refused.append(error.value)
++        return result
++
++    with monkeypatch.context() as scoped:
++        scoped.setattr(type(domain), "admission", admission)
++        scoped.setattr(torch.Tensor, "clone", clone)
++        actual = owner.serialize()
++    assert entered and len(refused) == 1
++    _assert_tree_equal(actual, state)
++    assert requested == [], "Same-owner callback requested domain while holding owner custody"

@@ -1,0 +1,26 @@
+{
+  "name": "fix2-prefix-controls",
+  "exit_code": 0,
+  "seconds": 4.4129016399383545,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r97-fix2-prefix-controls/fix2-prefix-controls.log",
+  "sha256": "1dc1935157358794622cb2d3380dc404908c0f66e9e2e79dda07cbed675d896d",
+  "candidate_tree": "56366b475edb05238a1f54e0b6b2b4ac316296ad",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "914738d2625f859ea2c3e15a2ec66606ac2529a80215fa734763b20977f07498",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

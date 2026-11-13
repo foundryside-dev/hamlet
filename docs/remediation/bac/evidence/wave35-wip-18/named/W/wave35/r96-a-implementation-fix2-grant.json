@@ -1,0 +1,43 @@
+{
+  "schema": "bac-source-fix-grant-v1",
+  "round": "implementation fix2/5",
+  "time": "2026-11-13T16:31:12.782195+00:00",
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX1-IMPLEMENTATION-REVIEW.md",
+    "sha256": "42f68c23215f81d3e35cb7ebb11746c29eb3d27d27a89f42bf2aed66755ebc84"
+  },
+  "source_base": "1c1c35cc064c0a13163b25fb02faa767839c2fcd",
+  "findings": [
+    "I5 unused source inventory on scalar capacity refusal and invalid plain push without vocabulary",
+    "I7 fix-diff effective assignment annotations; B missing API remains required separately"
+  ],
+  "phase": "TESTS FIRST; no production edit before root RED evidence",
+  "owner": "/root/bac_cuda_flat_per_producer_a",
+  "budgets": [
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "projected_lines": 760,
+      "access": "implementation_fix2_testsfirst_I5_and_effective_types_on_root_baton"
+    },
+    {
+      "path": "src/townlet/training/replay_buffer.py",
+      "projected_lines": 850,
+      "access": "implementation_fix2_testsfirst_I5_and_effective_types_on_root_baton"
+    },
+    {
+      "path": "src/townlet/training/prioritized_replay_buffer.py",
+      "projected_lines": 1300,
+      "access": "implementation_fix2_testsfirst_I5_and_effective_types_on_root_baton"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "projected_lines": 1750,
+      "access": "implementation_fix2_testsfirst_I5_and_effective_types_on_root_baton"
+    }
+  ],
+  "total_budget": 4660,
+  "hard_limit": "5 files/5000 source lines; actual4 bodies",
+  "future_projection": "B core1250/shared760/flat850/PER1300/activation650=4810; D core1250/shared760/recurrent2250/test700=4960. No new packet source grant implied.",
+  "constraints": "No new bodies/branches/worktrees/source copies/delegation/Git. No fake B authority or weakening required gates. Root owns runtime and publication."
+}

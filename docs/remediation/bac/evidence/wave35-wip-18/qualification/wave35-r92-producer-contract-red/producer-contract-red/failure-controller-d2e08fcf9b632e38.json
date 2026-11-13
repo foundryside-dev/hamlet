@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_inventory_precedes_clone_on_read",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d801b00>\n\n    def test_archive_inventory_precedes_clone_on_read(simulated_cuda: _SimCUDA) -> None:\n        archive = _archive_on(3)  # Legitimate owning construction before observation.\n        owner = _owner(\"flat\", torch.device(\"cuda:0\"))\n        _push(owner, _rows(), recorded=True)\n        owner.device = torch.device(\"cuda:1\")\n        simulated_cuda.events.clear()\n        owner.install_historical_archive(archive)\n        events = list(simulated_cuda.events)\n        assert owner.historical_archives[0].source_digest == archive.source_digest\n>       _assert_local(events, (3,))\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:724: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nevents = [('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ('work', 'clone', (3,), False), ('finished', 'clone', (3,)), ('work', 'detach', (3,), False), ('finished', 'detach', (3,)), ...]\ndevices = (3,)\n\n    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:\n>       assert [event[1] for event in events if event[0] == \"arm\"] == [devices]\nE       assert [] == [(3,)]\nE         \nE         Right contains one more item: (3,)\nE         Use -v to get more diff\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:498: AssertionError",
+  "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34"
+}

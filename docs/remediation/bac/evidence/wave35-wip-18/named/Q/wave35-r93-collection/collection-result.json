@@ -1,0 +1,24 @@
+{
+  "name": "collection",
+  "exit_code": 0,
+  "seconds": 5.6464855670928955,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-collection/collection.log",
+  "sha256": "c95d21a2127e5323b0ed1a96b9b8a2a7a684f0a8703394987253c46c04f7a5da",
+  "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

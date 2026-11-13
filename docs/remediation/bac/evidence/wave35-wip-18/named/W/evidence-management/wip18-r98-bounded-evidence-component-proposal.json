@@ -1,0 +1,1359 @@
+{
+  "schema": "bac-r98-bounded-evidence-component-proposal-v1",
+  "status": "REVIEWED DURABILITY EVIDENCE PROPOSAL; CHANGES REQUIRED; NOT A ACCEPTANCE",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r98-candidate.json",
+    "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+    "bytes": 203565
+  },
+  "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "round": 98,
+  "scope": "Terminal only for finite R90\u2013R98 durability interval; stage A I5 materially open across metadata-determinable prefix class.",
+  "source_profile": [
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "lines": 689,
+      "sha256": "6bf839271ed030ba7787dca24cd9305dfef4d8ae382b67b300906b66ca495265",
+      "present": true
+    },
+    {
+      "path": "src/townlet/training/replay_buffer.py",
+      "lines": 807,
+      "sha256": "752f9690da797edd4acbdda04e2a85e60aa6c19875cb8eb6956de3805e657270",
+      "present": true
+    },
+    {
+      "path": "src/townlet/training/prioritized_replay_buffer.py",
+      "lines": 1260,
+      "sha256": "225bb6582a6d53bac3ce6ab5bed3e481a26fe3e904e272af14b9657d2746ca4c",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "lines": 1668,
+      "sha256": "e005667a8ad82db97aacc4882812e44b09947fa26fdf97b45d4cf6057abbd8b7",
+      "present": true
+    }
+  ],
+  "preflight": {
+    "root": "W",
+    "path": "wave35/r98-fixture-resource-preflight.json",
+    "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+    "bytes": 3030
+  },
+  "author_report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md",
+    "sha256": "b0061fb833b43e1c5c29559f7b2a03c6eb2c63b353c1d7438874ad4342593a4f",
+    "bytes": 77715
+  },
+  "source_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX2-IMPLEMENTATION-REVIEW.md",
+    "sha256": "c7b71870e33e3656f8ac531ed9deee65d55c597307b9e77073a0818fb2b7d84f",
+    "bytes": 9138
+  },
+  "source_review_disposition": "CHANGES REQUIRED: I5 remains materially open; structural branch matrix and fix3 continue after checkpoint.",
+  "checks": [
+    {
+      "check": "wave35-r98-collection--collection",
+      "check_kind": "collection",
+      "status": "PASSED",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-collection--collection",
+      "attempts": [
+        {
+          "id": "wave35-r98-collection--collection",
+          "record_id": "collection",
+          "path": "wave35-r98-collection",
+          "status": "PASSED",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-collection/collection-result.json",
+            "sha256": "03d1e256bce9c1e6cd2a02c13e58ecd1c8cae1515b890f3ce18f0620a2317f90",
+            "bytes": 830
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-collection-spec.json",
+            "sha256": "f941653180dba7a408b5c0bfc46aea83946949d3299694bb0368ba3362122dcd",
+            "bytes": 582
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "path": "wave35-r98-collection/collection",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-collection/collection/identity-controller.json",
+              "sha256": "fd7d45855b51f70e6ac75baeaaa322c4d67e1d57c2ccc8dff0996edf066e3ab2",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-collection/collection-custody.json",
+              "sha256": "27aa10b2947bdbe8d5de487ddd320f42119cdc107c331f971499d93b81ec0d7a",
+              "bytes": 641
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-collection/collection-result.json",
+              "sha256": "03d1e256bce9c1e6cd2a02c13e58ecd1c8cae1515b890f3ce18f0620a2317f90",
+              "bytes": 830
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-collection/collection.log",
+              "sha256": "94f7391ce4296f780636659e7605018b62a5ae5035387a401e6f0e24e12d9c2a",
+              "bytes": 12308
+            }
+          ],
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": 0,
+          "counts": null,
+          "duration_seconds": 5.286414861679077,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-collection/collection/identity-controller.json",
+              "sha256": "fd7d45855b51f70e6ac75baeaaa322c4d67e1d57c2ccc8dff0996edf066e3ab2",
+              "bytes": 246,
+              "role": "controller"
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r98-collection/collection-custody.json",
+              "sha256": "27aa10b2947bdbe8d5de487ddd320f42119cdc107c331f971499d93b81ec0d7a",
+              "bytes": 641,
+              "role": "import_thread_debug"
+            }
+          ],
+          "process_topology": null,
+          "actual_worker_count": null,
+          "log_paths": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-collection/collection.log",
+              "sha256": "94f7391ce4296f780636659e7605018b62a5ae5035387a401e6f0e24e12d9c2a",
+              "bytes": 12308
+            }
+          ],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "result": {
+            "root": "Q",
+            "path": "wave35-r98-collection/collection-result.json",
+            "sha256": "03d1e256bce9c1e6cd2a02c13e58ecd1c8cae1515b890f3ce18f0620a2317f90",
+            "bytes": 830
+          },
+          "verifier": {
+            "root": "Q",
+            "path": "verify_bac_run.py",
+            "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+            "bytes": 3032
+          },
+          "custody_records": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-collection/collection-custody.json",
+              "sha256": "27aa10b2947bdbe8d5de487ddd320f42119cdc107c331f971499d93b81ec0d7a",
+              "bytes": 641
+            }
+          ]
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": [
+        {
+          "root": "Q",
+          "path": "run_bac_packet_checks_locked.py",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "bytes": 2043
+        },
+        {
+          "root": "Q",
+          "path": "capture_wave14_round.py",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+          "bytes": 6277
+        },
+        {
+          "root": "Q",
+          "path": "verify_bac_run.py",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+          "bytes": 3032
+        },
+        {
+          "root": "Q",
+          "path": "bac_source_identity.py",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+          "bytes": 2917
+        }
+      ]
+    },
+    {
+      "check": "wave35-r98-owned--owned",
+      "check_kind": "runtime",
+      "status": "UNRUN",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-owned--owned",
+      "attempts": [
+        {
+          "id": "wave35-r98-owned--owned",
+          "record_id": "owned",
+          "path": "wave35-r98-owned-spec.json",
+          "status": "UNRUN",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-owned-spec.json",
+            "sha256": "1f4579d3810e9fe6b331790da9af063e643ee207aba316a66093f9938b3f64ad",
+            "bytes": 704
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-owned-spec.json",
+            "sha256": "1f4579d3810e9fe6b331790da9af063e643ee207aba316a66093f9938b3f64ad",
+            "bytes": 704
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "type": "file",
+              "path": "wave35-r98-owned-spec.json",
+              "sha256": "1f4579d3810e9fe6b331790da9af063e643ee207aba316a66093f9938b3f64ad",
+              "bytes": 704
+            }
+          ],
+          "command": null,
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r98-owned"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": null,
+          "counts": null,
+          "duration_seconds": null,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [],
+          "process_topology": null,
+          "actual_worker_count": null,
+          "log_paths": [],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "unrun_reason": "Generated owned curriculum template; absent result/output and no recorded execution. Planned args do not imply actual workers or results."
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": []
+    },
+    {
+      "check": "wave35-r98-owned-types--owned-mypy",
+      "check_kind": "static",
+      "status": "FAILED",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-owned-types--owned-mypy",
+      "attempts": [
+        {
+          "id": "wave35-r98-owned-types--owned-mypy",
+          "record_id": "owned-mypy",
+          "path": "wave35-r98-owned-types",
+          "status": "FAILED",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-owned-types/owned-mypy-result.json",
+            "sha256": "98b8c4954178e59fe0bc893f8c104e97cdfaadb95df1ba10d0ce1ae5eb246c25",
+            "bytes": 820
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-owned-types-spec.json",
+            "sha256": "a515ec0a5b6327a380684d09ae25067c32c2526bfaa3df8ba483d32dccb2a4f2",
+            "bytes": 555
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "type": "file",
+              "path": "wave35-r98-owned-types/owned-mypy-result.json",
+              "sha256": "98b8c4954178e59fe0bc893f8c104e97cdfaadb95df1ba10d0ce1ae5eb246c25",
+              "bytes": 820
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-owned-types/owned-mypy.log",
+              "sha256": "83243d5d3883a257116967dddde64e22530fc184a55b438726d529f6f4dfbfc0",
+              "bytes": 200
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-owned-types/static-custody.json",
+              "sha256": "8988d1e7f3a078f0b97853c8d01c6194e9080d72fb8efdfac0c65bbfa7d0783b",
+              "bytes": 720
+            }
+          ],
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py",
+            "--follow-imports=silent"
+          ],
+          "planned_args": [
+            "-m",
+            "mypy",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py",
+            "--follow-imports=silent"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": 1,
+          "counts": null,
+          "duration_seconds": 28.905238151550293,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-owned-types/static-custody.json",
+              "sha256": "8988d1e7f3a078f0b97853c8d01c6194e9080d72fb8efdfac0c65bbfa7d0783b",
+              "bytes": 720,
+              "role": "import_thread_debug"
+            }
+          ],
+          "process_topology": null,
+          "actual_worker_count": null,
+          "log_paths": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-owned-types/owned-mypy.log",
+              "sha256": "83243d5d3883a257116967dddde64e22530fc184a55b438726d529f6f4dfbfc0",
+              "bytes": 200
+            }
+          ],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "result": {
+            "root": "Q",
+            "path": "wave35-r98-owned-types/owned-mypy-result.json",
+            "sha256": "98b8c4954178e59fe0bc893f8c104e97cdfaadb95df1ba10d0ce1ae5eb246c25",
+            "bytes": 820
+          },
+          "verifier": {
+            "root": "Q",
+            "path": "verify_bac_static_run.py",
+            "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+            "bytes": 2532
+          },
+          "custody_records": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-owned-types/static-custody.json",
+              "sha256": "8988d1e7f3a078f0b97853c8d01c6194e9080d72fb8efdfac0c65bbfa7d0783b",
+              "bytes": 720
+            }
+          ]
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": [
+        {
+          "root": "Q",
+          "path": "run_bac_packet_checks_locked.py",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "bytes": 2043
+        },
+        {
+          "root": "Q",
+          "path": "capture_wave14_round.py",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+          "bytes": 6277
+        },
+        {
+          "root": "Q",
+          "path": "verify_bac_static_run.py",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+          "bytes": 2532
+        }
+      ]
+    },
+    {
+      "check": "wave35-r98-reachable-controls--reachable-controls",
+      "check_kind": "runtime",
+      "status": "PASSED",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-reachable-controls--reachable-controls",
+      "attempts": [
+        {
+          "id": "wave35-r98-reachable-controls--reachable-controls",
+          "record_id": "reachable-controls",
+          "path": "wave35-r98-reachable-controls",
+          "status": "PASSED",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-reachable-controls/reachable-controls-result.json",
+            "sha256": "973184ae3734ae83837e368f4da189df06b5f28a7cdea8254c5f944bd6b24d31",
+            "bytes": 2974
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-reachable-controls-spec.json",
+            "sha256": "bfa497d29116ec62189c6a22b205d0f8b2f530ccab8abc1b196b684565eb5d30",
+            "bytes": 2774
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "path": "wave35-r98-reachable-controls/reachable-controls",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-reachable-controls/reachable-controls/identity-controller.json",
+              "sha256": "fd7d45855b51f70e6ac75baeaaa322c4d67e1d57c2ccc8dff0996edf066e3ab2",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-reachable-controls/reachable-controls-custody.json",
+              "sha256": "2e045daf5f485662fbe91cd23623bb1ed10b5f4590d5a675d2ca578f1823cb5e",
+              "bytes": 650
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-reachable-controls/reachable-controls-result.json",
+              "sha256": "973184ae3734ae83837e368f4da189df06b5f28a7cdea8254c5f944bd6b24d31",
+              "bytes": 2974
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-reachable-controls/reachable-controls.log",
+              "sha256": "4a5bd6b601995ed326e1c8a66d2cb934a1038898b7e2072febc8cf9e1ba90d29",
+              "bytes": 854
+            }
+          ],
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-recorded-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_observation_prefix_keeps_necessary_gpu_sources[False-known-per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": 0,
+          "counts": {
+            "passed": 24,
+            "skipped": 0,
+            "xfailed": 0,
+            "xpassed": 0,
+            "warnings": 0
+          },
+          "duration_seconds": 4.525063514709473,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-reachable-controls/reachable-controls/identity-controller.json",
+              "sha256": "fd7d45855b51f70e6ac75baeaaa322c4d67e1d57c2ccc8dff0996edf066e3ab2",
+              "bytes": 246,
+              "role": "controller"
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r98-reachable-controls/reachable-controls-custody.json",
+              "sha256": "2e045daf5f485662fbe91cd23623bb1ed10b5f4590d5a675d2ca578f1823cb5e",
+              "bytes": 650,
+              "role": "import_thread_debug"
+            }
+          ],
+          "process_topology": "single_process",
+          "actual_worker_count": 0,
+          "log_paths": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-reachable-controls/reachable-controls.log",
+              "sha256": "4a5bd6b601995ed326e1c8a66d2cb934a1038898b7e2072febc8cf9e1ba90d29",
+              "bytes": 854
+            }
+          ],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "result": {
+            "root": "Q",
+            "path": "wave35-r98-reachable-controls/reachable-controls-result.json",
+            "sha256": "973184ae3734ae83837e368f4da189df06b5f28a7cdea8254c5f944bd6b24d31",
+            "bytes": 2974
+          },
+          "verifier": {
+            "root": "Q",
+            "path": "verify_bac_run.py",
+            "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+            "bytes": 3032
+          },
+          "custody_records": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-reachable-controls/reachable-controls-custody.json",
+              "sha256": "2e045daf5f485662fbe91cd23623bb1ed10b5f4590d5a675d2ca578f1823cb5e",
+              "bytes": 650
+            }
+          ]
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": [
+        {
+          "root": "Q",
+          "path": "run_bac_packet_checks_locked.py",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "bytes": 2043
+        },
+        {
+          "root": "Q",
+          "path": "capture_wave14_round.py",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+          "bytes": 6277
+        },
+        {
+          "root": "Q",
+          "path": "verify_bac_run.py",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+          "bytes": 3032
+        },
+        {
+          "root": "Q",
+          "path": "bac_source_identity.py",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+          "bytes": 2917
+        }
+      ]
+    },
+    {
+      "check": "wave35-r98-static--ruff-owned",
+      "check_kind": "static",
+      "status": "PASSED",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-static--ruff-owned",
+      "attempts": [
+        {
+          "id": "wave35-r98-static--ruff-owned",
+          "record_id": "ruff-owned",
+          "path": "wave35-r98-static",
+          "status": "PASSED",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-static/ruff-owned-result.json",
+            "sha256": "e5cac292077647630deae96e6c1eb916b230400886c993bfdc4cfa4f8b72e1a6",
+            "bytes": 869
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-static-spec.json",
+            "sha256": "f8072f14724b85406c7f8136c47dbc2a13588368a1bcbce5b1ddbe9e0666fcfc",
+            "bytes": 1213
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "type": "file",
+              "path": "wave35-r98-static/black-owned-result.json",
+              "sha256": "864648b38fd447b2089ac94234e3b928aa9a5344035a089d39777da6eeb8ef35",
+              "bytes": 872
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/black-owned.log",
+              "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+              "bytes": 56
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/no-defaults-result.json",
+              "sha256": "5c1c740042d6ec9a1c3a7a232e1ea9572f487831e9350b150ae273be63a75f38",
+              "bytes": 776
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/no-defaults.log",
+              "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+              "bytes": 233
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/ruff-owned-result.json",
+              "sha256": "e5cac292077647630deae96e6c1eb916b230400886c993bfdc4cfa4f8b72e1a6",
+              "bytes": 869
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275
+            }
+          ],
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "planned_args": [
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": 0,
+          "counts": null,
+          "duration_seconds": 0.05112934112548828,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275,
+              "role": "import_thread_debug"
+            }
+          ],
+          "process_topology": null,
+          "actual_worker_count": null,
+          "log_paths": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            }
+          ],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "result": {
+            "root": "Q",
+            "path": "wave35-r98-static/ruff-owned-result.json",
+            "sha256": "e5cac292077647630deae96e6c1eb916b230400886c993bfdc4cfa4f8b72e1a6",
+            "bytes": 869
+          },
+          "verifier": {
+            "root": "Q",
+            "path": "verify_bac_static_run.py",
+            "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+            "bytes": 2532
+          },
+          "custody_records": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275
+            }
+          ]
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": [
+        {
+          "root": "Q",
+          "path": "run_bac_packet_checks_locked.py",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "bytes": 2043
+        },
+        {
+          "root": "Q",
+          "path": "capture_wave14_round.py",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+          "bytes": 6277
+        },
+        {
+          "root": "Q",
+          "path": "verify_bac_static_run.py",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+          "bytes": 2532
+        }
+      ]
+    },
+    {
+      "check": "wave35-r98-static--black-owned",
+      "check_kind": "static",
+      "status": "PASSED",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-static--black-owned",
+      "attempts": [
+        {
+          "id": "wave35-r98-static--black-owned",
+          "record_id": "black-owned",
+          "path": "wave35-r98-static",
+          "status": "PASSED",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-static/black-owned-result.json",
+            "sha256": "864648b38fd447b2089ac94234e3b928aa9a5344035a089d39777da6eeb8ef35",
+            "bytes": 872
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-static-spec.json",
+            "sha256": "f8072f14724b85406c7f8136c47dbc2a13588368a1bcbce5b1ddbe9e0666fcfc",
+            "bytes": 1213
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "type": "file",
+              "path": "wave35-r98-static/black-owned-result.json",
+              "sha256": "864648b38fd447b2089ac94234e3b928aa9a5344035a089d39777da6eeb8ef35",
+              "bytes": 872
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/black-owned.log",
+              "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+              "bytes": 56
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/no-defaults-result.json",
+              "sha256": "5c1c740042d6ec9a1c3a7a232e1ea9572f487831e9350b150ae273be63a75f38",
+              "bytes": 776
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/no-defaults.log",
+              "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+              "bytes": 233
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/ruff-owned-result.json",
+              "sha256": "e5cac292077647630deae96e6c1eb916b230400886c993bfdc4cfa4f8b72e1a6",
+              "bytes": 869
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275
+            }
+          ],
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "planned_args": [
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": 0,
+          "counts": null,
+          "duration_seconds": 1.308197259902954,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275,
+              "role": "import_thread_debug"
+            }
+          ],
+          "process_topology": null,
+          "actual_worker_count": null,
+          "log_paths": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/black-owned.log",
+              "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+              "bytes": 56
+            }
+          ],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "result": {
+            "root": "Q",
+            "path": "wave35-r98-static/black-owned-result.json",
+            "sha256": "864648b38fd447b2089ac94234e3b928aa9a5344035a089d39777da6eeb8ef35",
+            "bytes": 872
+          },
+          "verifier": {
+            "root": "Q",
+            "path": "verify_bac_static_run.py",
+            "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+            "bytes": 2532
+          },
+          "custody_records": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275
+            }
+          ]
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": [
+        {
+          "root": "Q",
+          "path": "run_bac_packet_checks_locked.py",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "bytes": 2043
+        },
+        {
+          "root": "Q",
+          "path": "capture_wave14_round.py",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+          "bytes": 6277
+        },
+        {
+          "root": "Q",
+          "path": "verify_bac_static_run.py",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+          "bytes": 2532
+        }
+      ]
+    },
+    {
+      "check": "wave35-r98-static--no-defaults",
+      "check_kind": "static",
+      "status": "PASSED",
+      "qualifying": false,
+      "qualification_scope": "Recorded bounded historical evidence only; no A acceptance.",
+      "terminal_attempt": "wave35-r98-static--no-defaults",
+      "attempts": [
+        {
+          "id": "wave35-r98-static--no-defaults",
+          "record_id": "no-defaults",
+          "path": "wave35-r98-static",
+          "status": "PASSED",
+          "record": {
+            "root": "Q",
+            "path": "wave35-r98-static/no-defaults-result.json",
+            "sha256": "5c1c740042d6ec9a1c3a7a232e1ea9572f487831e9350b150ae273be63a75f38",
+            "bytes": 776
+          },
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r98-static-spec.json",
+            "sha256": "f8072f14724b85406c7f8136c47dbc2a13588368a1bcbce5b1ddbe9e0666fcfc",
+            "bytes": 1213
+          },
+          "candidate_manifest": {
+            "root": "W",
+            "path": "wave35/r98-candidate.json",
+            "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+            "bytes": 203565
+          },
+          "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+          "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+          "descendants": [
+            {
+              "type": "file",
+              "path": "wave35-r98-static/black-owned-result.json",
+              "sha256": "864648b38fd447b2089ac94234e3b928aa9a5344035a089d39777da6eeb8ef35",
+              "bytes": 872
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/black-owned.log",
+              "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+              "bytes": 56
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/no-defaults-result.json",
+              "sha256": "5c1c740042d6ec9a1c3a7a232e1ea9572f487831e9350b150ae273be63a75f38",
+              "bytes": 776
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/no-defaults.log",
+              "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+              "bytes": 233
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/ruff-owned-result.json",
+              "sha256": "e5cac292077647630deae96e6c1eb916b230400886c993bfdc4cfa4f8b72e1a6",
+              "bytes": 869
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "type": "file",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275
+            }
+          ],
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "planned_args": [
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "started_at": null,
+          "ended_at": null,
+          "exit_code": 0,
+          "counts": null,
+          "duration_seconds": 1.763890266418457,
+          "environment": {
+            "profile": "Recorded fixture-resource preflight; no invented effective environment map",
+            "source": {
+              "root": "W",
+              "path": "wave35/r98-fixture-resource-preflight.json",
+              "sha256": "60a730f871020fc446a18fcd2dfd2189cc58f1a2e4d40f1fe9878fc6aac7013b",
+              "bytes": 3030
+            }
+          },
+          "hardware": {
+            "cpu": "400000 100000",
+            "affinity": 5,
+            "memory_limit": "17179869184",
+            "CUDA": "unavailable/unqualified"
+          },
+          "process_custody": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275,
+              "role": "import_thread_debug"
+            }
+          ],
+          "process_topology": null,
+          "actual_worker_count": null,
+          "log_paths": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/no-defaults.log",
+              "sha256": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+              "bytes": 233
+            }
+          ],
+          "absolute_time_unavailable_reason": "Original absolute UTC execution times not recorded; elapsed result retained; no inferred times.",
+          "custody_unavailable_reason": "Absolute UTC times unavailable; static/collection runtime counts and process facts absent where inapplicable. Custody attributed to actual retained records, not rerun.",
+          "result": {
+            "root": "Q",
+            "path": "wave35-r98-static/no-defaults-result.json",
+            "sha256": "5c1c740042d6ec9a1c3a7a232e1ea9572f487831e9350b150ae273be63a75f38",
+            "bytes": 776
+          },
+          "verifier": {
+            "root": "Q",
+            "path": "verify_bac_static_run.py",
+            "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+            "bytes": 2532
+          },
+          "custody_records": [
+            {
+              "root": "Q",
+              "path": "wave35-r98-static/static-custody.json",
+              "sha256": "50a755497a621b2afea8ea3091481ea02dffacdac1438319a561863abf6fedcb",
+              "bytes": 1275
+            }
+          ]
+        }
+      ],
+      "expected_children": [],
+      "required_dependencies": [
+        {
+          "root": "Q",
+          "path": "run_bac_packet_checks_locked.py",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+          "bytes": 2043
+        },
+        {
+          "root": "Q",
+          "path": "capture_wave14_round.py",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+          "bytes": 6277
+        },
+        {
+          "root": "Q",
+          "path": "verify_bac_static_run.py",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+          "bytes": 2532
+        }
+      ]
+    }
+  ],
+  "qualification_entries": [
+    {
+      "round": 98,
+      "path": "wave35-r98-capture.log",
+      "kind": "support",
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-collection",
+      "kind": "attempt",
+      "status": "PASSED"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-collection-spec.json",
+      "kind": "support",
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-owned-spec.json",
+      "kind": "attempt",
+      "status": "UNRUN"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-owned-types",
+      "kind": "attempt",
+      "status": "FAILED"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-owned-types-spec.json",
+      "kind": "support",
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-reachable-controls",
+      "kind": "attempt",
+      "status": "PASSED"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-reachable-controls-spec.json",
+      "kind": "support",
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-static",
+      "kind": "attempt",
+      "status": "PASSED"
+    },
+    {
+      "round": 98,
+      "path": "wave35-r98-static-spec.json",
+      "kind": "support",
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "observed_results": "129 collected; owned-four Ruff/Black and defaults600 PASS; reachable24 PASS, zero skips/warnings; owned-three mypy FAIL solely missing required B device_invocation at line313. Owned generated template UNRUN.",
+  "required_next": [
+    "I5 structural branch-class repair and causal tests; no waiver or A acceptance.",
+    "Core B invocation/outcome/local contracts and missing B type API.",
+    "Actual applicable producer runtime, ten producer poison children, outer parent integration and real GPU one-/two-device proof.",
+    "Existing global 15 oracle6/POP9 errors remain; new owned B type error is separate, not an invented global recount.",
+    "Required ordinary runner/integration/full/default/coverage\u226570/slow/learning, fresh54/22 review and exact final remote CI."
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "overlap_accounting": "No sum of 24 with prior 16/4 or historical/independent overlaps; collection is not execution.",
+  "root_decision": "Root requests R90\u2013R98 reviewed WIP durability publication while fix3 continues. Final seal, terminal evidence review and approved documents remain root owned.",
+  "named_metadata_refs": [
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md",
+      "sha256": "b0061fb833b43e1c5c29559f7b2a03c6eb2c63b353c1d7438874ad4342593a4f",
+      "bytes": 77715
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX2-IMPLEMENTATION-REVIEW.md",
+      "sha256": "c7b71870e33e3656f8ac531ed9deee65d55c597307b9e77073a0818fb2b7d84f",
+      "bytes": 9138
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip18-r96-evidence-inventory-v2.json",
+      "sha256": "f3b53ea8e8fe8909fa7bc2754e07cd20f33cb0af3fb577fbce5711cc9f8fe37a",
+      "bytes": 46921
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip18-merged-receipt-input-through-r97.json",
+      "sha256": "4450cd53bab5f913d62231c306f60b29685a24c2bf466cb32e5899e0cf030c85",
+      "bytes": 42075
+    }
+  ],
+  "limitations": "No current application/source/helper execution by metadata author; no app bodies read. Existing qualified helper schema read only, measured one body/573 lines. No Git/index or tracked changes."
+}

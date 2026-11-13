@@ -1,0 +1,30 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r90-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-cpu-controls",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cpu-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cpu-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cpu-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_flat_sampling_preserves_selected_cpu_torch_stream[direct]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_flat_sampling_preserves_selected_cpu_torch_stream[batch]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_direct_retains_vectorized_global_law_with_owned_sampler",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_batch_external_sampler_retains_vectorized_global_law",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_batch_owned_sampler_retains_residual_draw_law",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

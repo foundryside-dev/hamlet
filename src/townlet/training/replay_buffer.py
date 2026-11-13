@@ -8,7 +8,8 @@ Pre-capture replay is inspectable history and never becomes active experience.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -24,10 +25,11 @@ from townlet.training.replay_contract import (
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
+    replay_device_prepare,
+    replay_device_sample,
+    replay_local,
     replay_mutation,
-    replay_prepare,
     replay_read,
-    replay_sample,
     validate_successor_masks,
 )
 
@@ -123,6 +125,81 @@ class _ValidatedReplayState(_ReplayRows):
 class ReplayBuffer(ReplayCustody):
     """FIFO uniform storage; archives have no sampler, warmup or optimizer route."""
 
+    def _init_custody(self, device: torch.device) -> None:
+        self._init_device_custody(device)
+
+    _local_cuda_contracts = MappingProxyType(
+        {
+            "push": "REPLAY_BUFFER_PUSH_CUDA",
+            "push_recorded": "REPLAY_BUFFER_PUSH_RECORDED_CUDA",
+            "readiness": "REPLAY_BUFFER_READINESS_CUDA",
+            "serialize": "REPLAY_BUFFER_SERIALIZE_CUDA",
+            "validate_serialized": "REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA",
+            "load_for_mode": "REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA",
+            "historical_archives": "REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA",
+            "install_historical_archive": "REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA",
+        }
+    )
+
+    def _replay_children(self, value: object) -> tuple[object, ...]:
+        if isinstance(value, (_ValidatedReplayState, _ReplayRestoreCandidate)):
+            return tuple(getattr(value, field.name) for field in fields(value))
+        if type(value) is history.HistoricalReplayArchive:
+            return (object.__getattribute__(value, "original_state"),)
+        return super()._replay_children(value)
+
+    def _replay_inventory(
+        self, route: str, args: tuple[Any, ...], kwargs: Mapping[str, Any]
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
+        if route in ("push", "push_recorded"):
+            return self._push_inventory(route, args, kwargs, retained)
+        if route == "readiness":
+            return None, (self.legality_recorded,)
+        if route == "serialize":
+            return None, (*(retained if self.size else ()), self._historical_archives)
+        if route == "historical_archives":
+            return None, (self._historical_archives,)
+        if route == "install_historical_archive":
+            return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
+        if route in ("validate_serialized", "prepare_serialized", "load_for_mode"):
+            state = self._replay_argument(args, kwargs, 0, "state")
+            if not isinstance(state, Mapping):
+                return None, ()
+            version = state.get("format_version")
+            if type(version) is not int:
+                return None, (version,)
+            if version == 4:
+                keys = _LEGACY_STATE_KEYS
+            elif version == REPLAY_BUFFER_FORMAT_VERSION:
+                keys = REPLAY_BUFFER_STATE_KEYS
+            else:
+                return None, (version,)
+            if any(not isinstance(key, str) for key in state) or set(state) != keys:
+                return None, tuple(state)
+            kind, capacity = state.get("replay_kind"), state.get("capacity")
+            if type(kind) is str and kind == REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
+                return None, ()
+            if route == "prepare_serialized":
+                values = (state, *retained, self._historical_archives)
+                if version != 4:
+                    return self._transport_target(state, "size", strict=True), values
+                return None, values
+            return None, (state,)
+        if route == "materialize_validated":
+            state = self._replay_argument(args, kwargs, 0, "state")
+            if not isinstance(state, _ValidatedReplayState):
+                return None, ()
+            values = (state, *retained, self._historical_archives)
+            if state.legacy_state is None and type(state.size) is int and state.size > 0:
+                return self.device, values
+            return None, values
+        if route in ("sample", "sample_batch"):
+            return self._sample_inventory(
+                route, args, kwargs, retained, size=self.size, mode="uniform_without_replacement", with_replacement=False, strict=True
+            )
+        return None, (*retained, self._historical_archives)
+
     def __init__(self, capacity: int, device: torch.device):
         self.capacity = capacity
         self.device = device
@@ -152,7 +229,7 @@ class ReplayBuffer(ReplayCustody):
         return self.size
 
     @property
-    @replay_read
+    @replay_local(mutation=False)
     def historical_archives(self) -> tuple[history.HistoricalReplayArchive, ...]:
         """Return owned frozen records without exposing the installed records."""
         return tuple(self._own_archive(archive) for archive in self._historical_archives)
@@ -176,7 +253,7 @@ class ReplayBuffer(ReplayCustody):
                 result.append(archive)
         return tuple(result)
 
-    @replay_mutation
+    @replay_local(mutation=True)
     def install_historical_archive(self, archive: history.HistoricalReplayArchive) -> None:
         """Validate the complete source domain, digest and rows before mutation."""
         archives = self._merge_archives((archive,))
@@ -224,7 +301,7 @@ class ReplayBuffer(ReplayCustody):
                 raise ValueError(f"{name} must contain only finite values")
         return batch_size
 
-    @replay_mutation
+    @replay_local(mutation=True)
     def push(
         self,
         observations: torch.Tensor,
@@ -243,7 +320,7 @@ class ReplayBuffer(ReplayCustody):
             masks = torch.ones((*dones.shape, self.action_dim), dtype=torch.bool, device=dones.device)
         self._push(observations, actions, rewards, next_observations, dones, masks)
 
-    @replay_mutation
+    @replay_local(mutation=True)
     def push_recorded(
         self,
         observations: torch.Tensor,
@@ -295,18 +372,18 @@ class ReplayBuffer(ReplayCustody):
                 values[name] = component
             values[f"{name}_present"] = torch.full((batch_size,), component is not None, dtype=torch.bool, device=rewards.total.device)
         values["legality_recorded"] = torch.full((batch_size,), masks is not None, dtype=torch.bool, device=dones.device)
-        moved = {name: value.detach().to(self.device).clone() for name, value in values.items()}
+        moved = {name: value.detach().to(self._effective_replay_device).clone() for name, value in values.items()}
         if masks is not None:
-            moved["next_action_masks"] = masks.detach().to(self.device).clone()
+            moved["next_action_masks"] = masks.detach().to(self._effective_replay_device).clone()
         storage = {name: getattr(self, name) for name in _STORAGE_FIELDS}
         for name, value in moved.items():
             if storage[name] is None:
-                storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
+                storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self._effective_replay_device)
         if action_dim is not None and self.action_dim is None and self.size:
             # Earlier live calls explicitly used the unconstrained adapter.
             storage["next_action_masks"][: self.size].fill_(True)
             storage["legality_recorded"][: self.size].fill_(True)
-        indices = (torch.arange(batch_size, device=self.device) + self.position) % self.capacity
+        indices = (torch.arange(batch_size, device=self._effective_replay_device) + self.position) % self.capacity
         for name, value in moved.items():
             storage[name][indices] = value
         for name, value in storage.items():
@@ -326,16 +403,16 @@ class ReplayBuffer(ReplayCustody):
             raise ValueError(f"Buffer size ({self.size}) < batch_size ({batch_size})")
         if self.observations is None:
             raise ValueError("Cannot sample an unallocated empty replay buffer")
-        return torch.randperm(self.size, device=self.device)[:batch_size]
+        return torch.randperm(self.size, device=self._effective_replay_device)[:batch_size]
 
-    @replay_sample
+    @replay_device_sample
     def sample(self, batch_size: int, *, lineage: RNGOperation | None) -> dict[str, torch.Tensor]:
         """Preserve the public without-replacement transition dictionary adapter."""
         indices = self._indices(batch_size)
         result = {
             name: getattr(self, name)[indices].clone() for name in ("observations", "actions", "rewards", "next_observations", "dones")
         }
-        result["mask"] = torch.ones(batch_size, dtype=torch.bool, device=self.device)
+        result["mask"] = torch.ones(batch_size, dtype=torch.bool, device=self._effective_replay_device)
         if self.next_action_masks is not None:
             assert self.legality_recorded is not None
             result["next_action_masks"] = self.next_action_masks[indices].clone()
@@ -354,8 +431,11 @@ class ReplayBuffer(ReplayCustody):
         ):
             raise ValueError("uniform replay supports flat transitions sampled uniformly without replacement")
 
-    @replay_read
+    @replay_local(mutation=False)
     def readiness(self, request: ReplayRequest) -> ReplayReadiness:
+        return self._readiness(request)
+
+    def _readiness(self, request: ReplayRequest) -> ReplayReadiness:
         self._check_request(request)
         qualified = self.action_dim is not None and self.legality_recorded is not None and bool(self.legality_recorded[: self.size].all())
         if qualified:
@@ -368,9 +448,9 @@ class ReplayBuffer(ReplayCustody):
             return ReplayReadiness(False, self.size, sampleable, "batch_unavailable")
         return ReplayReadiness(True, self.size, sampleable, "ready")
 
-    @replay_sample
+    @replay_device_sample
     def sample_batch(self, request: ReplayRequest, *, lineage: RNGOperation | None) -> UniformReplayBatch:
-        ready = self.readiness(request)
+        ready = self._readiness(request)
         if not ready.ready:
             raise ValueError(
                 f"uniform replay unavailable: {ready.reason}; retained={ready.retained_transitions}, sampleable={ready.sampleable_units}"
@@ -405,10 +485,10 @@ class ReplayBuffer(ReplayCustody):
             dones=self.dones[indices],
             next_action_masks=self.next_action_masks[indices],
             legality_recorded=self.legality_recorded[indices],
-            loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self.device),
-            lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self.device),
+            loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self._effective_replay_device),
+            lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self._effective_replay_device),
             unit_ids=indices,
-            weights=torch.from_numpy(weights.copy()).to(self.device),
+            weights=torch.from_numpy(weights.copy()).to(self._effective_replay_device),
             sampling=receipt,
             **components,
         )
@@ -439,7 +519,7 @@ class ReplayBuffer(ReplayCustody):
             "device": str(self.device),
         }
 
-    @replay_read
+    @replay_local(mutation=False)
     def serialize(self) -> dict[str, Any]:
         """Own chronological active rows and separate complete archive records."""
         position = 0
@@ -655,12 +735,12 @@ class ReplayBuffer(ReplayCustody):
             value = getattr(state, name)
             if value is None:
                 if state.size and name in _COMPONENTS:
-                    storage[name] = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+                    storage[name] = torch.zeros(self.capacity, dtype=torch.float32, device=self._effective_replay_device)
                 else:
                     storage[name] = None
             else:
-                allocated = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
-                allocated[: state.size].copy_(value.to(self.device))
+                allocated = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self._effective_replay_device)
+                allocated[: state.size].copy_(value.to(self._effective_replay_device))
                 storage[name] = allocated
         return _ReplayRestoreCandidate(
             **storage,
@@ -675,47 +755,46 @@ class ReplayBuffer(ReplayCustody):
     def _prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ReplayRestoreCandidate:
         return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
 
-    @replay_read
+    @replay_local(mutation=False)
     def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int) -> _ValidatedReplayState:
         """Pure exact validation, including supported pre-capture inspection."""
         return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
 
-    @replay_prepare
+    @replay_device_prepare
     def materialize_validated(self, state: _ValidatedReplayState, *, lineage: RNGOperation | None) -> object:
         """Revalidate owned DTO bytes against the current destination before issuance."""
         return self._materialize_serialized(state)
 
-    @replay_prepare
+    @replay_device_prepare
     def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None) -> object:
         return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
 
     def load_prepared(self, candidate: object, *, lineage: RNGOperation | None) -> None:
         """Transfer one prepared storage candidate after archive checks pass."""
-        with self._domain_operation("install", lineage) as lease:
-            with self._owner_operation(mutation=False):
-                if not isinstance(candidate, PreparedReplay):
-                    raise ValueError("Prepared replay is foreign, fabricated or already consumed")
-                material = self._prepared_payload(candidate)
-                if not isinstance(material, _ReplayRestoreCandidate):
-                    raise ValueError("uniform installation requires a prepared restore candidate")
-                archives = self._merge_archives(material.archives)
-                storage = {name: None if (value := getattr(material, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
+        with self._device_operation("install", lineage, "load_prepared", (candidate,), {}, mutation=False) as lease:
+            if not isinstance(candidate, PreparedReplay):
+                raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+            material = self._prepared_payload(candidate)
+            if not isinstance(material, _ReplayRestoreCandidate):
+                raise ValueError("uniform installation requires a prepared restore candidate")
+            archives = self._merge_archives(material.archives)
+            storage = {name: None if (value := getattr(material, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
 
-                def publish() -> None:
-                    for name, value in storage.items():
-                        setattr(self, name, value)
-                    self.size, self.position, self.has_wrapped = material.size, material.position, material.has_wrapped
-                    self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
-                    self._historical_archives = archives
+            def publish() -> None:
+                for name, value in storage.items():
+                    setattr(self, name, value)
+                self.size, self.position, self.has_wrapped = material.size, material.position, material.has_wrapped
+                self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
+                self._historical_archives = archives
 
-                self._validate_replay(candidate, lease)
-                self._publish_replay(candidate, publish)
+            self._validate_replay(candidate, lease)
+            self._publish_replay(candidate, publish)
 
     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None) -> None:
         """Resolve approved historical mode before any restore mutation."""
         if requested_mode not in ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inference"):
             raise ValueError("requested_mode is unsupported")
-        with self._owner_operation(mutation=False):
+        with self._local_operation("load_for_mode", (state,), {}, mutation=False):
             validated = self._validate_serialized(state, expected_obs_dim=None)
         if validated.legacy_state is not None and requested_mode == "recorded_full_resume":
             raise HistoricalLegalityUnavailable("missing historical successor masks; use approved archived_history_fresh_episode")

@@ -1,0 +1,41 @@
+{
+  "schema": "bac-publication-source-equivalence-v1",
+  "execution_candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "preassembly_tree": "693228331955125e352e2fe042828f9e45c4cbf7",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "ac43971770acfc44dc4b4df51c8ba518e187c7a8",
+    "tests": "2e81f46f181e1d9170131b289ad7d6db421fce15"
+  },
+  "publication_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "ac43971770acfc44dc4b4df51c8ba518e187c7a8",
+    "tests": "2e81f46f181e1d9170131b289ad7d6db421fce15"
+  },
+  "subtrees_equal": true,
+  "source_guards_checked": 818,
+  "approved_guarded_document_deltas": {
+    "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+      "before_sha256": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1",
+      "after_sha256": "259f78f91209cd917412941a7f60e3eef557899414110306ac4d9f75bfa9a9a7"
+    },
+    "docs/remediation/bac/STATUS.md": {
+      "before_sha256": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6",
+      "after_sha256": "d7ef31d33a56ce6203582c5558c84bcee0177166550c4380a7e8302f2b4002c4"
+    }
+  },
+  "configs_checked": 573,
+  "artifacts_checked": 13,
+  "document_application": {
+    "root": "W",
+    "path": "evidence-management/wip18-reviewed-document-application.json",
+    "sha256": "19bfaa13816248306ca7616984a34b68cf10fc00b789f94bd53ab3864664791f",
+    "bytes": 1877
+  },
+  "scope": "Post-execution reviewed documentation application only; application/test/config/script/ratchet bytes equal R98. This is not new runtime or acceptance. Evidence assembly not yet done."
+}

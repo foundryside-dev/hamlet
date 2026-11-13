@@ -1,0 +1,12 @@
+{
+  "kind": "I4-error-rendering-source-reconciliation",
+  "time": "2026-11-13T15:58:37.930654+00:00",
+  "basis": {
+    "implementation_review": "9f03268384b3d07414ec1bebd6cb0035d55d4e01e6e7b3ac7035f41cc159b446",
+    "regression_review": "fce6ccb546e845420e0dbd68d364f4e0ba0d8d3b35c13eda09386a6719e445ba",
+    "source_fact": "Reviewer rechecked frozen producer source: original unsupported-version ValueError interpolates version!r. Ordinary rejected CUDA Tensor representation itself can touch device data; original-no-Tensor-work wording was too broad."
+  },
+  "ruling": "Keep metadata planning free of Tensor equality/truth/representation work. Preserve existing informative validation error rendering, inventory its actual version-value sources and execute that rendering within genuine owner-held local/admitted completion. Correct I4 test downstream zero-events oracle to require pure planning followed by scoped representation/completion; never suppress real fixture observations or fabricate authority. Valid host-invalid-version and untouched-extra-field controls remain no-CUDA as applicable.",
+  "scope": "This refutes an overbroad source hypothesis, not the accepted no-unarmed-work contract. No diagnostic/capability removal, input restriction, fallback or acceptance waiver. Same I4 finite finding, no new implementationbody.",
+  "evidence": "R95 first assertions already genuinely fail unarmed eq/bool; downstream repr assertion not reached. Ten poison children and dependent B assertions remain UNRUN."
+}

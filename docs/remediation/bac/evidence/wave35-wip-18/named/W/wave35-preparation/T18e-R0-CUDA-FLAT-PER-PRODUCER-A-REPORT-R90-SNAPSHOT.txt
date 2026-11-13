@@ -1,0 +1,129 @@
+# Flat/PER CUDA producer A — initial tests-only freeze
+
+2026-11-13. Root granted only the first two independent capsule groups:
+metadata-only constructors and genuine healthy CPU current-route/stream-law
+controls. Created only the focused test body below and this required report.
+No production edit, application execution/import/probe, pytest collection,
+lint/type execution, manifest monkeypatch, Git write, source copy, branch,
+worktree or delegation. All behavioral outcomes below are EXPECTED / UNRUN.
+Root retains collection/RED/CPU capture and the next writer grant.
+
+## Exact frozen bodies
+
+| Body | Lines | SHA256 | Ceiling |
+| --- | ---: | --- | ---: |
+| `src/townlet/training/replay_contract.py` | 374 | `8de53fc6814a16bafb703728ed396d7b9a1298afdb415be4ec8d1d85ac1502a1` | 650 |
+| `src/townlet/training/replay_buffer.py` | 728 | `817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214` | 850 |
+| `src/townlet/training/prioritized_replay_buffer.py` | 1164 | `b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8` | 1300 |
+| `tests/test_townlet/regressions/bac/test_replay_cuda_producer.py` | 321 | `c1fd932e18638fd475360a4d31a0ff6c9c902611044f10df4dea0ca5d8725084` | 1000 |
+
+Remeasured four-body total2587, below planned3800 / four and hard5000 / five.
+All three production hashes remain exactly the initial capsule/base hashes.
+No old test/helper/recurrent/core body was read. The source classification
+capsule remains frozen SHA256
+`3f9bbd459f2bdee7b4ec27ce46eea334fc800be4b968ad4d58370e352fab7416`.
+
+## Fixture causality
+
+`_NoCUDA` replaces the `torch.cuda` module only within a MonkeyPatch context
+inside each test. It uses ordinary `__getattr__`, leaves real `__class__` and
+other existing object introspection untouched, and answers absent dunder
+lookups with AttributeError. Non-dunder CUDA attribute lookup raises the
+specific sentinel AssertionError. Thus pytest setup need not inspect a hostile
+`__class__`, and context unwinding restores the original module before pytest
+formats a constructor exception. The actual production constructors, sole
+domain, owner registration and an authenticated real `device_operation` with
+empty completion tuple remain intact. No replacement domain/participant or
+artificial local-contract authority is installed.
+
+The six constructor cases preserve the exact selector object, check empty
+length and stable participant identity, then exercise real domain admission
+on that participant. They cover CPU, unindexed CUDA and explicit cuda:3 without
+assuming real device count or initialization. Expected baseline RED is four
+CUDA cases: unindexed selectors encounter current structural rejection;
+indexed selectors encounter current eager initialized-device validation and
+the sentinel. CPU constructor cases are healthy controls. A failure during
+pytest plumbing/collection rather than the actual constructor is not causal
+RED and must be corrected before any production grant.
+
+CPU row fixtures are real dense CPU tensors, two-action masks with a terminal
+empty mask, independent optional reward components and total rewards that
+must not be recomposed. `RewardTensor` is constructed using the supplier's
+exact signature, explicitly passing all five fields. Actual push_recorded,
+readiness, serialization, validation DTO materialization, issuer-generated
+PreparedReplay, installation, both current load adapters and direct/typed
+sampling run unchanged algorithms. State comparisons include all serialized
+tensor/NumPy/container/scalar fields. PER controls also exercise explicit
+Generator ownership, physical/stable priority update, beta method, size,
+unconstrained push and action-vocabulary declaration; both families clear and
+repopulate. The empty historical archive property is exercised; nonempty GPU
+archives and scratch/recurrent paths are not claimed by this group.
+
+Independent stream-law expectations use standard-library samplers directly:
+flat uses a separate CPU Torch Generator with the same initial state and one
+randperm; PER external routes use an independent RandomState with one
+vectorized without-replacement choice; PER owned successive uses two explicit
+Generator choices over hand-enumerated residual supports. All priorities are
+initially equal, giving literal probabilities1/4 then1/3 and beta0 unit weights.
+Returned real rows, indices/receipts, owned Generator state and actual ambient
+continuation distinguish wrong RNG ownership/draw schedules. No producer or
+per_sampling helper computes its own expected answer. A fixture restores
+Python/global NumPy/CPU Torch state after each test; no CUDA RNG state is read.
+
+## Exact prospective nodes for root capture
+
+These13 node IDs are derived from the written parametrization, not a collected
+manifest. Root must verify actual collection before adopting them. Prefix each
+suffix below with
+`tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::`.
+
+1. `test_empty_constructor_has_no_cuda_access[cpu-flat]`
+2. `test_empty_constructor_has_no_cuda_access[cpu-per]`
+3. `test_empty_constructor_has_no_cuda_access[cuda-flat]`
+4. `test_empty_constructor_has_no_cuda_access[cuda-per]`
+5. `test_empty_constructor_has_no_cuda_access[cuda:3-flat]`
+6. `test_empty_constructor_has_no_cuda_access[cuda:3-per]`
+7. `test_cpu_local_and_admitted_routes_stay_cuda_free[flat]`
+8. `test_cpu_local_and_admitted_routes_stay_cuda_free[per]`
+9. `test_flat_sampling_preserves_selected_cpu_torch_stream[direct]`
+10. `test_flat_sampling_preserves_selected_cpu_torch_stream[batch]`
+11. `test_per_direct_retains_vectorized_global_law_with_owned_sampler`
+12. `test_per_batch_external_sampler_retains_vectorized_global_law`
+13. `test_per_batch_owned_sampler_retains_residual_draw_law`
+
+Expected baseline split is four causal constructor REDs and nine healthy CPU
+controls. This author claims neither collection nor PASS/FAIL counts. Root
+will retain actual same-byte outcomes and grant any fixture correction before
+production work. No hardware skips or GPU qualification are encoded here.
+
+## Supplier deltas and finite remaining work
+
+Read prose-only `T18e-R0-CUDA-ARCHIVE-INPUT-INVENTORY-FACTS.md`, root-supplied
+SHA256 `e8eaf1472efacbe5ade2605f41311e640000495cc96a045047b99a0126bf8adc`.
+It closes initial capsule's narrow canonical archive inventory and RewardTensor
+field feasibility questions without reading either supplier implementation:
+exact canonical archive direct `object.__getattribute__(archive,
+"original_state")` is metadata-only internal slot access; do not mutate/escape
+the returned data or invoke clone-on-read accessors before completion.
+RewardTensor exact-class fields are five ordinary mutable slots; inventory
+every independent tensor component. Ordinary-data/hook limitations remain.
+Root supplied exact constructor facts through
+`T18e-R0-CUDA-REWARD-TENSOR-CONSTRUCTOR-CAPSULE.md`, SHA256
+`9fbfdab0ab2ac0c56f378ca79e85e5d5fd9800f313e089742f855ccc75003391`.
+
+Root correction to the initial capsule's completion test row: all declared
+LOCAL gate completions must be attempted. Existing generic parent/device
+operation completion failure policy is unchanged; this test stage neither
+freezes an early-stop suffix as a new API nor expands generic cleanup. Scoped
+admitted completion-outcome design is separately owned; no private accessor
+or quarantine-on-every-body-error is assumed.
+
+Dynamic current-device resolution, retained/input/candidate inventory,
+completion/owner exclusion, mutation/currentness, failed preparation purity,
+preflight and authentic activated local dispatch remain UNRUN and unwritten
+under this narrow test grant. No premature missing-API stubs/imports were
+added. A remains staged until production implementation, B's exact activation,
+required separate core/test updates and independent review. Real CUDA
+initialization/query effects, asynchronous one-/two-device qualification,
+remaining parent/caller/native integration and programme gates remain owed.
+No capability removal, compatibility fallback, acceptance or accounting change.

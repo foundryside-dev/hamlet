@@ -1,0 +1,839 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 19 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FFFFFFFF [ 42%]
+FFFFFFFFFFF                                                              [100%]
+
+=================================== FAILURES ===================================
+_____ test_mapping_view_inventory_preserves_accepted_transport[False-flat] _____
+
+family = 'flat', prepare = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7c642f0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("prepare", [False, True])
+    def test_mapping_view_inventory_preserves_accepted_transport(family: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        mapping = MappingProxyType({name: _CUDAData(value, 2) if isinstance(value, torch.Tensor) else value for name, value in before.items()})
+        simulated_cuda.events.clear()
+        if prepare:
+            result = owner.prepare_serialized(mapping, expected_obs_dim=2, lineage=None)
+            assert isinstance(result, PreparedReplay)
+        else:
+            result = owner.validate_serialized(mapping, expected_obs_dim=2)
+        events = list(simulated_cuda.events)
+        if not prepare:
+            assert torch.equal(result.observations.cpu(), _rows()["observations"])
+        _assert_tree_equal(owner.serialize(), before)
+        if not prepare:
+>           _assert_local(events, (2,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1436: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'isfinite', (2,), False), ('finished', 'isfinite', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,)), ...]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:512: AssertionError
+_____ test_mapping_view_inventory_preserves_accepted_transport[False-per] ______
+
+family = 'per', prepare = False
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7d33ed0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("prepare", [False, True])
+    def test_mapping_view_inventory_preserves_accepted_transport(family: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        mapping = MappingProxyType({name: _CUDAData(value, 2) if isinstance(value, torch.Tensor) else value for name, value in before.items()})
+        simulated_cuda.events.clear()
+        if prepare:
+            result = owner.prepare_serialized(mapping, expected_obs_dim=2, lineage=None)
+            assert isinstance(result, PreparedReplay)
+        else:
+            result = owner.validate_serialized(mapping, expected_obs_dim=2)
+        events = list(simulated_cuda.events)
+        if not prepare:
+            assert torch.equal(result.observations.cpu(), _rows()["observations"])
+        _assert_tree_equal(owner.serialize(), before)
+        if not prepare:
+>           _assert_local(events, (2,))
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1436: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+events = [('work', 'isfinite', (2,), False), ('finished', 'isfinite', (2,)), ('work', 'all', (2,), False), ('finished', 'all', (2,)), ('work', '__bool__', (2,), False), ('finished', '__bool__', (2,)), ...]
+devices = (2,)
+
+    def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+>       assert [event[1] for event in events if event[0] == "arm"] == [devices]
+E       assert [] == [(2,)]
+E         
+E         Right contains one more item: (2,)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:512: AssertionError
+_____ test_dto_metadata_copy_inventory_is_pure_and_complete[flat-position] _____
+
+family = 'flat', field = 'position'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7cc79d0>
+
+    @pytest.mark.parametrize(
+        "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
+    )
+    def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        dto = owner.validate_serialized(before, expected_obs_dim=2)
+        malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
+        _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
+>       assert devices == (2,), "Owned DTO reconstruction clones this malformed metadata before refusing it"
+E       AssertionError: Owned DTO reconstruction clones this malformed metadata before refusing it
+E       assert () == (2,)
+E         
+E         Right contains one more item: 2
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1450: AssertionError
+_______ test_dto_metadata_copy_inventory_is_pure_and_complete[flat-size] _______
+
+family = 'flat', field = 'size'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db76f48a0>
+
+    @pytest.mark.parametrize(
+        "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
+    )
+    def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        dto = owner.validate_serialized(before, expected_obs_dim=2)
+        malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
+>       _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1449: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.training.replay_buffer.ReplayBuffer object at 0x7f1db76fc7d0>
+route = 'materialize_validated'
+args = (_ValidatedReplayState(observations=tensor([[1., 2.],
+        [3., 4.],
+        [5., 6.],
+        [7., 8.]]), actions=...rue]), size=tensor(1), position=0, obs_dim=2, action_dim=2, legality_mode='recorded', archives=(), legacy_state=None),)
+admitted = True
+runtime = <test_replay_cuda_producer._SimCUDA object at 0x7f1db76f48a0>
+
+    def _metadata_plan(owner: ReplayBuffer | PrioritizedReplayBuffer, route: str, args: tuple, admitted: bool, runtime: _SimCUDA) -> tuple:
+        runtime.events.clear()
+        with owner._owner_operation(mutation=False):
+            result = owner._device_plan(route, args, {}, admitted=admitted)
+>       assert runtime.events == [], "Metadata planning executed Tensor/runtime work before arming"
+E       AssertionError: Metadata planning executed Tensor/runtime work before arming
+E       assert [('work', '__...ool__', (2,))] == []
+E         
+E         Left contains 2 more items, first extra item: ('work', '__bool__', (2,), False)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1398: AssertionError
+_____ test_dto_metadata_copy_inventory_is_pure_and_complete[per-position] ______
+
+family = 'per', field = 'position'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db76f5350>
+
+    @pytest.mark.parametrize(
+        "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
+    )
+    def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        dto = owner.validate_serialized(before, expected_obs_dim=2)
+        malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
+        _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
+>       assert devices == (2,), "Owned DTO reconstruction clones this malformed metadata before refusing it"
+E       AssertionError: Owned DTO reconstruction clones this malformed metadata before refusing it
+E       assert () == (2,)
+E         
+E         Right contains one more item: 2
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1450: AssertionError
+___ test_dto_metadata_copy_inventory_is_pure_and_complete[per-size_current] ____
+
+family = 'per', field = 'size_current'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db76f8dd0>
+
+    @pytest.mark.parametrize(
+        "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
+    )
+    def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        dto = owner.validate_serialized(before, expected_obs_dim=2)
+        malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
+>       _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1449: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.training.prioritized_replay_buffer.PrioritizedReplayBuffer object at 0x7f1db76fd1d0>
+route = 'materialize_validated'
+args = (_ValidatedPrioritizedState(observations=tensor([[1., 2.],
+        [3., 4.],
+        [5., 6.],
+        [7., 8.]]), act...rigin='legacy-constructor', objective_unit='transition', weight_rule='successive_conditional_residual_v1', rng=None)),)
+admitted = True
+runtime = <test_replay_cuda_producer._SimCUDA object at 0x7f1db76f8dd0>
+
+    def _metadata_plan(owner: ReplayBuffer | PrioritizedReplayBuffer, route: str, args: tuple, admitted: bool, runtime: _SimCUDA) -> tuple:
+        runtime.events.clear()
+        with owner._owner_operation(mutation=False):
+            result = owner._device_plan(route, args, {}, admitted=admitted)
+>       assert runtime.events == [], "Metadata planning executed Tensor/runtime work before arming"
+E       AssertionError: Metadata planning executed Tensor/runtime work before arming
+E       assert [('work', '__...ool__', (2,))] == []
+E         
+E         Left contains 2 more items, first extra item: ('work', '__bool__', (2,), False)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1398: AssertionError
+____ test_dto_metadata_copy_inventory_is_pure_and_complete[per-priorities] _____
+
+family = 'per', field = 'priorities'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db775e580>
+
+    @pytest.mark.parametrize(
+        "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
+    )
+    def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        dto = owner.validate_serialized(before, expected_obs_dim=2)
+        malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
+        _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
+>       assert devices == (2,), "Owned DTO reconstruction clones this malformed metadata before refusing it"
+E       AssertionError: Owned DTO reconstruction clones this malformed metadata before refusing it
+E       assert () == (2,)
+E         
+E         Right contains one more item: 2
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1450: AssertionError
+______ test_tensor_version_refuses_without_metadata_tensor_effects[flat] _______
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db775f350>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_tensor_version_refuses_without_metadata_tensor_effects(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        malformed = {**before, "format_version": _CUDAData(torch.tensor(5, dtype=torch.int64), 2)}
+>       selected, devices = _metadata_plan(owner, "validate_serialized", (malformed,), False, simulated_cuda)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1465: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.training.replay_buffer.ReplayBuffer object at 0x7f1db76fd590>
+route = 'validate_serialized'
+args = ({'action_dim': 2, 'actions': tensor([0, 1, 0, 1]), 'capacity': 4, 'dones': tensor([False, False, False,  True]), ...},)
+admitted = False
+runtime = <test_replay_cuda_producer._SimCUDA object at 0x7f1db775f350>
+
+    def _metadata_plan(owner: ReplayBuffer | PrioritizedReplayBuffer, route: str, args: tuple, admitted: bool, runtime: _SimCUDA) -> tuple:
+        runtime.events.clear()
+        with owner._owner_operation(mutation=False):
+            result = owner._device_plan(route, args, {}, admitted=admitted)
+>       assert runtime.events == [], "Metadata planning executed Tensor/runtime work before arming"
+E       AssertionError: Metadata planning executed Tensor/runtime work before arming
+E       assert [('work', '__...ool__', (2,))] == []
+E         
+E         Left contains 4 more items, first extra item: ('work', '__eq__', (2,), False)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1398: AssertionError
+_______ test_tensor_version_refuses_without_metadata_tensor_effects[per] _______
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db77c5750>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_tensor_version_refuses_without_metadata_tensor_effects(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        malformed = {**before, "format_version": _CUDAData(torch.tensor(5, dtype=torch.int64), 2)}
+>       selected, devices = _metadata_plan(owner, "validate_serialized", (malformed,), False, simulated_cuda)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1465: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.training.prioritized_replay_buffer.PrioritizedReplayBuffer object at 0x7f1db76fd810>
+route = 'validate_serialized'
+args = ({'action_dim': 2, 'actions': tensor([0, 1, 0, 1]), 'alpha': 1.0, 'beta': 0.0, ...},)
+admitted = False
+runtime = <test_replay_cuda_producer._SimCUDA object at 0x7f1db77c5750>
+
+    def _metadata_plan(owner: ReplayBuffer | PrioritizedReplayBuffer, route: str, args: tuple, admitted: bool, runtime: _SimCUDA) -> tuple:
+        runtime.events.clear()
+        with owner._owner_operation(mutation=False):
+            result = owner._device_plan(route, args, {}, admitted=admitted)
+>       assert runtime.events == [], "Metadata planning executed Tensor/runtime work before arming"
+E       AssertionError: Metadata planning executed Tensor/runtime work before arming
+E       assert [('work', '__...', (2,)), ...] == []
+E         
+E         Left contains 8 more items, first extra item: ('work', '__eq__', (2,), False)
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1398: AssertionError
+____ test_early_cpu_refusal_does_not_plan_unused_cuda_target[capacity-flat] ____
+
+family = 'flat', branch = 'capacity'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db77c6050>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7be34a0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
+    def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
+        family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            if branch == "capacity":
+                _push(owner, _rows(), recorded=True)
+                incoming = owner.serialize()
+                if family == "flat":
+                    owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
+                else:
+                    owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
+                owner.device = torch.device("cuda:3")
+                with pytest.raises(ValueError, match="capacity"):
+                    owner.validate_serialized(incoming, expected_obs_dim=2)
+                selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
+            elif branch == "rank":
+                rows = _rows()
+                rows["observations"] = torch.ones(4, dtype=torch.float32)
+                revision = owner._replay_revision
+                with pytest.raises(ValueError, match="observations"):
+                    _push(owner, rows, recorded=True)
+                assert owner._replay_revision > revision and len(owner) == 0
+                rewards = RewardTensor(
+                    rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+                )
+                arguments = (
+                    rows["observations"],
+                    rows["actions"],
+                    rewards,
+                    rows["next_observations"],
+                    rows["dones"],
+                    rows["next_action_masks"],
+                )
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
+            else:
+                _push(owner, _rows(), recorded=False)
+                request = _request(family)
+                assert not owner.readiness(request).ready and len(owner) == 4
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
+>           assert selected is None and devices == ()
+E           AssertionError: assert (device(type='cuda', index=3) is None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1518: AssertionError
+____ test_early_cpu_refusal_does_not_plan_unused_cuda_target[capacity-per] _____
+
+family = 'per', branch = 'capacity'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7baf6b0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7bc3150>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
+    def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
+        family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            if branch == "capacity":
+                _push(owner, _rows(), recorded=True)
+                incoming = owner.serialize()
+                if family == "flat":
+                    owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
+                else:
+                    owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
+                owner.device = torch.device("cuda:3")
+                with pytest.raises(ValueError, match="capacity"):
+                    owner.validate_serialized(incoming, expected_obs_dim=2)
+                selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
+            elif branch == "rank":
+                rows = _rows()
+                rows["observations"] = torch.ones(4, dtype=torch.float32)
+                revision = owner._replay_revision
+                with pytest.raises(ValueError, match="observations"):
+                    _push(owner, rows, recorded=True)
+                assert owner._replay_revision > revision and len(owner) == 0
+                rewards = RewardTensor(
+                    rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+                )
+                arguments = (
+                    rows["observations"],
+                    rows["actions"],
+                    rewards,
+                    rows["next_observations"],
+                    rows["dones"],
+                    rows["next_action_masks"],
+                )
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
+            else:
+                _push(owner, _rows(), recorded=False)
+                request = _request(family)
+                assert not owner.readiness(request).ready and len(owner) == 4
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
+>           assert selected is None and devices == ()
+E           AssertionError: assert (device(type='cuda', index=3) is None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1518: AssertionError
+______ test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat] ______
+
+family = 'flat', branch = 'rank'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7bac7d0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b2b310>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
+    def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
+        family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            if branch == "capacity":
+                _push(owner, _rows(), recorded=True)
+                incoming = owner.serialize()
+                if family == "flat":
+                    owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
+                else:
+                    owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
+                owner.device = torch.device("cuda:3")
+                with pytest.raises(ValueError, match="capacity"):
+                    owner.validate_serialized(incoming, expected_obs_dim=2)
+                selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
+            elif branch == "rank":
+                rows = _rows()
+                rows["observations"] = torch.ones(4, dtype=torch.float32)
+                revision = owner._replay_revision
+                with pytest.raises(ValueError, match="observations"):
+                    _push(owner, rows, recorded=True)
+                assert owner._replay_revision > revision and len(owner) == 0
+                rewards = RewardTensor(
+                    rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+                )
+                arguments = (
+                    rows["observations"],
+                    rows["actions"],
+                    rewards,
+                    rows["next_observations"],
+                    rows["dones"],
+                    rows["next_action_masks"],
+                )
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
+            else:
+                _push(owner, _rows(), recorded=False)
+                request = _request(family)
+                assert not owner.readiness(request).ready and len(owner) == 4
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
+>           assert selected is None and devices == ()
+E           AssertionError: assert (device(type='cuda', index=3) is None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1518: AssertionError
+______ test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per] _______
+
+family = 'per', branch = 'rank'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7755710>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b29080>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
+    def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
+        family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            if branch == "capacity":
+                _push(owner, _rows(), recorded=True)
+                incoming = owner.serialize()
+                if family == "flat":
+                    owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
+                else:
+                    owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
+                owner.device = torch.device("cuda:3")
+                with pytest.raises(ValueError, match="capacity"):
+                    owner.validate_serialized(incoming, expected_obs_dim=2)
+                selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
+            elif branch == "rank":
+                rows = _rows()
+                rows["observations"] = torch.ones(4, dtype=torch.float32)
+                revision = owner._replay_revision
+                with pytest.raises(ValueError, match="observations"):
+                    _push(owner, rows, recorded=True)
+                assert owner._replay_revision > revision and len(owner) == 0
+                rewards = RewardTensor(
+                    rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+                )
+                arguments = (
+                    rows["observations"],
+                    rows["actions"],
+                    rewards,
+                    rows["next_observations"],
+                    rows["dones"],
+                    rows["next_action_masks"],
+                )
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
+            else:
+                _push(owner, _rows(), recorded=False)
+                request = _request(family)
+                assert not owner.readiness(request).ready and len(owner) == 4
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
+>           assert selected is None and devices == ()
+E           AssertionError: assert (device(type='cuda', index=3) is None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1518: AssertionError
+____ test_early_cpu_refusal_does_not_plan_unused_cuda_target[unready-flat] _____
+
+family = 'flat', branch = 'unready'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7bca190>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b2ab30>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
+    def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
+        family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            if branch == "capacity":
+                _push(owner, _rows(), recorded=True)
+                incoming = owner.serialize()
+                if family == "flat":
+                    owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
+                else:
+                    owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
+                owner.device = torch.device("cuda:3")
+                with pytest.raises(ValueError, match="capacity"):
+                    owner.validate_serialized(incoming, expected_obs_dim=2)
+                selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
+            elif branch == "rank":
+                rows = _rows()
+                rows["observations"] = torch.ones(4, dtype=torch.float32)
+                revision = owner._replay_revision
+                with pytest.raises(ValueError, match="observations"):
+                    _push(owner, rows, recorded=True)
+                assert owner._replay_revision > revision and len(owner) == 0
+                rewards = RewardTensor(
+                    rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+                )
+                arguments = (
+                    rows["observations"],
+                    rows["actions"],
+                    rewards,
+                    rows["next_observations"],
+                    rows["dones"],
+                    rows["next_action_masks"],
+                )
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
+            else:
+                _push(owner, _rows(), recorded=False)
+                request = _request(family)
+                assert not owner.readiness(request).ready and len(owner) == 4
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
+>           assert selected is None and devices == ()
+E           AssertionError: assert (device(type='cuda', index=3) is None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1518: AssertionError
+_____ test_early_cpu_refusal_does_not_plan_unused_cuda_target[unready-per] _____
+
+family = 'per', branch = 'unready'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1db7dba410>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b2a430>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
+    def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
+        family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            if branch == "capacity":
+                _push(owner, _rows(), recorded=True)
+                incoming = owner.serialize()
+                if family == "flat":
+                    owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
+                else:
+                    owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
+                owner.device = torch.device("cuda:3")
+                with pytest.raises(ValueError, match="capacity"):
+                    owner.validate_serialized(incoming, expected_obs_dim=2)
+                selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
+            elif branch == "rank":
+                rows = _rows()
+                rows["observations"] = torch.ones(4, dtype=torch.float32)
+                revision = owner._replay_revision
+                with pytest.raises(ValueError, match="observations"):
+                    _push(owner, rows, recorded=True)
+                assert owner._replay_revision > revision and len(owner) == 0
+                rewards = RewardTensor(
+                    rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
+                )
+                arguments = (
+                    rows["observations"],
+                    rows["actions"],
+                    rewards,
+                    rows["next_observations"],
+                    rows["dones"],
+                    rows["next_action_masks"],
+                )
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
+            else:
+                _push(owner, _rows(), recorded=False)
+                request = _request(family)
+                assert not owner.readiness(request).ready and len(owner) == 4
+                owner.device = torch.device("cuda:3")
+                selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
+>           assert selected is None and devices == ()
+E           AssertionError: assert (device(type='cuda', index=3) is None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1518: AssertionError
+_ test_local_callback_reentry_refuses_before_requesting_admission[sample-flat] _
+
+family = 'flat', callback = 'sample'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b2a040>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("callback", ["sample", "prepare"])
+    def test_local_callback_reentry_refuses_before_requesting_admission(family: str, callback: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        domain = process_rng_domain()
+        real_admission, real_clone = domain.admission, torch.Tensor.clone
+        requested, refused = [], []
+        entered = False
+    
+        def admission(actual: Any, *, lineage: Any) -> Any:
+            requested.append(lineage)
+            return real_admission(lineage=lineage)  # Observe the request; retain real authentication/exclusion.
+    
+        def clone(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
+            nonlocal entered
+            result = real_clone(value, *args, **kwargs)
+            if not entered:
+                entered = True
+                with pytest.raises(RuntimeError, match="reentry") as error:
+                    owner.sample(2, lineage=None) if callback == "sample" else owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+                refused.append(error.value)
+            return result
+    
+        with monkeypatch.context() as scoped:
+            scoped.setattr(type(domain), "admission", admission)
+            scoped.setattr(torch.Tensor, "clone", clone)
+            actual = owner.serialize()
+        assert entered and len(refused) == 1
+        _assert_tree_equal(actual, state)
+>       assert requested == [], "Same-owner callback requested domain while holding owner custody"
+E       AssertionError: Same-owner callback requested domain while holding owner custody
+E       assert [None] == []
+E         
+E         Left contains one more item: None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1563: AssertionError
+_ test_local_callback_reentry_refuses_before_requesting_admission[sample-per] __
+
+family = 'per', callback = 'sample'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b2b930>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("callback", ["sample", "prepare"])
+    def test_local_callback_reentry_refuses_before_requesting_admission(family: str, callback: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        domain = process_rng_domain()
+        real_admission, real_clone = domain.admission, torch.Tensor.clone
+        requested, refused = [], []
+        entered = False
+    
+        def admission(actual: Any, *, lineage: Any) -> Any:
+            requested.append(lineage)
+            return real_admission(lineage=lineage)  # Observe the request; retain real authentication/exclusion.
+    
+        def clone(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
+            nonlocal entered
+            result = real_clone(value, *args, **kwargs)
+            if not entered:
+                entered = True
+                with pytest.raises(RuntimeError, match="reentry") as error:
+                    owner.sample(2, lineage=None) if callback == "sample" else owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+                refused.append(error.value)
+            return result
+    
+        with monkeypatch.context() as scoped:
+            scoped.setattr(type(domain), "admission", admission)
+            scoped.setattr(torch.Tensor, "clone", clone)
+            actual = owner.serialize()
+        assert entered and len(refused) == 1
+        _assert_tree_equal(actual, state)
+>       assert requested == [], "Same-owner callback requested domain while holding owner custody"
+E       AssertionError: Same-owner callback requested domain while holding owner custody
+E       assert [None] == []
+E         
+E         Left contains one more item: None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1563: AssertionError
+_ test_local_callback_reentry_refuses_before_requesting_admission[prepare-flat] _
+
+family = 'flat', callback = 'prepare'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b28de0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("callback", ["sample", "prepare"])
+    def test_local_callback_reentry_refuses_before_requesting_admission(family: str, callback: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        domain = process_rng_domain()
+        real_admission, real_clone = domain.admission, torch.Tensor.clone
+        requested, refused = [], []
+        entered = False
+    
+        def admission(actual: Any, *, lineage: Any) -> Any:
+            requested.append(lineage)
+            return real_admission(lineage=lineage)  # Observe the request; retain real authentication/exclusion.
+    
+        def clone(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
+            nonlocal entered
+            result = real_clone(value, *args, **kwargs)
+            if not entered:
+                entered = True
+                with pytest.raises(RuntimeError, match="reentry") as error:
+                    owner.sample(2, lineage=None) if callback == "sample" else owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+                refused.append(error.value)
+            return result
+    
+        with monkeypatch.context() as scoped:
+            scoped.setattr(type(domain), "admission", admission)
+            scoped.setattr(torch.Tensor, "clone", clone)
+            actual = owner.serialize()
+        assert entered and len(refused) == 1
+        _assert_tree_equal(actual, state)
+>       assert requested == [], "Same-owner callback requested domain while holding owner custody"
+E       AssertionError: Same-owner callback requested domain while holding owner custody
+E       assert [None] == []
+E         
+E         Left contains one more item: None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1563: AssertionError
+_ test_local_callback_reentry_refuses_before_requesting_admission[prepare-per] _
+
+family = 'per', callback = 'prepare'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1db7b2bd90>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("callback", ["sample", "prepare"])
+    def test_local_callback_reentry_refuses_before_requesting_admission(family: str, callback: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        domain = process_rng_domain()
+        real_admission, real_clone = domain.admission, torch.Tensor.clone
+        requested, refused = [], []
+        entered = False
+    
+        def admission(actual: Any, *, lineage: Any) -> Any:
+            requested.append(lineage)
+            return real_admission(lineage=lineage)  # Observe the request; retain real authentication/exclusion.
+    
+        def clone(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
+            nonlocal entered
+            result = real_clone(value, *args, **kwargs)
+            if not entered:
+                entered = True
+                with pytest.raises(RuntimeError, match="reentry") as error:
+                    owner.sample(2, lineage=None) if callback == "sample" else owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+                refused.append(error.value)
+            return result
+    
+        with monkeypatch.context() as scoped:
+            scoped.setattr(type(domain), "admission", admission)
+            scoped.setattr(torch.Tensor, "clone", clone)
+            actual = owner.serialize()
+        assert entered and len(refused) == 1
+        _assert_tree_equal(actual, state)
+>       assert requested == [], "Same-owner callback requested domain while holding owner custody"
+E       AssertionError: Same-owner callback requested domain while holding owner custody
+E       assert [None] == []
+E         
+E         Left contains one more item: None
+E         Use -v to get more diff
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1563: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mapping_view_inventory_preserves_accepted_transport[False-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mapping_view_inventory_preserves_accepted_transport[False-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[flat-position]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[flat-size]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[per-position]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[per-size_current]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dto_metadata_copy_inventory_is_pure_and_complete[per-priorities]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_tensor_version_refuses_without_metadata_tensor_effects[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_tensor_version_refuses_without_metadata_tensor_effects[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[capacity-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[capacity-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[unready-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[unready-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[sample-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[sample-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[prepare-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission[prepare-per]
+============================== 19 failed in 0.85s ==============================

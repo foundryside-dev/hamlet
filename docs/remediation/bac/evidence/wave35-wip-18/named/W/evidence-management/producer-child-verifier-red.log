@@ -1,0 +1,165 @@
+..............EEEEEEEEEE..........................................
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='flat_local_single')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='flat_local_distinct')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='flat_local_same')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='flat_admitted_single')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='flat_admitted_same')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='per_local_single')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='per_local_distinct')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='per_local_same')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='per_admitted_single')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_producer_cases (__main__.ProducerVerifierTests.test_all_ten_producer_cases) (case='per_admitted_same')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 769, in test_all_ten_producer_cases
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 304, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 221, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+----------------------------------------------------------------------
+Ran 57 tests in 0.811s
+
+FAILED (errors=10)

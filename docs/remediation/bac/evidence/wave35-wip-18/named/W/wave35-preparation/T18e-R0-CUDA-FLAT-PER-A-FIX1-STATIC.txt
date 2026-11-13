@@ -1,0 +1,25 @@
+Fix1 author static checks only; no application import/probe/pytest/child execution.
+
+COMMAND: .venv/bin/ruff check src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+EXIT: 0
+All checks passed!
+
+COMMAND: .venv/bin/python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet --quiet
+EXIT: 0
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(600 violation(s) whitelisted)
+Ratchet: 600 whitelisted violation(s), at the ceiling.
+
+COMMAND: UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black --check src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+EXIT: 0
+All done! ✨ 🍰 ✨
+4 files would be left unchanged.
+
+Frozen SHA256:
+169ed9e0c19f37b85f543b9e8a76f158821ea0f75edf37c7f2ef6b0e3d1fea0a  replay_contract.py
+b041535d46b33c91886430dae34babbbab3ea3e12991cd6fd2a8e8202ded698a  replay_buffer.py
+78b741358019d75a6685fd0593cc0a7a03b6768e5be69921e55481bece26f536  prioritized_replay_buffer.py
+d352385e8adcda59bf98c11747e4cab5eacf40142ce7ee4bd86a68773c1e332f  test_replay_cuda_producer.py

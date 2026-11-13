@@ -1,0 +1,70 @@
+{
+  "schema": "bac-wip18-preparation-supplement-v1",
+  "status": "LINKED DRAFT SUPPLEMENT; INCLUDE AT NEXT CHECKPOINT",
+  "parent_status": {
+    "root": "W",
+    "path": "evidence-management/wip18-preparation-status.json",
+    "sha256": "1950632d4e0b2c8502ffe64e779ac7ad7b19cd2ad49e9fd792695123537535ad",
+    "bytes": 2919
+  },
+  "parent_draft": {
+    "root": "W",
+    "path": "evidence-management/wip18-draft-receipt-input.json",
+    "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+    "bytes": 213388
+  },
+  "scope": "Additional WIP17 hosted Tests log-retrieval evidence only. Prior draft and historical evidence unchanged.",
+  "head": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "run_id": 43432685903,
+  "job_id": 131909869631,
+  "connector_attempt_3": {
+    "receipt": {
+      "root": "W",
+      "path": "evidence-management/wip17-tests-log-retrieval-attempt-3.json",
+      "sha256": "79515f54fbcf45eadd3aa2cdf0157a6ce90c7043b49f8609652b35e1cf188e44",
+      "bytes": 348
+    },
+    "outcome": "Transport closed; no log retrieved."
+  },
+  "cli_fallback": {
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "43432685903",
+      "--repo",
+      "foundryside-dev/hamlet",
+      "--job",
+      "131909869631",
+      "--log"
+    ],
+    "exit_code": 1,
+    "exit_code_provenance": "Root reported actual command exit 1 in task handoff; raw stdout/stderr preserved below.",
+    "stdout": {
+      "root": "W",
+      "path": "evidence-management/wip17-hosted-tests-cli.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "stderr": {
+      "root": "W",
+      "path": "evidence-management/wip17-hosted-tests-cli.stderr",
+      "sha256": "dccc4d1bcfabb7edf31e78a0d5b0973b3db8669802d91aedf89a9dded1ff56c5",
+      "bytes": 114
+    },
+    "outcome": "GET workflow job Forbidden; stdout zero bytes.",
+    "started_at": null,
+    "ended_at": null,
+    "time_unavailable_reason": "Absolute CLI execution times not supplied; none inferred."
+  },
+  "publication_status_delta": "WIP17 Tests completed FAIL; cause remains unclassified. A third connector retrieval closed transport; authorized CLI fallback failed with Forbidden and empty stdout. These are access limitations, not evidence of the test failure cause or an acceptance waiver.",
+  "required_next": "Include these exact references in next checkpoint input/dependency ledger. No further retrieval requested. All earlier ROOT SUPPLY blockers remain.",
+  "qualification_change": false,
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66,
+    "changed": false
+  },
+  "method": "Read and hash three existing metadata/log artifacts; no retrieval, source/test execution, Git/index changes or external writes."
+}

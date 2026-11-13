@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r97-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r97-fix2-reachable-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fix2-reachable-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

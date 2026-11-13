@@ -1,0 +1,32 @@
+Author static checks on frozen Fix2 source; no application tests/import probes.
+cwd: /workspace/hamlet
+
+$ UV_CACHE_DIR=/tmp/bac-a-black-uv-cache uv run --no-sync black src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit: 0
+All done! ✨ 🍰 ✨
+4 files left unchanged.
+
+$ .venv/bin/ruff check src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+exit: 0
+All checks passed!
+
+$ .venv/bin/python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet --quiet
+exit: 0
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(600 violation(s) whitelisted)
+Ratchet: 600 whitelisted violation(s), at the ceiling.
+
+$ .venv/bin/mypy src/townlet/training/replay_contract.py src/townlet/training/replay_buffer.py src/townlet/training/prioritized_replay_buffer.py
+exit: 1
+src/townlet/training/replay_contract.py:313: error: "AmbientRNGDomain" has no attribute "device_invocation"; maybe "device_operation"?  [attr-defined]
+Found 1 error in 1 file (checked 3 source files)
+
+Source line counts and SHA256:
+689 6bf839271ed030ba7787dca24cd9305dfef4d8ae382b67b300906b66ca495265 src/townlet/training/replay_contract.py
+807 752f9690da797edd4acbdda04e2a85e60aa6c19875cb8eb6956de3805e657270 src/townlet/training/replay_buffer.py
+1260 225bb6582a6d53bac3ce6ab5bed3e481a26fe3e904e272af14b9657d2746ca4c src/townlet/training/prioritized_replay_buffer.py
+1668 e005667a8ad82db97aacc4882812e44b09947fa26fdf97b45d4cf6057abbd8b7 tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+Total: 4424 lines in four bodies; ceilings 760/850/1300/1750, total4660, hard5000/five.

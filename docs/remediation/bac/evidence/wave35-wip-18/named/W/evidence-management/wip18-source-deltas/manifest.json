@@ -1,0 +1,240 @@
+{
+  "schema": "bac-inert-source-delta-preservation-v1",
+  "scope": "Nonexecuted full-index binary patches preserve each selected historical application source tree against the published base. These are review/evidence artifacts, not checkouts or execution copies; no branch/worktree created.",
+  "entries": [
+    {
+      "round": 90,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+      "candidate_manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r90-from-9acd85d3.patch",
+        "sha256": "1b38acc7bae7a1488b0e7b431edc9d44d6b02252ebd852f0b69e80212182c876",
+        "bytes": 16954
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "8011596de86865f2d28457959ddb5fade90903d3",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 91,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+      "candidate_manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r91-from-9acd85d3.patch",
+        "sha256": "2f93e5dcbd2b4fb250acf0b02435625abc10631dbf64ffefa32eee108f46e356",
+        "bytes": 44413
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 92,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+      "candidate_manifest_sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r92-from-9acd85d3.patch",
+        "sha256": "9d59b5f235684e475b0b08ab73d70543dd85d74f45d1373b71c8f861df335bb1",
+        "bytes": 51594
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 93,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+      "candidate_manifest_sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r93-from-9acd85d3.patch",
+        "sha256": "3e34ae7b6b6fa11f62e2fd46039909b4e54a32bde33942bb8d51ccfebeaece9c",
+        "bytes": 66540
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 94,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+      "candidate_manifest_sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r94-from-9acd85d3.patch",
+        "sha256": "5ac25c55a06097ea31e66e1ff6494c687e70b9c9ebaf0ec3d814ab4856f7bae7",
+        "bytes": 122554
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "b95a43f214939024a1b6a64fbdaa35634194e3db",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 95,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "f627cc1f54814e19b278e312b54635d6b861a089",
+      "candidate_manifest_sha256": "52c2416b1d22e61dbfe16c848f60972cb6b88772e5dac8c5a612b76cd8223a65",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r95-from-9acd85d3.patch",
+        "sha256": "fff85be03223beb177d36ef14258862c37bfb7f1c4410f708c46d7649d367e90",
+        "bytes": 131439
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "f627cc1f54814e19b278e312b54635d6b861a089",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 96,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "1c1c35cc064c0a13163b25fb02faa767839c2fcd",
+      "candidate_manifest_sha256": "c50b8ab162e6a65dd8af390ded131c9df8b77bb7edd1c21ff2d6cedd0203c0ef",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r96-from-9acd85d3.patch",
+        "sha256": "7405b2f366f62689cda5834fda34bd3b381c8f969e1deab54a4652df441c09a2",
+        "bytes": 134529
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "1c1c35cc064c0a13163b25fb02faa767839c2fcd",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 97,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "56366b475edb05238a1f54e0b6b2b4ac316296ad",
+      "candidate_manifest_sha256": "914738d2625f859ea2c3e15a2ec66606ac2529a80215fa734763b20977f07498",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r97-from-9acd85d3.patch",
+        "sha256": "d9b518a3659a4f67f2fd845c9f59648af86070284015cd6c8b6319621c60b745",
+        "bytes": 139903
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "56366b475edb05238a1f54e0b6b2b4ac316296ad",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    },
+    {
+      "round": 98,
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+      "candidate_manifest_sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+      "patch": {
+        "root": "W",
+        "path": "evidence-management/wip18-source-deltas/r98-from-9acd85d3.patch",
+        "sha256": "3751c20bacab8981041750fe6e6859460bbe71fbab413c0215f2609dcd921099",
+        "bytes": 140660
+      },
+      "command": [
+        "git",
+        "diff",
+        "--binary",
+        "--full-index",
+        "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+        "--",
+        "src",
+        "tests",
+        "configs",
+        "scripts",
+        ".defaults-ratchet"
+      ]
+    }
+  ]
+}

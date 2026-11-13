@@ -1,0 +1,171 @@
+diff --git a/src/townlet/training/prioritized_replay_buffer.py b/src/townlet/training/prioritized_replay_buffer.py
+index 0fc35080..147016cb 100644
+--- a/src/townlet/training/prioritized_replay_buffer.py
++++ b/src/townlet/training/prioritized_replay_buffer.py
+@@ -237,6 +237,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 return None, (version,)
+             if any(not isinstance(key, str) for key in state) or set(state) != keys:
+                 return None, tuple(state)
++            kind, capacity = state.get("replay_kind"), state.get("capacity")
++            if type(kind) is str and kind == PRIORITIZED_REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
++                return None, ()
+             if route == "prepare_serialized":
+                 values = (state, *retained, self._historical_archives)
+                 if version != 4:
+diff --git a/src/townlet/training/replay_buffer.py b/src/townlet/training/replay_buffer.py
+index 11f49e2e..dd807b0d 100644
+--- a/src/townlet/training/replay_buffer.py
++++ b/src/townlet/training/replay_buffer.py
+@@ -177,6 +177,9 @@ class ReplayBuffer(ReplayCustody):
+                 return None, (version,)
+             if any(not isinstance(key, str) for key in state) or set(state) != keys:
+                 return None, tuple(state)
++            kind, capacity = state.get("replay_kind"), state.get("capacity")
++            if type(kind) is str and kind == REPLAY_BUFFER_KIND and type(capacity) is int and capacity != self.capacity:
++                return None, ()
+             if route == "prepare_serialized":
+                 values = (state, *retained, self._historical_archives)
+                 if version != 4:
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index 4c5d442c..edc58ba5 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -132,7 +132,11 @@ class ReplayCustody:
+         self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...]
+     ) -> tuple[torch.device | None, tuple[object, ...]]:
+         observations = self._replay_argument(args, kwargs, 0, "observations")
+-        prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
++        prefix: tuple[object, ...] = ()
++        if route == "push_recorded":
++            prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
++        elif self.action_dim is not None:
++            prefix = (self._replay_argument(args, kwargs, 4, "dones"),)
+         if not isinstance(observations, Tensor) or observations.ndim != 2 or observations.dtype != torch.float32:
+             return None, prefix
+         if observations.shape[1] < 1 or observations.shape[0] > self.capacity:
+@@ -241,6 +245,7 @@ class ReplayCustody:
+ 
+     @contextmanager
+     def _local_operation(self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool) -> Iterator[None]:
++        effective: torch.device | None
+         if self._replay_scope is not None and self._replay_scope[0] is current_thread():
+             raise RuntimeError("Unrelated replay lifecycle reentry")
+         while True:
+@@ -284,6 +289,7 @@ class ReplayCustody:
+     def _device_operation(
+         self, kind: str, lineage: RNGOperation | None, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool
+     ) -> Iterator[RNGOperation]:
++        effective: torch.device | None
+         if self._replay_scope is not None and self._replay_scope[0] is current_thread():
+             raise RuntimeError("Unrelated replay lifecycle reentry")
+         domain = process_rng_domain()
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+index 3d1b8de1..68d456f5 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -1564,3 +1564,105 @@ def test_local_callback_reentry_refuses_before_requesting_admission(family: str,
+     assert entered and len(refused) == 1
+     _assert_tree_equal(actual, state)
+     assert requested == [], "Same-owner callback requested domain while holding owner custody"
++
++
++def _capacity_refusal_fixture(family: str) -> tuple:
++    source = _owner(family, torch.device("cpu"))
++    _push(source, _rows(), recorded=True)
++    incoming = source.serialize()
++    if family == "flat":
++        target = ReplayBuffer(capacity=5, device=torch.device("cpu"))
++    else:
++        target = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++    target.device = torch.device("cuda:3")
++    return target, incoming
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("route", ["validate", "prepare"])
++def test_capacity_refusal_does_not_inventory_unused_gpu_rows(
++    family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner, incoming = _capacity_refusal_fixture(family)
++    incoming["observations"] = _CUDAData(incoming["observations"], 2)
++    before = owner.serialize()
++    method = "validate_serialized" if route == "validate" else "prepare_serialized"
++    selected, devices = _metadata_plan(owner, method, (incoming,), route == "prepare", simulated_cuda)
++    assert selected is None and devices == (), "Capacity refuses before any row source or destination is touched"
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match="capacity"):
++            if route == "validate":
++                owner.validate_serialized(incoming, expected_obs_dim=2)
++            else:
++                owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_capacity_refusal_does_not_merge_installed_gpu_archive(
++    family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner, incoming = _capacity_refusal_fixture(family)
++    owner.install_historical_archive(_family_archive(family, 3))  # Genuine B-dependent installed-archive fixture.
++    before = owner.serialize()
++    selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
++    assert selected is None and devices == ()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match="capacity"):
++            owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_bad_plain_push_refuses_before_unused_gpu_dones(family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    before = owner.serialize()
++    rows = _rows()
++    rows["observations"] = torch.ones(4, dtype=torch.float32)
++    rows["dones"] = _CUDAData(rows["dones"], 2)
++    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    owner.device = torch.device("cuda:3")
++    assert owner.action_dim is None
++    selected, devices = _metadata_plan(owner, "push", arguments, False, simulated_cuda)
++    assert selected is None and devices == (), "Plain no-vocabulary push rejects observations before reading dones"
++    revision = owner._replay_revision
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match="observations"):
++            owner.push(*arguments)
++    assert simulated_cuda.events == [] and owner._replay_revision > revision
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("prefix", ["recorded", "known"])
++@pytest.mark.parametrize("public", [False, True])
++def test_bad_observation_prefix_keeps_necessary_gpu_sources(family: str, prefix: str, public: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    if prefix == "known":
++        _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    rows = _rows()
++    rows["observations"] = torch.ones(4, dtype=torch.float32)
++    rows["dones"] = _CUDAData(rows["dones"], 2)
++    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    if prefix == "recorded":
++        arguments = (*arguments, _CUDAData(rows["next_action_masks"], 2))
++    method = "push_recorded" if prefix == "recorded" else "push"
++    owner.device = torch.device("cuda:3")
++    selected, devices = _metadata_plan(owner, method, arguments, False, simulated_cuda)
++    assert selected is None and devices == (2,)
++    if public:
++        revision = owner._replay_revision
++        with pytest.raises(ValueError, match="observations"):
++            getattr(owner, method)(*arguments)
++        events = list(simulated_cuda.events)
++        assert owner._replay_revision > revision
++        _assert_tree_equal(owner.serialize(), before)
++        _assert_local(events, (2,))

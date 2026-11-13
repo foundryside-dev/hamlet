@@ -1,0 +1,10 @@
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+
+=== Non-Whitelisted Violations ===
+src/townlet/training/replay_contract.py:178:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/training/replay_contract.py:209:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+
+2 violation(s) found.
+(620 violation(s) whitelisted)

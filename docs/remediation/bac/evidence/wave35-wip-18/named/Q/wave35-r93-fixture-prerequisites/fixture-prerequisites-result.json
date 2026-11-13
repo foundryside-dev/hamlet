@@ -1,0 +1,26 @@
+{
+  "name": "fixture-prerequisites",
+  "exit_code": 0,
+  "seconds": 4.42415452003479,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r93-fixture-prerequisites/fixture-prerequisites.log",
+  "sha256": "9cff9de859cb9746c20e2430b85ea695e13d6d725ad3ec019e464038f672ea38",
+  "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

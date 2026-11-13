@@ -1,0 +1,30 @@
+{
+  "name": "reachable-controls",
+  "exit_code": 0,
+  "seconds": 4.388345241546631,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_early_cpu_refusal_does_not_plan_unused_cuda_target[rank-per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_local_callback_reentry_refuses_before_requesting_admission",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_direct_extra_transport_key_refuses_without_touching_gpu_value[False-per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r96-reachable-controls/reachable-controls.log",
+  "sha256": "a7b603018c2d6bbdf7a50ca8cec1e18050e307333de744b445e979ed1f67b2e8",
+  "candidate_tree": "1c1c35cc064c0a13163b25fb02faa767839c2fcd",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "manifest_sha256": "c50b8ab162e6a65dd8af390ded131c9df8b77bb7edd1c21ff2d6cedd0203c0ef",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

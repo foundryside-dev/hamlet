@@ -1,0 +1,516 @@
+--- /workspace/hamlet/docs/remediation/bac/evidence/wave35-wip-17/named/Q/verify_bac_replay_spawn_identity.py.txt
++++ /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py
+@@ -89,6 +89,36 @@
+         "cuda": True,
+         "fork": _case == "inherited_pid",
+     }
++PRODUCER_IMPORTS = {
++    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
++    **{
++        "townlet.training." + n: "src/townlet/training/" + n + ".py"
++        for n in ("replay_contract", "replay_buffer", "prioritized_replay_buffer")
++    },
++    "test_replay_cuda_producer": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
++}
++PRODUCER_CASES = tuple(
++    f"{family}_{schedule}"
++    for family in ("flat", "per")
++    for schedule in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
++)
++for _case in PRODUCER_CASES:
++    ROLE_CONFIGS["cuda-producer-poison-" + _case] = {
++        "role": "cuda_producer_poison",
++        "producer": _case,
++        "message": f"cuda producer {_case} poison quarantines under owner custody",
++        "args": (
++            "-m",
++            "pytest",
++            PRODUCER_IMPORTS["test_replay_cuda_producer"] + f"::test_isolated_producer_poison[{_case}]",
++            *REPLAY_ARGS[3:],
++        ),
++        "imports": PRODUCER_IMPORTS,
++    }
++PRODUCER_CHILD_FIELDS = (CHILD_FIELDS - {"replay_imports"}) | {"producer_case", "cuda_producer_imports", "cuda_producer_sha256"}
++PRODUCER_OBSERVATION_FIELDS = OBSERVATION_FIELDS | {"case", "queued_ppid", "before", "after", "success"}
++
++
+ CUDA_CHILD_FIELDS = (CHILD_FIELDS - {"replay_imports"}) | {"cuda_core_imports", "cuda_core_test_sha256"}
+ FORK_IDENTITY_FIELDS = {
+     "schema",
+@@ -216,6 +246,135 @@
+     return receipts
+ 
+ 
++def check_producer_records(job_dir, case, child, observed):
++    def exact(value, fields, label):
++        require(type(value) is dict and set(value) == set(fields.split()), label + " schema mismatch")
++
++    def domain(value, poisoned):
++        require(
++            type(value) is list and len(value) == 3 and all(type(v) is int and v >= 0 for v in value[:2]) and value[2] is poisoned,
++            "producer domain health mismatch",
++        )
++
++    def sha(value):
++        return type(value) is str and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
++
++    def baseline(value):
++        exact(value, "domain python numpy torch cuda", "parent baseline")
++        domain(value["domain"], False)
++        require(sha(value["python"]) and sha(value["torch"]), "parent RNG digest mismatch")
++        require(value["cuda"] is None or type(value["cuda"]) is list and all(sha(v) for v in value["cuda"]), "parent CUDA digests")
++        numpy = value["numpy"]
++        require(type(numpy) is list and len(numpy) == 5, "parent numpy schema")
++        require(
++            numpy[0] == "MT19937"
++            and sha(numpy[1])
++            and type(numpy[2]) is int
++            and 0 <= numpy[2] <= 624
++            and type(numpy[3]) is int
++            and numpy[3] in (0, 1)
++            and type(numpy[4]) is float
++            and math.isfinite(numpy[4]),
++            "parent numpy values",
++        )
++
++    def error(value, kind=None, message=None, identity=None):
++        exact(value, "type message id children", "producer error")
++        require(
++            type(value["type"]) is str and type(value["message"]) is str and positive_pid(value["id"]) and type(value["children"]) is list,
++            "producer error types",
++        )
++        if kind is not None:
++            require(value["type"] == kind and value["children"] == [], "producer leaf type/shape mismatch")
++        if message is not None:
++            require(value["message"] == message, "producer error message mismatch")
++        if identity is not None:
++            require(value["id"] == identity, "producer error identity mismatch")
++
++    records, hashes = {}, {}
++    for key, filename, fields in (
++        ("preflight", "preflight", "case pid ppid qualified before"),
++        ("after", "after", "case pid ppid qualified phase success observations failure"),
++        ("parent_before", "parent-before", "case parent_pid qualified before"),
++    ):
++        record, hashes[key + "_sha256"] = read_json(job_dir / f"spawn-{filename}-cuda_producer_poison.json")
++        exact(record, fields, key)
++        require(record["case"] == case and record["qualified"] is True, "producer record case/qualification mismatch")
++        for field, expected in (
++            (("parent_pid", observed["parent_pid"]),) if key == "parent_before" else (("pid", child["pid"]), ("ppid", child["ppid"]))
++        ):
++            require(positive_pid(record[field]) and record[field] == expected, "producer record process mismatch")
++        records[key] = record
++    require(child["producer_case"] == observed["case"] == case and observed["success"] is True, "producer parent success/case mismatch")
++    after = records["after"]
++    require(after["phase"] == "complete" and after["success"] is True and after["failure"] is None, "producer not completed successfully")
++    before = records["preflight"]["before"]
++    exact(before, "domain devices error_ids", "producer preflight before")
++    domain(before["domain"], False)
++    require(
++        type(before["devices"]) is list and before["devices"] == [0, 1] and all(type(v) is int for v in before["devices"]),
++        "producer device inventory mismatch",
++    )
++    ids = before["error_ids"]
++    require(type(ids) is list and len(ids) == 3 and all(v is None or positive_pid(v) for v in ids), "producer error IDs schema")
++    same, distinct, admitted = case.endswith("same"), case.endswith("distinct"), "_admitted_" in case
++    if distinct:
++        require(all(positive_pid(v) for v in ids) and len(set(ids)) == 3, "producer distinct error IDs")
++    elif same:
++        require(positive_pid(ids[0]) and ids[0] == ids[1] and ids[2] is None, "producer duplicate error IDs")
++    else:
++        require(ids[0] is None and positive_pid(ids[1]) and ids[2] is None, "producer single error IDs")
++    obs = after["observations"]
++    exact(
++        obs,
++        "healthy_controls reached started_work syncs peer_blocked worker_errors peer_errors completion_failed outcome_errors "
++        "quarantine_before_unlock owner_quarantined cpu_local_available ambient_refused domain_after",
++        "producer observations",
++    )
++    for field in ("healthy_controls", "reached", "peer_blocked", "owner_quarantined", "cpu_local_available", "ambient_refused"):
++        require(obs[field] is True, "producer failed control: " + field)
++    require(obs["started_work"] is (same or distinct), "producer body phase mismatch")
++    syncs = obs["syncs"]
++    require(type(syncs) is list and bool(syncs) and all(type(v) is int and v in (0, 1) for v in syncs), "producer sync types")
++    require(syncs[0] == 0 if admitted else syncs == [0, 1], "producer completion schedule mismatch")
++    completed = obs["completion_failed"]
++    require(
++        type(completed) is list and bool(completed) and all(v is True for v in completed) and (not admitted or len(completed) == 1),
++        "producer completion outcome mismatch",
++    )
++    quarantine = obs["quarantine_before_unlock"]
++    require(type(quarantine) is list and len(quarantine) == 1 and quarantine[0] is True, "producer pre-unlock quarantine missing")
++    require(obs["outcome_errors"] == [], "producer outcome read failed")
++    domain(obs["domain_after"], True)
++    for field in ("worker_errors", "peer_errors"):
++        require(type(obs[field]) is list and len(obs[field]) == 1, "producer outward error count mismatch")
++    outward, peer = obs["worker_errors"][0], obs["peer_errors"][0]
++    error(peer, "RuntimeError")
++    require("quarantined" in peer["message"], "producer peer quarantine diagnostic missing")
++    if distinct:
++        error(outward)
++        require(
++            outward["type"] == "ExceptionGroup" and len(outward["children"]) == 3 and outward["id"] not in ids,
++            "producer distinct group shape mismatch",
++        )
++        for leaf, kind, suffix, identity in zip(
++            outward["children"], ("ValueError", "RuntimeError", "OSError"), ("body", "completion0", "completion1"), ids
++        ):
++            error(leaf, kind, case + ": " + suffix, identity)
++    else:
++        error(outward, "ValueError" if same else "RuntimeError", case + (": body" if same else ": completion0"), ids[0] if same else ids[1])
++    for value in (records["parent_before"]["before"], observed["before"], observed["after"]):
++        baseline(value)
++    require(records["parent_before"]["before"] == observed["before"], "standalone parent baseline mismatch")
++    require(all(observed["before"][k] == observed["after"][k] for k in ("python", "numpy", "torch", "cuda")), "parent RNG state changed")
++    return {
++        **hashes,
++        "producer_case": case,
++        "producer_observations": obs,
++        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
++    }
++
++
+ def require(condition, message):
+     if not condition:
+         raise ValueError(message)
+@@ -317,9 +476,17 @@
+     observed, observed_hash = read_json(job_dir / f"spawn-observation-{role}.json")
+     require(set(controller) == IDENTITY_FIELDS, "controller schema mismatch")
+     is_cuda = config.get("cuda", False)
+-    require(set(child) == (CUDA_CHILD_FIELDS if is_cuda else CHILD_FIELDS), "child schema mismatch")
+-    require(set(observed) == (OBSERVATION_FIELDS | {"queued_ppid"} if is_cuda else OBSERVATION_FIELDS), "observation schema mismatch")
+-    if is_cuda:
++    producer = config.get("producer")
++    if producer:
++        require(len(spec["jobs"]) == 1, "producer requires exactly one job")
++        require(type(child["torch"]) is str and bool(child["torch"]), "producer Torch version missing")
++    require(set(child) == (PRODUCER_CHILD_FIELDS if producer else CUDA_CHILD_FIELDS if is_cuda else CHILD_FIELDS), "child schema mismatch")
++    require(
++        set(observed)
++        == (PRODUCER_OBSERVATION_FIELDS if producer else OBSERVATION_FIELDS | {"queued_ppid"} if is_cuda else OBSERVATION_FIELDS),
++        "observation schema mismatch",
++    )
++    if is_cuda or producer:
+         require(positive_pid(observed["queued_ppid"]) and observed["queued_ppid"] == child["ppid"], "queued PPID mismatch")
+     for value in (child["pid"], child["ppid"], observed["parent_pid"], observed["process_pid"], observed["queued_pid"]):
+         require(positive_pid(value), "PID must be a positive exact integer")
+@@ -342,7 +509,10 @@
+         "bootstrap imports mismatch",
+     )
+     replay_imports = {module: str(root / relative) for module, relative in config["imports"].items()}
+-    require(child["cuda_core_imports" if is_cuda else "replay_imports"] == replay_imports, "role imports mismatch")
++    require(
++        child["cuda_producer_imports" if producer else "cuda_core_imports" if is_cuda else "replay_imports"] == replay_imports,
++        "role imports mismatch",
++    )
+     if is_cuda:
+         require(
+             child["cuda_core_test_sha256"] == manifest["source_files"][CUDA_IMPORTS["test_rng_cuda_admission"]],
+@@ -350,7 +520,13 @@
+         )
+     for path in [root / "src/townlet/__init__.py", *map(Path, child["imports"].values()), *map(Path, replay_imports.values())]:
+         require(str(path.relative_to(root)) in manifest["source_files"], "import absent from source manifest")
++    if producer:
++        require(
++            child["cuda_producer_sha256"] == {k: manifest["source_files"][v] for k, v in PRODUCER_IMPORTS.items()},
++            "producer source hashes mismatch",
++        )
+     check_inventory(root, manifest)
++    producer_receipt = check_producer_records(job_dir, producer, child, observed) if producer else None
+     fork_guards = check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash) if config.get("fork", False) else None
+     check_repository(root, manifest)
+     receipt = {
+@@ -391,6 +567,10 @@
+                 "Linux inherited guard-only records: actual OS single-thread profile, no Torch profile or CUDA work. "
+                 "Zero-effect counters require independent production source review of guard ordering, all lock routes and state coverage."
+             )
++    if producer_receipt is not None:
++        receipt.update(producer_receipt)
++        receipt["status"] = "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
++        receipt["scope"] = producer_receipt["producer_limitations"]
+     with destination.open("x") as stream:
+         stream.write(json.dumps(receipt, indent=2) + "\n")
+     return receipt
+--- /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-before-test_replay_spawn_verifier.py.txt
++++ /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py
+@@ -710,5 +710,280 @@
+         f.refuse()
+ 
+ 
++PRODUCER_CASES = tuple(
++    f"{family}_{schedule}"
++    for family in ("flat", "per")
++    for schedule in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
++)
++PRODUCER_MODULES = {
++    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
++    **{
++        "townlet.training." + n: "src/townlet/training/" + n + ".py"
++        for n in ("replay_contract", "replay_buffer", "prioritized_replay_buffer")
++    },
++    "test_replay_cuda_producer": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
++}
++
++
++class ProducerVerifierTests(unittest.TestCase):
++    def fixture(self, case="flat_local_single"):
++        f = ReplayVerifierTests()
++        self.addCleanup(f.doCleanups)
++        f.job_name, f.role = "cuda-producer-poison-" + case, "cuda_producer_poison"
++        f.message = f"cuda producer {case} poison quarantines under owner custody"
++        f.args = (
++            "-m",
++            "pytest",
++            PRODUCER_MODULES["test_replay_cuda_producer"] + f"::test_isolated_producer_poison[{case}]",
++            *verifier.REPLAY_ARGS[3:],
++        )
++        f.module_paths = PRODUCER_MODULES
++        f.setUp()
++        f.child.update(
++            producer_case=case,
++            cuda_producer_imports=f.child.pop("replay_imports"),
++            cuda_producer_sha256={k: f.manifest["source_files"][v] for k, v in PRODUCER_MODULES.items()},
++        )
++        baseline = {
++            "domain": [1, 2, False],
++            "python": "a" * 64,
++            "numpy": ["MT19937", "b" * 64, 624, 0, 0.0],
++            "torch": "c" * 64,
++            "cuda": None,
++        }
++        f.observed.update(case=case, queued_ppid=101, before=baseline, after={**baseline, "domain": [2, 3, False]}, success=True)
++        same, distinct = case.endswith("same"), case.endswith("distinct")
++        ids = [201, 201, None] if same else [201, 202, 203] if distinct else [None, 202, None]
++
++        def leaf(kind, text, identity):
++            return {"type": kind, "message": text, "id": identity, "children": []}
++
++        body = leaf("ValueError", case + ": body", 201)
++        c0 = leaf("RuntimeError", case + ": completion0", 202)
++        error = body if same else c0
++        if distinct:
++            error = {
++                "type": "ExceptionGroup",
++                "message": "actual diagnostic",
++                "id": 204,
++                "children": [body, c0, leaf("OSError", case + ": completion1", 203)],
++            }
++        f.preflight = {
++            "case": case,
++            "pid": 102,
++            "ppid": 101,
++            "qualified": True,
++            "before": {"domain": [3, 4, False], "devices": [0, 1], "error_ids": ids},
++        }
++        f.after = {
++            "case": case,
++            "pid": 102,
++            "ppid": 101,
++            "qualified": True,
++            "phase": "complete",
++            "success": True,
++            "failure": None,
++            "observations": {
++                "healthy_controls": True,
++                "reached": True,
++                "started_work": same or distinct,
++                "syncs": [0, 1],
++                "peer_blocked": True,
++                "worker_errors": [error],
++                "peer_errors": [leaf("RuntimeError", "owner quarantined", 205)],
++                "completion_failed": [True],
++                "outcome_errors": [],
++                "quarantine_before_unlock": [True],
++                "owner_quarantined": True,
++                "cpu_local_available": True,
++                "ambient_refused": True,
++                "domain_after": [3, 5, True],
++            },
++        }
++        f.parent_before = {"case": case, "parent_pid": 101, "qualified": True, "before": baseline}
++        for key, name in (("preflight", "preflight"), ("after", "after"), ("parent_before", "parent-before")):
++            f.paths[key] = f.job_dir / f"spawn-{name}-{f.role}.json"
++        for key in ("child", "observed", "preflight", "after", "parent_before"):
++            f.write(key, getattr(f, key))
++        return f
++
++    def test_all_ten_producer_cases(self):
++        for case in PRODUCER_CASES:
++            with self.subTest(case=case):
++                f = self.fixture(case)
++                receipt = f.invoke()
++                self.assertEqual(receipt["producer_case"], case)
++                for key in ("preflight", "after", "parent_before"):
++                    self.assertEqual(receipt[key + "_sha256"], verifier.digest(f.paths[key].read_bytes()))
++                with self.assertRaises(ValueError):
++                    f.invoke()
++
++    def mutate(self, f, record, path, value):
++        data = json.loads(f.paths[record].read_text())
++        original = json.loads(json.dumps(data))
++        target = data
++        for part in path[:-1]:
++            target = target[part]
++        target[path[-1]] = value
++        f.write(record, data)
++        f.refuse()
++        f.write(record, original)
++
++    def test_producer_outer_and_crosscase_controls(self):
++        f = self.fixture()
++        for record, field, bad in (
++            ("child", "producer_case", "per_local_single"),
++            ("child", "cuda_producer_sha256", {}),
++            ("child", "cuda_producer_imports", {}),
++            ("child", "threads", True),
++            ("child", "interop_threads", 1),
++            ("child", "pid", True),
++            ("child", "debug", False),
++            ("observed", "queued_ppid", 999),
++            ("observed", "success", False),
++            ("observed", "case", "per_local_single"),
++            ("observed", "message", "wrong"),
++            ("controller", "candidate_tree", "wrong"),
++        ):
++            self.mutate(f, record, [field], bad)
++        for case in PRODUCER_CASES:
++            f = self.fixture(case)
++            other = "per_local_single" if case != "per_local_single" else "flat_local_single"
++            args = list(f.args)
++            args[2] = args[2].replace(case, other)
++            f.spec_data["jobs"][0]["args"] = args
++            f.result["command"] = [str(f.root / ".venv/bin/python"), *args]
++            f.write("spec", f.spec_data)
++            f.write("result", f.result)
++            f.refuse()
++
++    def test_producer_success_schema_and_required_files(self):
++        f = self.fixture()
++        for key in ("preflight", "after", "parent_before", "observed", "child"):
++            data = json.loads(f.paths[key].read_text())
++            for field in data:
++                changed = data.copy()
++                del changed[field]
++                f.write(key, changed)
++                f.refuse()
++            f.write(key, {**data, "extra": 0})
++            f.refuse()
++            f.write(key, data)
++            saved = f.paths[key].with_suffix(".saved")
++            f.paths[key].rename(saved)
++            f.refuse()
++            saved.rename(f.paths[key])
++        for key in ("preflight", "after", "parent_before"):
++            for field, bad in (("case", "wrong"), ("qualified", 1), ("parent_pid" if key == "parent_before" else "pid", True)):
++                self.mutate(f, key, [field], bad)
++        for phase in ("preflight", "fault", "unknown"):
++            self.mutate(f, "after", ["phase"], phase)
++        self.mutate(f, "after", ["success"], False)
++        self.mutate(f, "after", ["failure"], {"type": "AttributeError"})
++
++    def test_producer_observation_controls(self):
++        for case in PRODUCER_CASES:
++            f = self.fixture(case)
++            obs = f.after["observations"]
++            for key in obs:
++                data = json.loads(f.paths["after"].read_text())
++                del data["observations"][key]
++                f.write("after", data)
++                f.refuse()
++                f.write("after", f.after)
++            for key in ("healthy_controls", "reached", "peer_blocked", "owner_quarantined", "cpu_local_available", "ambient_refused"):
++                self.mutate(f, "after", ["observations", key], False)
++            for key, bad in (
++                ("started_work", not obs["started_work"]),
++                ("syncs", [True]),
++                ("syncs", [1, 0]),
++                ("completion_failed", []),
++                ("completion_failed", [1]),
++                ("outcome_errors", [{}]),
++                ("quarantine_before_unlock", [True, True]),
++                ("domain_after", [1, 2, False]),
++                ("worker_errors", []),
++                ("peer_errors", []),
++            ):
++                self.mutate(f, "after", ["observations", key], bad)
++            for key, bad in (("type", "ValueError"), ("message", "healthy"), ("id", True), ("children", [{}])):
++                self.mutate(f, "after", ["observations", "peer_errors", 0, key], bad)
++            for key, bad in (("type", "wrong"), ("message", "wrong"), ("id", True), ("children", [{}])):
++                if key == "message" and case.endswith("distinct"):
++                    continue
++                self.mutate(f, "after", ["observations", "worker_errors", 0, key], bad)
++
++    def test_producer_schedule_and_error_identity(self):
++        for case in PRODUCER_CASES:
++            f = self.fixture(case)
++            for key, bad in (
++                ("devices", [False, True]),
++                ("devices", [1, 0]),
++                ("error_ids", [201, 202, 203, 204]),
++                ("error_ids", [None, True, None]),
++                ("domain", [True, 0, False]),
++                ("domain", [1, 0, True]),
++            ):
++                self.mutate(f, "preflight", ["before", key], bad)
++            self.mutate(f, "after", ["observations", "worker_errors", 0, "id"], 201 if case.endswith("distinct") else 999)
++            if case.endswith("distinct"):
++                for index in range(3):
++                    for field, bad in (("id", 999), ("message", "wrong"), ("type", "RuntimeError"), ("children", [{}])):
++                        if index == 1 and field == "type":
++                            continue
++                        self.mutate(f, "after", ["observations", "worker_errors", 0, "children", index, field], bad)
++            if "admitted" in case:
++                self.mutate(f, "after", ["observations", "completion_failed"], [True, True])
++            else:
++                self.mutate(f, "after", ["observations", "syncs"], [0, 1, 0])
++
++    def test_producer_parent_baselines(self):
++        f = self.fixture()
++        for field, bad in (
++            ("domain", [1, 2, True]),
++            ("python", "wrong"),
++            ("torch", "wrong"),
++            ("cuda", ["wrong"]),
++            ("numpy", ["MT19937", "a" * 64, True, 0, 0.0]),
++        ):
++            for side in ("before", "after"):
++                self.mutate(f, "observed", [side, field], bad)
++        self.mutate(f, "parent_before", ["before", "python"], "b" * 64)
++        self.mutate(f, "observed", ["after", "python"], "b" * 64)
++        self.mutate(f, "observed", ["after", "numpy", 4], float("nan"))
++
++    def test_producer_strict_existing_guards_and_single_job(self):
++        for check in (
++            "test_source_config_artifact_mismatch",
++            "test_wrong_cpu_harness_profile",
++            "test_parent_result_controls",
++            "test_invalid_parent_elapsed_seconds",
++            "test_repository_metadata_mismatch",
++        ):
++            f = self.fixture()
++            getattr(f, check)()
++        f = self.fixture()
++        f.spec_data["jobs"].append(f.spec_data["jobs"][0].copy())
++        f.write("spec", f.spec_data)
++        f.refuse()
++
++    def test_producer_nested_encoding_and_unknown_selection(self):
++        f = self.fixture()
++        for path, bad in ((["numpy", 0], "unknown"), (["numpy", 2], 625), (["numpy", 3], True), (["numpy", 4], 0)):
++            self.mutate(f, "observed", ["after", *path], bad)
++        self.mutate(f, "after", ["observations", "worker_errors", 0, "type"], "builtins.RuntimeError")
++        for record, path in (("preflight", ["before"]), ("after", ["observations"]), ("observed", ["after"])):
++            original = json.loads(f.paths[record].read_text())[path[0]]
++            for key in original:
++                changed = original.copy()
++                del changed[key]
++                self.mutate(f, record, path, changed)
++            self.mutate(f, record, path, {**original, "extra": 0})
++        for key in PRODUCER_MODULES:
++            self.mutate(f, "child", ["cuda_producer_sha256", key], "0" * 64)
++        self.mutate(f, "spec", ["jobs", 0, "name"], "cuda-producer-poison-unknown")
++        self.mutate(f, "spec", ["jobs", 0, "args"], [*f.args, "-n", "1"])
++
++
+ if __name__ == "__main__":
+     unittest.main()

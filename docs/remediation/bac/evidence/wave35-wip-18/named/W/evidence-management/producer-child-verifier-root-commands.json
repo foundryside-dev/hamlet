@@ -1,0 +1,41 @@
+{
+  "kind": "independent-root-tool-repeat",
+  "runs": [
+    {
+      "key": "synthetic",
+      "command": "/workspace/hamlet/.venv/bin/python /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py > /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-synthetic.log 2>&1",
+      "result": {
+        "chunk_id": "6d9de4",
+        "wall_time_seconds": 1.001370623,
+        "session_id": 31529,
+        "original_token_count": 0,
+        "output": "",
+        "exit_code": 0,
+        "completion_observed": true
+      }
+    },
+    {
+      "key": "ruff",
+      "command": "/workspace/hamlet/.venv/bin/ruff check /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py > /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-ruff.log 2>&1",
+      "result": {
+        "chunk_id": "2be904",
+        "wall_time_seconds": 0.000023245,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "key": "black",
+      "command": "/workspace/hamlet/.venv/bin/black --check --line-length 140 /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py > /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-black.log 2>&1",
+      "result": {
+        "chunk_id": "3383ac",
+        "wall_time_seconds": 0.4809881,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "scope": "Synthetic verifier tests and explicit static tools only; source hashes separately measured after runs. No application/child behavior evidence."
+}

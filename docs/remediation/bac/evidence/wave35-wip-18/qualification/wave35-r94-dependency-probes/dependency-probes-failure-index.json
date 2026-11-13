@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: module 'townlet.exploration.rng_custody' has no attribute 'REPLAY_BUFFER_PUSH_RECORDED_CUDA'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

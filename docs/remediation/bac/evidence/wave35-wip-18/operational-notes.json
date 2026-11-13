@@ -1,0 +1,44 @@
+{
+  "schema": "bac-checkpoint-root-operational-notes-v1",
+  "checkpoint_id": "wave35-wip-18",
+  "final_seal_comparison": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-18/final-seal-comparison.json",
+    "sha256": "97875a91f0cbd8e413857d1d2fcf57c3b844e7b15f90b742b22faf22004255bc",
+    "bytes": 1581
+  },
+  "independent_terminal_review": "b7dc0b211a75429973cc2322c7ccc4f57ac883ff2b804e8418697a6fc00d3bb0",
+  "draft_selection": {
+    "status": "DRAFT PLAN ONLY",
+    "exit_code": 0,
+    "sha256": "f7427aafac55d63fca3fb558177e7368771c849ab004b990c9c411720d8cba58",
+    "scope": "Root preflight only; superseded by final exact selection, never used for assembly."
+  },
+  "final_selection": {
+    "status": "READY FOR ROOT PUBLICATION CHECKS",
+    "sha256": "193ddece376797d277675a5190610c2f742b7da8a01425c37a9e1057372afac8",
+    "exit_code": 0
+  },
+  "assembly": {
+    "ref": {
+      "path": "docs/remediation/bac/evidence/wave35-wip-18/assembly-report.json",
+      "sha256": "8412e127e4ffb775f1e57fa855059d75b61d3859777583a7ed1d23a11dd838fb",
+      "bytes": 405414
+    },
+    "exit_code": 0,
+    "root_rehashed_objects": 395,
+    "scope": "All395 selected new/reused object paths, sizes and hashes checked after assembly; no content collisions/overwrites."
+  },
+  "execution_publication_equivalence": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-18/named/W/evidence-management/wip18-preassembly-source-equivalence.json",
+    "sha256": "295bae951fab0fdcc21ea59510d9741e808717cbd21541668c8282d80b7bed82",
+    "bytes": 1976
+  },
+  "source_disposition": "CHANGES REQUIRED: I5 metadata-prefix class; structural fix3 remains next work. No A/B/producer/hardware/programme acceptance.",
+  "remote_before_publication": {
+    "existing_branch": "project-recovery-bac-2026-11-01",
+    "sha": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+    "method": "GitHub API branch resource observed by root before assembly"
+  },
+  "prior_ci": "WIP17 Config PASS; Lint FAIL15 oracle6/POP9; Tests FAIL exact cause unclassified (connector Transport closed, CLI Forbidden).",
+  "next": "Exact staged-scope/tree checks, authorized existing-branch commit/push, remote SHA/CI verification; continue approved I5 structural fix3."
+}

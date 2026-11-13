@@ -1,0 +1,86 @@
+{
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "checkpoint_id": "wave35-wip-18",
+  "series": "wave35",
+  "interval": [
+    90,
+    98
+  ],
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_wip18_terminal",
+  "metadata_author": "/root/bac_astra_wip18_checkpoint",
+  "independence_evidence": {
+    "producer": "/root",
+    "reviewer": "/root/bac_astra_wip18_terminal",
+    "statement": "Fresh independent agent; did not author application source/tests, prior reviews, receipt metadata, frozen subject/contract or document drafts. Personally inspected retained artifacts and performed independent read-only hash/JSON/Git-object checks. Only this terminal report and attestation authored."
+  },
+  "disposition": "PASS FOR BOUNDED WIP EVIDENCE ONLY",
+  "source_disposition": "CHANGES REQUIRED; I5 materially open",
+  "qualification_subject": {
+    "root": "W",
+    "path": "evidence-management/wip18-r98-qualification-subject-v1.json",
+    "sha256": "6150798a40945244349843360efb51b553fc2fb79732ba6c8eae7138a2b2c15c",
+    "bytes": 5515
+  },
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r98-candidate.json",
+    "sha256": "02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1",
+    "bytes": 203565
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip18-checkpoint-contract.json",
+    "sha256": "9605f9c3c1f5dd4389d1749789ce523211ebadf365709cb8e904aca3e9ec96cf",
+    "bytes": 4145
+  },
+  "review_input": {
+    "root": "W",
+    "path": "evidence-management/wip18-r90-r98-complete-receipt-input-v5.json",
+    "sha256": "a9b071249c20ec340c510c25b28c46567d9c114439d73c52004000e3b5c6f2b0",
+    "bytes": 514436
+  },
+  "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "review_report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP18-TERMINAL-REVIEW.md",
+    "sha256": "b7dc0b211a75429973cc2322c7ccc4f57ac883ff2b804e8418697a6fc00d3bb0",
+    "bytes": 9128
+  },
+  "scope": "Finite R90-R98 WIP durability evidence. Only 24 named R98 CPU controls qualify their bounded assertions; source review CHANGES REQUIRED, I5 materially open. No A/B/producer/hardware/programme acceptance.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "findings": [],
+  "verified": {
+    "direct_unique_refs": 334,
+    "interval_top_level_entries": 85,
+    "actual_commands": 45,
+    "passed_checks": 35,
+    "failed_checks": 10,
+    "unrun_templates": 9,
+    "source_guards": 818,
+    "approved_guarded_document_deltas": 2,
+    "configs": 573,
+    "protected_artifacts": 13,
+    "only_qualifying_check": "wave35-r98-reachable-controls--reachable-controls",
+    "qualifying_passed": 24,
+    "actual_workers": 0
+  },
+  "limitations": [
+    "Retained evidence review; no independent application rerun.",
+    "Absolute execution UTC times unavailable; not inferred.",
+    "On-disk helper digests are not signed in-memory execution attestations.",
+    "Root receipt seal, selection/assembly, prospective link resolution, staged scope, push and remote CI remain pending."
+  ],
+  "required_next": [
+    "I5 structural branch-class repair and causal tests; no waiver or A acceptance.",
+    "Core B invocation/outcome/local contracts and missing B type API.",
+    "Actual applicable producer runtime, ten producer poison children, outer parent integration and real GPU one-/two-device proof.",
+    "Existing global 15 oracle6/POP9 errors remain; new owned B type error is separate, not an invented global recount.",
+    "Required ordinary runner/integration/full/default/coverage\u226570/slow/learning, fresh54/22 review and exact final remote CI."
+  ]
+}

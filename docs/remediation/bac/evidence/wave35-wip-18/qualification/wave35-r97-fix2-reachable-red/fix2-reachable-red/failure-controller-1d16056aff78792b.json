@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-flat]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "family = 'flat', route = 'prepare'\nsimulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115eb91d0>\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115d747c0>\n\n    @pytest.mark.parametrize(\"family\", [\"flat\", \"per\"])\n    @pytest.mark.parametrize(\"route\", [\"validate\", \"prepare\"])\n    def test_capacity_refusal_does_not_inventory_unused_gpu_rows(\n        family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch\n    ) -> None:\n        owner, incoming = _capacity_refusal_fixture(family)\n        incoming[\"observations\"] = _CUDAData(incoming[\"observations\"], 2)\n        before = owner.serialize()\n        method = \"validate_serialized\" if route == \"validate\" else \"prepare_serialized\"\n        selected, devices = _metadata_plan(owner, method, (incoming,), route == \"prepare\", simulated_cuda)\n>       assert selected is None and devices == (), \"Capacity refuses before any row source or destination is touched\"\nE       AssertionError: Capacity refuses before any row source or destination is touched\nE       assert (None is None and (2,) == ()\nE         \nE         Left contains one more item: 2\nE         Use -v to get more diff)\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1591: AssertionError",
+  "candidate_tree": "56366b475edb05238a1f54e0b6b2b4ac316296ad"
+}

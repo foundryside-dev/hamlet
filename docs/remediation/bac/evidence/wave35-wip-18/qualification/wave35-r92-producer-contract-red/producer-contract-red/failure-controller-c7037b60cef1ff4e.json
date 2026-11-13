@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[per]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "family = 'per'\nsimulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8f1bf0>\n\n    @pytest.mark.parametrize(\"family\", [\"flat\", \"per\"])\n    def test_install_inventories_issuer_material_without_selector_migration(family: str, simulated_cuda: _SimCUDA) -> None:\n        owner = _owner(family, torch.device(\"cuda:0\"))\n        _push(owner, _rows(), recorded=True)\n        state = owner.serialize()\n        owner.device = torch.device(\"cuda:1\")\n        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)\n        owner.device = torch.device(\"cuda:2\")\n        simulated_cuda.events.clear()\n        owner.load_prepared(candidate, lineage=None)\n        events = list(simulated_cuda.events)\n        assert owner.observations is not None and owner.observations.device == torch.device(\"cuda:1\")\n        _assert_tree_equal(owner.serialize(), state)\n>       assert _syncs(events) == (0, 1)\nE       assert (0,) == (0, 1)\nE         \nE         Right contains one more item: 1\nE         Use -v to get more diff\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:571: AssertionError",
+  "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34"
+}

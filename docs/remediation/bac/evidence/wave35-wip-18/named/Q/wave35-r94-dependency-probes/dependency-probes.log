@@ -1,0 +1,148 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FF       [100%]
+
+=================================== FAILURES ===================================
+___________ test_cpu_local_and_admitted_routes_stay_cuda_free[flat] ____________
+
+family = 'flat'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f56d24bcfc0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_cpu_local_and_admitted_routes_stay_cuda_free(family: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """CPU storage, actual sampling and current prepare/install need no CUDA."""
+        rows = _rows()
+        request = _request(family)
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+            owner = _owner(family, torch.device("cpu"))
+            _push(owner, rows, recorded=True)
+            assert len(owner) == owner.retained_transitions == 4
+            assert owner.readiness(request).ready
+            assert owner.stats()["device"] == "cpu"
+            assert owner.historical_archives == ()
+            state = owner.serialize()
+            for field, expected in rows.items():
+                assert torch.equal(state[field], expected)
+            assert state["rewards_intrinsic"] is None
+            assert torch.equal(state["rewards_extrinsic_present"], torch.ones(4, dtype=torch.bool))
+            assert torch.equal(state["rewards_intrinsic_present"], torch.zeros(4, dtype=torch.bool))
+            assert torch.equal(state["rewards_shaping_present"], torch.ones(4, dtype=torch.bool))
+    
+            validated = owner.validate_serialized(state, expected_obs_dim=2)
+>           candidate = owner.materialize_validated(validated, lineage=None)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:345: in guarded
+    with self._device_operation("prepare", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=False) as lease:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.replay_buffer.ReplayBuffer object at 0x7f56d2446660>
+kind = 'prepare', lineage = None, route = 'materialize_validated'
+args = (_ValidatedReplayState(observations=tensor([[1., 2.],
+        [3., 4.],
+        [5., 6.],
+        [7., 8.]]), actions=... True, True]), size=4, position=0, obs_dim=2, action_dim=2, legality_mode='recorded', archives=(), legacy_state=None),)
+kwargs = {'lineage': None}
+
+    @contextmanager
+    def _device_operation(
+        self, kind: str, lineage: RNGOperation | None, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool
+    ) -> Iterator[RNGOperation]:
+        domain = process_rng_domain()
+        with domain.admission(lineage=lineage) as gate:
+            while True:
+                with self._owner_operation(mutation=False):
+                    device, sources = self._device_plan(route, args, kwargs, admitted=True)
+                effective = (
+                    torch.device("cuda", gate.resolve_cuda(device=device)) if device is not None and device.type == "cuda" else device
+                )
+                for index in sources:
+                    gate.resolve_cuda(device=torch.device("cuda", index))
+                with self._owner_operation(mutation=False):
+                    selected, actual = self._device_plan(route, args, kwargs, admitted=True)
+                    if selected != device:
+                        continue
+                    devices = self._completion_devices(actual, effective)
+                    if lineage is None:
+                        gate.enroll(participant=self._replay_participant, cuda_devices=devices)
+>                   invocation = domain.device_invocation(
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+                        participant=self._replay_participant, operation_kind=kind, lineage=lineage, cuda_devices=devices
+                    )
+E                   AttributeError: 'AmbientRNGDomain' object has no attribute 'device_invocation'. Did you mean: 'device_operation'?
+
+src/townlet/training/replay_contract.py:220: AttributeError
+____________ test_simulated_fixture_runs_real_producer_values[flat] ____________
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f56d2446e40>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_simulated_fixture_runs_real_producer_values(family: str, simulated_cuda: _SimCUDA) -> None:
+        """Positive prerequisite: initialized indexed setup reaches real algorithms."""
+        rows = _rows()
+        owner = _owner(family, torch.device("cuda:0"))
+>       _push(owner, rows, recorded=True)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:520: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:84: in _push
+    owner.push_recorded(*arguments, rows["next_action_masks"])
+src/townlet/training/replay_contract.py:321: in guarded
+    with self._local_operation(method.__name__, args, kwargs, mutation=mutation):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.replay_buffer.ReplayBuffer object at 0x7f56d25279d0>
+route = 'push_recorded'
+args = (tensor([[1., 2.],
+        [3., 4.],
+        [5., 6.],
+        [7., 8.]]), tensor([0, 1, 0, 1]), RewardTensor(batch_si...alse, False,  True]), tensor([[ True, False],
+        [False,  True],
+        [ True,  True],
+        [False, False]]))
+kwargs = {}
+
+    @contextmanager
+    def _local_operation(self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool) -> Iterator[None]:
+        if self._replay_scope is not None and self._replay_scope[0] is current_thread():
+            raise RuntimeError("Unrelated replay lifecycle reentry")
+        while True:
+            with self._owner_operation(mutation=False):
+                device, sources = self._device_plan(route, args, kwargs, admitted=False)
+                if not sources and (device is None or device.type == "cpu"):
+                    if mutation:
+                        self._replay_revision += 1
+                    self._replay_scope = (current_thread(), device, route)
+                    try:
+                        yield
+                    finally:
+                        self._replay_scope = None
+                    return
+>           contract = getattr(rng_custody, self._local_cuda_contracts[route])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'townlet.exploration.rng_custody' has no attribute 'REPLAY_BUFFER_PUSH_RECORDED_CUDA'
+
+src/townlet/training/replay_contract.py:175: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_cpu_local_and_admitted_routes_stay_cuda_free[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]
+============================== 2 failed in 0.25s ===============================

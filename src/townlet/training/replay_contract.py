@@ -8,10 +8,10 @@ must supply their declared all-legal mask; constrained old history is archival.
 """
 
 from collections.abc import Callable, Iterator, Mapping
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, fields, replace
 from functools import wraps
-from threading import RLock
+from threading import RLock, current_thread
 from typing import Concatenate, Literal, NoReturn
 from weakref import WeakKeyDictionary
 
@@ -20,6 +20,7 @@ import numpy.typing as npt
 import torch
 from torch import Tensor
 
+from townlet.exploration import rng_custody
 from townlet.exploration.rng_custody import RNGCurrentToken, RNGOperation, RNGParticipant, process_rng_domain
 
 
@@ -45,23 +46,39 @@ class PreparedReplay:
 class ReplayCustody:
     """One process lease before one replay owner's mutation exclusion."""
 
+    device: torch.device
+    capacity: int
+    action_dim: int | None
+    actions: Tensor | None
+    observations: Tensor | None
+    legality_recorded: Tensor | None
+    _local_cuda_contracts: Mapping[str, str]
+
     def _init_custody(self, device: torch.device) -> None:
+        # Current full-member consumers migrate in their own producer packets.
         if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
             raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
-        index = device.index
-        devices: tuple[int, ...]
+        devices: tuple[int, ...] = ()
         if device.type == "cuda":
-            if index is None or type(index) is not int or index < 0:
+            index = device.index
+            if type(index) is not int or index < 0:
                 raise ValueError("CUDA replay custody requires an explicit initialized device index")
             devices = (index,)
-        else:
-            devices = ()
+        self._initialize_custody(device, devices)
+
+    def _init_device_custody(self, device: torch.device) -> None:
+        self._initialize_custody(device, ())
+
+    def _initialize_custody(self, device: torch.device, cuda_devices: tuple[int, ...]) -> None:
+        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
         self._replay_lock = RLock()
         self._replay_revision = 0
         self._replay_healthy = True
+        self._replay_scope: tuple[object, torch.device | None, str] | None = None
         self._replay_prepared: WeakKeyDictionary[PreparedReplay, tuple[int, RNGCurrentToken, object]] = WeakKeyDictionary()
         self._replay_participant = process_rng_domain().register(
-            owner=self, cuda_devices=devices, entrypoints=frozenset({"sample", "prepare", "install"})
+            owner=self, cuda_devices=cuda_devices, entrypoints=frozenset({"sample", "prepare", "install"})
         )
 
     @property
@@ -76,6 +93,8 @@ class ReplayCustody:
     def _owner_operation(self, *, mutation: bool) -> Iterator[None]:
         with self._replay_lock:
             self._check_custody()
+            if self._replay_scope is not None:
+                raise RuntimeError("Unrelated replay lifecycle reentry")
             if mutation:
                 self._replay_revision += 1
             yield
@@ -84,6 +103,240 @@ class ReplayCustody:
     def _domain_operation(self, kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
         with process_rng_domain().operation(participant=self._replay_participant, operation_kind=kind, lineage=lineage) as lease:
             yield lease
+
+    @property
+    def _effective_replay_device(self) -> torch.device:
+        if self._replay_scope is None or self._replay_scope[0] is not current_thread() or self._replay_scope[1] is None:
+            raise RuntimeError("Replay allocation was not included in this invocation plan")
+        return self._replay_scope[1]
+
+    def _replay_inventory(
+        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object]
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        raise NotImplementedError("Device producer must supply its source-owned inventory")
+
+    def _replay_children(self, value: object) -> tuple[object, ...]:
+        if isinstance(value, Mapping):
+            return tuple(item for pair in value.items() for item in pair)
+        if type(value) in (tuple, list) and isinstance(value, (tuple, list)):
+            return tuple(value)
+        return ()
+
+    @staticmethod
+    def _replay_argument(args: tuple[object, ...], kwargs: Mapping[str, object], index: int, name: str) -> object:
+        if len(args) > index:
+            return args[index]
+        return kwargs.get(name)
+
+    def _push_inventory(
+        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...]
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        observations = self._replay_argument(args, kwargs, 0, "observations")
+        prefix: tuple[object, ...] = ()
+        if route == "push_recorded":
+            prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
+        elif self.action_dim is not None:
+            prefix = (self._replay_argument(args, kwargs, 4, "dones"),)
+        if not isinstance(observations, Tensor) or observations.ndim != 2 or observations.dtype != torch.float32:
+            return None, prefix
+        if observations.shape[1] < 1 or observations.shape[0] > self.capacity:
+            return None, prefix
+        rewards = self._replay_argument(args, kwargs, 2, "rewards")
+        values = (
+            *args,
+            *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
+            *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
+        )
+        if observations.shape[0]:
+            return self.device, (*values, *retained)
+        if route == "push_recorded" or self.action_dim is not None:
+            return None, (*values, self.actions)
+        return None, values
+
+    def _transport_target(self, state: Mapping[str, object], size_field: str, *, strict: bool) -> torch.device | None:
+        capacity = state.get("capacity")
+        if strict and type(capacity) is not int:
+            return None
+        if not isinstance(capacity, int) or isinstance(capacity, bool) or capacity != self.capacity:
+            return None
+        count = state.get(size_field)
+        if strict and type(count) is not int:
+            return None
+        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
+            return None
+        return self.device
+
+    def _sample_inventory(
+        self,
+        route: str,
+        args: tuple[object, ...],
+        kwargs: Mapping[str, object],
+        retained: tuple[object, ...],
+        *,
+        size: int,
+        mode: str,
+        with_replacement: bool,
+        strict: bool,
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        count: object
+        if route == "sample_batch":
+            request = self._replay_argument(args, kwargs, 0, "request")
+            if not isinstance(request, ReplayRequest):
+                return None, ()
+            if (request.sequence_mode, request.sequence_objective, request.sequence_length) != (
+                "feedforward",
+                "transition",
+                1,
+            ) or request.sampling_mode != mode:
+                return None, ()
+            if self.action_dim is None or self.legality_recorded is None:
+                return None, ()
+            count = request.batch_size
+            if size < request.min_transitions or size == 0 or (not with_replacement and count > size):
+                return None, (self.legality_recorded,)
+        else:
+            count = self._replay_argument(args, kwargs, 0, "batch_size")
+        if strict:
+            if type(count) is not int or count < 0:
+                return None, ()
+        elif not isinstance(count, (int, np.integer)) or isinstance(count, (bool, np.bool_)) or count <= 0:
+            return None, ()
+        if self.observations is None or (not with_replacement and count > size):
+            return None, ()
+        return self.device, retained
+
+    def _completion_devices(self, sources: tuple[int, ...], device: torch.device | None) -> tuple[int, ...]:
+        if device is not None and device.type == "cuda":
+            index = device.index
+            if type(index) is not int:
+                raise ValueError("Replay effective CUDA device is not concrete")
+            return tuple(sorted({*sources, index}))
+        return sources
+
+    def _replay_cuda_devices(self, values: tuple[object, ...]) -> tuple[int, ...]:
+        result: set[int] = set()
+
+        def visit(value: object) -> None:
+            if isinstance(value, Tensor):
+                if value.device.type == "cuda":
+                    index = value.device.index
+                    if type(index) is not int or index < 0:
+                        raise ValueError("Retained replay CUDA tensors require concrete device metadata")
+                    result.add(index)
+            else:
+                for child in self._replay_children(value):
+                    visit(child)
+
+        for value in values:
+            visit(value)
+        return tuple(sorted(result))
+
+    def _device_plan(
+        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, admitted: bool
+    ) -> tuple[torch.device | None, tuple[int, ...]]:
+        device, values = self._replay_inventory(route, args, kwargs)
+        if admitted:
+            values = (*values, *(record[2] for record in self._replay_prepared.values()))
+        return device, self._replay_cuda_devices(values)
+
+    def _quarantine_replay(self) -> None:
+        self._replay_healthy = False
+        self._replay_revision += 1
+
+    @contextmanager
+    def _local_operation(self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool) -> Iterator[None]:
+        effective: torch.device | None
+        if self._replay_scope is not None and self._replay_scope[0] is current_thread():
+            raise RuntimeError("Unrelated replay lifecycle reentry")
+        while True:
+            with self._owner_operation(mutation=False):
+                device, sources = self._device_plan(route, args, kwargs, admitted=False)
+                if not sources and (device is None or device.type == "cpu"):
+                    if mutation:
+                        self._replay_revision += 1
+                    self._replay_scope = (current_thread(), device, route)
+                    try:
+                        yield
+                    finally:
+                        self._replay_scope = None
+                    return
+            contract = getattr(rng_custody, self._local_cuda_contracts[route])
+            with process_rng_domain().local_cuda_access(participant=self._replay_participant, contract=contract) as gate:
+                if device is not None and device.type == "cuda":
+                    effective = torch.device("cuda", gate.resolve_cuda(device=device))
+                else:
+                    effective = device
+                for index in sources:
+                    gate.resolve_cuda(device=torch.device("cuda", index))
+                with self._owner_operation(mutation=False):
+                    selected, actual = self._device_plan(route, args, kwargs, admitted=False)
+                    if selected != device:
+                        continue
+                    devices = self._completion_devices(actual, effective)
+                    self._replay_scope = (current_thread(), effective, route)
+                    try:
+                        with gate.complete(cuda_devices=devices):
+                            if mutation:
+                                self._replay_revision += 1
+                            yield
+                    finally:
+                        if gate.completion_failed():
+                            self._quarantine_replay()
+                        self._replay_scope = None
+                    return
+
+    @contextmanager
+    def _device_operation(
+        self, kind: str, lineage: RNGOperation | None, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool
+    ) -> Iterator[RNGOperation]:
+        effective: torch.device | None
+        if self._replay_scope is not None and self._replay_scope[0] is current_thread():
+            raise RuntimeError("Unrelated replay lifecycle reentry")
+        domain = process_rng_domain()
+        with domain.admission(lineage=lineage) as gate:
+            while True:
+                with self._owner_operation(mutation=False):
+                    device, sources = self._device_plan(route, args, kwargs, admitted=True)
+                if device is not None and device.type == "cuda":
+                    effective = torch.device("cuda", gate.resolve_cuda(device=device))
+                else:
+                    effective = device
+                for index in sources:
+                    gate.resolve_cuda(device=torch.device("cuda", index))
+                with self._owner_operation(mutation=False):
+                    selected, actual = self._device_plan(route, args, kwargs, admitted=True)
+                    if selected != device:
+                        continue
+                    devices = self._completion_devices(actual, effective)
+                    if lineage is None:
+                        gate.enroll(participant=self._replay_participant, cuda_devices=devices)
+                    invocation = domain.device_invocation(
+                        participant=self._replay_participant, operation_kind=kind, lineage=lineage, cuda_devices=devices
+                    )
+                    entered = False
+                    try:
+                        with ExitStack() as work:
+                            try:
+                                lease = work.enter_context(invocation)
+                            except ValueError as error:
+                                if lineage is not None:
+                                    raise RuntimeError("CUDA replay requires idle preflight for its requested inventory") from error
+                                raise
+                            entered = True
+                            self._replay_scope = (current_thread(), effective, route)
+                            if mutation:
+                                self._replay_revision += 1
+                            yield lease
+                    finally:
+                        if entered and invocation.completion_failed():
+                            self._quarantine_replay()
+                        self._replay_scope = None
+                    return
+
+    @contextmanager
+    def cuda_preflight(self, *, anticipated_devices: tuple[torch.device, ...]) -> Iterator[None]:
+        with replay_cuda_preflight(owners=(self,), anticipated_devices=anticipated_devices):
+            yield
 
     def _issue_replay(self, payload: object, lease: RNGOperation) -> PreparedReplay:
         handle = object.__new__(PreparedReplay)
@@ -124,6 +377,68 @@ def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
     if lineage is not None and not isinstance(lineage, RNGOperation):
         raise ValueError("RNG operation lineage is foreign or expired")
     return lineage
+
+
+@contextmanager
+def replay_cuda_preflight(*, owners: tuple[ReplayCustody, ...], anticipated_devices: tuple[torch.device, ...]) -> Iterator[None]:
+    if type(owners) is not tuple or not all(isinstance(owner, ReplayCustody) for owner in owners):
+        raise ValueError("Replay preflight requires a tuple of replay owners")
+    if type(anticipated_devices) is not tuple or not all(
+        isinstance(device, torch.device) and device.type in ("cpu", "cuda") for device in anticipated_devices
+    ):
+        raise ValueError("Replay preflight requires explicit CPU/CUDA device metadata")
+    pinned = tuple(sorted({id(owner): owner for owner in owners}.values(), key=id))
+    with process_rng_domain().admission(lineage=None) as gate:
+        for owner in pinned:
+            gate.enroll(participant=owner.rng_participant, cuda_devices=())
+        resolved = {
+            gate.resolve_cuda(device=device)
+            for device in (*anticipated_devices, *(owner.device for owner in pinned))
+            if device.type == "cuda"
+        }
+        with ExitStack() as locks:
+            for owner in pinned:
+                locks.enter_context(owner._owner_operation(mutation=False))
+            for owner in pinned:
+                _, sources = owner._device_plan("preflight", (), {}, admitted=True)
+                gate.enroll(participant=owner.rng_participant, cuda_devices=tuple(sorted({*resolved, *sources})))
+            yield
+
+
+def replay_local[Owner: ReplayCustody, Result, **Arguments](
+    *, mutation: bool
+) -> Callable[[Callable[Concatenate[Owner, Arguments], Result]], Callable[Concatenate[Owner, Arguments], Result]]:
+    def decorate(method: Callable[Concatenate[Owner, Arguments], Result]) -> Callable[Concatenate[Owner, Arguments], Result]:
+        @wraps(method)
+        def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+            with self._local_operation(method.__name__, args, kwargs, mutation=mutation):
+                return method(self, *args, **kwargs)
+
+        return guarded
+
+    return decorate
+
+
+def replay_device_sample[Owner: ReplayCustody, Result, **Arguments](
+    method: Callable[Concatenate[Owner, Arguments], Result],
+) -> Callable[Concatenate[Owner, Arguments], Result]:
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+        with self._device_operation("sample", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=True):
+            return method(self, *args, **kwargs)
+
+    return guarded
+
+
+def replay_device_prepare[Owner: ReplayCustody, **Arguments](
+    method: Callable[Concatenate[Owner, Arguments], object],
+) -> Callable[Concatenate[Owner, Arguments], PreparedReplay]:
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> PreparedReplay:
+        with self._device_operation("prepare", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=False) as lease:
+            return self._issue_replay(method(self, *args, **kwargs), lease)
+
+    return guarded
 
 
 def replay_read[Owner: ReplayCustody, Result, **Arguments](

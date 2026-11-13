@@ -1,0 +1,35 @@
+{
+  "schema": "bac-root-final-receipt-seal-comparison-v1",
+  "frozen_input": {
+    "root": "W",
+    "path": "evidence-management/wip18-r90-r98-complete-receipt-input-v5.json",
+    "sha256": "a9b071249c20ec340c510c25b28c46567d9c114439d73c52004000e3b5c6f2b0",
+    "bytes": 514436
+  },
+  "frozen_subject": {
+    "root": "W",
+    "path": "evidence-management/wip18-r98-qualification-subject-v1.json",
+    "sha256": "6150798a40945244349843360efb51b553fc2fb79732ba6c8eae7138a2b2c15c",
+    "bytes": 5515
+  },
+  "independent_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP18-TERMINAL-REVIEW.md",
+    "sha256": "b7dc0b211a75429973cc2322c7ccc4f57ac883ff2b804e8418697a6fc00d3bb0",
+    "bytes": 9128
+  },
+  "attestation": {
+    "root": "W",
+    "path": "evidence-management/wip18-r98-independent-terminal-review-attestation-v1.json",
+    "sha256": "2d98308282229c8b6c7dfbe9c75122969db54ac474b336b2e4df480ab1d31df2",
+    "bytes": 3704
+  },
+  "final_receipt": {
+    "root": "W",
+    "path": "evidence-management/wip18-r98-terminal-receipt-final-v1.json",
+    "sha256": "a72d555c87ede03dc3c42c4f594084316dd54a9d38e70aab8cfa63d75e83541a",
+    "bytes": 516816
+  },
+  "unchanged": "All original keys except status/review_subject/reviews/remaining_root_inputs/supersedes compare equal; final adds only review lineage, root seal scope and remaining publication steps. No check, attempt, evidence reference, source identity, component, document, dependency, count, limitation or required-next disposition changed.",
+  "source_disposition": "CHANGES REQUIRED; I5 remains open"
+}

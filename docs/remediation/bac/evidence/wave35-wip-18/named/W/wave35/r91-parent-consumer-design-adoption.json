@@ -1,0 +1,17 @@
+{
+  "kind": "prospective-parent-consumer-design-adoption",
+  "time": "2026-11-13T14:16:19.341153+00:00",
+  "references": {
+    "proposal": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-OUTER-COMPLETION-CONSUMER-PROPOSAL.md",
+      "sha256": "ba6128eb2fa12df3cdf2fddad402e8c8a9a99ad36314776c80a75a3ae0d7eab6"
+    },
+    "peer_review": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-OUTER-COMPLETION-CONSUMER-PEER-REVIEW.md",
+      "sha256": "f8abc8c88a7aa24f17a88bb4c3c45f0ce1504ed7be626d36fb565bd57a0099e6"
+    }
+  },
+  "ruling": "Adopt finite parent consumer contract and acceptance cases for later bounded parent integration. Parent reads its own actual completion outcome under retained owner exclusion; ordinary copied flat/PER batches do not justify blanket replay quarantine. Actual raw live-owner effects require authenticated exact-owner transition; do not invent raw support or narrow existing supported routes silently.",
+  "implementation": "NOT STARTED. Parent entrypoint health guards, concrete lock order/device inventory/lineage, recurrent ownership and conditional raw effects remain mandatory source-backed integration work. New outcome core API still unimplemented.",
+  "scope": "No package count change, no acceptance waiver, no production grant, no source creation/branch/worktree."
+}

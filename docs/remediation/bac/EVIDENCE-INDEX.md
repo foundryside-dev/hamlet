@@ -2,7 +2,19 @@
 
 Checkpoint publication, bounded component qualification and whole-programme acceptance are separate. The [evidence process](EVIDENCE-PROCESS.md) governs additions; historical evidence is preserved.
 
-## Current checkpoint: WIP17 / R89
+## Current checkpoint: WIP18 / R98 — work in progress
+
+The [manifest](evidence/wave35-wip-18.json) and [selection plan](evidence/wave35-wip-18/selection-plan.json) preserve the finite R90–R98 interval. R98 executed candidate is `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, base `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, candidate-manifest SHA-256 `02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1`. Publication documentation/evidence changes are distinct from the executed application identity.
+
+**This is an incomplete producer checkpoint.** Astra's source review is CHANGES REQUIRED: I5 metadata-prefix planning remains open. The selected capacity/plain-push witnesses and two annotation errors are repaired; those examples do not close the wider refusal class. R98 has 24 reachable CPU controls PASS, 129 collected, owned Ruff/Black and global defaults600 PASS, and one owned-three mypy failure for the missing core `device_invocation` API. Actual B-dependent producer execution, ten poison children, parent handoff and real CUDA remain unqualified.
+
+The archive retains earlier failed capture/fixture/static/runtime attempts and every generated unrun template. R97's six intended failures preceded the selected repair; its four positive planning controls overlap the R98 selection. Historical repetitions and collection are not summed as unique coverage. The child verifier's author/root runs repeat the same 58 synthetic cases; seven independent mutation refusals are tooling evidence only. Prospective harness self-hash clarification and preservation of the exact historical synthetic-test source do not rewrite WIP17's provenance.
+
+WIP17 is remotely verified at `9acd85d3ccd897051288a13fd16e610b9ee1fca1`: Config passed; Lint failed on 15 mypy errors (six oracle, nine population-lineage); Tests failed with its exact cause still unclassified. Three connector log attempts closed transport; the CLI fallback was forbidden. This access limitation waives no gate. WIP18's remote identity and CI are separately checked after push; publication does not imply green CI or merge authority.
+
+**28 qualified / 38 remaining / 66 original packages** remains unchanged. I5's structural repair continues, followed by core/producer integration. Full programme, runner, coverage, slow/learning, hardware, fresh review and final remote CI obligations remain as recorded below and in [STATUS](STATUS.md).
+
+## Historical checkpoint: WIP17 / R89
 
 The [manifest](evidence/wave35-wip-17.json) and [selection plan](evidence/wave35-wip-17/selection-plan.json) bind executed candidate `8416a6c8f887153d02ce8e19be9328d0fafe661e` to base `e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32`. The [publication guard](evidence/wave35-wip-17/publication-guard.json) records the reviewed core-contract and STATUS prose differences; application source, tests, configurations, scripts and defaults ratchet retain their exact execution identities. Immutable repository paths are in `objects`; `inputs.original` retains logical provenance.
 
@@ -16,7 +28,7 @@ The plan selects **489 objects:470 new objects /4,690,563 bytes and19 verified r
 
 **28 qualified /38 remaining /66 original packages** is unchanged. Two unavailable-CUDA skips, one required ordinary-runner deselection, global types, actual replay/BANK/ENV/POP/native integration, full/default suites, coverage, slow/learning checks and final fresh review/CI remain required. The offered16-worker CUDA server has not yet been accessed or qualified; its GPU count is unknown. Original absolute execution timestamps remain unavailable; actual elapsed durations and child associations are preserved.
 
-## Publication and history
+## Historical WIP17 publication and earlier checkpoints
 
 Before assembly, the exact existing remote branch was verified at WIP16 commit `e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32`. Its Config Validation passed; Lint and Tests failed. Tests completed at2026-11-13 12:43:18 UTC, with its cause still unclassified because raw-log retrieval was unavailable. The local type errors do not establish the hosted Tests cause. WIP17 remote identity and CI are verified after commit/push; neither is inferred from assembly. No PR, merge, release or whole-BAC acceptance is claimed.
 

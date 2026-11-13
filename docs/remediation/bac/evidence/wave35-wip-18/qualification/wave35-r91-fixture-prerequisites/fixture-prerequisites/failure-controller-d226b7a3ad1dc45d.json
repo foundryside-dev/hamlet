@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f1693e98e10>\n\n    def test_archive_fixture_owns_real_rows_before_observation(simulated_cuda: _SimCUDA) -> None:\n>       archive = _archive_on(3)\n                  ^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:696: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:690: in _archive_on\n    return history.archive_standalone_replay(\nsrc/townlet/training/historical_checkpoint.py:392: in archive_standalone_replay\n    owned = _clone(_mapping(state, \"standalone replay\"))\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/townlet/training/historical_checkpoint.py:57: in _clone\n    return {_clone(key): _clone(item) for key, item in value.items()}\n                         ^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nvalue = tensor([[1., 2.],\n        [3., 4.],\n        [5., 6.],\n        [7., 8.]])\n\n    def _clone(value):\n        if isinstance(value, Tensor):\n>           return value.detach().clone()\n                   ^^^^^^^^^^^^^^\nE           TypeError: _CUDAData.__torch_function__() missing 1 required positional argument: 'kwargs'\n\nsrc/townlet/training/historical_checkpoint.py:53: TypeError",
+  "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30"
+}

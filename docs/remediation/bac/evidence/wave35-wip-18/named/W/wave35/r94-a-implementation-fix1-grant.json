@@ -1,0 +1,17 @@
+{
+  "kind": "A-implementation-fix1-budget-and-scope",
+  "recorded_at": "2026-11-13T15:38:15.085124+00:00",
+  "review": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-IMPLEMENTATION-REVIEW.md",
+  "review_sha256": "9f03268384b3d07414ec1bebd6cb0035d55d4e01e6e7b3ac7035f41cc159b446",
+  "base_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+  "ceilings": {
+    "src/townlet/training/replay_contract.py": 700,
+    "src/townlet/training/replay_buffer.py": 850,
+    "src/townlet/training/prioritized_replay_buffer.py": 1300,
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py": 1600
+  },
+  "planned_total": 4450,
+  "hard_limit": "5implementationfiles/5000source lines per agent;same4bodies",
+  "ruling": "I1-I7 finite required fixes. Regrant shared650->700 and test1400->1600 to keep causal controls/readable code. No new body, compression, whitelist/ratchet rise, feature restriction, fallback or acceptance waiver. Prospective B5 now4750 and D4 now4900 with shared700, still under5000; corepaired remains3250.",
+  "sequence": "Originalauthor finiteI1-I6 testsfirst freeze; root reachablecausal checks distinguish Bprerequisites. Then originalauthor sourcefixI1-I7/staticgate, capture/review andverify. No repeatedbroad run intoabsentB APIs."
+}

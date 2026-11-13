@@ -1,0 +1,2071 @@
+{
+  "schema": "bac-historical-round-evidence-inventory-v1",
+  "status": "R91/R92 HISTORICAL INVENTORY PREPARATION ONLY; NOT CHECKPOINT SELECTION OR QUALIFICATION",
+  "rounds": [
+    {
+      "round": 91,
+      "candidate": {
+        "root": "W",
+        "path": "wave35/r91-candidate.json",
+        "sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+        "bytes": 203415
+      },
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r91-fixture-resource-preflight.json",
+        "sha256": "4a8d755d32f00f9465448a6dd7f379e60268c419ed0da1dab6b206a5bde6f87a",
+        "bytes": 3030
+      },
+      "root_component_receipt": {
+        "root": "W",
+        "path": "wave35/r91-extended-tests-prerequisite-receipt.json",
+        "sha256": "67192f8bbc10fc9d2c04729eb48da882e02f2663eb544576c9b372af98d8e9e1",
+        "bytes": 999
+      },
+      "component_receipt_unavailable_reason": null,
+      "source_binding": {
+        "scope": "Historical manifest only; current editing workspace not read or compared.",
+        "source_count": 818,
+        "config_count": 573,
+        "artifact_count": 13,
+        "named_source_versions": {
+          "src/townlet/training/prioritized_replay_buffer.py": "b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8",
+          "src/townlet/training/replay_buffer.py": "817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214",
+          "src/townlet/training/replay_contract.py": "8de53fc6814a16bafb703728ed396d7b9a1298afdb415be4ec8d1d85ac1502a1",
+          "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py": "85d685821ff39c2f70232ccd813d3d7e6699c9ddc19be82b76a4219f6aeea880"
+        }
+      },
+      "top_entries": [
+        {
+          "path": "wave35-r91-capture.log",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-capture.log",
+              "sha256": "b8a45bd6213825392db8aad6a5f8fd59d21662dc6355e82c17bac46ae930bdd1",
+              "bytes": 4764
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-collection",
+          "kind": "directory",
+          "descendants": [
+            {
+              "path": "wave35-r91-collection/collection",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-collection/collection/identity-controller.json",
+              "sha256": "1e8656feb89caab365b4e10afcf1b9b55c9ffec7d5de0e2e77789c75caa6ede4",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-collection/collection-custody.json",
+              "sha256": "6da94530cf2c0e44f402662ce2b37157e16ccec7bb66ecca8e62bd6847086722",
+              "bytes": 641
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-collection/collection-result.json",
+              "sha256": "6df69af7a61827bd0b1ec78034211869edeb6cd4b2e02426e3a8e3c183f32987",
+              "bytes": 830
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-collection/collection.log",
+              "sha256": "087d8634cb7cfd570c58d5457b098326f6b7b81ee67454d9707cebecd114944e",
+              "bytes": 6530
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-collection-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-collection-spec.json",
+              "sha256": "67c3a6117ce41d509891c0c83a2cf9ddef0dbb0f6ccfb4fb2297775a5717219d",
+              "bytes": 582
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-fixture-prerequisites",
+          "kind": "directory",
+          "descendants": [
+            {
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/failure-controller-6ec2b87bfdbc1857.json",
+              "sha256": "88d4dd40f2d35167767b44cee4666925398abf3e4eaba7b2d404462239db3cde",
+              "bytes": 4432
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/failure-controller-727d0470600ec014.json",
+              "sha256": "321995df245c5b82809c70b311443c9cf37382e71490b2f519affd7298633826",
+              "bytes": 4253
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/failure-controller-d226b7a3ad1dc45d.json",
+              "sha256": "1d6382e0f69923a9a4309ebad1291563d8ee50389b80ef4a6ba1478cefcb4e12",
+              "bytes": 1671
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/identity-controller.json",
+              "sha256": "1e8656feb89caab365b4e10afcf1b9b55c9ffec7d5de0e2e77789c75caa6ede4",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites-failure-index.json",
+              "sha256": "c7330a9b26eab03d99bd7e40e4c46e2a5a7cd2c4856f4ff9dccb4c7cdb898b67",
+              "bytes": 1075
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites-negative-custody.json",
+              "sha256": "c55d69432a71f96cb01f0d215d1c1f5ab79d71e92daac1116df136d3ddd2ab95",
+              "bytes": 958
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites-result.json",
+              "sha256": "61ab12233100cd4192c441e2a3d604e0c63892ac36a87718245b00783f5bf15b",
+              "bytes": 1150
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites.log",
+              "sha256": "1dfb972ab21fca09739e47e0682665f3292af43d05672300b6b385173cb02733",
+              "bytes": 10797
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-fixture-prerequisites-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-fixture-prerequisites-spec.json",
+              "sha256": "2c1d636a2469403c0d075ca376ef73994fce81b60411f1fb2b0aa4ea25b3356c",
+              "bytes": 895
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-owned-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-owned-spec.json",
+              "sha256": "9ab1644db40327df8747825b778e91187a20afbc6dba47de7d8e1bc767eda7cf",
+              "bytes": 704
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-static",
+          "kind": "directory",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-static/black-owned-result.json",
+              "sha256": "825bcb93c7aa5a7948157f79ade1e68f70166b69097b52d5c50a9e89ee9edf67",
+              "bytes": 724
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-static/black-owned.log",
+              "sha256": "df9b887e50103f037d2e7bdd9b5c23d5b8819606c122d92e774ee734d004ef06",
+              "bytes": 131
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-static/ruff-owned-result.json",
+              "sha256": "8ca85bc2d0c68da2451b6d504abfa1d237e12ce9d1aff20e76080fe1091cf918",
+              "bytes": 720
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-static/static-custody.json",
+              "sha256": "4b37d8d32b10626e3191e7d1f2e8baaecb08bfbb17530b66900d3cc797b4991d",
+              "bytes": 997
+            }
+          ]
+        },
+        {
+          "path": "wave35-r91-static-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r91-static-spec.json",
+              "sha256": "3826fbad43d064e67fa023b07d63c85d0c270e81846029375c6549481a33cc92",
+              "bytes": 636
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r91-collection-spec.json",
+            "sha256": "67c3a6117ce41d509891c0c83a2cf9ddef0dbb0f6ccfb4fb2297775a5717219d",
+            "bytes": 582
+          },
+          "status": "PASSED",
+          "attempts": [
+            {
+              "id": "wave35-r91-collection-spec--collection",
+              "status": "PASSED",
+              "kind": "collection",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r91-collection-spec.json",
+                "sha256": "67c3a6117ce41d509891c0c83a2cf9ddef0dbb0f6ccfb4fb2297775a5717219d",
+                "bytes": 582
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r91-collection/collection-result.json",
+                "sha256": "6df69af7a61827bd0b1ec78034211869edeb6cd4b2e02426e3a8e3c183f32987",
+                "bytes": 830
+              },
+              "observed_result": {
+                "name": "collection",
+                "exit_code": 0,
+                "seconds": 4.525827646255493,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "pytest",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+                  "--no-cov",
+                  "-p",
+                  "no:cacheprovider",
+                  "-p",
+                  "bac_source_identity",
+                  "--collect-only",
+                  "-q"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r91-collection/collection.log",
+                "sha256": "087d8634cb7cfd570c58d5457b098326f6b7b81ee67454d9707cebecd114944e",
+                "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": {
+                "passed": 0,
+                "skipped": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+                "warnings": 0
+              },
+              "log": {
+                "root": "Q",
+                "path": "wave35-r91-collection/collection.log",
+                "sha256": "087d8634cb7cfd570c58d5457b098326f6b7b81ee67454d9707cebecd114944e",
+                "bytes": 6530
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-collection/collection-custody.json",
+                  "sha256": "6da94530cf2c0e44f402662ce2b37157e16ccec7bb66ecca8e62bd6847086722",
+                  "bytes": 641
+                }
+              ],
+              "process_and_failure_records": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-collection/collection/identity-controller.json",
+                  "sha256": "1e8656feb89caab365b4e10afcf1b9b55c9ffec7d5de0e2e77789c75caa6ede4",
+                  "bytes": 246
+                }
+              ],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r91-fixture-prerequisites-spec.json",
+            "sha256": "2c1d636a2469403c0d075ca376ef73994fce81b60411f1fb2b0aa4ea25b3356c",
+            "bytes": 895
+          },
+          "status": "FAILED",
+          "attempts": [
+            {
+              "id": "wave35-r91-fixture-prerequisites-spec--fixture-prerequisites",
+              "status": "FAILED",
+              "kind": "runtime",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r91-fixture-prerequisites-spec.json",
+                "sha256": "2c1d636a2469403c0d075ca376ef73994fce81b60411f1fb2b0aa4ea25b3356c",
+                "bytes": 895
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites-result.json",
+                "sha256": "61ab12233100cd4192c441e2a3d604e0c63892ac36a87718245b00783f5bf15b",
+                "bytes": 1150
+              },
+              "observed_result": {
+                "name": "fixture-prerequisites",
+                "exit_code": 1,
+                "seconds": 4.442766427993774,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "pytest",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+                  "--no-cov",
+                  "-p",
+                  "no:cacheprovider",
+                  "-p",
+                  "bac_source_identity",
+                  "-q"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r91-fixture-prerequisites/fixture-prerequisites.log",
+                "sha256": "1dfb972ab21fca09739e47e0682665f3292af43d05672300b6b385173cb02733",
+                "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": {
+                "failed": 3,
+                "passed": 0,
+                "skipped": 0,
+                "errors": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+                "warnings": 0
+              },
+              "log": {
+                "root": "Q",
+                "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites.log",
+                "sha256": "1dfb972ab21fca09739e47e0682665f3292af43d05672300b6b385173cb02733",
+                "bytes": 10797
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites-negative-custody.json",
+                  "sha256": "c55d69432a71f96cb01f0d215d1c1f5ab79d71e92daac1116df136d3ddd2ab95",
+                  "bytes": 958
+                }
+              ],
+              "process_and_failure_records": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/failure-controller-6ec2b87bfdbc1857.json",
+                  "sha256": "88d4dd40f2d35167767b44cee4666925398abf3e4eaba7b2d404462239db3cde",
+                  "bytes": 4432
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/failure-controller-727d0470600ec014.json",
+                  "sha256": "321995df245c5b82809c70b311443c9cf37382e71490b2f519affd7298633826",
+                  "bytes": 4253
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/failure-controller-d226b7a3ad1dc45d.json",
+                  "sha256": "1d6382e0f69923a9a4309ebad1291563d8ee50389b80ef4a6ba1478cefcb4e12",
+                  "bytes": 1671
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites/identity-controller.json",
+                  "sha256": "1e8656feb89caab365b4e10afcf1b9b55c9ffec7d5de0e2e77789c75caa6ede4",
+                  "bytes": 246
+                }
+              ],
+              "failure_index": {
+                "root": "Q",
+                "path": "wave35-r91-fixture-prerequisites/fixture-prerequisites-failure-index.json",
+                "sha256": "c7330a9b26eab03d99bd7e40e4c46e2a5a7cd2c4856f4ff9dccb4c7cdb898b67",
+                "bytes": 1075
+              },
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r91-owned-spec.json",
+            "sha256": "9ab1644db40327df8747825b778e91187a20afbc6dba47de7d8e1bc767eda7cf",
+            "bytes": 704
+          },
+          "status": "UNRUN",
+          "attempts": [
+            {
+              "id": "wave35-r91-owned-spec--owned",
+              "status": "UNRUN",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r91-owned-spec.json",
+                "sha256": "9ab1644db40327df8747825b778e91187a20afbc6dba47de7d8e1bc767eda7cf",
+                "bytes": 704
+              },
+              "planned_args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "-n",
+                "2",
+                "--dist",
+                "worksteal",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r91-owned"
+              ],
+              "command": null,
+              "started_at": null,
+              "ended_at": null,
+              "exit_code": null,
+              "counts": null,
+              "duration_seconds": null,
+              "reason": "Generated owned curriculum template; no result/execution recorded."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r91-static-spec.json",
+            "sha256": "3826fbad43d064e67fa023b07d63c85d0c270e81846029375c6549481a33cc92",
+            "bytes": 636
+          },
+          "status": "MIXED",
+          "attempts": [
+            {
+              "id": "wave35-r91-static-spec--ruff-owned",
+              "status": "PASSED",
+              "kind": "static",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r91-static-spec.json",
+                "sha256": "3826fbad43d064e67fa023b07d63c85d0c270e81846029375c6549481a33cc92",
+                "bytes": 636
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r91-static/ruff-owned-result.json",
+                "sha256": "8ca85bc2d0c68da2451b6d504abfa1d237e12ce9d1aff20e76080fe1091cf918",
+                "bytes": 720
+              },
+              "observed_result": {
+                "name": "ruff-owned",
+                "exit_code": 0,
+                "seconds": 0.06611347198486328,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "ruff",
+                  "check",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r91-static/ruff-owned.log",
+                "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+                "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": null,
+              "log": {
+                "root": "Q",
+                "path": "wave35-r91-static/ruff-owned.log",
+                "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+                "bytes": 19
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-static/static-custody.json",
+                  "sha256": "4b37d8d32b10626e3191e7d1f2e8baaecb08bfbb17530b66900d3cc797b4991d",
+                  "bytes": 997
+                }
+              ],
+              "process_and_failure_records": [],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            },
+            {
+              "id": "wave35-r91-static-spec--black-owned",
+              "status": "FAILED",
+              "kind": "static",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r91-static-spec.json",
+                "sha256": "3826fbad43d064e67fa023b07d63c85d0c270e81846029375c6549481a33cc92",
+                "bytes": 636
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r91-static/black-owned-result.json",
+                "sha256": "825bcb93c7aa5a7948157f79ade1e68f70166b69097b52d5c50a9e89ee9edf67",
+                "bytes": 724
+              },
+              "observed_result": {
+                "name": "black-owned",
+                "exit_code": 1,
+                "seconds": 1.0251834392547607,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "black",
+                  "--check",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r91-static/black-owned.log",
+                "sha256": "df9b887e50103f037d2e7bdd9b5c23d5b8819606c122d92e774ee734d004ef06",
+                "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": null,
+              "log": {
+                "root": "Q",
+                "path": "wave35-r91-static/black-owned.log",
+                "sha256": "df9b887e50103f037d2e7bdd9b5c23d5b8819606c122d92e774ee734d004ef06",
+                "bytes": 131
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r91-static/static-custody.json",
+                  "sha256": "4b37d8d32b10626e3191e7d1f2e8baaecb08bfbb17530b66900d3cc797b4991d",
+                  "bytes": 997
+                }
+              ],
+              "process_and_failure_records": [],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "round": 92,
+      "candidate": {
+        "root": "W",
+        "path": "wave35/r92-candidate.json",
+        "sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+        "bytes": 203416
+      },
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r92-fixture-resource-preflight.json",
+        "sha256": "ada2019a91b1212821f54e2b3cee6331edc620236277e833d03ee6b6cf97f6e1",
+        "bytes": 3030
+      },
+      "root_component_receipt": null,
+      "component_receipt_unavailable_reason": "No R92 compact component receipt supplied; authoritative actual result/custody records inventoried directly.",
+      "source_binding": {
+        "scope": "Historical manifest only; current editing workspace not read or compared.",
+        "source_count": 818,
+        "config_count": 573,
+        "artifact_count": 13,
+        "named_source_versions": {
+          "src/townlet/training/prioritized_replay_buffer.py": "b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8",
+          "src/townlet/training/replay_buffer.py": "817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214",
+          "src/townlet/training/replay_contract.py": "8de53fc6814a16bafb703728ed396d7b9a1298afdb415be4ec8d1d85ac1502a1",
+          "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py": "e39d73f7dfb2c3fef573d3c36da6dc6fe2918626485cad5f6c7eb37ab23b2e81"
+        }
+      },
+      "top_entries": [
+        {
+          "path": "wave35-r92-capture.log",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-capture.log",
+              "sha256": "dc12a84b0ced3b16725d94656b3d4fcdd0534e7dc6adf7d8ccb7e54b3eacd439",
+              "bytes": 4764
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-collection",
+          "kind": "directory",
+          "descendants": [
+            {
+              "path": "wave35-r92-collection/collection",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-collection/collection/identity-controller.json",
+              "sha256": "7ed3d090c73d99dad5c4dde7174fa30e14f48fa56075e3fe6a708db509ab99d6",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-collection/collection-custody.json",
+              "sha256": "7c44b2a1d0946ef24df9602a57851a610395c8517001dcf10b99b12d22c99f5a",
+              "bytes": 641
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-collection/collection-result.json",
+              "sha256": "2457be026594894c30acc56d255df0074278ac9a487c984a5b56c742a69bdac7",
+              "bytes": 830
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-collection/collection.log",
+              "sha256": "f3b59081e1520ef22291e143e7ab55e50cd2286062bf766baeb67c56ee8aef98",
+              "bytes": 7797
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-collection-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-collection-spec.json",
+              "sha256": "b5e235624f4de1ee69e5d66b32bf38457c8104b0b97af9c351727571b1ca07cf",
+              "bytes": 582
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-fixture-prerequisites",
+          "kind": "directory",
+          "descendants": [
+            {
+              "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites/identity-controller.json",
+              "sha256": "7ed3d090c73d99dad5c4dde7174fa30e14f48fa56075e3fe6a708db509ab99d6",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites-custody.json",
+              "sha256": "0ad2c67b6ea2c9cd227eea1aa8d2999bd8d154da754feb7bb9b1ebeeaf414275",
+              "bytes": 653
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites-result.json",
+              "sha256": "bef2ca0a9321a5ee5ae08d82e9f2050cb813dcd4b7bd05dcbbf87aef446fb642",
+              "bytes": 1275
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites.log",
+              "sha256": "1dc1935157358794622cb2d3380dc404908c0f66e9e2e79dda07cbed675d896d",
+              "bytes": 773
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-fixture-prerequisites-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-fixture-prerequisites-spec.json",
+              "sha256": "699c9292bd0bee200ff41709bf851964aba897518c163ba217299d821eeaea62",
+              "bytes": 1023
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-owned-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-owned-spec.json",
+              "sha256": "65e625521cbc1691f682d5460f1bdb9e5fa84bdc8aa718f759ee8867e89009cb",
+              "bytes": 704
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-producer-contract-red",
+          "kind": "directory",
+          "descendants": [
+            {
+              "path": "wave35-r92-producer-contract-red/producer-contract-red",
+              "type": "directory"
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-0dc8fa7b683089b3.json",
+              "sha256": "fd5cb0c87e706964f61868bfe8207c5bcffe99304c325503d9644c4e0ea8ae30",
+              "bytes": 2056
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-1faf54cc08554653.json",
+              "sha256": "ec59bcb07b63c69cc6ac7daee9008caf48eeefc09f676d62a390c541ff78f844",
+              "bytes": 1533
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-2418eac84c44f1d6.json",
+              "sha256": "65870c61ddb4083744acae9b3cb0abe6f124a7c06a201cd7bd753b77991ddac4",
+              "bytes": 2525
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-27c36407b102d22f.json",
+              "sha256": "352d6436fb4a73836b65c6e7dd5d96f07d5cece64d13a6d96c2710466c0fa904",
+              "bytes": 2527
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-2a6be91919847a0e.json",
+              "sha256": "9d88c5e9b3327077bde16a0977fe97f57c73d55e40619997ac8bb219c41ed93c",
+              "bytes": 1218
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-2b615e5f6151e223.json",
+              "sha256": "1bb1af63c25927bd0e35b7e847fd0154627cc2d73689d5677ec528e5af6b381a",
+              "bytes": 1148
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-3a542a04e4f440b1.json",
+              "sha256": "b3b7d99a192d9026d15ec316672340191f3049261d9d2c0469d712d71e129c7c",
+              "bytes": 2846
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-3a76ff075b5a8c56.json",
+              "sha256": "ea4287701d38830779904f79c4c895f389e6bd97d07216877689ea5facf2c6a0",
+              "bytes": 1216
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-5a1f73b16257ef74.json",
+              "sha256": "4048ca9da849d1c6f2c922fdcaecd4e9f2218d6ca99b5682a00e9c4fa41b40e9",
+              "bytes": 2850
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-613d6e9671ee2462.json",
+              "sha256": "469bbf885b48d4ce0b0373eb5dc1a6c6e2a9c68281ab404fab56b6732c58f26b",
+              "bytes": 2058
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-6188bfbda639b983.json",
+              "sha256": "9bc2bb068cf147fd2bdeb94d74fed542c10659aba913d4cf018f7892b31a91ee",
+              "bytes": 3202
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-62bc5f6b14e057bd.json",
+              "sha256": "19df06375c3bcaafd52c1e00e4bf2abef63149e8294e05eb794ccf969d589f1d",
+              "bytes": 2395
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-6bd44e0117c6bf6a.json",
+              "sha256": "69113d0eadcebbc7f45edd7e100d66b0f9b686e0f5b72d6085f9c2835ef4f9e3",
+              "bytes": 2075
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-6f316ecef66d8b30.json",
+              "sha256": "d08adf81f31b488d607920f8e32ea678249d9c627ebc3c7011a8ed3dcc09f12d",
+              "bytes": 3206
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-71abbe421d0b27ff.json",
+              "sha256": "910cc1af8f230d5ad1c531a4b152cfddc304675c2b4d136b26bce06fcffd2c0b",
+              "bytes": 2038
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-794fbaa60acec186.json",
+              "sha256": "233a977edd7071cb2898c1fcc8250ce140451a19c671e0fa18e50c3ce67f8b56",
+              "bytes": 1833
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-7b56b7586e60055d.json",
+              "sha256": "5316072551f3d8fb99faabd10e15f7f571eb2cca9ffc04ffbd3042e1b3d503ff",
+              "bytes": 2244
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-826e0f2c60487014.json",
+              "sha256": "feaf3e6ee429744a8883b3873f3b44f3fb6afda6894a7654ffe4c145343cea7e",
+              "bytes": 2848
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-907c96b258837c80.json",
+              "sha256": "509c6ec5cda6203ecfb86a7bb1ee99beb8d1336052e3cb23005e87a1f14a1c64",
+              "bytes": 2480
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-91f6c2e18c84bedd.json",
+              "sha256": "911e3592ac45fbd6ccd15419782f7b31793ec27873e3cba2c6b5ef93ab0fab3e",
+              "bytes": 2027
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-967252db298f7f3d.json",
+              "sha256": "747d3f953eb8477fc02d2085b34c8a02a19182e8b54f4794c7de61ccca5dc1a5",
+              "bytes": 3204
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-9ad48b3351ac2766.json",
+              "sha256": "eda041b76fe8dbb6588687aa42b9b08088579dda9db304d5413aee5db4d80f0d",
+              "bytes": 2397
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-a0902b45c8400f36.json",
+              "sha256": "71609a84c8eb914b7425f8dfc386f74b5859b507e8de8489e59519301eb52a4c",
+              "bytes": 1203
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-ab2ab194649a614a.json",
+              "sha256": "4c00f251f342ce97e23d5dd560083d506ced75c81046b7a5860d2c8cf0c2b4a4",
+              "bytes": 1139
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b05c76cc599e2d7a.json",
+              "sha256": "0811b29e190b099b4af40e32e506d221a4a1c766f58fd475df54de72d3bdc24f",
+              "bytes": 3204
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b165f8573df4db52.json",
+              "sha256": "51a1f9d56ab6faf8e1b1a1ecf6630140d7721e5b6adc2c1532ab648d7422daa2",
+              "bytes": 1831
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b6433885f774fd91.json",
+              "sha256": "c41eedfc97a8b4e2b14756db8e9ec138b380b5cb0a367d4df1b5362d0b6f785c",
+              "bytes": 2025
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b977a47657955b7a.json",
+              "sha256": "396b5d179c4e43b9891a3a92642b5f8b64592a9d68546a15eed2a6059e42ea0b",
+              "bytes": 2461
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-bb6e14a8cab2c246.json",
+              "sha256": "91a154e66f560a0af075323f49df108797c0c75ea28aee75592775a89c84c526",
+              "bytes": 1020
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-becde96cadf735af.json",
+              "sha256": "ab96d645589f31ad330b426deb8c3c6465b61355a14a14ec7a714d23b9513337",
+              "bytes": 1463
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-bffe7e82b12ba59b.json",
+              "sha256": "2946f31f772e0054ef8ac975adffd1403a2fe5f57d63d3cd6ff646916bd3af0d",
+              "bytes": 2515
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c0c13fc4de91bd35.json",
+              "sha256": "aaddad0f3d95e49935b64fe8203b2c7e08f334a8219084b196e51b96c3310ff8",
+              "bytes": 2320
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c7037b60cef1ff4e.json",
+              "sha256": "e32cd2a6e8b3258d357e8ed2c2e36ebb5a015c912149db08e0fac2ad6cdffe53",
+              "bytes": 1461
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c7255b042cc1b1b6.json",
+              "sha256": "b62571dfc18d97c9c878d613d9ba7bce1ddd8da8142ee6c65009c227e4fb6e98",
+              "bytes": 2001
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c934ff86b5c190b7.json",
+              "sha256": "04bda99c57c5d2836e0c8a6105d9fb7046f8462be4bbccb9d28748f67b049211",
+              "bytes": 2074
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-cadd898d40ec542d.json",
+              "sha256": "9f24d87fcf24e695e36ddd16b3a19d66ff8c972e6a70c284c7d12833618c3154",
+              "bytes": 2554
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-d2e08fcf9b632e38.json",
+              "sha256": "c80c65dded4acd9979e84d4a6e55096515facdfff606b60d6516cf098ec980b2",
+              "bytes": 1698
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-dd51d5ea6a7645d2.json",
+              "sha256": "48ae8e4a09db92b45ec4085de69f57216fd3d045ecf5c2fab604d25e2a1efaef",
+              "bytes": 2482
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-e80b1f8475565f9e.json",
+              "sha256": "850f66765432172655a891829d351dac6d1daf4f0d1e76d3beb9009d43555281",
+              "bytes": 2242
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-ed44fc7573facb1c.json",
+              "sha256": "1b0a5d94e54246dd708198b3d54c22ca5b6b19fe9721dccc548fbe7b8d9ceb47",
+              "bytes": 1531
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-eee5c0ea91a295f8.json",
+              "sha256": "839942c580eba31555f53fcf88657a26ab955a9a5657fd22f69b05c73e9ac08c",
+              "bytes": 2556
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f23a0e4be55f722b.json",
+              "sha256": "e46a46be8b492f4d34d6df9151bed258eaec06179f27c068a7c146d8ef4dd4e6",
+              "bytes": 2848
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f2dc4d4f7a2f4ef4.json",
+              "sha256": "a900223063945e13890a1aaae96ef160b6d61226dbc7edef50f282913bd78b9a",
+              "bytes": 1205
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f3b53fd3fae661f2.json",
+              "sha256": "3073507660c827f5bca6cfe04520ded400178c91c0df920b89fe8b5d7f09647a",
+              "bytes": 1029
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f61a34ddf2093a98.json",
+              "sha256": "500c245d65945a203cc0764bb2a54559b091ffb7bb44573b99c2ef9210b48f91",
+              "bytes": 2393
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-fb665eef52727757.json",
+              "sha256": "d6463c10b9961ed1205a4d3ec14ec097fd63df10f185c09a52264acf81282c9a",
+              "bytes": 2040
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red/identity-controller.json",
+              "sha256": "7ed3d090c73d99dad5c4dde7174fa30e14f48fa56075e3fe6a708db509ab99d6",
+              "bytes": 246
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red-failure-index.json",
+              "sha256": "fc59b86700dfd242a0d81c57dcb4e5657d498a91d4246c2e1e004aeb86549ec0",
+              "bytes": 11400
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red-negative-custody.json",
+              "sha256": "05a1c1c9b40739693b1478db69917e1e62203df3172961eb67887d6adf4a4645",
+              "bytes": 963
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red-result.json",
+              "sha256": "885b5bfd00c6113a090a9743cc8cba0ba7b99e368c1cfeb7ce54360874d8af74",
+              "bytes": 842
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red/producer-contract-red.log",
+              "sha256": "d267b9f49a9bda81f64cb2bb360dc72d5e3a76b2f4e9ce47b1c98184a2388b2b",
+              "bytes": 92103
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-producer-contract-red-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-producer-contract-red-spec.json",
+              "sha256": "55a6703f22fb5d60dc9f1c7094d21dd2d6caa94ddaae4778de61c67da1f5b222",
+              "bytes": 578
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-static",
+          "kind": "directory",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-static/black-owned-result.json",
+              "sha256": "3037fd7a197350322715a11b4dc5197c197dd1645551662820f9242706b581f5",
+              "bytes": 725
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-static/black-owned.log",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+              "bytes": 55
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-static/ruff-owned-result.json",
+              "sha256": "5b0dd9f1c375ff25b1fbbc3d8de05c93c8899d94e899980ebaa37aa32633f727",
+              "bytes": 720
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-static/ruff-owned.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "bytes": 19
+            },
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-static/static-custody.json",
+              "sha256": "20ea694141770cba8c72511cf69cc11bf4a7a7dc3232968f028547c26ea698f4",
+              "bytes": 997
+            }
+          ]
+        },
+        {
+          "path": "wave35-r92-static-spec.json",
+          "kind": "file",
+          "descendants": [
+            {
+              "type": "file",
+              "root": "Q",
+              "path": "wave35-r92-static-spec.json",
+              "sha256": "69dace36f4f3fe5271aae0bb2356c6e570ad6ef797c6f8cf7ff54397693ef50c",
+              "bytes": 636
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r92-collection-spec.json",
+            "sha256": "b5e235624f4de1ee69e5d66b32bf38457c8104b0b97af9c351727571b1ca07cf",
+            "bytes": 582
+          },
+          "status": "PASSED",
+          "attempts": [
+            {
+              "id": "wave35-r92-collection-spec--collection",
+              "status": "PASSED",
+              "kind": "collection",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r92-collection-spec.json",
+                "sha256": "b5e235624f4de1ee69e5d66b32bf38457c8104b0b97af9c351727571b1ca07cf",
+                "bytes": 582
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r92-collection/collection-result.json",
+                "sha256": "2457be026594894c30acc56d255df0074278ac9a487c984a5b56c742a69bdac7",
+                "bytes": 830
+              },
+              "observed_result": {
+                "name": "collection",
+                "exit_code": 0,
+                "seconds": 4.199929475784302,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "pytest",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+                  "--no-cov",
+                  "-p",
+                  "no:cacheprovider",
+                  "-p",
+                  "bac_source_identity",
+                  "--collect-only",
+                  "-q"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-collection/collection.log",
+                "sha256": "f3b59081e1520ef22291e143e7ab55e50cd2286062bf766baeb67c56ee8aef98",
+                "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": {
+                "passed": 0,
+                "skipped": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+                "warnings": 0
+              },
+              "log": {
+                "root": "Q",
+                "path": "wave35-r92-collection/collection.log",
+                "sha256": "f3b59081e1520ef22291e143e7ab55e50cd2286062bf766baeb67c56ee8aef98",
+                "bytes": 7797
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-collection/collection-custody.json",
+                  "sha256": "7c44b2a1d0946ef24df9602a57851a610395c8517001dcf10b99b12d22c99f5a",
+                  "bytes": 641
+                }
+              ],
+              "process_and_failure_records": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-collection/collection/identity-controller.json",
+                  "sha256": "7ed3d090c73d99dad5c4dde7174fa30e14f48fa56075e3fe6a708db509ab99d6",
+                  "bytes": 246
+                }
+              ],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r92-fixture-prerequisites-spec.json",
+            "sha256": "699c9292bd0bee200ff41709bf851964aba897518c163ba217299d821eeaea62",
+            "bytes": 1023
+          },
+          "status": "PASSED",
+          "attempts": [
+            {
+              "id": "wave35-r92-fixture-prerequisites-spec--fixture-prerequisites",
+              "status": "PASSED",
+              "kind": "runtime",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r92-fixture-prerequisites-spec.json",
+                "sha256": "699c9292bd0bee200ff41709bf851964aba897518c163ba217299d821eeaea62",
+                "bytes": 1023
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites-result.json",
+                "sha256": "bef2ca0a9321a5ee5ae08d82e9f2050cb813dcd4b7bd05dcbbf87aef446fb642",
+                "bytes": 1275
+              },
+              "observed_result": {
+                "name": "fixture-prerequisites",
+                "exit_code": 0,
+                "seconds": 3.6482908725738525,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "pytest",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[flat]",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_simulated_fixture_runs_real_producer_values[per]",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_fixture_owns_real_rows_before_observation",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_archive_fixture_preserves_real_legacy_rows",
+                  "--no-cov",
+                  "-p",
+                  "no:cacheprovider",
+                  "-p",
+                  "bac_source_identity",
+                  "-q"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-fixture-prerequisites/fixture-prerequisites.log",
+                "sha256": "1dc1935157358794622cb2d3380dc404908c0f66e9e2e79dda07cbed675d896d",
+                "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": {
+                "passed": 4,
+                "skipped": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+                "warnings": 0
+              },
+              "log": {
+                "root": "Q",
+                "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites.log",
+                "sha256": "1dc1935157358794622cb2d3380dc404908c0f66e9e2e79dda07cbed675d896d",
+                "bytes": 773
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites-custody.json",
+                  "sha256": "0ad2c67b6ea2c9cd227eea1aa8d2999bd8d154da754feb7bb9b1ebeeaf414275",
+                  "bytes": 653
+                }
+              ],
+              "process_and_failure_records": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-fixture-prerequisites/fixture-prerequisites/identity-controller.json",
+                  "sha256": "7ed3d090c73d99dad5c4dde7174fa30e14f48fa56075e3fe6a708db509ab99d6",
+                  "bytes": 246
+                }
+              ],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r92-owned-spec.json",
+            "sha256": "65e625521cbc1691f682d5460f1bdb9e5fa84bdc8aa718f759ee8867e89009cb",
+            "bytes": 704
+          },
+          "status": "UNRUN",
+          "attempts": [
+            {
+              "id": "wave35-r92-owned-spec--owned",
+              "status": "UNRUN",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r92-owned-spec.json",
+                "sha256": "65e625521cbc1691f682d5460f1bdb9e5fa84bdc8aa718f759ee8867e89009cb",
+                "bytes": 704
+              },
+              "planned_args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "-n",
+                "2",
+                "--dist",
+                "worksteal",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r92-owned"
+              ],
+              "command": null,
+              "started_at": null,
+              "ended_at": null,
+              "exit_code": null,
+              "counts": null,
+              "duration_seconds": null,
+              "reason": "Generated owned curriculum template; no result/execution recorded."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r92-producer-contract-red-spec.json",
+            "sha256": "55a6703f22fb5d60dc9f1c7094d21dd2d6caa94ddaae4778de61c67da1f5b222",
+            "bytes": 578
+          },
+          "status": "FAILED",
+          "attempts": [
+            {
+              "id": "wave35-r92-producer-contract-red-spec--producer-contract-red",
+              "status": "FAILED",
+              "kind": "runtime",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r92-producer-contract-red-spec.json",
+                "sha256": "55a6703f22fb5d60dc9f1c7094d21dd2d6caa94ddaae4778de61c67da1f5b222",
+                "bytes": 578
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r92-producer-contract-red/producer-contract-red-result.json",
+                "sha256": "885b5bfd00c6113a090a9743cc8cba0ba7b99e368c1cfeb7ce54360874d8af74",
+                "bytes": 842
+              },
+              "observed_result": {
+                "name": "producer-contract-red",
+                "exit_code": 1,
+                "seconds": 13.719441413879395,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "pytest",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+                  "--no-cov",
+                  "-p",
+                  "no:cacheprovider",
+                  "-p",
+                  "bac_source_identity",
+                  "-q"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-producer-contract-red/producer-contract-red.log",
+                "sha256": "d267b9f49a9bda81f64cb2bb360dc72d5e3a76b2f4e9ce47b1c98184a2388b2b",
+                "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": {
+                "failed": 46,
+                "passed": 32,
+                "skipped": 0,
+                "errors": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+                "warnings": 0
+              },
+              "log": {
+                "root": "Q",
+                "path": "wave35-r92-producer-contract-red/producer-contract-red.log",
+                "sha256": "d267b9f49a9bda81f64cb2bb360dc72d5e3a76b2f4e9ce47b1c98184a2388b2b",
+                "bytes": 92103
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red-negative-custody.json",
+                  "sha256": "05a1c1c9b40739693b1478db69917e1e62203df3172961eb67887d6adf4a4645",
+                  "bytes": 963
+                }
+              ],
+              "process_and_failure_records": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-0dc8fa7b683089b3.json",
+                  "sha256": "fd5cb0c87e706964f61868bfe8207c5bcffe99304c325503d9644c4e0ea8ae30",
+                  "bytes": 2056
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-1faf54cc08554653.json",
+                  "sha256": "ec59bcb07b63c69cc6ac7daee9008caf48eeefc09f676d62a390c541ff78f844",
+                  "bytes": 1533
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-2418eac84c44f1d6.json",
+                  "sha256": "65870c61ddb4083744acae9b3cb0abe6f124a7c06a201cd7bd753b77991ddac4",
+                  "bytes": 2525
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-27c36407b102d22f.json",
+                  "sha256": "352d6436fb4a73836b65c6e7dd5d96f07d5cece64d13a6d96c2710466c0fa904",
+                  "bytes": 2527
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-2a6be91919847a0e.json",
+                  "sha256": "9d88c5e9b3327077bde16a0977fe97f57c73d55e40619997ac8bb219c41ed93c",
+                  "bytes": 1218
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-2b615e5f6151e223.json",
+                  "sha256": "1bb1af63c25927bd0e35b7e847fd0154627cc2d73689d5677ec528e5af6b381a",
+                  "bytes": 1148
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-3a542a04e4f440b1.json",
+                  "sha256": "b3b7d99a192d9026d15ec316672340191f3049261d9d2c0469d712d71e129c7c",
+                  "bytes": 2846
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-3a76ff075b5a8c56.json",
+                  "sha256": "ea4287701d38830779904f79c4c895f389e6bd97d07216877689ea5facf2c6a0",
+                  "bytes": 1216
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-5a1f73b16257ef74.json",
+                  "sha256": "4048ca9da849d1c6f2c922fdcaecd4e9f2218d6ca99b5682a00e9c4fa41b40e9",
+                  "bytes": 2850
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-613d6e9671ee2462.json",
+                  "sha256": "469bbf885b48d4ce0b0373eb5dc1a6c6e2a9c68281ab404fab56b6732c58f26b",
+                  "bytes": 2058
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-6188bfbda639b983.json",
+                  "sha256": "9bc2bb068cf147fd2bdeb94d74fed542c10659aba913d4cf018f7892b31a91ee",
+                  "bytes": 3202
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-62bc5f6b14e057bd.json",
+                  "sha256": "19df06375c3bcaafd52c1e00e4bf2abef63149e8294e05eb794ccf969d589f1d",
+                  "bytes": 2395
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-6bd44e0117c6bf6a.json",
+                  "sha256": "69113d0eadcebbc7f45edd7e100d66b0f9b686e0f5b72d6085f9c2835ef4f9e3",
+                  "bytes": 2075
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-6f316ecef66d8b30.json",
+                  "sha256": "d08adf81f31b488d607920f8e32ea678249d9c627ebc3c7011a8ed3dcc09f12d",
+                  "bytes": 3206
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-71abbe421d0b27ff.json",
+                  "sha256": "910cc1af8f230d5ad1c531a4b152cfddc304675c2b4d136b26bce06fcffd2c0b",
+                  "bytes": 2038
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-794fbaa60acec186.json",
+                  "sha256": "233a977edd7071cb2898c1fcc8250ce140451a19c671e0fa18e50c3ce67f8b56",
+                  "bytes": 1833
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-7b56b7586e60055d.json",
+                  "sha256": "5316072551f3d8fb99faabd10e15f7f571eb2cca9ffc04ffbd3042e1b3d503ff",
+                  "bytes": 2244
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-826e0f2c60487014.json",
+                  "sha256": "feaf3e6ee429744a8883b3873f3b44f3fb6afda6894a7654ffe4c145343cea7e",
+                  "bytes": 2848
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-907c96b258837c80.json",
+                  "sha256": "509c6ec5cda6203ecfb86a7bb1ee99beb8d1336052e3cb23005e87a1f14a1c64",
+                  "bytes": 2480
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-91f6c2e18c84bedd.json",
+                  "sha256": "911e3592ac45fbd6ccd15419782f7b31793ec27873e3cba2c6b5ef93ab0fab3e",
+                  "bytes": 2027
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-967252db298f7f3d.json",
+                  "sha256": "747d3f953eb8477fc02d2085b34c8a02a19182e8b54f4794c7de61ccca5dc1a5",
+                  "bytes": 3204
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-9ad48b3351ac2766.json",
+                  "sha256": "eda041b76fe8dbb6588687aa42b9b08088579dda9db304d5413aee5db4d80f0d",
+                  "bytes": 2397
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-a0902b45c8400f36.json",
+                  "sha256": "71609a84c8eb914b7425f8dfc386f74b5859b507e8de8489e59519301eb52a4c",
+                  "bytes": 1203
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-ab2ab194649a614a.json",
+                  "sha256": "4c00f251f342ce97e23d5dd560083d506ced75c81046b7a5860d2c8cf0c2b4a4",
+                  "bytes": 1139
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b05c76cc599e2d7a.json",
+                  "sha256": "0811b29e190b099b4af40e32e506d221a4a1c766f58fd475df54de72d3bdc24f",
+                  "bytes": 3204
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b165f8573df4db52.json",
+                  "sha256": "51a1f9d56ab6faf8e1b1a1ecf6630140d7721e5b6adc2c1532ab648d7422daa2",
+                  "bytes": 1831
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b6433885f774fd91.json",
+                  "sha256": "c41eedfc97a8b4e2b14756db8e9ec138b380b5cb0a367d4df1b5362d0b6f785c",
+                  "bytes": 2025
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-b977a47657955b7a.json",
+                  "sha256": "396b5d179c4e43b9891a3a92642b5f8b64592a9d68546a15eed2a6059e42ea0b",
+                  "bytes": 2461
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-bb6e14a8cab2c246.json",
+                  "sha256": "91a154e66f560a0af075323f49df108797c0c75ea28aee75592775a89c84c526",
+                  "bytes": 1020
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-becde96cadf735af.json",
+                  "sha256": "ab96d645589f31ad330b426deb8c3c6465b61355a14a14ec7a714d23b9513337",
+                  "bytes": 1463
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-bffe7e82b12ba59b.json",
+                  "sha256": "2946f31f772e0054ef8ac975adffd1403a2fe5f57d63d3cd6ff646916bd3af0d",
+                  "bytes": 2515
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c0c13fc4de91bd35.json",
+                  "sha256": "aaddad0f3d95e49935b64fe8203b2c7e08f334a8219084b196e51b96c3310ff8",
+                  "bytes": 2320
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c7037b60cef1ff4e.json",
+                  "sha256": "e32cd2a6e8b3258d357e8ed2c2e36ebb5a015c912149db08e0fac2ad6cdffe53",
+                  "bytes": 1461
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c7255b042cc1b1b6.json",
+                  "sha256": "b62571dfc18d97c9c878d613d9ba7bce1ddd8da8142ee6c65009c227e4fb6e98",
+                  "bytes": 2001
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-c934ff86b5c190b7.json",
+                  "sha256": "04bda99c57c5d2836e0c8a6105d9fb7046f8462be4bbccb9d28748f67b049211",
+                  "bytes": 2074
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-cadd898d40ec542d.json",
+                  "sha256": "9f24d87fcf24e695e36ddd16b3a19d66ff8c972e6a70c284c7d12833618c3154",
+                  "bytes": 2554
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-d2e08fcf9b632e38.json",
+                  "sha256": "c80c65dded4acd9979e84d4a6e55096515facdfff606b60d6516cf098ec980b2",
+                  "bytes": 1698
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-dd51d5ea6a7645d2.json",
+                  "sha256": "48ae8e4a09db92b45ec4085de69f57216fd3d045ecf5c2fab604d25e2a1efaef",
+                  "bytes": 2482
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-e80b1f8475565f9e.json",
+                  "sha256": "850f66765432172655a891829d351dac6d1daf4f0d1e76d3beb9009d43555281",
+                  "bytes": 2242
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-ed44fc7573facb1c.json",
+                  "sha256": "1b0a5d94e54246dd708198b3d54c22ca5b6b19fe9721dccc548fbe7b8d9ceb47",
+                  "bytes": 1531
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-eee5c0ea91a295f8.json",
+                  "sha256": "839942c580eba31555f53fcf88657a26ab955a9a5657fd22f69b05c73e9ac08c",
+                  "bytes": 2556
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f23a0e4be55f722b.json",
+                  "sha256": "e46a46be8b492f4d34d6df9151bed258eaec06179f27c068a7c146d8ef4dd4e6",
+                  "bytes": 2848
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f2dc4d4f7a2f4ef4.json",
+                  "sha256": "a900223063945e13890a1aaae96ef160b6d61226dbc7edef50f282913bd78b9a",
+                  "bytes": 1205
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f3b53fd3fae661f2.json",
+                  "sha256": "3073507660c827f5bca6cfe04520ded400178c91c0df920b89fe8b5d7f09647a",
+                  "bytes": 1029
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-f61a34ddf2093a98.json",
+                  "sha256": "500c245d65945a203cc0764bb2a54559b091ffb7bb44573b99c2ef9210b48f91",
+                  "bytes": 2393
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/failure-controller-fb665eef52727757.json",
+                  "sha256": "d6463c10b9961ed1205a4d3ec14ec097fd63df10f185c09a52264acf81282c9a",
+                  "bytes": 2040
+                },
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-producer-contract-red/producer-contract-red/identity-controller.json",
+                  "sha256": "7ed3d090c73d99dad5c4dde7174fa30e14f48fa56075e3fe6a708db509ab99d6",
+                  "bytes": 246
+                }
+              ],
+              "failure_index": {
+                "root": "Q",
+                "path": "wave35-r92-producer-contract-red/producer-contract-red-failure-index.json",
+                "sha256": "fc59b86700dfd242a0d81c57dcb4e5657d498a91d4246c2e1e004aeb86549ec0",
+                "bytes": 11400
+              },
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        },
+        {
+          "spec": {
+            "root": "Q",
+            "path": "wave35-r92-static-spec.json",
+            "sha256": "69dace36f4f3fe5271aae0bb2356c6e570ad6ef797c6f8cf7ff54397693ef50c",
+            "bytes": 636
+          },
+          "status": "PASSED",
+          "attempts": [
+            {
+              "id": "wave35-r92-static-spec--ruff-owned",
+              "status": "PASSED",
+              "kind": "static",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r92-static-spec.json",
+                "sha256": "69dace36f4f3fe5271aae0bb2356c6e570ad6ef797c6f8cf7ff54397693ef50c",
+                "bytes": 636
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r92-static/ruff-owned-result.json",
+                "sha256": "5b0dd9f1c375ff25b1fbbc3d8de05c93c8899d94e899980ebaa37aa32633f727",
+                "bytes": 720
+              },
+              "observed_result": {
+                "name": "ruff-owned",
+                "exit_code": 0,
+                "seconds": 0.07382416725158691,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "ruff",
+                  "check",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-static/ruff-owned.log",
+                "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+                "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": null,
+              "log": {
+                "root": "Q",
+                "path": "wave35-r92-static/ruff-owned.log",
+                "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+                "bytes": 19
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-static/static-custody.json",
+                  "sha256": "20ea694141770cba8c72511cf69cc11bf4a7a7dc3232968f028547c26ea698f4",
+                  "bytes": 997
+                }
+              ],
+              "process_and_failure_records": [],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            },
+            {
+              "id": "wave35-r92-static-spec--black-owned",
+              "status": "PASSED",
+              "kind": "static",
+              "spec": {
+                "root": "Q",
+                "path": "wave35-r92-static-spec.json",
+                "sha256": "69dace36f4f3fe5271aae0bb2356c6e570ad6ef797c6f8cf7ff54397693ef50c",
+                "bytes": 636
+              },
+              "result": {
+                "root": "Q",
+                "path": "wave35-r92-static/black-owned-result.json",
+                "sha256": "3037fd7a197350322715a11b4dc5197c197dd1645551662820f9242706b581f5",
+                "bytes": 725
+              },
+              "observed_result": {
+                "name": "black-owned",
+                "exit_code": 0,
+                "seconds": 0.49622249603271484,
+                "command": [
+                  "/workspace/hamlet/.venv/bin/python",
+                  "-m",
+                  "black",
+                  "--check",
+                  "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+                ],
+                "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-static/black-owned.log",
+                "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+                "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+                "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+                "manifest_sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+                "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+              },
+              "counts": null,
+              "log": {
+                "root": "Q",
+                "path": "wave35-r92-static/black-owned.log",
+                "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+                "bytes": 55
+              },
+              "custody": [
+                {
+                  "root": "Q",
+                  "path": "wave35-r92-static/static-custody.json",
+                  "sha256": "20ea694141770cba8c72511cf69cc11bf4a7a7dc3232968f028547c26ea698f4",
+                  "bytes": 997
+                }
+              ],
+              "process_and_failure_records": [],
+              "failure_index": null,
+              "started_at": null,
+              "ended_at": null,
+              "custody_unavailable_reason": "Original absolute UTC execution timestamps not supplied; elapsed result seconds retained. Static/collection runtime counts absent where not applicable. No timestamps inferred."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "accounting": {
+    "r91": {
+      "collected": 65,
+      "fixture_executed": 3,
+      "fixture_failed": 3,
+      "fixture_passed": 0,
+      "ruff": "PASS",
+      "black": "FAIL",
+      "broader_contract_run": "UNRUN at R91"
+    },
+    "r92": {
+      "collected": 78,
+      "fixture_passed": 4,
+      "full_selection_executed": 78,
+      "passed": 32,
+      "failed": 46,
+      "fixture4_overlap_full78": true,
+      "static_owned_ruff_black": "PASS",
+      "unique_runtime_cases": 78,
+      "limitation": "Not all46 failures classified as causal producer defects; missing API/prerequisite and downstream-unreached assertions remain distinct."
+    },
+    "generated_owned_templates": "UNRUN in both rounds; null execution facts",
+    "programme": {
+      "qualified": 28,
+      "remaining": 38,
+      "total": 66
+    }
+  },
+  "reports_and_reviews": [
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-EXTENDED-TESTS-REVIEW.md",
+      "sha256": "12b61777766f7329f994761a144f53993efbbd7784e48192817d9d151c90fc57",
+      "bytes": 10702
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-EXTENDED-TESTS-FIX1-REVIEW.md",
+      "sha256": "59ded757bc287ef7243fcd2e07f98d3b27c5714a966a97c42c839fe25dca1b06",
+      "bytes": 9420
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md",
+      "sha256": "e75092fb22942c77a416cbec9b8aa84e102e83631f88ce10d9e99e3f72477d68",
+      "bytes": 38896
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R90-SNAPSHOT.txt",
+      "sha256": "7fee1d8de10c3f2481b16b45f1585e6a6eb7f3bb3120b9ff252755f182b40836",
+      "bytes": 8018
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R91-SNAPSHOT.txt",
+      "sha256": "4bf65ba1a3f63cefd94fc4a2dd95b5574cf4fc5ce1c709a8a044ba81bc6b2948",
+      "bytes": 19943
+    }
+  ],
+  "append_only_report_reference": {
+    "review_declared_sha256": "dd2123b636ae2b0b9b1123fc77d941815d50be2ff6c9838ac222241ce7cda8a3",
+    "current_report": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT.md",
+      "sha256": "e75092fb22942c77a416cbec9b8aa84e102e83631f88ce10d9e99e3f72477d68",
+      "bytes": 38896
+    },
+    "exact_literal_prefix_bytes": 29074,
+    "matches": true,
+    "scope": "Exact byte-prefix match observed, no original-time snapshot or timestamp claim. No new report copy created. Existing R90/R91 prose snapshots separately referenced."
+  },
+  "prospective_metadata": {
+    "parent_consumer_adoption": {
+      "root": "W",
+      "path": "wave35/r91-parent-consumer-design-adoption.json",
+      "sha256": "6f6f10e803e2c11738142b03f1c6953e437bd690ea173b1529e3e674f8a530bb",
+      "bytes": 1456
+    },
+    "proposal_and_peer": [
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-PARENT-OUTER-COMPLETION-CONSUMER-PROPOSAL.md",
+        "sha256": "ba6128eb2fa12df3cdf2fddad402e8c8a9a99ad36314776c80a75a3ae0d7eab6",
+        "bytes": 17747
+      },
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-PARENT-OUTER-COMPLETION-CONSUMER-PEER-REVIEW.md",
+        "sha256": "f8abc8c88a7aa24f17a88bb4c3c45f0ce1504ed7be626d36fb565bd57a0099e6",
+        "bytes": 5484
+      }
+    ],
+    "outcome_design": [
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1-REVIEW.md",
+        "sha256": "71b14345eacc6a319772b33ed6043ff377e7e55da34b5a2d06277a6bf5fe6496",
+        "bytes": 4465
+      },
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1.md",
+        "sha256": "e18de5be6abaa11c1e2ba14929a917ca547c2e41b349dd9102c2ea49cf55c723",
+        "bytes": 19817
+      },
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN.md",
+        "sha256": "168205f55695cc0833a6a1b90bd6d9c5e7953ed89c21ad039861aaf4d695f7a8",
+        "bytes": 16919
+      },
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-INDEPENDENT-REVIEW.md",
+        "sha256": "21e81894bc0ccf611e4caab372492e4bb085911ce93837f4a2a1bb3b0d045872",
+        "bytes": 8043
+      }
+    ],
+    "harness_selfhash_clarification": {
+      "root": "W",
+      "path": "evidence-management/harness-selfhash-clarification.json",
+      "sha256": "a24e2fecb7aa48c62d04e35bcaeb9ef5b037665a917aca6cc65b3c55807b05dc",
+      "bytes": 5002
+    },
+    "latest_wip17_ci": {
+      "root": "W",
+      "path": "evidence-management/wip17-ci-observation-3.json",
+      "sha256": "5b2767f7310289b65f3de66ab9828054899eea4a9229689e9b6e4c0c12ca2e65",
+      "bytes": 1741
+    },
+    "hosted_lint_raw": {
+      "root": "W",
+      "path": "evidence-management/wip17-hosted-lint.log",
+      "sha256": "51109a3b680164ad6ba36c89ffbf028a6d442f869780a21217e435601967f049",
+      "bytes": 28796
+    },
+    "latest_wip17_spaces_refresh": {
+      "root": "W",
+      "path": "evidence-management/wip17-tracker-ci-final-refresh-receipt.json",
+      "sha256": "59723c141912e1f56db9a354608be42104066a0c483a9cbced2ea4e6378cad52",
+      "bytes": 122809
+    },
+    "scope": "Separate proposal/adoption/CI/tracker/terminology metadata, not application execution or package qualification."
+  },
+  "limitations": [
+    "No current workspace source rebinding: sole application author is editing subsequent poison tests.",
+    "Collection/static/fixture passes do not imply producer-contract acceptance, global static pass, hardware qualification or child-role admission.",
+    "All result/log/manifest bindings verified as recorded metadata; no verifier rerun, application import, Git/index, selector, source-body read or tool/schema change.",
+    "Absolute result execution times remain unavailable; explicit metadata observation times are not substituted.",
+    "No new source/report copies, branches/worktrees, staging, publication or delegation."
+  ],
+  "reference_mismatches": []
+}

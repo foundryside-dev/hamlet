@@ -1,0 +1,4 @@
+src/townlet/training/replay_contract.py:263: error: Incompatible types in assignment (expression has type "device | None", variable has type "device")  [assignment]
+src/townlet/training/replay_contract.py:297: error: Incompatible types in assignment (expression has type "device | None", variable has type "device")  [assignment]
+src/townlet/training/replay_contract.py:307: error: "AmbientRNGDomain" has no attribute "device_invocation"; maybe "device_operation"?  [attr-defined]
+Found 3 errors in 1 file (checked 3 source files)

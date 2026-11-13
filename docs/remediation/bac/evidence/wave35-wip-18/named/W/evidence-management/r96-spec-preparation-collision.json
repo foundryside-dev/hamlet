@@ -1,0 +1,10 @@
+{
+  "kind": "pre-execution-spec-preparation-collision",
+  "time_of_record": "2026-11-13T16:32:22.509008+00:00",
+  "round": "R96",
+  "observed_exit": 1,
+  "error": "FileExistsError opening wave35-r96-collection-spec.json exclusively; capture helper had already generated unexecuted curriculum collection template.",
+  "effects": "No application execution or source mutation. Script stopped before creating static spec or source diff.",
+  "resolution": "Root inspected generated spec, verified output directory absent, replaced only the never-executed collection template with intended replay test path, then created static spec/diff. Actual executed specs and custody remain authoritative.",
+  "scope": "Metadata preparation failure; not application failure or a retry of executed check."
+}

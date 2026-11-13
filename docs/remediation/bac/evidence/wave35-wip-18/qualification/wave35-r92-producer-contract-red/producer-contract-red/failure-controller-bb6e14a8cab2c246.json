@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_preflight_undeclared_target_refuses_before_draw_or_data_effect[flat]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "family = 'flat'\nsimulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2dafcb40>\n\n    @pytest.mark.parametrize(\"family\", [\"flat\", \"per\"])\n    def test_preflight_undeclared_target_refuses_before_draw_or_data_effect(family: str, simulated_cuda: _SimCUDA) -> None:\n        owner = _owner(family, torch.device(\"cuda:0\"))\n        _push(owner, _rows(), recorded=True)\n        before = owner.serialize()\n>       with owner.cuda_preflight(anticipated_devices=(torch.device(\"cuda:0\"),)):\n             ^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'ReplayBuffer' object has no attribute 'cuda_preflight'\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:958: AttributeError",
+  "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34"
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "bac-wip-durability-publication-ruling-v1",
+  "time": "2026-11-13T16:52:41.192854+00:00",
+  "candidate_tree": "abb7f417b8098b139db3d5156f4c320b21ab8f6d",
+  "ruling": "Use R98 as terminal of finite WIP18 evidence interval, not terminal of A remediation. Publish current reviewed staged work while retaining material I5 gap and other failures; continue structural fix3 after publication.",
+  "reason": "User explicitly authorized all work to remote and requested durable checkpoint. Full prefix repair is now a bounded structural change, so durability need not wait for A acceptance. Source is frozen; author prepares matrix read-only.",
+  "authority": "Existing branch publication explicitly user-authorized; no branch/worktree creation, merge, deployment or acceptance waiver.",
+  "required_before_push": [
+    "Finite contract, authoritative interval checks/attempts and helper closure",
+    "Exact frozen qualification subject and independent terminal evidence review",
+    "Source-verified exact document bytes and execution/publication equivalence",
+    "Root selection/assembly/staged scope verification"
+  ],
+  "required_after_push": [
+    "Exact remote SHA and observed CI",
+    "Resume structural I5 fix3 and pending core/producer implementation"
+  ],
+  "scope": "No unresolved P1/P2 or capability gap may be treated as completed. Package accounting28/38/66 remains unchanged."
+}

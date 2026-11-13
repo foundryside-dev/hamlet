@@ -1,0 +1,56 @@
+{
+  "schema": "bac-bounded-design-adoption-v1",
+  "status": "ROOT ADOPTED ADDITIVE DESIGN; IMPLEMENTATION AND QUALIFICATION OWED",
+  "actor": "/root",
+  "design": {
+    "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1.md",
+    "sha256": "e18de5be6abaa11c1e2ba14929a917ca547c2e41b349dd9102c2ea49cf55c723",
+    "bytes": 19817
+  },
+  "independent_peer_review": {
+    "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-DESIGN-FIX1-REVIEW.md",
+    "sha256": "71b14345eacc6a319772b33ed6043ff377e7e55da34b5a2d06277a6bf5fe6496",
+    "bytes": 4465
+  },
+  "source_fact": {
+    "path": "wave35-preparation/P/T18e-R0-CUDA-OPERATION-COMPLETION-OUTCOME-FACTS.md",
+    "sha256": "871cdf42c540b4b86de932273fa44e07ec054854b192fec81e69fac8536354ec",
+    "bytes": 5450
+  },
+  "interface": "AmbientRNGDomain.device_invocation required explicit participant/operation_kind/lineage/cuda_devices returns source-issued single-use RNGDeviceInvocation; enters yielding existing genuine RNGOperation, seals per-invocation completion_failed bool readable by issuing thread/PID afterexit. Existing operation/device_operation identities/signatures preserved.",
+  "invariants": [
+    "Immutable attributed receipt, not draw/currentness/membership/publication authority",
+    "No blanketquarantine, private core status reads, callback authority, lifetime pin leaks or new defaults",
+    "Preserve generic currentimplementation/parity without permanent earlystop-tail promise; local all-device obligation unchanged",
+    "Required parentouter-completion failure ownership and under-lock response must be settled from actualparent/source reachability; no speculativeallowner policy"
+  ],
+  "scheduling": "B core activation and separate paired core/test packet; A can write tests/stagedproducer against adopted exactAPI, but no integrated acceptance until actual implementation and independent qualification.",
+  "bounded_budget_ruling": {
+    "reason": "Reserve additive outcome context/registry plus actual source-bound activation; no hardusercap change or bodyaddition",
+    "B": {
+      "core": 1250,
+      "shared": 650,
+      "flat": 850,
+      "PER": 1300,
+      "activation_test": 650,
+      "total": 4700,
+      "files": 5
+    },
+    "D": {
+      "core": 1250,
+      "shared": 650,
+      "recurrent": 2250,
+      "activation_test": 700,
+      "total": 4850,
+      "files": 4
+    },
+    "paired_core_test": {
+      "core": 1250,
+      "existing_core_test": 2000,
+      "total": 3250,
+      "files": 2
+    },
+    "implementation_grant": false
+  },
+  "scope": "Finite source-demonstrated producer attribution gap; no capability removal/degradation/consolidation or programme acceptance change."
+}

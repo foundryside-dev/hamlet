@@ -1,0 +1,81 @@
+{
+  "schema": "bac-harness-selfhash-clarification-v1",
+  "status": "PROSPECTIVE METADATA PRECISION CLARIFICATION; ARCHIVE AT NEXT CHECKPOINT",
+  "scope": "Finite clarification of locked harness digest terminology only. Published WIP17 bytes, results, schemas, statuses, qualification and accounting unchanged. No broad audit.",
+  "samples": [
+    {
+      "round": 89,
+      "result": {
+        "root": "Q",
+        "path": "wave35-r89-collection/collection-result.json",
+        "sha256": "0595f6f22742c65493346a058edb009175164f9e68d9604b63e106b262e107b2",
+        "bytes": 858
+      },
+      "observed_fields": {
+        "name": "collection",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+        "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+        "manifest_sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+        "exit_code": 0
+      }
+    },
+    {
+      "round": 90,
+      "result": {
+        "root": "Q",
+        "path": "wave35-r90-collection/collection-result.json",
+        "sha256": "f310037ddf9c0f3ef6b122a6c51ddb57c7d77203926281ba94c029e6f6168993",
+        "bytes": 829
+      },
+      "observed_fields": {
+        "name": "collection",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+        "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+        "manifest_sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+        "exit_code": 0
+      }
+    }
+  ],
+  "historical_wording": [
+    {
+      "artifact": {
+        "root": "W",
+        "path": "evidence-management/wip17-root-helper-invocation-lineage.json",
+        "sha256": "ff95e8ab6c2f46609e289d69a569d2d85c539b8c6cd59760fec7b5a199ce3765",
+        "bytes": 21974
+      },
+      "json_pointer": "/limitations/0",
+      "exact_text": "Generic helpers do not emit their own runtime code self-hash. This root invocation-lineage attestation plus current/prior byte comparison is not cryptographic runtime self-attestation."
+    },
+    {
+      "artifact": {
+        "root": "R",
+        "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+        "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226",
+        "bytes": 527701
+      },
+      "json_pointer": "/metadata_limitations/0",
+      "exact_text": "Generic tools do not emit runtime code selfhash; root actual invocation/version lineage disclosed."
+    }
+  ],
+  "source_fact_supplied_by_root": {
+    "supplier": "/root",
+    "helper": "Q/run_bac_packet_checks_locked.py",
+    "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "bytes": 2043,
+    "fact": "The locked harness computes harness_sha256 from its own on-disk file bytes when emitting each result after the command. Root inspected that retained source; this metadata author did not read an additional helper implementation body."
+  },
+  "clarification": {
+    "locked_harness": "Actual structured results contain harness_sha256: a self-reported digest of the harness file on disk when the result is emitted after the command. Do not describe this helper as emitting no self-reported digest.",
+    "proof_limit": "This on-disk digest is not signed independent proof of which in-memory bytes executed. Root retained invocation/version lineage and independent byte/custody checks remain distinct evidence.",
+    "child_verifier": "Strong child verifier receipts separately emit verifier_sha256 and bind recorded spec/result/source/process evidence; this is a distinct self-reported helper version, not a signed independent in-memory execution attestation.",
+    "other_helpers": "Generic runtime/failed/static custody verifiers, candidate capture and source-identity plugin retain their documented no-runtime-selfhash limitations unless their actual evidence establishes otherwise. This clarification does not newly inspect or certify their source."
+  },
+  "recommended_future_wording": "Locked harness results self-report the on-disk harness_sha256 at result emission; strong child custody receipts separately self-report verifier_sha256. These are not signed independent attestations of executed in-memory code. Root invocation/version lineage and exact retained artifact/source/process checks remain explicit. Generic custody verifiers, capture and source-identity plugin have the separately documented evidence limitations.",
+  "method": "Read two actual result JSONs, named existing attestation and published manifest metadata; hash those exact artifacts. Consume root-supplied source fact only. No sixth implementation body, helper/application execution, Git/index, schema edit or publication change. Retained five-body/2075-line context unchanged.",
+  "accounting_change": false,
+  "qualification_change": false,
+  "published_bytes_changed": false
+}

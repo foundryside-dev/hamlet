@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py", line 52, in <module>
+    assert lines <= row['projected_lines'], (str(p), lines, row['projected_lines'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('/workspace/hamlet/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md', 206, 150)

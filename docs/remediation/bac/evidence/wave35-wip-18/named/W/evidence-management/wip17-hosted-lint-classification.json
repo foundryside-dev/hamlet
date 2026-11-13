@@ -1,0 +1,27 @@
+{
+  "schema": "bac-hosted-lint-classification-v1",
+  "head": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "job_id": 131909872585,
+  "log_sha256": "51109a3b680164ad6ba36c89ffbf028a6d442f869780a21217e435601967f049",
+  "log_bytes": 28796,
+  "errors": [
+    "2026-11-13T13:20:50.9726962Z src/townlet/oracle/driver.py:98: error: Missing named argument \"world_roster\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-13T13:20:50.9728453Z src/townlet/oracle/driver.py:98: error: Missing named argument \"training_seed\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-13T13:20:50.9729132Z src/townlet/oracle/driver.py:98: error: Missing named argument \"lane_world_ids\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-13T13:20:50.9730224Z src/townlet/oracle/driver.py:115: error: Missing named argument \"reservation\" for \"reset\" of \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-13T13:20:50.9731572Z src/townlet/oracle/driver.py:128: error: Missing named argument \"vector_step\" for \"step\" of \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-13T13:20:50.9732935Z src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type \"Tensor\", variable has type \"WorldRecord\")  [assignment]",
+    "2026-11-13T13:20:51.1559332Z src/townlet/population/vectorized.py:698: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1562198Z src/townlet/population/vectorized.py:698: error: Missing named argument \"lineage\" for \"prepare_serialized\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1564752Z src/townlet/population/vectorized.py:699: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1567872Z src/townlet/population/vectorized.py:699: error: Missing named argument \"lineage\" for \"prepare_archived_import\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1570568Z src/townlet/population/vectorized.py:701: error: Missing named argument \"lineage\" for \"prepare_serialized\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1573032Z src/townlet/population/vectorized.py:702: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1575350Z src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"ReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1577371Z src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-13T13:20:51.1579752Z src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"PrioritizedReplayBuffer\"  [call-arg]"
+  ],
+  "oracle_driver_errors": 6,
+  "population_lineage_errors": 9,
+  "disposition": "Actual hosted15 matches required current integration debt oracle6/POP9; no waiver or completion. Tests job failure cause unclassified after tool transportclosed."
+}

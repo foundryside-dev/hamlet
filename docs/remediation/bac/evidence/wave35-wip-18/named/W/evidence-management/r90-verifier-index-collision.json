@@ -1,0 +1,16 @@
+{
+  "schema": "bac-verifier-orchestration-observation-v1",
+  "round": 90,
+  "status": "INITIAL VERIFIER ATTEMPT FAILED; SEQUENTIAL RETRY PASSED",
+  "operation": "verify_bac_failed_run.py wave35-r90-constructor-red-spec.json",
+  "observed_error": "git write-tree exit128: .git/index.lock File exists during parallel generic successful-run verification",
+  "raw_log_unavailable_reason": "Initial stderr observed in tool result only; separate original log was not captured.",
+  "causal_repair": "Run Git-index-mutating verification steps sequentially. Existing git process completed and lock disappeared normally; no lock removed and no test/process cancelled.",
+  "retry_log": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r90-constructor-red/failed-custody-verification.log",
+    "sha256": "2e60ad490d1cac0c7b8a8191b7ab8fc40a29fc0accb6d098dd849654633d062b",
+    "bytes": 958
+  },
+  "application_rerun": false,
+  "scope": "Only orchestration retry; retained actual4FAIL result unchanged."
+}

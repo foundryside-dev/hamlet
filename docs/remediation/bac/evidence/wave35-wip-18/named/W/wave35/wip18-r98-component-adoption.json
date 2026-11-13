@@ -1,0 +1,19 @@
+{
+  "schema": "bac-root-bounded-component-adoption-v1",
+  "time": "2026-11-13T16:58:52.235366+00:00",
+  "component": {
+    "root": "W",
+    "path": "evidence-management/wip18-r98-bounded-evidence-component-proposal.json",
+    "sha256": "6d6f59b7f3dad07b4296160facb9e44fc97353a38de0f7854a137ecd00c13b35",
+    "bytes": 55069
+  },
+  "disposition": "ACCEPTED AS BOUNDED WIP EVIDENCE ONLY; I5 CHANGES REQUIRED",
+  "direct_unique_refs_rehashed": 34,
+  "basis": "Root executed and verified all R98 named checks and reviewed actual source/dispositions;24 reachable controls qualify only their named behavior. Owned typing fails missing B API; I5 is materially unresolved. No producer acceptance or waived gate.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "required_next": "Approved structural prefix plan tests-first fix3 after checkpoint, then authentic core/B/runtime/children/parent/hardware and full programme."
+}

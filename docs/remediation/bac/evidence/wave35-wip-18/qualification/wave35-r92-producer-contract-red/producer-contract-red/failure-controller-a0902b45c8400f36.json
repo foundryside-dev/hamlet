@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_prepare_install_ignores_unused_cuda_selector[per]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "family = 'per'\nsimulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fac2d8b8b50>\n\n    @pytest.mark.parametrize(\"family\", [\"flat\", \"per\"])\n    def test_empty_prepare_install_ignores_unused_cuda_selector(family: str, simulated_cuda: _SimCUDA) -> None:\n        owner = _owner(family, torch.device(\"cuda:0\"))\n        state = owner.serialize()\n        owner.device = torch.device(\"cuda:3\")\n        simulated_cuda.events.clear()\n        candidate = owner.prepare_serialized(state, expected_obs_dim=None, lineage=None)\n        owner.load_prepared(candidate, lineage=None)\n>       assert simulated_cuda.events == []\nE       AssertionError: assert [('sync', 0), ('sync', 0)] == []\nE         \nE         Left contains 2 more items, first extra item: ('sync', 0)\nE         Use -v to get more diff\n\ntests/test_townlet/regressions/bac/test_replay_cuda_producer.py:583: AssertionError",
+  "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34"
+}

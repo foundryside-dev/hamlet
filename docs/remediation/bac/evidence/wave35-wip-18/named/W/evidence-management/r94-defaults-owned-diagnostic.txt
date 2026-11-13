@@ -1,0 +1,46 @@
+src/townlet/training/prioritized_replay_buffer.py:213:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::rewards
+src/townlet/training/prioritized_replay_buffer.py:219:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::observations
+src/townlet/training/prioritized_replay_buffer.py:220:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::count
+src/townlet/training/prioritized_replay_buffer.py:238:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::state
+src/townlet/training/prioritized_replay_buffer.py:242:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::keys
+src/townlet/training/prioritized_replay_buffer.py:247:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::target
+src/townlet/training/prioritized_replay_buffer.py:251:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::state
+src/townlet/training/prioritized_replay_buffer.py:253:16: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::target
+src/townlet/training/prioritized_replay_buffer.py:257:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::request
+src/townlet/training/prioritized_replay_buffer.py:258:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/prioritized_replay_buffer.py::PrioritizedReplayBuffer::_replay_inventory::count
+src/townlet/training/replay_buffer.py:160:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::rewards
+src/townlet/training/replay_buffer.py:166:27: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::observations
+src/townlet/training/replay_buffer.py:167:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::count
+src/townlet/training/replay_buffer.py:180:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::state
+src/townlet/training/replay_buffer.py:184:19: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::keys
+src/townlet/training/replay_buffer.py:188:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::target
+src/townlet/training/replay_buffer.py:191:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::state
+src/townlet/training/replay_buffer.py:192:21: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::target
+src/townlet/training/replay_buffer.py:195:22: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::request
+src/townlet/training/replay_buffer.py:196:20: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::_replay_inventory::count
+src/townlet/training/replay_buffer.py:511:26: ASG002: Ternary expression used as a default (x = a if cond else b) [WHITELISTED]
+  Context: src/townlet/training/replay_buffer.py::ReplayBuffer::stats::occupancy_ratio
+src/townlet/training/replay_contract.py:178:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+  Context: src/townlet/training/replay_contract.py::ReplayCustody::_local_operation::effective
+src/townlet/training/replay_contract.py:209:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+  Context: src/townlet/training/replay_contract.py::ReplayCustody::_device_operation::effective

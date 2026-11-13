@@ -1,0 +1,168 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 6 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FFFFFF   [100%]
+
+=================================== FAILURES ===================================
+___ test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-flat] ____
+
+family = 'flat', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115e582f0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115fa1cd0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["validate", "prepare"])
+    def test_capacity_refusal_does_not_inventory_unused_gpu_rows(
+        family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner, incoming = _capacity_refusal_fixture(family)
+        incoming["observations"] = _CUDAData(incoming["observations"], 2)
+        before = owner.serialize()
+        method = "validate_serialized" if route == "validate" else "prepare_serialized"
+        selected, devices = _metadata_plan(owner, method, (incoming,), route == "prepare", simulated_cuda)
+>       assert selected is None and devices == (), "Capacity refuses before any row source or destination is touched"
+E       AssertionError: Capacity refuses before any row source or destination is touched
+E       assert (None is None and (2,) == ()
+E         
+E         Left contains one more item: 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1591: AssertionError
+____ test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-per] ____
+
+family = 'per', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115f3bed0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115d1bd10>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["validate", "prepare"])
+    def test_capacity_refusal_does_not_inventory_unused_gpu_rows(
+        family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner, incoming = _capacity_refusal_fixture(family)
+        incoming["observations"] = _CUDAData(incoming["observations"], 2)
+        before = owner.serialize()
+        method = "validate_serialized" if route == "validate" else "prepare_serialized"
+        selected, devices = _metadata_plan(owner, method, (incoming,), route == "prepare", simulated_cuda)
+>       assert selected is None and devices == (), "Capacity refuses before any row source or destination is touched"
+E       AssertionError: Capacity refuses before any row source or destination is touched
+E       assert (None is None and (2,) == ()
+E         
+E         Left contains one more item: 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1591: AssertionError
+____ test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-flat] ____
+
+family = 'flat', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115eb91d0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115d747c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["validate", "prepare"])
+    def test_capacity_refusal_does_not_inventory_unused_gpu_rows(
+        family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner, incoming = _capacity_refusal_fixture(family)
+        incoming["observations"] = _CUDAData(incoming["observations"], 2)
+        before = owner.serialize()
+        method = "validate_serialized" if route == "validate" else "prepare_serialized"
+        selected, devices = _metadata_plan(owner, method, (incoming,), route == "prepare", simulated_cuda)
+>       assert selected is None and devices == (), "Capacity refuses before any row source or destination is touched"
+E       AssertionError: Capacity refuses before any row source or destination is touched
+E       assert (None is None and (2,) == ()
+E         
+E         Left contains one more item: 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1591: AssertionError
+____ test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-per] _____
+
+family = 'per', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115ec9ba0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115eb5b50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("route", ["validate", "prepare"])
+    def test_capacity_refusal_does_not_inventory_unused_gpu_rows(
+        family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner, incoming = _capacity_refusal_fixture(family)
+        incoming["observations"] = _CUDAData(incoming["observations"], 2)
+        before = owner.serialize()
+        method = "validate_serialized" if route == "validate" else "prepare_serialized"
+        selected, devices = _metadata_plan(owner, method, (incoming,), route == "prepare", simulated_cuda)
+>       assert selected is None and devices == (), "Capacity refuses before any row source or destination is touched"
+E       AssertionError: Capacity refuses before any row source or destination is touched
+E       assert (None is None and (2,) == ()
+E         
+E         Left contains one more item: 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1591: AssertionError
+__________ test_bad_plain_push_refuses_before_unused_gpu_dones[flat] ___________
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115eca3f0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115d7d5e0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_bad_plain_push_refuses_before_unused_gpu_dones(family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        before = owner.serialize()
+        rows = _rows()
+        rows["observations"] = torch.ones(4, dtype=torch.float32)
+        rows["dones"] = _CUDAData(rows["dones"], 2)
+        rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
+        arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
+        owner.device = torch.device("cuda:3")
+        assert owner.action_dim is None
+        selected, devices = _metadata_plan(owner, "push", arguments, False, simulated_cuda)
+>       assert selected is None and devices == (), "Plain no-vocabulary push rejects observations before reading dones"
+E       AssertionError: Plain no-vocabulary push rejects observations before reading dones
+E       assert (None is None and (2,) == ()
+E         
+E         Left contains one more item: 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1632: AssertionError
+___________ test_bad_plain_push_refuses_before_unused_gpu_dones[per] ___________
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7fc115d039b0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc115d7b230>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_bad_plain_push_refuses_before_unused_gpu_dones(family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        before = owner.serialize()
+        rows = _rows()
+        rows["observations"] = torch.ones(4, dtype=torch.float32)
+        rows["dones"] = _CUDAData(rows["dones"], 2)
+        rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
+        arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
+        owner.device = torch.device("cuda:3")
+        assert owner.action_dim is None
+        selected, devices = _metadata_plan(owner, "push", arguments, False, simulated_cuda)
+>       assert selected is None and devices == (), "Plain no-vocabulary push rejects observations before reading dones"
+E       AssertionError: Plain no-vocabulary push rejects observations before reading dones
+E       assert (None is None and (2,) == ()
+E         
+E         Left contains one more item: 2
+E         Use -v to get more diff)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:1632: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[validate-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_capacity_refusal_does_not_inventory_unused_gpu_rows[prepare-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_bad_plain_push_refuses_before_unused_gpu_dones[per]
+============================== 6 failed in 0.37s ===============================

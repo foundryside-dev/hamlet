@@ -1,0 +1,176 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.2.3 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, benchmark-5.2.3, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FFFF     [100%]
+
+=================================== FAILURES ===================================
+_____________ test_empty_constructor_has_no_cuda_access[cuda-flat] _____________
+
+family = 'flat', selector = 'cuda'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff9aecbc050>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:47: in _owner
+    return ReplayBuffer(capacity=4, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:147: in __init__
+    self._init_custody(device)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.replay_buffer.ReplayBuffer object at 0x7ff9aec617f0>
+device = device(type='cuda')
+
+    def _init_custody(self, device: torch.device) -> None:
+        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+        index = device.index
+        devices: tuple[int, ...]
+        if device.type == "cuda":
+            if index is None or type(index) is not int or index < 0:
+>               raise ValueError("CUDA replay custody requires an explicit initialized device index")
+E               ValueError: CUDA replay custody requires an explicit initialized device index
+
+src/townlet/training/replay_contract.py:55: ValueError
+_____________ test_empty_constructor_has_no_cuda_access[cuda-per] ______________
+
+family = 'per', selector = 'cuda'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff9aeeaac30>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:49: in _owner
+    return PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:203: in __init__
+    self._init_custody(device)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.prioritized_replay_buffer.PrioritizedReplayBuffer object at 0x7ff9aec61400>
+device = device(type='cuda')
+
+    def _init_custody(self, device: torch.device) -> None:
+        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+        index = device.index
+        devices: tuple[int, ...]
+        if device.type == "cuda":
+            if index is None or type(index) is not int or index < 0:
+>               raise ValueError("CUDA replay custody requires an explicit initialized device index")
+E               ValueError: CUDA replay custody requires an explicit initialized device index
+
+src/townlet/training/replay_contract.py:55: ValueError
+____________ test_empty_constructor_has_no_cuda_access[cuda:3-flat] ____________
+
+family = 'flat', selector = 'cuda:3'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff9aec1d8c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:47: in _owner
+    return ReplayBuffer(capacity=4, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:147: in __init__
+    self._init_custody(device)
+src/townlet/training/replay_contract.py:63: in _init_custody
+    self._replay_participant = process_rng_domain().register(
+src/townlet/exploration/rng_custody.py:247: in register
+    if cuda_devices and (not torch.cuda.is_initialized() or any(index >= torch.cuda.device_count() for index in cuda_devices)):
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_replay_cuda_producer._NoCUDA object at 0x7ff9ae7f42d0>
+name = 'is_initialized'
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+>       raise AssertionError(f"Replay unexpectedly accessed torch.cuda.{name}")
+E       AssertionError: Replay unexpectedly accessed torch.cuda.is_initialized
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:29: AssertionError
+____________ test_empty_constructor_has_no_cuda_access[cuda:3-per] _____________
+
+family = 'per', selector = 'cuda:3'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff9aecf0a50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
+    def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Eager initialization/index validation breaks metadata-only construction."""
+        device = torch.device(selector)
+        domain = process_rng_domain()
+        with monkeypatch.context() as scoped:
+            scoped.setattr(torch, "cuda", _NoCUDA())
+>           owner = _owner(family, device)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:49: in _owner
+    return PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=device)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:203: in __init__
+    self._init_custody(device)
+src/townlet/training/replay_contract.py:63: in _init_custody
+    self._replay_participant = process_rng_domain().register(
+src/townlet/exploration/rng_custody.py:247: in register
+    if cuda_devices and (not torch.cuda.is_initialized() or any(index >= torch.cuda.device_count() for index in cuda_devices)):
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_replay_cuda_producer._NoCUDA object at 0x7ff9aecbc9d0>
+name = 'is_initialized'
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(name)
+>       raise AssertionError(f"Replay unexpectedly accessed torch.cuda.{name}")
+E       AssertionError: Replay unexpectedly accessed torch.cuda.is_initialized
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_empty_constructor_has_no_cuda_access[cuda:3-per]
+============================== 4 failed in 0.28s ===============================

@@ -1,0 +1,22 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r92-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r92-producer-contract-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "producer-contract-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

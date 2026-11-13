@@ -1,0 +1,24 @@
+{
+  "kind": "producer-child-verifier-tool-qualification",
+  "time": "2026-11-13T14:59:55.082459+00:00",
+  "verifier_sha256": "8639eae953abe0961a4d4af941c15fbf4d3c85b9bd342d4409158a629e0eae7e",
+  "tests_sha256": "36ed3c3ae1d4b0a7c5835ff95ed705a30a8ca4b548826b406eb9957d8cf4c14c",
+  "api_sha256": "e5072eb3ab320566faa705831de4927e4d358b2ecc01786014601a13d8898e9e",
+  "references": {
+    "author_report": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-REPORT.md",
+      "sha256": "4d9f76076db90af06458c7eaa7cc7e312fe33589b46d5d8a20f05417a3df4014"
+    },
+    "independent_review": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-INDEPENDENT-REVIEW.md",
+      "sha256": "2d62ffcda679785a1346a016bb93ab9f6a572827d9b4d5dd4e399659b34eccc3"
+    },
+    "root_repeat": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/producer-child-verifier-root-repeat.json",
+      "sha256": "90e2848672c2bd39c1da694b14b685f6cf558caf966ebb77aa849883312e1b76"
+    }
+  },
+  "outcome": "Author58syntheticPASS; root same58PASS in1.495s plusstaticPASS; other-model7independent mutations allrefused andSPEC/QUALITYPASS. Overlapping methods not summed.",
+  "adoption": "Qualified finite tool extension for future source-bound producer child evidence. Existing2replay+10core mappings preserved. Actual10producerchildren remainUNRUN untilauthentic A/B prerequisites; no app/GPU/programme completion.",
+  "execution_policy": "Individualspec exactly1job/workers1/no-xdist; independentcases canrunparallel withseparateoutputs withinmeasuredcapacity; verifierssequential."
+}

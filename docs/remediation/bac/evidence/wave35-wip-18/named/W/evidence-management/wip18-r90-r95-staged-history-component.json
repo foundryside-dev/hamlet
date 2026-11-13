@@ -1,0 +1,556 @@
+{
+  "schema": "bac-staged-history-component-receipt-v1",
+  "status": "FROZEN HISTORICAL COMPONENT PROPOSAL; ROOT REVIEW AND ACCEPTANCE REQUIRED",
+  "component_id": "wave35-wip18-r90-r95-staged-history",
+  "series": "wave35",
+  "interval_start": 90,
+  "terminal_historical_round": 95,
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r95-candidate.json",
+    "sha256": "52c2416b1d22e61dbfe16c848f60972cb6b88772e5dac8c5a612b76cd8223a65",
+    "bytes": 203565
+  },
+  "candidate_tree": "f627cc1f54814e19b278e312b54635d6b861a089",
+  "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+  "scope": "Retained staged A producer prerequisite/failed implementation history R90\u2013R95 and independently qualified tooling. No terminal A repair approval, application acceptance or WIP18 seal.",
+  "author": "/root/bac_astra_wip18_checkpoint",
+  "root_disposition": null,
+  "historical_rounds": [
+    {
+      "round": 90,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r90-candidate.json",
+        "sha256": "86cfef315fd28c8ab2abe25420f5e2d4c38a560fcf833ec4d21252fc593f9deb",
+        "bytes": 203415
+      },
+      "candidate_tree": "8011596de86865f2d28457959ddb5fade90903d3",
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r90-fixture-resource-preflight.json",
+        "sha256": "f318267849477b4935c16f0f26f723d3e9d37ce6e9fdd1fc94b1147fa4176af1",
+        "bytes": 3031
+      },
+      "history_location": {
+        "ledger": {
+          "root": "W",
+          "path": "evidence-management/wip18-draft-receipt-input.json",
+          "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+          "bytes": 213388
+        },
+        "json_pointer": "/interval_entries/0"
+      },
+      "check_ids": [
+        "wave35-r90-collection-spec",
+        "wave35-r90-constructor-red-spec",
+        "wave35-r90-cpu-controls-spec",
+        "wave35-r90-owned-spec",
+        "wave35-r90-static-spec"
+      ],
+      "attempt_ids": [
+        "wave35-r90-collection-spec--collection",
+        "wave35-r90-constructor-red-spec--constructor-red",
+        "wave35-r90-cpu-controls-spec--cpu-controls",
+        "wave35-r90-owned-spec--owned",
+        "wave35-r90-static-spec--ruff-owned",
+        "wave35-r90-static-spec--black-owned"
+      ]
+    },
+    {
+      "round": 91,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r91-candidate.json",
+        "sha256": "48eaadebb3a49c2a635f5ddd52dc13ed189bb3ffef9970442bd56ce61e325c8e",
+        "bytes": 203415
+      },
+      "candidate_tree": "1da4411d4642ebe749364b467eefaf8ec7b80b30",
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r91-fixture-resource-preflight.json",
+        "sha256": "4a8d755d32f00f9465448a6dd7f379e60268c419ed0da1dab6b206a5bde6f87a",
+        "bytes": 3030
+      },
+      "history_location": {
+        "ledger": {
+          "root": "W",
+          "path": "evidence-management/wip18-draft-receipt-input.json",
+          "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+          "bytes": 213388
+        },
+        "json_pointer": "/interval_entries/1"
+      },
+      "check_ids": [
+        "wave35-r91-collection-spec",
+        "wave35-r91-fixture-prerequisites-spec",
+        "wave35-r91-owned-spec",
+        "wave35-r91-static-spec"
+      ],
+      "attempt_ids": [
+        "wave35-r91-collection-spec--collection",
+        "wave35-r91-fixture-prerequisites-spec--fixture-prerequisites",
+        "wave35-r91-owned-spec--owned",
+        "wave35-r91-static-spec--ruff-owned",
+        "wave35-r91-static-spec--black-owned"
+      ]
+    },
+    {
+      "round": 92,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r92-candidate.json",
+        "sha256": "8d834a89a54512eb13cbb79caec8fa8f6f1051ac7f68920989dc923427b284de",
+        "bytes": 203416
+      },
+      "candidate_tree": "f7d81f7fd62fdd837f68e8fe8e324aea1b3bbf34",
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r92-fixture-resource-preflight.json",
+        "sha256": "ada2019a91b1212821f54e2b3cee6331edc620236277e833d03ee6b6cf97f6e1",
+        "bytes": 3030
+      },
+      "history_location": {
+        "ledger": {
+          "root": "W",
+          "path": "evidence-management/wip18-draft-receipt-input.json",
+          "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+          "bytes": 213388
+        },
+        "json_pointer": "/interval_entries/2"
+      },
+      "check_ids": [
+        "wave35-r92-collection-spec",
+        "wave35-r92-fixture-prerequisites-spec",
+        "wave35-r92-owned-spec",
+        "wave35-r92-producer-contract-red-spec",
+        "wave35-r92-static-spec"
+      ],
+      "attempt_ids": [
+        "wave35-r92-collection-spec--collection",
+        "wave35-r92-fixture-prerequisites-spec--fixture-prerequisites",
+        "wave35-r92-owned-spec--owned",
+        "wave35-r92-producer-contract-red-spec--producer-contract-red",
+        "wave35-r92-static-spec--ruff-owned",
+        "wave35-r92-static-spec--black-owned"
+      ]
+    },
+    {
+      "round": 93,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r93-candidate.json",
+        "sha256": "25ef8da90e3b004eb93d15cbd6ea4d9e12e85803665528d5522a6cf21f72caae",
+        "bytes": 203416
+      },
+      "candidate_tree": "94167e24f0b974be1a2a66d682342b4c98dd42d9",
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r93-fixture-resource-preflight.json",
+        "sha256": "a6861b9d5597623b21891bb1f1ca7177f1b8245e3621fb2aa36168b0e9bc2097",
+        "bytes": 3030
+      },
+      "history_location": {
+        "ledger": {
+          "root": "W",
+          "path": "evidence-management/wip18-draft-receipt-input.json",
+          "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+          "bytes": 213388
+        },
+        "json_pointer": "/interval_entries/3"
+      },
+      "check_ids": [
+        "wave35-r93-collection-spec",
+        "wave35-r93-fixture-prerequisites-spec",
+        "wave35-r93-owned-spec",
+        "wave35-r93-static-spec"
+      ],
+      "attempt_ids": [
+        "wave35-r93-collection-spec--collection",
+        "wave35-r93-fixture-prerequisites-spec--fixture-prerequisites",
+        "wave35-r93-owned-spec--owned",
+        "wave35-r93-static-spec--ruff-owned",
+        "wave35-r93-static-spec--black-owned"
+      ]
+    },
+    {
+      "round": 94,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r94-candidate.json",
+        "sha256": "2a2a7898ea31e8254d086c83963c3030b68d1b43572fe214b2e7c87601ab2245",
+        "bytes": 203565
+      },
+      "candidate_tree": "b95a43f214939024a1b6a64fbdaa35634194e3db",
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r94-fixture-resource-preflight.json",
+        "sha256": "5678fb15104a92c6ab999b5f5a42350211d17453b324e11d4b73db89cc7f6e61",
+        "bytes": 3030
+      },
+      "history_location": {
+        "ledger": {
+          "root": "W",
+          "path": "evidence-management/wip18-draft-receipt-input.json",
+          "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+          "bytes": 213388
+        },
+        "json_pointer": "/interval_entries/4"
+      },
+      "check_ids": [
+        "wave35-r94-collection-spec",
+        "wave35-r94-constructors-spec",
+        "wave35-r94-dependency-probes-spec",
+        "wave35-r94-owned-spec",
+        "wave35-r94-static-spec"
+      ],
+      "attempt_ids": [
+        "wave35-r94-collection-spec--collection",
+        "wave35-r94-constructors-spec--constructors",
+        "wave35-r94-dependency-probes-spec--dependency-probes",
+        "wave35-r94-owned-spec--owned",
+        "wave35-r94-static-spec--ruff-owned",
+        "wave35-r94-static-spec--black-owned",
+        "wave35-r94-static-spec--no-defaults"
+      ]
+    },
+    {
+      "round": 95,
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r95-candidate.json",
+        "sha256": "52c2416b1d22e61dbfe16c848f60972cb6b88772e5dac8c5a612b76cd8223a65",
+        "bytes": 203565
+      },
+      "candidate_tree": "f627cc1f54814e19b278e312b54635d6b861a089",
+      "base_commit": "9acd85d3ccd897051288a13fd16e610b9ee1fca1",
+      "preflight": {
+        "root": "W",
+        "path": "wave35/r95-fixture-resource-preflight.json",
+        "sha256": "8285dd3d031d62e7b021542b2d75b5c3f4136a5625ce522df1efc6ee73eedd26",
+        "bytes": 3030
+      },
+      "history_location": {
+        "ledger": {
+          "root": "W",
+          "path": "evidence-management/wip18-draft-receipt-input.json",
+          "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+          "bytes": 213388
+        },
+        "json_pointer": "/interval_entries/5"
+      },
+      "check_ids": [
+        "wave35-r95-collection-spec",
+        "wave35-r95-fix1-reachable-red-spec",
+        "wave35-r95-owned-spec",
+        "wave35-r95-static-spec"
+      ],
+      "attempt_ids": [
+        "wave35-r95-collection-spec--collection",
+        "wave35-r95-fix1-reachable-red-spec--fix1-reachable-red",
+        "wave35-r95-owned-spec--owned",
+        "wave35-r95-static-spec--ruff-owned",
+        "wave35-r95-static-spec--black-owned"
+      ]
+    }
+  ],
+  "inventory_authorities": [
+    {
+      "root": "W",
+      "path": "evidence-management/wip18-draft-receipt-input.json",
+      "sha256": "43b08d44a5d4560acd6983c64c2849434ad3df291bba8c49bfd6f14971171c88",
+      "bytes": 213388
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/r91-r92-evidence-inventory.json",
+      "sha256": "48986c0ad1f69a36f72fa325db83a94bebfe14af24edd07596d56402d8740b6f",
+      "bytes": 90522
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/r93-r94-evidence-inventory.json",
+      "sha256": "3e18152a67300dd58f8df8463e80012c8320794162cebf84699e91f2d2d43342",
+      "bytes": 67587
+    }
+  ],
+  "inventory_rules": [
+    "The hash-bound draft ledger /interval_entries holds exact Q top-level and descendant inventories, source profiles, structured results, per-attempt candidate/base/tree, logs and custody references. This receipt links those bytes instead of reproducing inventories.",
+    "Each observed check/attempt remains tied to its own source. R95 is latest historical identity only; no rebinding to later R96+ source.",
+    "Draft ledger terminal_attempt_ids are per-job observed pointers, not a terminal WIP18 attempt seal; root reconciles subsequent retries at final seal.",
+    "Capture/preflight/diagnostic records remain distinct from runtime attempts. Missing absolute UTC times remain null with explanations; no metadata times substituted."
+  ],
+  "retained_outcomes": [
+    "Tool 581 lines / synthetic test 989 lines qualified separately: author/root same 58 tests overlap; independent 7 mutations, no application execution claim.",
+    "R95: 113 collected and scoped static PASS; 19 selected actual first-assertion failures; 6 additional cases upfront B-blocked UNRUN; 10 poison children UNRUN.",
+    "All generated owned templates remain UNRUN.",
+    "R90 failed capture and verifier index race retained; R91 fixture 3 FAIL / Black FAIL; R92 46 FAIL / 32 PASS with four fixture overlap; R94 defaults FAIL / 6 constructor PASS / 2 B dependency FAIL.",
+    "Harness on-disk self-reported digest is present; no signed in-memory execution proof.",
+    "Exact fdf75f60 historical final synthetic-test source preserved prospectively, without historical snapshot-time claim or rewriting WIP17."
+  ],
+  "capture_and_race_dependencies": [
+    {
+      "root": "W",
+      "path": "evidence-management/r90-initial-capture-failure.json",
+      "sha256": "3495d6fd2d3bd644751c7def503489661f698d73531398f4b6cb4154f2ac1f5b",
+      "bytes": 927
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/r90-verifier-index-collision.json",
+      "sha256": "3a82168451d5ed6451b125dee41b25b720c88b1ed9630a614d2b74e57b9e6bff",
+      "bytes": 1012
+    }
+  ],
+  "r90_component": {
+    "root": "W",
+    "path": "wave35/r90-flat-per-initial-tests-receipt.json",
+    "sha256": "f9dbac4812b833a5c75a9165a6fffdeddbfd63a6088e07e9b6e15c9d063888a1",
+    "bytes": 19021
+  },
+  "source_reviews": [
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-EXTENDED-TESTS-REVIEW.md",
+      "sha256": "12b61777766f7329f994761a144f53993efbbd7784e48192817d9d151c90fc57",
+      "bytes": 10702
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-EXTENDED-TESTS-FIX1-REVIEW.md",
+      "sha256": "59ded757bc287ef7243fcd2e07f98d3b27c5714a966a97c42c839fe25dca1b06",
+      "bytes": 9420
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-POISON-TESTS-REVIEW.md",
+      "sha256": "afecfe9e7dbdd1dcaace343d2bc39b55dfed7007dbd01db63a33bf1a45f525af",
+      "bytes": 10542
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-IMPLEMENTATION-REVIEW.md",
+      "sha256": "9f03268384b3d07414ec1bebd6cb0035d55d4e01e6e7b3ac7035f41cc159b446",
+      "bytes": 15285
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-A-FIX1-REGRESSIONS-REVIEW.md",
+      "sha256": "fce6ccb546e845420e0dbd68d364f4e0ba0d8d3b35c13eda09386a6719e445ba",
+      "bytes": 8938
+    }
+  ],
+  "source_review_scope": {
+    "r91_r92": "Test-source prerequisite reviews; actual failed fixture and broader runs remain distinct.",
+    "r93": "Poison-test source/protocol SPEC/QUALITY pass; no actual child execution or producer approval.",
+    "r94": "Implementation review requires I1\u2013I7 repair.",
+    "r95": "Fix1 regression review and actual first-assertion RED prerequisites; no repaired implementation acceptance."
+  },
+  "report_snapshots": [
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R90-SNAPSHOT.txt",
+      "sha256": "7fee1d8de10c3f2481b16b45f1585e6a6eb7f3bb3120b9ff252755f182b40836",
+      "bytes": 8018
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R91-SNAPSHOT.txt",
+      "sha256": "4bf65ba1a3f63cefd94fc4a2dd95b5574cf4fc5ce1c709a8a044ba81bc6b2948",
+      "bytes": 19943
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R92-SNAPSHOT.txt",
+      "sha256": "e75092fb22942c77a416cbec9b8aa84e102e83631f88ce10d9e99e3f72477d68",
+      "bytes": 38896
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R93-SNAPSHOT.txt",
+      "sha256": "a07047a82c019e8e08c63b28f83b40c2b837fd4ac6cf0c0ebcfb68cc0f649b74",
+      "bytes": 42636
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-FLAT-PER-PRODUCER-A-REPORT-R94-SNAPSHOT.txt",
+      "sha256": "431b41aa512ec673e243794688a1f766cdb04cfd15317be997011d0b5dfd2206",
+      "bytes": 55855
+    }
+  ],
+  "mutable_alias_handling": {
+    "policy": "Never select a historical mutable alias as though it still supplies old bytes. Root selects these existing exact snapshots and retains original aliases in publication metadata.",
+    "r91_r92_inventory_report_alias": "Historical e75092fb current-report reference resolves to exact R92 snapshot above; earlier prefix-review limitation stays in original ledger.",
+    "r93_r94_inventory_report_alias": "Historical 431b41aa report reference resolves to exact R94 snapshot above.",
+    "r95_report": "No frozen R95 report snapshot selected here. R95 source/check evidence and regression review are bound directly; appendable report is not terminal evidence.",
+    "timestamps": "Snapshot references establish current exact byte preservation, not original creation/execution time."
+  },
+  "r95_prerequisite_ruling": {
+    "root": "W",
+    "path": "wave35/r95-i4-error-rendering-ruling.json",
+    "sha256": "1b5cb2e95c4020559db02e58b34265df97a60263b49ad844c84017b224fd43ee",
+    "bytes": 1520
+  },
+  "required_source_fix_grant": {
+    "root": "W",
+    "path": "wave35/r94-a-implementation-fix1-grant.json",
+    "sha256": "b5391fd71171b5b2a70bb3b4ec25a2321e7b9d4e02ea0f7e9d71f8c692558732",
+    "bytes": 1256
+  },
+  "producer_children": {
+    "status": "UNRUN",
+    "cases": [
+      "flat_local_single",
+      "flat_local_distinct",
+      "flat_local_same",
+      "flat_admitted_single",
+      "flat_admitted_same",
+      "per_local_single",
+      "per_local_distinct",
+      "per_local_same",
+      "per_admitted_single",
+      "per_admitted_same"
+    ],
+    "reason": "Authentic A/B production prerequisites and fresh individual qualified execution remain owed. Collection is not execution.",
+    "counts": null,
+    "actual_result_refs": []
+  },
+  "blocked_dependencies": [
+    "Six R95 additional cases blocked upfront by required B APIs/local contracts, UNRUN; no success inferred.",
+    "Authentic core invocation/outcome and production local-contract implementation remains required.",
+    "Actual ten producer children require fresh individual one-job/one-worker/no-xdist source-bound execution after A/B prerequisites.",
+    "Real GPU one-/two-device and asynchronous completion evidence remains unimplemented/unqualified."
+  ],
+  "tooling": {
+    "qualification": {
+      "root": "W",
+      "path": "wave35/r93-producer-child-verifier-qualification.json",
+      "sha256": "49f323d63ff7f599c8c07edc74defc1f44c9c31781462da54744ce0f4d3247e4",
+      "bytes": 1788
+    },
+    "author_and_independent_review": [
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-REPORT.md",
+        "sha256": "4d9f76076db90af06458c7eaa7cc7e312fe33589b46d5d8a20f05417a3df4014",
+        "bytes": 7908
+      },
+      {
+        "root": "W",
+        "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-CHILD-VERIFIER-INDEPENDENT-REVIEW.md",
+        "sha256": "2d62ffcda679785a1346a016bb93ab9f6a572827d9b4d5dd4e399659b34eccc3",
+        "bytes": 5351
+      }
+    ],
+    "root_repeat": {
+      "root": "W",
+      "path": "evidence-management/producer-child-verifier-root-repeat.json",
+      "sha256": "90e2848672c2bd39c1da694b14b685f6cf558caf966ebb77aa849883312e1b76",
+      "bytes": 2009
+    },
+    "source_and_log_dependency_location": {
+      "ledger": {
+        "root": "W",
+        "path": "evidence-management/r93-r94-evidence-inventory.json",
+        "sha256": "3e18152a67300dd58f8df8463e80012c8320794162cebf84699e91f2d2d43342",
+        "bytes": 67587
+      },
+      "json_pointer": "/metadata_references"
+    },
+    "accounting": "Author/root same 58 synthetic cases overlap; seven independent mutation refusals are tool controls. Tool qualification grants no producer/GPU/application claim."
+  },
+  "prospective_provenance": [
+    {
+      "root": "W",
+      "path": "evidence-management/harness-selfhash-clarification.json",
+      "sha256": "a24e2fecb7aa48c62d04e35bcaeb9ef5b037665a917aca6cc65b3c55807b05dc",
+      "bytes": 5002
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip17-synthetic-test-source-preservation.json",
+      "sha256": "aa45f7b28e18f56085e02a1472767fe7f6a27ec8ec05ea24e36fe236bd65a9e0",
+      "bytes": 1138
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/producer-child-before-test_replay_spawn_verifier.py.txt",
+      "sha256": "fdf75f6072f625d8788c5ae4ebe9efc9cfa693f7469aa2db6c339f9816ead683",
+      "bytes": 30444
+    }
+  ],
+  "draft_metadata_only": [
+    {
+      "ref": {
+        "root": "W",
+        "path": "evidence-management/wip18-tests-ci-retrieval-supplement.json",
+        "sha256": "d431997f742c560ab8d2bdd715c8c6a2d3967d425ac04024f6f7c9eebe02a94b",
+        "bytes": 2791
+      },
+      "scope": "Prior CI/access limitation supplement; not current WIP18 CI or an acceptance waiver."
+    },
+    {
+      "ref": {
+        "root": "W",
+        "path": "evidence-management/wip18-publication-prose-proposal.md",
+        "sha256": "a4ccb83b658da4984e92603c4616217ac3065ce2340cee2bea566461a5d9f5ef",
+        "bytes": 8593
+      },
+      "scope": "Unapproved prose proposal with ROOT SUPPLY placeholders; not reviewed/applied publication documents."
+    }
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66,
+    "changed": false
+  },
+  "overlap_accounting": "No aggregate application passing total asserted. Collection, fixture/probe/constructor subsets, repeated historical cases and repeated tooling runs are not summed.",
+  "remaining_required_work": [
+    {
+      "id": 1,
+      "status": "ROOT SUPPLY",
+      "required": "Final terminal round R96+ and exact candidate/base/tree/execution-subtree identities after source fix I1\u2013I7; R95 is historical RED, not terminal."
+    },
+    {
+      "id": 2,
+      "status": "ROOT SUPPLY",
+      "required": "Final runtime/static/defaults/collection results and all interval Q top entries/descendants through chosen terminal; exact attempt source, custody, hardware, null-time explanations and overlap accounting."
+    },
+    {
+      "id": 3,
+      "status": "ROOT SUPPLY",
+      "required": "Finite sealed WIP18 contract with contiguous interval beginning R90, authenticated predecessor catalog/baseline and exact required components."
+    },
+    {
+      "id": 4,
+      "status": "ROOT SUPPLY",
+      "required": "Frozen terminal qualification subject, independent source-bound terminal review and root acceptance of bounded stage A disposition."
+    },
+    {
+      "id": 5,
+      "status": "ROOT SUPPLY",
+      "required": "Exact reviewed publication document hashes and source-equivalence guard; final manifest/chain/index updates are root owned."
+    },
+    {
+      "id": 6,
+      "status": "ROOT SUPPLY",
+      "required": "Required helper/version dependency closure with check relationships; reuse existing qualified neutral helper without requalification."
+    },
+    {
+      "id": 7,
+      "status": "ROOT SUPPLY",
+      "required": "Root selector/assembly, exact staged scope, authorized existing-branch push, then remote identity and actual CI verification."
+    }
+  ],
+  "provenance_limits": [
+    "Existing ledger refs rehashed; candidate/result bindings preserved. No source or helper implementation bodies read, tests/verifiers executed, source copies, tracked edits, Git/index operations or external writes.",
+    "This finite receipt is not the final checkpoint contract, terminal review, sealed terminal receipt or publication permission. Root reviews and accepts it before naming it as a required component.",
+    "Changed input bytes require a new linked receipt; do not rewrite this receipt or prior ledgers."
+  ]
+}

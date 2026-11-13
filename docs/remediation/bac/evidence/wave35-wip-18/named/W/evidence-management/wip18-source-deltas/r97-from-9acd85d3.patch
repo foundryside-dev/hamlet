@@ -1,0 +1,2754 @@
+diff --git a/src/townlet/training/prioritized_replay_buffer.py b/src/townlet/training/prioritized_replay_buffer.py
+index b92d1dc2f53e633be0774c6135c42a25d3e97101..0fc350807922862054d415a2a35f8bfa8263df8f 100644
+--- a/src/townlet/training/prioritized_replay_buffer.py
++++ b/src/townlet/training/prioritized_replay_buffer.py
+@@ -11,7 +11,8 @@ from __future__ import annotations
+ import copy
+ import math
+ from collections.abc import Mapping
+-from dataclasses import dataclass
++from dataclasses import dataclass, fields
++from types import MappingProxyType
+ from typing import TYPE_CHECKING, Any
+ 
+ import numpy as np
+@@ -28,10 +29,11 @@ from townlet.training.replay_contract import (
+     ReplayReadiness,
+     ReplayRequest,
+     SamplingReceipt,
++    replay_device_prepare,
++    replay_device_sample,
++    replay_local,
+     replay_mutation,
+-    replay_prepare,
+     replay_read,
+-    replay_sample,
+     validate_successor_masks,
+ )
+ 
+@@ -174,6 +176,95 @@ class _PrioritizedRestoreCandidate(_PrioritizedRows):
+ class PrioritizedReplayBuffer(ReplayCustody):
+     """Physical ring storage; archival priorities cannot address active rows."""
+ 
++    def _init_custody(self, device: torch.device) -> None:
++        self._init_device_custody(device)
++
++    _local_cuda_contracts = MappingProxyType(
++        {
++            "push": "PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA",
++            "push_recorded": "PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA",
++            "declare_unconstrained_action_dim": "PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA",
++            "readiness": "PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA",
++            "serialize": "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA",
++            "validate_serialized": "PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA",
++            "historical_archives": "PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA",
++            "install_historical_archive": "PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA",
++            "update_priorities": "PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA",
++            "update_unit_priorities": "PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA",
++        }
++    )
++
++    def _replay_children(self, value: object) -> tuple[object, ...]:
++        if isinstance(value, (_ValidatedPrioritizedState, _PrioritizedRestoreCandidate, _SamplerConfiguration)):
++            return tuple(getattr(value, field.name) for field in fields(value))
++        if type(value) is history.HistoricalReplayArchive:
++            return (object.__getattribute__(value, "original_state"),)
++        return super()._replay_children(value)
++
++    def _replay_inventory(
++        self, route: str, args: tuple[Any, ...], kwargs: Mapping[str, Any]
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
++        if route in ("push", "push_recorded"):
++            return self._push_inventory(route, args, kwargs, retained)
++        if route == "declare_unconstrained_action_dim":
++            width = kwargs.get("action_dim")
++            return (self.device, (self.actions,)) if self.action_dim is None and type(width) is int and width > 0 else (None, ())
++        if route in ("update_priorities", "update_unit_priorities"):
++            return None, (self._replay_argument(args, kwargs, 1, "td_errors"),)
++        if route == "readiness":
++            return None, (self.legality_recorded,)
++        if route == "serialize":
++            return None, (*(retained if self.size_current else ()), self._historical_archives)
++        if route == "historical_archives":
++            return None, (self._historical_archives,)
++        if route == "install_historical_archive":
++            return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
++        if route in ("validate_serialized", "prepare_serialized"):
++            state = self._replay_argument(args, kwargs, 0, "state")
++            if not isinstance(state, Mapping):
++                return None, ()
++            version = state.get("format_version")
++            if type(version) is not int:
++                return None, (version,)
++            if version == 4:
++                keys = _LEGACY_STATE_KEYS
++            elif version == 5:
++                keys = _CAPTURED_STATE_KEYS
++            elif version == PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
++                keys = PRIORITIZED_REPLAY_BUFFER_STATE_KEYS
++            else:
++                return None, (version,)
++            if any(not isinstance(key, str) for key in state) or set(state) != keys:
++                return None, tuple(state)
++            if route == "prepare_serialized":
++                values = (state, *retained, self._historical_archives)
++                if version != 4:
++                    return self._transport_target(state, "size_current", strict=False), values
++                return None, values
++            return None, (state,)
++        if route == "materialize_validated":
++            state = self._replay_argument(args, kwargs, 0, "state")
++            if not isinstance(state, _ValidatedPrioritizedState):
++                return None, ()
++            values = (state, *retained, self._historical_archives)
++            count = state.size_current
++            if state.legacy_state is None and isinstance(count, int) and not isinstance(count, bool) and count > 0:
++                return self.device, values
++            return None, values
++        if route in ("sample", "sample_batch"):
++            return self._sample_inventory(
++                route,
++                args,
++                kwargs,
++                retained,
++                size=self.size_current,
++                mode=self._sampler.mode,
++                with_replacement=route == "sample_batch" and self._sampler.mode == "independent_with_replacement",
++                strict=False,
++            )
++        return None, (*retained, self._historical_archives)
++
+     def __init__(self, capacity: int, alpha: float, beta: float, beta_annealing: bool, device: torch.device):
+         self.capacity, self.alpha, self.beta = capacity, alpha, beta
+         self.beta_initial, self.beta_annealing, self.device = beta, beta_annealing, device
+@@ -344,7 +435,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         return self.size_current
+ 
+     @property
+-    @replay_read
++    @replay_local(mutation=False)
+     def historical_archives(self) -> tuple[history.HistoricalReplayArchive, ...]:
+         return tuple(self._own_archive(archive) for archive in self._historical_archives)
+ 
+@@ -376,7 +467,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 result.append(owned)
+         return tuple(result)
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def install_historical_archive(self, archive: history.HistoricalReplayArchive) -> None:
+         archives = self._merge_archives((archive,))
+         self._historical_archives = archives
+@@ -428,7 +519,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 raise ValueError(f"{name} must contain only finite values")
+         return batch_size
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def push(
+         self, observations: torch.Tensor, actions: torch.Tensor, rewards: RewardTensor, next_observations: torch.Tensor, dones: torch.Tensor
+     ) -> None:
+@@ -438,7 +529,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             masks = torch.ones((*dones.shape, self.action_dim), dtype=torch.bool, device=dones.device)
+         self._push(observations, actions, rewards, next_observations, dones, masks)
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def push_recorded(
+         self,
+         observations: torch.Tensor,
+@@ -453,7 +544,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         validate_successor_masks(next_action_masks, dones, action_dim=next_action_masks.shape[1])
+         self._push(observations, actions, rewards, next_observations, dones, next_action_masks)
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def declare_unconstrained_action_dim(self, *, action_dim: int) -> None:
+         """Explicitly declare all actions legal for existing unconstrained live rows."""
+         self._require_int(action_dim, "action_dim", minimum=1, maximum=2**63 - 1)
+@@ -463,8 +554,8 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             return
+         if self.actions is not None and bool((self.actions[: self.size_current] >= action_dim).any()):
+             raise ValueError("existing unconstrained actions exceed the supplied action vocabulary")
+-        masks = torch.ones((self.capacity, action_dim), dtype=torch.bool, device=self.device)
+-        recorded = torch.zeros(self.capacity, dtype=torch.bool, device=self.device)
++        masks = torch.ones((self.capacity, action_dim), dtype=torch.bool, device=self._effective_replay_device)
++        recorded = torch.zeros(self.capacity, dtype=torch.bool, device=self._effective_replay_device)
+         recorded[: self.size_current].fill_(True)
+         self.next_action_masks, self.legality_recorded = masks, recorded
+         self.action_dim, self.legality_mode = action_dim, "recorded"
+@@ -513,13 +604,13 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         values["legality_recorded"] = torch.full((batch_size,), masks is not None, dtype=torch.bool, device=dones.device)
+         if masks is not None:
+             values["next_action_masks"] = masks
+-        moved = {name: value.detach().to(self.device).clone() for name, value in values.items()}
++        moved = {name: value.detach().to(self._effective_replay_device).clone() for name, value in values.items()}
+         storage = {name: getattr(self, name) for name in _STORAGE_FIELDS}
+         for name, value in moved.items():
+             if storage[name] is None:
+-                storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
++                storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self._effective_replay_device)
+         physical = (np.arange(batch_size, dtype=np.int64) + self.position) % self.capacity
+-        indices = torch.from_numpy(physical.copy()).to(self.device)
++        indices = torch.from_numpy(physical.copy()).to(self._effective_replay_device)
+         priorities, unit_ids = self.priorities.copy(), self.unit_ids.copy()
+         priorities[physical] = insertion_priority
+         unit_ids[physical] = np.arange(self.next_unit_id, self.next_unit_id + batch_size, dtype=np.int64)
+@@ -556,7 +647,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             self.priorities[: self.size_current].astype(np.float64), alpha=self.alpha, beta=self.beta, batch_size=batch_size
+         )
+ 
+-    @replay_sample
++    @replay_device_sample
+     def sample(self, batch_size: int, *, lineage: RNGOperation | None) -> dict:
+         """Global NumPy successive sampling with physical indices and float32 weights."""
+         if (
+@@ -577,9 +668,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         if not np.isfinite(weights).all() or np.any(weights <= 0):
+             position = int(np.flatnonzero(~np.isfinite(weights) | (weights <= 0))[0])
+             raise ValueError(f"PER legacy sample weight at physical index {indices[position]} is not positive finite representable float32")
+-        selected = torch.tensor(indices, dtype=torch.long, device=self.device)
++        selected = torch.tensor(indices, dtype=torch.long, device=self._effective_replay_device)
+         result = {name: getattr(self, name)[selected] for name in ("observations", "actions", "rewards", "next_observations", "dones")}
+-        result.update(weights=torch.tensor(weights, dtype=torch.float32, device=self.device), indices=indices)
++        result.update(weights=torch.tensor(weights, dtype=torch.float32, device=self._effective_replay_device), indices=indices)
+         if self.next_action_masks is not None:
+             assert self.legality_recorded is not None
+             result["next_action_masks"] = self.next_action_masks[selected]
+@@ -596,8 +687,11 @@ class PrioritizedReplayBuffer(ReplayCustody):
+         if request.sampling_mode != self._sampler.mode:
+             raise ValueError("PER request sampling_mode differs from configured mode; use configure_sampling explicitly")
+ 
+-    @replay_read
++    @replay_local(mutation=False)
+     def readiness(self, request: ReplayRequest) -> ReplayReadiness:
++        return self._readiness(request)
++
++    def _readiness(self, request: ReplayRequest) -> ReplayReadiness:
+         self._check_request(request)
+         qualified = (
+             self.action_dim is not None and self.legality_recorded is not None and bool(self.legality_recorded[: self.size_current].all())
+@@ -612,9 +706,9 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             return ReplayReadiness(False, self.size_current, sampleable, "batch_unavailable")
+         return ReplayReadiness(True, self.size_current, sampleable, "ready")
+ 
+-    @replay_sample
++    @replay_device_sample
+     def sample_batch(self, request: ReplayRequest, *, lineage: RNGOperation | None) -> PrioritizedReplayBatch:
+-        ready = self.readiness(request)
++        ready = self._readiness(request)
+         if not ready.ready:
+             raise ValueError(
+                 f"prioritized replay unavailable: {ready.reason}; "
+@@ -632,7 +726,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 rng=self._sampler.rng,
+             )
+         indices, weights = receipt.indices, receipt.weights
+-        selected = torch.tensor(indices, dtype=torch.int64, device=self.device)
++        selected = torch.tensor(indices, dtype=torch.int64, device=self._effective_replay_device)
+         components: dict[str, Any] = {}
+         for name in _COMPONENTS:
+             present = getattr(self, f"{name}_present")[selected]
+@@ -646,21 +740,21 @@ class PrioritizedReplayBuffer(ReplayCustody):
+                 name: getattr(self, name)[selected]
+                 for name in ("observations", "actions", "rewards", "next_observations", "dones", "next_action_masks", "legality_recorded")
+             },
+-            loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self.device),
+-            lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self.device),
+-            unit_ids=torch.from_numpy(self.unit_ids[indices].copy()).to(self.device),
+-            weights=torch.from_numpy(weights.copy()).to(self.device),
++            loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self._effective_replay_device),
++            lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self._effective_replay_device),
++            unit_ids=torch.from_numpy(self.unit_ids[indices].copy()).to(self._effective_replay_device),
++            weights=torch.from_numpy(weights.copy()).to(self._effective_replay_device),
+             sampling=receipt,
+             **components,
+         )
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def update_priorities(self, indices: np.ndarray, td_errors: torch.Tensor) -> None:
+         """Update immediate physical slots; durable callers use stable unit IDs."""
+         priorities, maximum = self._prepare_priority_update(indices, td_errors, stable=False)
+         self.priorities, self.max_priority = priorities, maximum
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def update_unit_priorities(self, unit_ids: np.ndarray, td_errors: torch.Tensor) -> None:
+         """Reject retired IDs rather than updating a new occupant of their slot."""
+         priorities, maximum = self._prepare_priority_update(unit_ids, td_errors, stable=True)
+@@ -755,7 +849,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             "device": str(self.device),
+         }
+ 
+-    @replay_read
++    @replay_local(mutation=False)
+     def serialize(self) -> dict:
+         """Keep physical ring rows aligned with capacity-length priorities and position."""
+         empty = self.size_current == 0
+@@ -1079,12 +1173,12 @@ class PrioritizedReplayBuffer(ReplayCustody):
+             value = getattr(state, name)
+             if value is None:
+                 if state.size_current and name in _COMPONENTS:
+-                    storage[name] = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
++                    storage[name] = torch.zeros(self.capacity, dtype=torch.float32, device=self._effective_replay_device)
+                 else:
+                     storage[name] = None
+             else:
+-                allocated = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
+-                allocated[: state.size_current].copy_(value.to(self.device))
++                allocated = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self._effective_replay_device)
++                allocated[: state.size_current].copy_(value.to(self._effective_replay_device))
+                 storage[name] = allocated
+         return _PrioritizedRestoreCandidate(
+             **storage,
+@@ -1104,44 +1198,43 @@ class PrioritizedReplayBuffer(ReplayCustody):
+     def _prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _PrioritizedRestoreCandidate:
+         return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+ 
+-    @replay_read
++    @replay_local(mutation=False)
+     def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedPrioritizedState:
+         """Pure strict current/old validation; never archives, materializes or installs."""
+         return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+ 
+-    @replay_prepare
++    @replay_device_prepare
+     def materialize_validated(self, state: _ValidatedPrioritizedState, *, lineage: RNGOperation | None) -> object:
+         return self._materialize_serialized(state)
+ 
+-    @replay_prepare
++    @replay_device_prepare
+     def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None) -> object:
+         return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+ 
+     def load_prepared(self, candidate: object, *, lineage: RNGOperation | None) -> None:
+-        with self._domain_operation("install", lineage) as lease:
+-            with self._owner_operation(mutation=False):
+-                if not isinstance(candidate, PreparedReplay):
+-                    raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+-                material = self._prepared_payload(candidate)
+-                if not isinstance(material, _PrioritizedRestoreCandidate):
+-                    raise ValueError("PER installation requires a prepared restore candidate")
+-                archives = self._merge_archives(material.archives)
+-                storage = {name: None if (value := getattr(material, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
+-                priorities, unit_ids = material.priorities.copy(), material.unit_ids.copy()
+-                reverse = {int(unit): slot for slot, unit in enumerate(unit_ids[: material.size_current])}
+-                sampler = self._clone_sampler(material.sampler)
+-
+-                def publish() -> None:
+-                    for name, value in storage.items():
+-                        setattr(self, name, value)
+-                    self.beta, self.priorities, self.max_priority = material.beta, priorities, material.max_priority
+-                    self.position, self.size_current = material.position, material.size_current
+-                    self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
+-                    self.unit_ids, self.next_unit_id, self._id_to_slot = unit_ids, material.next_unit_id, reverse
+-                    self._sampler, self._historical_archives = sampler, archives
+-
+-                self._validate_replay(candidate, lease)
+-                self._publish_replay(candidate, publish)
++        with self._device_operation("install", lineage, "load_prepared", (candidate,), {}, mutation=False) as lease:
++            if not isinstance(candidate, PreparedReplay):
++                raise ValueError("Prepared replay is foreign, fabricated or already consumed")
++            material = self._prepared_payload(candidate)
++            if not isinstance(material, _PrioritizedRestoreCandidate):
++                raise ValueError("PER installation requires a prepared restore candidate")
++            archives = self._merge_archives(material.archives)
++            storage = {name: None if (value := getattr(material, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
++            priorities, unit_ids = material.priorities.copy(), material.unit_ids.copy()
++            reverse = {int(unit): slot for slot, unit in enumerate(unit_ids[: material.size_current])}
++            sampler = self._clone_sampler(material.sampler)
++
++            def publish() -> None:
++                for name, value in storage.items():
++                    setattr(self, name, value)
++                self.beta, self.priorities, self.max_priority = material.beta, priorities, material.max_priority
++                self.position, self.size_current = material.position, material.size_current
++                self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
++                self.unit_ids, self.next_unit_id, self._id_to_slot = unit_ids, material.next_unit_id, reverse
++                self._sampler, self._historical_archives = sampler, archives
++
++            self._validate_replay(candidate, lease)
++            self._publish_replay(candidate, publish)
+ 
+     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None) -> None:
+         if requested_mode not in ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inference"):
+diff --git a/src/townlet/training/replay_buffer.py b/src/townlet/training/replay_buffer.py
+index ca6a87feb0fc5b14dad0ba0cf370309f26ce7972..11f49e2eed2475cffb0fe8c61bf3a365ec441361 100644
+--- a/src/townlet/training/replay_buffer.py
++++ b/src/townlet/training/replay_buffer.py
+@@ -8,7 +8,8 @@ Pre-capture replay is inspectable history and never becomes active experience.
+ from __future__ import annotations
+ 
+ from collections.abc import Mapping
+-from dataclasses import dataclass
++from dataclasses import dataclass, fields
++from types import MappingProxyType
+ from typing import TYPE_CHECKING, Any
+ 
+ import numpy as np
+@@ -24,10 +25,11 @@ from townlet.training.replay_contract import (
+     ReplayReadiness,
+     ReplayRequest,
+     SamplingReceipt,
++    replay_device_prepare,
++    replay_device_sample,
++    replay_local,
+     replay_mutation,
+-    replay_prepare,
+     replay_read,
+-    replay_sample,
+     validate_successor_masks,
+ )
+ 
+@@ -123,6 +125,78 @@ class _ValidatedReplayState(_ReplayRows):
+ class ReplayBuffer(ReplayCustody):
+     """FIFO uniform storage; archives have no sampler, warmup or optimizer route."""
+ 
++    def _init_custody(self, device: torch.device) -> None:
++        self._init_device_custody(device)
++
++    _local_cuda_contracts = MappingProxyType(
++        {
++            "push": "REPLAY_BUFFER_PUSH_CUDA",
++            "push_recorded": "REPLAY_BUFFER_PUSH_RECORDED_CUDA",
++            "readiness": "REPLAY_BUFFER_READINESS_CUDA",
++            "serialize": "REPLAY_BUFFER_SERIALIZE_CUDA",
++            "validate_serialized": "REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA",
++            "load_for_mode": "REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA",
++            "historical_archives": "REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA",
++            "install_historical_archive": "REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA",
++        }
++    )
++
++    def _replay_children(self, value: object) -> tuple[object, ...]:
++        if isinstance(value, (_ValidatedReplayState, _ReplayRestoreCandidate)):
++            return tuple(getattr(value, field.name) for field in fields(value))
++        if type(value) is history.HistoricalReplayArchive:
++            return (object.__getattribute__(value, "original_state"),)
++        return super()._replay_children(value)
++
++    def _replay_inventory(
++        self, route: str, args: tuple[Any, ...], kwargs: Mapping[str, Any]
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        retained = tuple(getattr(self, name) for name in _STORAGE_FIELDS)
++        if route in ("push", "push_recorded"):
++            return self._push_inventory(route, args, kwargs, retained)
++        if route == "readiness":
++            return None, (self.legality_recorded,)
++        if route == "serialize":
++            return None, (*(retained if self.size else ()), self._historical_archives)
++        if route == "historical_archives":
++            return None, (self._historical_archives,)
++        if route == "install_historical_archive":
++            return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
++        if route in ("validate_serialized", "prepare_serialized", "load_for_mode"):
++            state = self._replay_argument(args, kwargs, 0, "state")
++            if not isinstance(state, Mapping):
++                return None, ()
++            version = state.get("format_version")
++            if type(version) is not int:
++                return None, (version,)
++            if version == 4:
++                keys = _LEGACY_STATE_KEYS
++            elif version == REPLAY_BUFFER_FORMAT_VERSION:
++                keys = REPLAY_BUFFER_STATE_KEYS
++            else:
++                return None, (version,)
++            if any(not isinstance(key, str) for key in state) or set(state) != keys:
++                return None, tuple(state)
++            if route == "prepare_serialized":
++                values = (state, *retained, self._historical_archives)
++                if version != 4:
++                    return self._transport_target(state, "size", strict=True), values
++                return None, values
++            return None, (state,)
++        if route == "materialize_validated":
++            state = self._replay_argument(args, kwargs, 0, "state")
++            if not isinstance(state, _ValidatedReplayState):
++                return None, ()
++            values = (state, *retained, self._historical_archives)
++            if state.legacy_state is None and type(state.size) is int and state.size > 0:
++                return self.device, values
++            return None, values
++        if route in ("sample", "sample_batch"):
++            return self._sample_inventory(
++                route, args, kwargs, retained, size=self.size, mode="uniform_without_replacement", with_replacement=False, strict=True
++            )
++        return None, (*retained, self._historical_archives)
++
+     def __init__(self, capacity: int, device: torch.device):
+         self.capacity = capacity
+         self.device = device
+@@ -152,7 +226,7 @@ class ReplayBuffer(ReplayCustody):
+         return self.size
+ 
+     @property
+-    @replay_read
++    @replay_local(mutation=False)
+     def historical_archives(self) -> tuple[history.HistoricalReplayArchive, ...]:
+         """Return owned frozen records without exposing the installed records."""
+         return tuple(self._own_archive(archive) for archive in self._historical_archives)
+@@ -176,7 +250,7 @@ class ReplayBuffer(ReplayCustody):
+                 result.append(archive)
+         return tuple(result)
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def install_historical_archive(self, archive: history.HistoricalReplayArchive) -> None:
+         """Validate the complete source domain, digest and rows before mutation."""
+         archives = self._merge_archives((archive,))
+@@ -224,7 +298,7 @@ class ReplayBuffer(ReplayCustody):
+                 raise ValueError(f"{name} must contain only finite values")
+         return batch_size
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def push(
+         self,
+         observations: torch.Tensor,
+@@ -243,7 +317,7 @@ class ReplayBuffer(ReplayCustody):
+             masks = torch.ones((*dones.shape, self.action_dim), dtype=torch.bool, device=dones.device)
+         self._push(observations, actions, rewards, next_observations, dones, masks)
+ 
+-    @replay_mutation
++    @replay_local(mutation=True)
+     def push_recorded(
+         self,
+         observations: torch.Tensor,
+@@ -295,18 +369,18 @@ class ReplayBuffer(ReplayCustody):
+                 values[name] = component
+             values[f"{name}_present"] = torch.full((batch_size,), component is not None, dtype=torch.bool, device=rewards.total.device)
+         values["legality_recorded"] = torch.full((batch_size,), masks is not None, dtype=torch.bool, device=dones.device)
+-        moved = {name: value.detach().to(self.device).clone() for name, value in values.items()}
++        moved = {name: value.detach().to(self._effective_replay_device).clone() for name, value in values.items()}
+         if masks is not None:
+-            moved["next_action_masks"] = masks.detach().to(self.device).clone()
++            moved["next_action_masks"] = masks.detach().to(self._effective_replay_device).clone()
+         storage = {name: getattr(self, name) for name in _STORAGE_FIELDS}
+         for name, value in moved.items():
+             if storage[name] is None:
+-                storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
++                storage[name] = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self._effective_replay_device)
+         if action_dim is not None and self.action_dim is None and self.size:
+             # Earlier live calls explicitly used the unconstrained adapter.
+             storage["next_action_masks"][: self.size].fill_(True)
+             storage["legality_recorded"][: self.size].fill_(True)
+-        indices = (torch.arange(batch_size, device=self.device) + self.position) % self.capacity
++        indices = (torch.arange(batch_size, device=self._effective_replay_device) + self.position) % self.capacity
+         for name, value in moved.items():
+             storage[name][indices] = value
+         for name, value in storage.items():
+@@ -326,16 +400,16 @@ class ReplayBuffer(ReplayCustody):
+             raise ValueError(f"Buffer size ({self.size}) < batch_size ({batch_size})")
+         if self.observations is None:
+             raise ValueError("Cannot sample an unallocated empty replay buffer")
+-        return torch.randperm(self.size, device=self.device)[:batch_size]
++        return torch.randperm(self.size, device=self._effective_replay_device)[:batch_size]
+ 
+-    @replay_sample
++    @replay_device_sample
+     def sample(self, batch_size: int, *, lineage: RNGOperation | None) -> dict[str, torch.Tensor]:
+         """Preserve the public without-replacement transition dictionary adapter."""
+         indices = self._indices(batch_size)
+         result = {
+             name: getattr(self, name)[indices].clone() for name in ("observations", "actions", "rewards", "next_observations", "dones")
+         }
+-        result["mask"] = torch.ones(batch_size, dtype=torch.bool, device=self.device)
++        result["mask"] = torch.ones(batch_size, dtype=torch.bool, device=self._effective_replay_device)
+         if self.next_action_masks is not None:
+             assert self.legality_recorded is not None
+             result["next_action_masks"] = self.next_action_masks[indices].clone()
+@@ -354,8 +428,11 @@ class ReplayBuffer(ReplayCustody):
+         ):
+             raise ValueError("uniform replay supports flat transitions sampled uniformly without replacement")
+ 
+-    @replay_read
++    @replay_local(mutation=False)
+     def readiness(self, request: ReplayRequest) -> ReplayReadiness:
++        return self._readiness(request)
++
++    def _readiness(self, request: ReplayRequest) -> ReplayReadiness:
+         self._check_request(request)
+         qualified = self.action_dim is not None and self.legality_recorded is not None and bool(self.legality_recorded[: self.size].all())
+         if qualified:
+@@ -368,9 +445,9 @@ class ReplayBuffer(ReplayCustody):
+             return ReplayReadiness(False, self.size, sampleable, "batch_unavailable")
+         return ReplayReadiness(True, self.size, sampleable, "ready")
+ 
+-    @replay_sample
++    @replay_device_sample
+     def sample_batch(self, request: ReplayRequest, *, lineage: RNGOperation | None) -> UniformReplayBatch:
+-        ready = self.readiness(request)
++        ready = self._readiness(request)
+         if not ready.ready:
+             raise ValueError(
+                 f"uniform replay unavailable: {ready.reason}; retained={ready.retained_transitions}, sampleable={ready.sampleable_units}"
+@@ -405,10 +482,10 @@ class ReplayBuffer(ReplayCustody):
+             dones=self.dones[indices],
+             next_action_masks=self.next_action_masks[indices],
+             legality_recorded=self.legality_recorded[indices],
+-            loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self.device),
+-            lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self.device),
++            loss_mask=torch.ones(request.batch_size, dtype=torch.bool, device=self._effective_replay_device),
++            lengths=torch.ones(request.batch_size, dtype=torch.int64, device=self._effective_replay_device),
+             unit_ids=indices,
+-            weights=torch.from_numpy(weights.copy()).to(self.device),
++            weights=torch.from_numpy(weights.copy()).to(self._effective_replay_device),
+             sampling=receipt,
+             **components,
+         )
+@@ -439,7 +516,7 @@ class ReplayBuffer(ReplayCustody):
+             "device": str(self.device),
+         }
+ 
+-    @replay_read
++    @replay_local(mutation=False)
+     def serialize(self) -> dict[str, Any]:
+         """Own chronological active rows and separate complete archive records."""
+         position = 0
+@@ -655,12 +732,12 @@ class ReplayBuffer(ReplayCustody):
+             value = getattr(state, name)
+             if value is None:
+                 if state.size and name in _COMPONENTS:
+-                    storage[name] = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
++                    storage[name] = torch.zeros(self.capacity, dtype=torch.float32, device=self._effective_replay_device)
+                 else:
+                     storage[name] = None
+             else:
+-                allocated = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self.device)
+-                allocated[: state.size].copy_(value.to(self.device))
++                allocated = torch.zeros((self.capacity, *value.shape[1:]), dtype=value.dtype, device=self._effective_replay_device)
++                allocated[: state.size].copy_(value.to(self._effective_replay_device))
+                 storage[name] = allocated
+         return _ReplayRestoreCandidate(
+             **storage,
+@@ -675,47 +752,46 @@ class ReplayBuffer(ReplayCustody):
+     def _prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ReplayRestoreCandidate:
+         return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+ 
+-    @replay_read
++    @replay_local(mutation=False)
+     def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int) -> _ValidatedReplayState:
+         """Pure exact validation, including supported pre-capture inspection."""
+         return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+ 
+-    @replay_prepare
++    @replay_device_prepare
+     def materialize_validated(self, state: _ValidatedReplayState, *, lineage: RNGOperation | None) -> object:
+         """Revalidate owned DTO bytes against the current destination before issuance."""
+         return self._materialize_serialized(state)
+ 
+-    @replay_prepare
++    @replay_device_prepare
+     def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None) -> object:
+         return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+ 
+     def load_prepared(self, candidate: object, *, lineage: RNGOperation | None) -> None:
+         """Transfer one prepared storage candidate after archive checks pass."""
+-        with self._domain_operation("install", lineage) as lease:
+-            with self._owner_operation(mutation=False):
+-                if not isinstance(candidate, PreparedReplay):
+-                    raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+-                material = self._prepared_payload(candidate)
+-                if not isinstance(material, _ReplayRestoreCandidate):
+-                    raise ValueError("uniform installation requires a prepared restore candidate")
+-                archives = self._merge_archives(material.archives)
+-                storage = {name: None if (value := getattr(material, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
+-
+-                def publish() -> None:
+-                    for name, value in storage.items():
+-                        setattr(self, name, value)
+-                    self.size, self.position, self.has_wrapped = material.size, material.position, material.has_wrapped
+-                    self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
+-                    self._historical_archives = archives
+-
+-                self._validate_replay(candidate, lease)
+-                self._publish_replay(candidate, publish)
++        with self._device_operation("install", lineage, "load_prepared", (candidate,), {}, mutation=False) as lease:
++            if not isinstance(candidate, PreparedReplay):
++                raise ValueError("Prepared replay is foreign, fabricated or already consumed")
++            material = self._prepared_payload(candidate)
++            if not isinstance(material, _ReplayRestoreCandidate):
++                raise ValueError("uniform installation requires a prepared restore candidate")
++            archives = self._merge_archives(material.archives)
++            storage = {name: None if (value := getattr(material, name)) is None else value.detach().clone() for name in _STORAGE_FIELDS}
++
++            def publish() -> None:
++                for name, value in storage.items():
++                    setattr(self, name, value)
++                self.size, self.position, self.has_wrapped = material.size, material.position, material.has_wrapped
++                self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
++                self._historical_archives = archives
++
++            self._validate_replay(candidate, lease)
++            self._publish_replay(candidate, publish)
+ 
+     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None) -> None:
+         """Resolve approved historical mode before any restore mutation."""
+         if requested_mode not in ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inference"):
+             raise ValueError("requested_mode is unsupported")
+-        with self._owner_operation(mutation=False):
++        with self._local_operation("load_for_mode", (state,), {}, mutation=False):
+             validated = self._validate_serialized(state, expected_obs_dim=None)
+         if validated.legacy_state is not None and requested_mode == "recorded_full_resume":
+             raise HistoricalLegalityUnavailable("missing historical successor masks; use approved archived_history_fresh_episode")
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index e9f98dbf3d4976da3d0f01d79e78c67015515949..4c5d442c6d9f6a61b954f4ff3217a7310e8e24e1 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -8,10 +8,10 @@ must supply their declared all-legal mask; constrained old history is archival.
+ """
+ 
+ from collections.abc import Callable, Iterator, Mapping
+-from contextlib import contextmanager
++from contextlib import ExitStack, contextmanager
+ from dataclasses import dataclass, fields, replace
+ from functools import wraps
+-from threading import RLock
++from threading import RLock, current_thread
+ from typing import Concatenate, Literal, NoReturn
+ from weakref import WeakKeyDictionary
+ 
+@@ -20,6 +20,7 @@ import numpy.typing as npt
+ import torch
+ from torch import Tensor
+ 
++from townlet.exploration import rng_custody
+ from townlet.exploration.rng_custody import RNGCurrentToken, RNGOperation, RNGParticipant, process_rng_domain
+ 
+ 
+@@ -45,23 +46,39 @@ class PreparedReplay:
+ class ReplayCustody:
+     """One process lease before one replay owner's mutation exclusion."""
+ 
++    device: torch.device
++    capacity: int
++    action_dim: int | None
++    actions: Tensor | None
++    observations: Tensor | None
++    legality_recorded: Tensor | None
++    _local_cuda_contracts: Mapping[str, str]
++
+     def _init_custody(self, device: torch.device) -> None:
++        # Current full-member consumers migrate in their own producer packets.
+         if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+             raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+-        index = device.index
+-        devices: tuple[int, ...]
++        devices: tuple[int, ...] = ()
+         if device.type == "cuda":
+-            if index is None or type(index) is not int or index < 0:
++            index = device.index
++            if type(index) is not int or index < 0:
+                 raise ValueError("CUDA replay custody requires an explicit initialized device index")
+             devices = (index,)
+-        else:
+-            devices = ()
++        self._initialize_custody(device, devices)
++
++    def _init_device_custody(self, device: torch.device) -> None:
++        self._initialize_custody(device, ())
++
++    def _initialize_custody(self, device: torch.device, cuda_devices: tuple[int, ...]) -> None:
++        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
++            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+         self._replay_lock = RLock()
+         self._replay_revision = 0
+         self._replay_healthy = True
++        self._replay_scope: tuple[object, torch.device | None, str] | None = None
+         self._replay_prepared: WeakKeyDictionary[PreparedReplay, tuple[int, RNGCurrentToken, object]] = WeakKeyDictionary()
+         self._replay_participant = process_rng_domain().register(
+-            owner=self, cuda_devices=devices, entrypoints=frozenset({"sample", "prepare", "install"})
++            owner=self, cuda_devices=cuda_devices, entrypoints=frozenset({"sample", "prepare", "install"})
+         )
+ 
+     @property
+@@ -76,6 +93,8 @@ class ReplayCustody:
+     def _owner_operation(self, *, mutation: bool) -> Iterator[None]:
+         with self._replay_lock:
+             self._check_custody()
++            if self._replay_scope is not None:
++                raise RuntimeError("Unrelated replay lifecycle reentry")
+             if mutation:
+                 self._replay_revision += 1
+             yield
+@@ -85,6 +104,234 @@ class ReplayCustody:
+         with process_rng_domain().operation(participant=self._replay_participant, operation_kind=kind, lineage=lineage) as lease:
+             yield lease
+ 
++    @property
++    def _effective_replay_device(self) -> torch.device:
++        if self._replay_scope is None or self._replay_scope[0] is not current_thread() or self._replay_scope[1] is None:
++            raise RuntimeError("Replay allocation was not included in this invocation plan")
++        return self._replay_scope[1]
++
++    def _replay_inventory(
++        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object]
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        raise NotImplementedError("Device producer must supply its source-owned inventory")
++
++    def _replay_children(self, value: object) -> tuple[object, ...]:
++        if isinstance(value, Mapping):
++            return tuple(item for pair in value.items() for item in pair)
++        if type(value) in (tuple, list) and isinstance(value, (tuple, list)):
++            return tuple(value)
++        return ()
++
++    @staticmethod
++    def _replay_argument(args: tuple[object, ...], kwargs: Mapping[str, object], index: int, name: str) -> object:
++        if len(args) > index:
++            return args[index]
++        return kwargs.get(name)
++
++    def _push_inventory(
++        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], retained: tuple[object, ...]
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        observations = self._replay_argument(args, kwargs, 0, "observations")
++        prefix = (self._replay_argument(args, kwargs, 4, "dones"), self._replay_argument(args, kwargs, 5, "next_action_masks"))
++        if not isinstance(observations, Tensor) or observations.ndim != 2 or observations.dtype != torch.float32:
++            return None, prefix
++        if observations.shape[1] < 1 or observations.shape[0] > self.capacity:
++            return None, prefix
++        rewards = self._replay_argument(args, kwargs, 2, "rewards")
++        values = (
++            *args,
++            *(kwargs.get(name) for name in ("observations", "actions", "next_observations", "dones", "next_action_masks")),
++            *(getattr(rewards, name, None) for name in ("total", "extrinsic", "intrinsic", "shaping")),
++        )
++        if observations.shape[0]:
++            return self.device, (*values, *retained)
++        if route == "push_recorded" or self.action_dim is not None:
++            return None, (*values, self.actions)
++        return None, values
++
++    def _transport_target(self, state: Mapping[str, object], size_field: str, *, strict: bool) -> torch.device | None:
++        capacity = state.get("capacity")
++        if strict and type(capacity) is not int:
++            return None
++        if not isinstance(capacity, int) or isinstance(capacity, bool) or capacity != self.capacity:
++            return None
++        count = state.get(size_field)
++        if strict and type(count) is not int:
++            return None
++        if not isinstance(count, int) or isinstance(count, bool) or count <= 0:
++            return None
++        return self.device
++
++    def _sample_inventory(
++        self,
++        route: str,
++        args: tuple[object, ...],
++        kwargs: Mapping[str, object],
++        retained: tuple[object, ...],
++        *,
++        size: int,
++        mode: str,
++        with_replacement: bool,
++        strict: bool,
++    ) -> tuple[torch.device | None, tuple[object, ...]]:
++        count: object
++        if route == "sample_batch":
++            request = self._replay_argument(args, kwargs, 0, "request")
++            if not isinstance(request, ReplayRequest):
++                return None, ()
++            if (request.sequence_mode, request.sequence_objective, request.sequence_length) != (
++                "feedforward",
++                "transition",
++                1,
++            ) or request.sampling_mode != mode:
++                return None, ()
++            if self.action_dim is None or self.legality_recorded is None:
++                return None, ()
++            count = request.batch_size
++            if size < request.min_transitions or size == 0 or (not with_replacement and count > size):
++                return None, (self.legality_recorded,)
++        else:
++            count = self._replay_argument(args, kwargs, 0, "batch_size")
++        if strict:
++            if type(count) is not int or count < 0:
++                return None, ()
++        elif not isinstance(count, (int, np.integer)) or isinstance(count, (bool, np.bool_)) or count <= 0:
++            return None, ()
++        if self.observations is None or (not with_replacement and count > size):
++            return None, ()
++        return self.device, retained
++
++    def _completion_devices(self, sources: tuple[int, ...], device: torch.device | None) -> tuple[int, ...]:
++        if device is not None and device.type == "cuda":
++            index = device.index
++            if type(index) is not int:
++                raise ValueError("Replay effective CUDA device is not concrete")
++            return tuple(sorted({*sources, index}))
++        return sources
++
++    def _replay_cuda_devices(self, values: tuple[object, ...]) -> tuple[int, ...]:
++        result: set[int] = set()
++
++        def visit(value: object) -> None:
++            if isinstance(value, Tensor):
++                if value.device.type == "cuda":
++                    index = value.device.index
++                    if type(index) is not int or index < 0:
++                        raise ValueError("Retained replay CUDA tensors require concrete device metadata")
++                    result.add(index)
++            else:
++                for child in self._replay_children(value):
++                    visit(child)
++
++        for value in values:
++            visit(value)
++        return tuple(sorted(result))
++
++    def _device_plan(
++        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, admitted: bool
++    ) -> tuple[torch.device | None, tuple[int, ...]]:
++        device, values = self._replay_inventory(route, args, kwargs)
++        if admitted:
++            values = (*values, *(record[2] for record in self._replay_prepared.values()))
++        return device, self._replay_cuda_devices(values)
++
++    def _quarantine_replay(self) -> None:
++        self._replay_healthy = False
++        self._replay_revision += 1
++
++    @contextmanager
++    def _local_operation(self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool) -> Iterator[None]:
++        if self._replay_scope is not None and self._replay_scope[0] is current_thread():
++            raise RuntimeError("Unrelated replay lifecycle reentry")
++        while True:
++            with self._owner_operation(mutation=False):
++                device, sources = self._device_plan(route, args, kwargs, admitted=False)
++                if not sources and (device is None or device.type == "cpu"):
++                    if mutation:
++                        self._replay_revision += 1
++                    self._replay_scope = (current_thread(), device, route)
++                    try:
++                        yield
++                    finally:
++                        self._replay_scope = None
++                    return
++            contract = getattr(rng_custody, self._local_cuda_contracts[route])
++            with process_rng_domain().local_cuda_access(participant=self._replay_participant, contract=contract) as gate:
++                if device is not None and device.type == "cuda":
++                    effective = torch.device("cuda", gate.resolve_cuda(device=device))
++                else:
++                    effective = device
++                for index in sources:
++                    gate.resolve_cuda(device=torch.device("cuda", index))
++                with self._owner_operation(mutation=False):
++                    selected, actual = self._device_plan(route, args, kwargs, admitted=False)
++                    if selected != device:
++                        continue
++                    devices = self._completion_devices(actual, effective)
++                    self._replay_scope = (current_thread(), effective, route)
++                    try:
++                        with gate.complete(cuda_devices=devices):
++                            if mutation:
++                                self._replay_revision += 1
++                            yield
++                    finally:
++                        if gate.completion_failed():
++                            self._quarantine_replay()
++                        self._replay_scope = None
++                    return
++
++    @contextmanager
++    def _device_operation(
++        self, kind: str, lineage: RNGOperation | None, route: str, args: tuple[object, ...], kwargs: Mapping[str, object], *, mutation: bool
++    ) -> Iterator[RNGOperation]:
++        if self._replay_scope is not None and self._replay_scope[0] is current_thread():
++            raise RuntimeError("Unrelated replay lifecycle reentry")
++        domain = process_rng_domain()
++        with domain.admission(lineage=lineage) as gate:
++            while True:
++                with self._owner_operation(mutation=False):
++                    device, sources = self._device_plan(route, args, kwargs, admitted=True)
++                if device is not None and device.type == "cuda":
++                    effective = torch.device("cuda", gate.resolve_cuda(device=device))
++                else:
++                    effective = device
++                for index in sources:
++                    gate.resolve_cuda(device=torch.device("cuda", index))
++                with self._owner_operation(mutation=False):
++                    selected, actual = self._device_plan(route, args, kwargs, admitted=True)
++                    if selected != device:
++                        continue
++                    devices = self._completion_devices(actual, effective)
++                    if lineage is None:
++                        gate.enroll(participant=self._replay_participant, cuda_devices=devices)
++                    invocation = domain.device_invocation(
++                        participant=self._replay_participant, operation_kind=kind, lineage=lineage, cuda_devices=devices
++                    )
++                    entered = False
++                    try:
++                        with ExitStack() as work:
++                            try:
++                                lease = work.enter_context(invocation)
++                            except ValueError as error:
++                                if lineage is not None:
++                                    raise RuntimeError("CUDA replay requires idle preflight for its requested inventory") from error
++                                raise
++                            entered = True
++                            self._replay_scope = (current_thread(), effective, route)
++                            if mutation:
++                                self._replay_revision += 1
++                            yield lease
++                    finally:
++                        if entered and invocation.completion_failed():
++                            self._quarantine_replay()
++                        self._replay_scope = None
++                    return
++
++    @contextmanager
++    def cuda_preflight(self, *, anticipated_devices: tuple[torch.device, ...]) -> Iterator[None]:
++        with replay_cuda_preflight(owners=(self,), anticipated_devices=anticipated_devices):
++            yield
++
+     def _issue_replay(self, payload: object, lease: RNGOperation) -> PreparedReplay:
+         handle = object.__new__(PreparedReplay)
+         token = process_rng_domain().current_token(participant=self._replay_participant, operation=lease)
+@@ -126,6 +373,68 @@ def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+     return lineage
+ 
+ 
++@contextmanager
++def replay_cuda_preflight(*, owners: tuple[ReplayCustody, ...], anticipated_devices: tuple[torch.device, ...]) -> Iterator[None]:
++    if type(owners) is not tuple or not all(isinstance(owner, ReplayCustody) for owner in owners):
++        raise ValueError("Replay preflight requires a tuple of replay owners")
++    if type(anticipated_devices) is not tuple or not all(
++        isinstance(device, torch.device) and device.type in ("cpu", "cuda") for device in anticipated_devices
++    ):
++        raise ValueError("Replay preflight requires explicit CPU/CUDA device metadata")
++    pinned = tuple(sorted({id(owner): owner for owner in owners}.values(), key=id))
++    with process_rng_domain().admission(lineage=None) as gate:
++        for owner in pinned:
++            gate.enroll(participant=owner.rng_participant, cuda_devices=())
++        resolved = {
++            gate.resolve_cuda(device=device)
++            for device in (*anticipated_devices, *(owner.device for owner in pinned))
++            if device.type == "cuda"
++        }
++        with ExitStack() as locks:
++            for owner in pinned:
++                locks.enter_context(owner._owner_operation(mutation=False))
++            for owner in pinned:
++                _, sources = owner._device_plan("preflight", (), {}, admitted=True)
++                gate.enroll(participant=owner.rng_participant, cuda_devices=tuple(sorted({*resolved, *sources})))
++            yield
++
++
++def replay_local[Owner: ReplayCustody, Result, **Arguments](
++    *, mutation: bool
++) -> Callable[[Callable[Concatenate[Owner, Arguments], Result]], Callable[Concatenate[Owner, Arguments], Result]]:
++    def decorate(method: Callable[Concatenate[Owner, Arguments], Result]) -> Callable[Concatenate[Owner, Arguments], Result]:
++        @wraps(method)
++        def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
++            with self._local_operation(method.__name__, args, kwargs, mutation=mutation):
++                return method(self, *args, **kwargs)
++
++        return guarded
++
++    return decorate
++
++
++def replay_device_sample[Owner: ReplayCustody, Result, **Arguments](
++    method: Callable[Concatenate[Owner, Arguments], Result],
++) -> Callable[Concatenate[Owner, Arguments], Result]:
++    @wraps(method)
++    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
++        with self._device_operation("sample", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=True):
++            return method(self, *args, **kwargs)
++
++    return guarded
++
++
++def replay_device_prepare[Owner: ReplayCustody, **Arguments](
++    method: Callable[Concatenate[Owner, Arguments], object],
++) -> Callable[Concatenate[Owner, Arguments], PreparedReplay]:
++    @wraps(method)
++    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> PreparedReplay:
++        with self._device_operation("prepare", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=False) as lease:
++            return self._issue_replay(method(self, *args, **kwargs), lease)
++
++    return guarded
++
++
+ def replay_read[Owner: ReplayCustody, Result, **Arguments](
+     method: Callable[Concatenate[Owner, Arguments], Result],
+ ) -> Callable[Concatenate[Owner, Arguments], Result]:
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..68d456f57f16dfaaba7b41aeaf1ea0b915796298
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -0,0 +1,1668 @@
++"""Flat/PER producer controls; CUDA hardware qualification is separate.
++
++The constructor sentinel catches eager CUDA access. CPU controls exercise real
++storage, sampling and issuer-owned preparation without enabling local policies.
++"""
++
++import copy
++import hashlib
++import json
++import multiprocessing
++import os
++import random
++import sys
++from collections.abc import Callable, Iterator
++from contextlib import contextmanager
++from dataclasses import replace
++from pathlib import Path
++from threading import Event, Thread
++from types import MappingProxyType
++from typing import Any
++
++import numpy as np
++import pytest
++import torch
++
++from townlet.exploration.rng_custody import LocalCUDAGate, process_rng_domain
++from townlet.training import historical_checkpoint as history
++from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
++from townlet.training.replay_buffer import ReplayBuffer
++from townlet.training.replay_contract import PreparedReplay, ReplayRequest
++from townlet.training.state import RewardTensor
++
++
++class _NoCUDA:
++    """Fail on CUDA access, while allowing ordinary object introspection."""
++
++    def __getattr__(self, name: str) -> Any:
++        if name.startswith("__") and name.endswith("__"):
++            raise AttributeError(name)
++        raise AssertionError(f"Replay unexpectedly accessed torch.cuda.{name}")
++
++
++@pytest.fixture(autouse=True)
++def preserve_cpu_rng() -> Iterator[None]:
++    python_state = random.getstate()
++    numpy_state = np.random.get_state()
++    torch_state = torch.get_rng_state().clone()
++    try:
++        yield
++    finally:
++        random.setstate(python_state)
++        np.random.set_state(numpy_state)
++        torch.set_rng_state(torch_state)
++
++
++def _owner(family: str, device: torch.device) -> ReplayBuffer | PrioritizedReplayBuffer:
++    if family == "flat":
++        return ReplayBuffer(capacity=4, device=device)
++    assert family == "per"
++    return PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=device)
++
++
++def _rows() -> dict[str, torch.Tensor]:
++    return {
++        "observations": torch.tensor([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]], dtype=torch.float32),
++        "actions": torch.tensor([0, 1, 0, 1], dtype=torch.int64),
++        "rewards": torch.tensor([10.0, 20.0, 30.0, 40.0], dtype=torch.float32),
++        "rewards_extrinsic": torch.tensor([1.0, 2.0, 3.0, 4.0], dtype=torch.float32),
++        "rewards_shaping": torch.tensor([0.5, 0.5, 0.5, 0.5], dtype=torch.float32),
++        "next_observations": torch.tensor([[1.5, 2.5], [3.5, 4.5], [5.5, 6.5], [7.5, 8.5]], dtype=torch.float32),
++        "dones": torch.tensor([False, False, False, True], dtype=torch.bool),
++        "next_action_masks": torch.tensor([[True, False], [False, True], [True, True], [False, False]], dtype=torch.bool),
++    }
++
++
++def _push(owner: ReplayBuffer | PrioritizedReplayBuffer, rows: dict[str, torch.Tensor], *, recorded: bool) -> None:
++    rewards = RewardTensor(
++        rows["rewards"],
++        extrinsic=rows["rewards_extrinsic"],
++        intrinsic=None,
++        shaping=rows["rewards_shaping"],
++        is_composed=False,
++    )
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    if recorded:
++        owner.push_recorded(*arguments, rows["next_action_masks"])
++    else:
++        owner.push(*arguments)
++
++
++def _request(family: str) -> ReplayRequest:
++    mode = "uniform_without_replacement" if family == "flat" else "successive_without_replacement"
++    return ReplayRequest(
++        batch_size=2,
++        sequence_length=1,
++        min_transitions=0,
++        sampling_mode=mode,
++        sequence_mode="feedforward",
++        sequence_objective="transition",
++    )
++
++
++def _assert_numpy_state(actual: tuple, expected: tuple) -> None:
++    assert actual[0] == expected[0]
++    assert np.array_equal(actual[1], expected[1])
++    assert actual[2:] == expected[2:]
++
++
++def _assert_tree_equal(actual: Any, expected: Any) -> None:
++    if isinstance(expected, torch.Tensor):
++        assert isinstance(actual, torch.Tensor)
++        assert actual.dtype == expected.dtype
++        assert actual.device == expected.device
++        assert torch.equal(actual, expected)
++    elif isinstance(expected, np.ndarray):
++        assert isinstance(actual, np.ndarray)
++        assert actual.dtype == expected.dtype
++        assert np.array_equal(actual, expected)
++    elif isinstance(expected, dict):
++        assert isinstance(actual, dict)
++        assert actual.keys() == expected.keys()
++        for key, value in expected.items():
++            _assert_tree_equal(actual[key], value)
++    elif isinstance(expected, (list, tuple)):
++        assert type(actual) is type(expected)
++        assert len(actual) == len(expected)
++        for left, right in zip(actual, expected, strict=True):
++            _assert_tree_equal(left, right)
++    else:
++        assert actual == expected
++
++
++def _assert_selected_rows(result: dict[str, torch.Tensor], rows: dict[str, torch.Tensor], selected: torch.Tensor) -> None:
++    for field in ("observations", "actions", "rewards", "next_observations", "dones", "next_action_masks"):
++        assert torch.equal(result[field], rows[field][selected])
++    assert torch.equal(result["legality_recorded"], torch.ones(len(selected), dtype=torch.bool))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("selector", ["cpu", "cuda", "cuda:3"])
++def test_empty_constructor_has_no_cuda_access(family: str, selector: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    """Eager initialization/index validation breaks metadata-only construction."""
++    device = torch.device(selector)
++    domain = process_rng_domain()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner(family, device)
++        assert owner.device is device
++        assert len(owner) == 0
++        participant = owner.rng_participant
++        assert owner.rng_participant is participant
++        # The actual domain authenticates this lifetime registration; no fake
++        # participant or replacement domain stands in for constructor behavior.
++        with domain.device_operation(participant=participant, operation_kind="sample", lineage=None, cuda_devices=()):
++            assert owner.device is device
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_cpu_local_and_admitted_routes_stay_cuda_free(family: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    """CPU storage, actual sampling and current prepare/install need no CUDA."""
++    rows = _rows()
++    request = _request(family)
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner(family, torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        assert len(owner) == owner.retained_transitions == 4
++        assert owner.readiness(request).ready
++        assert owner.stats()["device"] == "cpu"
++        assert owner.historical_archives == ()
++        state = owner.serialize()
++        for field, expected in rows.items():
++            assert torch.equal(state[field], expected)
++        assert state["rewards_intrinsic"] is None
++        assert torch.equal(state["rewards_extrinsic_present"], torch.ones(4, dtype=torch.bool))
++        assert torch.equal(state["rewards_intrinsic_present"], torch.zeros(4, dtype=torch.bool))
++        assert torch.equal(state["rewards_shaping_present"], torch.ones(4, dtype=torch.bool))
++
++        validated = owner.validate_serialized(state, expected_obs_dim=2)
++        candidate = owner.materialize_validated(validated, lineage=None)
++        assert isinstance(candidate, PreparedReplay)
++        owner.load_prepared(candidate, lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
++        owner.load_prepared(candidate, lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++        owner.load_for_mode(state, requested_mode="auto", lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++        owner.load_from_serialized(state, lineage=None)
++        _assert_tree_equal(owner.serialize(), state)
++
++        direct = owner.sample(2, lineage=None)
++        selected = ((direct["observations"][:, 0] - 1) / 2).to(torch.int64)
++        assert len(torch.unique(selected)) == 2
++        _assert_selected_rows(direct, rows, selected)
++        batch = owner.sample_batch(request, lineage=None)
++        selected = torch.from_numpy(batch.sampling.indices.copy())
++        assert len(torch.unique(selected)) == 2
++        assert torch.equal(batch.observations, rows["observations"][selected])
++        assert torch.equal(batch.rewards, rows["rewards"][selected])
++        assert torch.equal(batch.rewards_extrinsic, rows["rewards_extrinsic"][selected])
++        assert batch.rewards_intrinsic is None
++        assert torch.equal(batch.rewards_shaping, rows["rewards_shaping"][selected])
++        assert torch.equal(batch.next_action_masks, rows["next_action_masks"][selected])
++        assert torch.equal(batch.loss_mask, torch.ones(2, dtype=torch.bool))
++        assert torch.equal(batch.lengths, torch.ones(2, dtype=torch.int64))
++        assert torch.equal(batch.weights, torch.ones(2, dtype=torch.float64))
++
++        if isinstance(owner, PrioritizedReplayBuffer):
++            configured = np.random.default_rng(812)
++            original_generator_state = copy.deepcopy(configured.bit_generator.state)
++            owner.configure_sampling(sampling_mode="successive_without_replacement", rng=configured, origin="authored")
++            _assert_tree_equal(configured.bit_generator.state, original_generator_state)
++            owner.update_priorities(np.array([0, 1], dtype=np.int64), torch.tensor([0.5, 1.5]))
++            owner.update_unit_priorities(np.array([0], dtype=np.int64), torch.tensor([0.25]))
++            assert owner.serialize()["priorities"][0] == np.float32(0.250001)
++            assert owner.serialize()["priorities"][1] == np.float32(1.500001)
++            owner.anneal_beta(total_steps=10, current_step=5)
++            assert owner.size() == 4
++
++        owner.clear()
++        assert len(owner) == 0
++        assert not owner.readiness(request).ready
++        _push(owner, rows, recorded=False)
++        assert len(owner) == 4
++        if isinstance(owner, PrioritizedReplayBuffer):
++            owner.declare_unconstrained_action_dim(action_dim=2)
++            assert owner.readiness(request).ready
++            assert torch.equal(owner.serialize()["next_action_masks"], torch.ones((4, 2), dtype=torch.bool))
++        else:
++            assert not owner.readiness(request).ready
++        direct = owner.sample(2, lineage=None)
++        assert direct["observations"].shape == (2, 2)
++        owner.clear()
++        assert len(owner) == 0
++
++
++@pytest.mark.parametrize("adapter", ["direct", "batch"])
++def test_flat_sampling_preserves_selected_cpu_torch_stream(adapter: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    """A NumPy law or a private/reseeded Torch draw changes rows/continuation."""
++    rows = _rows()
++    torch.random.default_generator.manual_seed(29)
++    oracle = torch.Generator(device="cpu")
++    oracle.set_state(torch.get_rng_state())
++    expected_indices = torch.randperm(4, generator=oracle)[:2]
++    numpy_before = np.random.get_state()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner("flat", torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        if adapter == "direct":
++            result = owner.sample(2, lineage=None)
++            _assert_selected_rows(result, rows, expected_indices)
++        else:
++            batch = owner.sample_batch(_request("flat"), lineage=None)
++            assert torch.equal(batch.observations, rows["observations"][expected_indices])
++            assert np.array_equal(batch.sampling.indices, expected_indices.numpy())
++            assert np.array_equal(batch.sampling.conditional_draw_probabilities, np.array([0.25, 1.0 / 3.0]))
++        assert torch.equal(torch.get_rng_state(), oracle.get_state())
++        _assert_numpy_state(np.random.get_state(), numpy_before)
++
++
++def test_per_direct_retains_vectorized_global_law_with_owned_sampler(monkeypatch: pytest.MonkeyPatch) -> None:
++    """Configuring owned sampling must not reroute the public direct adapter."""
++    rows = _rows()
++    np.random.seed(113)
++    oracle = np.random.RandomState()
++    oracle.set_state(np.random.get_state())
++    expected_indices = oracle.choice(4, 2, p=np.array([0.25, 0.25, 0.25, 0.25]), replace=False)
++    torch_before = torch.get_rng_state().clone()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        owner.configure_sampling(sampling_mode="successive_without_replacement", rng=np.random.default_rng(81), origin="authored")
++        sampler_before = owner.serialize()["sampling_rng"]
++        result = owner.sample(2, lineage=None)
++        assert np.array_equal(result["indices"], expected_indices)
++        assert torch.equal(result["weights"], torch.ones(2, dtype=torch.float32))
++        _assert_selected_rows(result, rows, torch.from_numpy(expected_indices))
++        _assert_tree_equal(owner.serialize()["sampling_rng"], sampler_before)
++        _assert_numpy_state(np.random.get_state(), oracle.get_state())
++        assert torch.equal(torch.get_rng_state(), torch_before)
++
++
++def test_per_batch_external_sampler_retains_vectorized_global_law(monkeypatch: pytest.MonkeyPatch) -> None:
++    """The qualified external sampler keeps the actual vectorized NumPy law."""
++    rows = _rows()
++    np.random.seed(307)
++    oracle = np.random.RandomState()
++    oracle.set_state(np.random.get_state())
++    expected_indices = oracle.choice(4, 2, p=np.array([0.25, 0.25, 0.25, 0.25]), replace=False)
++    torch_before = torch.get_rng_state().clone()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = _owner("per", torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        batch = owner.sample_batch(_request("per"), lineage=None)
++        assert np.array_equal(batch.sampling.indices, expected_indices)
++        assert torch.equal(batch.observations, rows["observations"][torch.from_numpy(expected_indices)])
++        assert torch.equal(batch.weights, torch.ones(2, dtype=torch.float64))
++        _assert_numpy_state(np.random.get_state(), oracle.get_state())
++        assert torch.equal(torch.get_rng_state(), torch_before)
++
++
++def test_per_batch_owned_sampler_retains_residual_draw_law(monkeypatch: pytest.MonkeyPatch) -> None:
++    """Qualified owned successive sampling draws once per residual support."""
++    rows = _rows()
++    configured = np.random.default_rng(919)
++    configured_before = copy.deepcopy(configured.bit_generator.state)
++    oracle = np.random.default_rng(919)
++    first = int(oracle.choice(np.array([0, 1, 2, 3]), p=np.array([0.25, 0.25, 0.25, 0.25]), replace=False))
++    remaining = np.array([index for index in (0, 1, 2, 3) if index != first])
++    second = int(oracle.choice(remaining, p=np.array([1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]), replace=False))
++    expected_indices = np.array([first, second], dtype=np.int64)
++    numpy_before = np.random.get_state()
++    torch_before = torch.get_rng_state().clone()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        owner = PrioritizedReplayBuffer(capacity=4, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++        _push(owner, rows, recorded=True)
++        owner.configure_sampling(sampling_mode="successive_without_replacement", rng=configured, origin="authored")
++        batch = owner.sample_batch(_request("per"), lineage=None)
++        assert np.array_equal(batch.sampling.indices, expected_indices)
++        assert np.array_equal(batch.sampling.conditional_draw_probabilities, np.array([0.25, 1.0 / 3.0]))
++        assert torch.equal(batch.unit_ids, torch.from_numpy(expected_indices))
++        assert torch.equal(batch.observations, rows["observations"][torch.from_numpy(expected_indices)])
++        assert torch.equal(batch.weights, torch.ones(2, dtype=torch.float64))
++        _assert_tree_equal(owner.serialize()["sampling_rng"]["state"], oracle.bit_generator.state)
++        _assert_tree_equal(configured.bit_generator.state, configured_before)
++        _assert_numpy_state(np.random.get_state(), numpy_before)
++        assert torch.equal(torch.get_rng_state(), torch_before)
++
++
++class _SimCUDA:
++    """Initialized finite CPU protocol stand-in; never GPU qualification."""
++
++    def __init__(self) -> None:
++        self.selected = 0
++        self.events: list[tuple] = []
++        self.depth = 0
++        self.on_sync: Callable[[int], None] = lambda index: None
++        self.after_tensor: Callable[[str, tuple[int, ...], Any], None] = lambda name, devices, result: None
++
++    def is_initialized(self) -> bool:
++        self.events.append(("initialized",))
++        return True
++
++    def device_count(self) -> int:
++        self.events.append(("count",))
++        return 5
++
++    def init(self) -> None:
++        raise AssertionError("Initialized protocol fixture must not bootstrap")
++
++    def current_device(self) -> int:
++        self.events.append(("current", self.selected))
++        return self.selected
++
++    def synchronize(self, index: int) -> None:
++        self.events.append(("sync", index))
++        self.on_sync(index)
++
++    def work(self, name: str, devices: tuple[int, ...]) -> None:
++        self.events.append(("work", name, devices, self.depth > 0))
++
++
++def _map_values(value: Any, transform: Callable[[torch.Tensor], Any]) -> Any:
++    if isinstance(value, torch.Tensor):
++        return transform(value)
++    if isinstance(value, tuple):
++        return tuple(_map_values(item, transform) for item in value)
++    if isinstance(value, list):
++        return [_map_values(item, transform) for item in value]
++    if isinstance(value, dict):
++        return {key: _map_values(item, transform) for key, item in value.items()}
++    return value
++
++
++class _CUDAData(torch.Tensor):
++    """Real CPU tensor storage with explicit simulated CUDA device metadata."""
++
++    runtime: _SimCUDA | None = None
++
++    @staticmethod
++    def __new__(cls, value: torch.Tensor, index: int) -> "_CUDAData":
++        with torch._C.DisableTorchFunctionSubclass():
++            result = torch.Tensor._make_subclass(cls, value, False)
++        result.index = index
++        return result
++
++    def plain(self) -> torch.Tensor:
++        with torch._C.DisableTorchFunctionSubclass():
++            return self.as_subclass(torch.Tensor)
++
++    @property
++    def device(self) -> torch.device:
++        return torch.device("cuda", self.index)
++
++    def cpu(self, *args: Any, **kwargs: Any) -> torch.Tensor:
++        assert self.runtime is not None
++        self.runtime.work("cpu", (self.index,))
++        return self.plain().cpu(*args, **kwargs)
++
++    @classmethod
++    def __torch_function__(cls, func: Any, types: Any, args: tuple = (), kwargs: Any = None) -> Any:
++        # Torch's callback convention omits kwargs for some C Tensor methods.
++        # These required upstream hook defaults are test-only; production's
++        # no-defaults gate targets src/townlet, not this protocol adapter.
++        arguments = {} if kwargs is None else kwargs
++        devices: set[int] = set()
++
++        def unwrap(value: torch.Tensor) -> torch.Tensor:
++            if isinstance(value, _CUDAData):
++                devices.add(value.index)
++                return value.plain()
++            return value
++
++        plain_args = _map_values(args, unwrap)
++        plain_kwargs = _map_values(arguments, unwrap)
++        assert cls.runtime is not None
++        name = func.__name__
++        if name != "__get__":
++            cls.runtime.work(name, tuple(sorted(devices)))
++        with torch._C.DisableTorchFunctionSubclass():
++            result = func(*plain_args, **plain_kwargs)
++        if name != "__get__":
++            cls.runtime.events.append(("finished", name, tuple(sorted(devices))))
++            cls.runtime.after_tensor(name, tuple(sorted(devices)), result)
++        if not devices:
++            return result
++        index = min(devices)
++        return _map_values(result, lambda value: _CUDAData(value, index))
++
++
++@contextmanager
++def _cuda_simulation(monkeypatch: pytest.MonkeyPatch) -> Iterator[_SimCUDA]:
++    """Redirect allocation/movement only; actual producer algorithms remain."""
++    runtime = _SimCUDA()
++    _CUDAData.runtime = runtime
++    real_to = torch.Tensor.to
++    real_complete = LocalCUDAGate.complete
++
++    def transfer(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
++        positional = list(args)
++        target = kwargs.get("device")
++        if positional and isinstance(positional[0], (str, torch.device)):
++            target = positional[0]
++        device = None if target is None else torch.device(target)
++        original_index = value.index if isinstance(value, _CUDAData) else None
++        plain = value.plain() if isinstance(value, _CUDAData) else value
++        if original_index is not None:
++            runtime.work("to", (original_index,))
++        if device is not None:
++            if positional and isinstance(positional[0], (str, torch.device)):
++                positional[0] = torch.device("cpu")
++            else:
++                kwargs["device"] = torch.device("cpu")
++        result = real_to(plain, *positional, **kwargs)
++        if device is not None and device.type == "cuda":
++            index = runtime.selected if device.index is None else device.index
++            runtime.work("to_destination", (index,))
++            return _CUDAData(result, index)
++        return _CUDAData(result, original_index) if device is None and original_index is not None else result
++
++    def allocator(name: str, original: Callable[..., torch.Tensor]) -> Callable[..., torch.Tensor]:
++        def allocate(*args: Any, **kwargs: Any) -> torch.Tensor:
++            device = torch.device(kwargs["device"]) if "device" in kwargs else None
++            if device is None or device.type != "cuda":
++                return original(*args, **kwargs)
++            index = runtime.selected if device.index is None else device.index
++            runtime.work(name, (index,))
++            return _CUDAData(original(*args, **{**kwargs, "device": torch.device("cpu")}), index)
++
++        return allocate
++
++    @contextmanager
++    def complete(gate: LocalCUDAGate, *, cuda_devices: tuple[int, ...]) -> Iterator[None]:
++        # Observe the real public method; no manifest, permission or gate issuer
++        # is replaced. The arm event follows authentic tuple validation.
++        with real_complete(gate, cuda_devices=cuda_devices):
++            runtime.events.append(("arm", cuda_devices))
++            runtime.depth += 1
++            try:
++                yield
++            finally:
++                runtime.depth -= 1
++
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", runtime)
++        scoped.setattr(torch.Tensor, "to", transfer)
++        scoped.setattr(LocalCUDAGate, "complete", complete)
++        for name in ("zeros", "ones", "full", "arange", "tensor", "randperm"):
++            scoped.setattr(torch, name, allocator(name, getattr(torch, name)))
++        try:
++            yield runtime
++        finally:
++            _CUDAData.runtime = None
++
++
++@pytest.fixture
++def simulated_cuda(monkeypatch: pytest.MonkeyPatch) -> Iterator[_SimCUDA]:
++    with _cuda_simulation(monkeypatch) as runtime:
++        yield runtime
++
++
++def _syncs(events: list[tuple]) -> tuple[int, ...]:
++    return tuple(event[1] for event in events if event[0] == "sync")
++
++
++def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
++    assert [event[1] for event in events if event[0] == "arm"] == [devices]
++    assert _syncs(events) == devices
++    assert all(event[3] for event in events if event[0] == "work"), "Tensor work began before authentic completion arming"
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_simulated_fixture_runs_real_producer_values(family: str, simulated_cuda: _SimCUDA) -> None:
++    """Positive prerequisite: initialized indexed setup reaches real algorithms."""
++    rows = _rows()
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, rows, recorded=True)
++    assert owner.observations is not None and owner.observations.device == torch.device("cuda:0")
++    assert torch.equal(owner.observations.cpu(), rows["observations"])
++    assert owner.readiness(_request(family)).ready
++    result = owner.sample(2, lineage=None)
++    positions = ((result["observations"].cpu()[:, 0] - 1) / 2).to(torch.int64)
++    assert len(torch.unique(positions)) == 2
++    assert torch.equal(result["rewards"].cpu(), rows["rewards"][positions])
++    state = owner.serialize()
++    validated = owner.validate_serialized(state, expected_obs_dim=2)
++    candidate = owner.materialize_validated(validated, lineage=None)
++    owner.load_prepared(candidate, lineage=None)
++    _assert_tree_equal(owner.serialize(), state)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_dynamic_selector_resolves_each_real_push(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    selector = torch.device("cuda")
++    owner.device = selector
++    for index in (0, 1):
++        owner.clear()
++        simulated_cuda.selected = index
++        simulated_cuda.events.clear()
++        _push(owner, _rows(), recorded=True)
++        events = list(simulated_cuda.events)
++        assert owner.device is selector
++        assert owner.observations is not None and owner.observations.device == torch.device("cuda", index)
++        assert torch.equal(owner.observations.cpu(), _rows()["observations"])
++        assert [event for event in events if event[0] == "current"] == [("current", index)]
++        _assert_local(events, (index,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_push_inventories_retained_secondary_source_and_destination(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    owner.device = torch.device("cuda:1")
++    rows = _rows()
++    rows["observations"] += 10
++    rows["next_observations"] += 10
++    rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 2)
++    simulated_cuda.events.clear()
++    _push(owner, rows, recorded=True)
++    events = list(simulated_cuda.events)
++    assert owner.observations is not None and owner.observations.device == torch.device("cuda:0")
++    assert torch.equal(owner.observations.cpu(), rows["observations"])
++    _assert_local(events, (0, 1, 2))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_install_inventories_issuer_material_without_selector_migration(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    state = owner.serialize()
++    owner.device = torch.device("cuda:1")
++    candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
++    owner.device = torch.device("cuda:2")
++    simulated_cuda.events.clear()
++    owner.load_prepared(candidate, lineage=None)
++    events = list(simulated_cuda.events)
++    assert owner.observations is not None and owner.observations.device == torch.device("cuda:1")
++    _assert_tree_equal(owner.serialize(), state)
++    assert _syncs(events) == (0, 1)
++    assert not any(event[0] == "current" for event in events)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_empty_prepare_install_ignores_unused_cuda_selector(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    state = owner.serialize()
++    owner.device = torch.device("cuda:3")
++    simulated_cuda.events.clear()
++    candidate = owner.prepare_serialized(state, expected_obs_dim=None, lineage=None)
++    owner.load_prepared(candidate, lineage=None)
++    assert simulated_cuda.events == []
++    assert len(owner) == 0
++
++
++def _legacy_transport(family: str) -> dict[str, Any]:
++    rows = _rows()
++    fields = {name: value for name, value in rows.items() if name != "next_action_masks"}
++    fields["rewards_intrinsic"] = torch.zeros(4, dtype=torch.float32)
++    if family == "flat":
++        legacy = {"replay_kind": "standard", "format_version": 4, "capacity": 4, "size": 4, "position": 0, **fields}
++    else:
++        legacy = {
++            "replay_kind": "prioritized",
++            "format_version": 4,
++            "capacity": 4,
++            "alpha": 1.0,
++            "beta": 0.0,
++            "beta_initial": 0.0,
++            "beta_annealing": False,
++            "priorities": np.ones(4, dtype=np.float32),
++            "max_priority": 1.0,
++            "position": 0,
++            "size_current": 4,
++            **fields,
++        }
++    return legacy
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_archive_only_prepare_install_keeps_unused_target_lazy(family: str, simulated_cuda: _SimCUDA) -> None:
++    legacy = _legacy_transport(family)
++    owner = _owner(family, torch.device("cuda:0"))
++    owner.device = torch.device("cuda:3")
++    simulated_cuda.events.clear()
++    candidate = owner.prepare_serialized(legacy, expected_obs_dim=2, lineage=None)
++    owner.load_prepared(candidate, lineage=None)
++    assert simulated_cuda.events == []
++    assert len(owner) == 0
++    assert owner.historical_archives[0].archived_row_count == 4
++
++
++@pytest.mark.parametrize("matching", [False, True])
++def test_per_declaration_distinguishes_allocating_and_noop_branches(matching: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner("per", torch.device("cuda:0"))
++    assert isinstance(owner, PrioritizedReplayBuffer)
++    if matching:
++        owner.declare_unconstrained_action_dim(action_dim=2)
++        owner.device = torch.device("cuda:3")
++    simulated_cuda.events.clear()
++    owner.declare_unconstrained_action_dim(action_dim=2)
++    events = list(simulated_cuda.events)
++    assert owner.action_dim == 2
++    if matching:
++        assert events == []
++    else:
++        assert owner.next_action_masks is not None and tuple(owner.next_action_masks.shape) == (4, 2)
++        _assert_local(events, (0,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_zero_push_inventories_secondary_validation_without_target_allocation(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    owner.device = torch.device("cuda:3")
++    rows = {name: value[:0] for name, value in _rows().items()}
++    rows["rewards_shaping"] = _CUDAData(rows["rewards_shaping"], 2)
++    simulated_cuda.events.clear()
++    _push(owner, rows, recorded=True)
++    events = list(simulated_cuda.events)
++    assert len(owner) == 0 and owner.observations is None
++    _assert_local(events, (2,))
++    assert not any(event[0] == "current" for event in events)
++
++
++@pytest.mark.parametrize("stable", [False, True])
++@pytest.mark.parametrize("cuda_input", [False, True])
++def test_priority_update_uses_actual_error_source(stable: bool, cuda_input: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner("per", torch.device("cpu") if cuda_input else torch.device("cuda:0"))
++    assert isinstance(owner, PrioritizedReplayBuffer)
++    _push(owner, _rows(), recorded=True)
++    errors = torch.tensor([0.5])
++    if cuda_input:
++        errors = _CUDAData(errors, 2)
++    update = owner.update_unit_priorities if stable else owner.update_priorities
++    simulated_cuda.events.clear()
++    update(np.array([0], dtype=np.int64), errors)
++    events = list(simulated_cuda.events)
++    assert owner.priorities[0] == np.float32(0.500001)
++    if cuda_input:
++        _assert_local(events, (2,))
++    else:
++        assert events == []
++    before = owner.priorities.copy()
++    with pytest.raises(ValueError):
++        update(np.array([999], dtype=np.int64), torch.tensor([0.5]))
++    assert np.array_equal(owner.priorities, before)
++    with pytest.raises(ValueError):
++        update(np.array([0], dtype=np.int64), torch.tensor([0.5, 0.75]))
++    owner.clear()  # Clean validation failures do not quarantine this owner.
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("route", ["readiness", "serialize"])
++def test_read_routes_inventory_accessed_fields_not_selector(family: str, route: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 2)
++    owner.device = torch.device("cuda:3")
++    simulated_cuda.events.clear()
++    result = owner.readiness(_request(family)) if route == "readiness" else owner.serialize()
++    events = list(simulated_cuda.events)
++    assert result.ready if route == "readiness" else torch.equal(result["observations"], _rows()["observations"])
++    _assert_local(events, (2,) if route == "readiness" else (0, 2))
++    assert not any(event[0] == "current" for event in events)
++
++
++def _archive_on(index: int) -> history.HistoricalReplayArchive:
++    return _family_archive("flat", index)
++
++
++def _family_archive(family: str, index: int) -> history.HistoricalReplayArchive:
++    legacy = _legacy_transport(family)
++    values = {name: _CUDAData(value, index) if isinstance(value, torch.Tensor) else value for name, value in legacy.items()}
++    return history.archive_standalone_replay(values)
++
++
++def test_archive_fixture_owns_real_rows_before_observation(simulated_cuda: _SimCUDA) -> None:
++    archive = _archive_on(3)
++    assert archive.archived_row_count == 4
++    assert torch.equal(archive.query_rows(offset=0, limit=4)["observations"].cpu(), _rows()["observations"])
++    assert archive.original_state["observations"].device == torch.device("cuda:3")
++
++
++def test_archive_inventory_precedes_clone_on_read(simulated_cuda: _SimCUDA) -> None:
++    archive = _archive_on(3)  # Legitimate owning construction before observation.
++    owner = _owner("flat", torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    owner.device = torch.device("cuda:1")
++    simulated_cuda.events.clear()
++    owner.install_historical_archive(archive)
++    events = list(simulated_cuda.events)
++    assert owner.historical_archives[0].source_digest == archive.source_digest
++    _assert_local(events, (3,))
++
++
++def _competing_clear(owner: ReplayBuffer | PrioritizedReplayBuffer) -> tuple[Thread, Event, Event, list[BaseException]]:
++    attempted, finished = Event(), Event()
++    errors: list[BaseException] = []
++
++    def mutate() -> None:
++        attempted.set()
++        try:
++            owner.clear()
++        except BaseException as error:
++            errors.append(error)
++        finally:
++            finished.set()
++
++    return Thread(target=mutate), attempted, finished, errors
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("local", [False, True])
++@pytest.mark.parametrize("body_error", [False, True])
++def test_completion_keeps_actual_mutation_excluded(family: str, local: bool, body_error: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    reached, release = Event(), Event()
++    started_work = Event()
++    outcomes: list[BaseException] = []
++    primary = ValueError("controlled failure after a real selected-row tensor operation")
++
++    def synchronize(index: int) -> None:
++        reached.set()
++        release.wait(5)
++
++    simulated_cuda.on_sync = synchronize
++
++    def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
++        if name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor) and result.shape == (2, 2):
++            started_work.set()
++            raise primary
++
++    if body_error and not local:
++        simulated_cuda.after_tensor = after_tensor
++
++    def run() -> None:
++        try:
++            if local:
++                if body_error:
++                    rows = _rows()
++                    rows["next_action_masks"][0].fill_(False)
++                    rows["next_action_masks"] = _CUDAData(rows["next_action_masks"], 0)
++                    rows["dones"] = _CUDAData(rows["dones"], 0)
++                    _push(owner, rows, recorded=True)
++                else:
++                    owner.serialize()
++            else:
++                owner.sample(2, lineage=None)
++        except BaseException as error:
++            outcomes.append(error)
++
++    worker = Thread(target=run)
++    competitor, attempted, finished, competitor_errors = _competing_clear(owner)
++    worker.start()
++    try:
++        assert reached.wait(2), "Actual producer never reached CUDA completion"
++        if body_error and not local:
++            assert started_work.is_set(), "Body failure preceded the genuine selected-row tensor operation"
++        competitor.start()
++        assert attempted.wait(2), "Competitor did not attempt its actual clear"
++        assert not finished.wait(0.1), "Owner was released before completion"
++    finally:
++        release.set()
++        worker.join(5)
++        if competitor.ident is not None:
++            competitor.join(5)
++    assert not worker.is_alive() and not competitor.is_alive()
++    assert not competitor_errors
++    assert len(outcomes) == int(body_error)
++    if body_error:
++        assert isinstance(outcomes[0], ValueError)
++        if not local:
++            assert outcomes[0] is primary
++    owner.clear()  # Successful completion preserves usability after body errors.
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("local", [False, True])
++def test_clean_body_error_keeps_identity_and_owner_health(
++    family: str, local: bool, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    primary = ValueError("controlled external tensor/sampler body failure")
++
++    def fail(*args: Any, **kwargs: Any) -> Any:
++        raise primary
++
++    with monkeypatch.context() as scoped:
++        if local:
++            scoped.setattr(torch, "isfinite", fail)
++        elif family == "flat":
++            scoped.setattr(torch, "randperm", fail)
++        else:
++            scoped.setattr(np.random, "choice", fail)
++        simulated_cuda.events.clear()
++        with pytest.raises(ValueError) as caught:
++            if local:
++                rows = _rows()
++                rows["observations"] = _CUDAData(rows["observations"], 0)
++                _push(owner, rows, recorded=True)
++            else:
++                owner.sample(2, lineage=None)
++        events = list(simulated_cuda.events)
++    assert caught.value is primary
++    _assert_tree_equal(owner.serialize(), before)
++    owner.clear()
++    if local:
++        _assert_local(events, (0,))
++    else:
++        assert _syncs(events) == (0,)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("changed_destination", [False, True])
++def test_failed_preparation_keeps_live_data_and_original_streams(family: str, changed_destination: bool) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=2)
++    if changed_destination:
++        owner.clear()
++        rows = _rows()
++        rows["observations"] = torch.cat((rows["observations"], torch.ones((4, 1))), dim=1)
++        rows["next_observations"] = torch.cat((rows["next_observations"], torch.ones((4, 1))), dim=1)
++        _push(owner, rows, recorded=True)
++    else:
++        validated.next_action_masks[0].fill_(False)
++    before = owner.serialize()
++    python_before, numpy_before, torch_before = random.getstate(), np.random.get_state(), torch.get_rng_state().clone()
++    with pytest.raises(ValueError):
++        owner.materialize_validated(validated, lineage=None)
++    _assert_tree_equal(owner.serialize(), before)
++    assert random.getstate() == python_before
++    _assert_numpy_state(np.random.get_state(), numpy_before)
++    assert torch.equal(torch.get_rng_state(), torch_before)
++    fresh = owner.prepare_serialized(before, expected_obs_dim=3 if changed_destination else 2, lineage=None)
++    owner.load_prepared(fresh, lineage=None)
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("mutate", [False, True])
++def test_same_parent_owner_revision_is_independent_of_core_currentness(family: str, mutate: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    state = owner.serialize()
++    domain = process_rng_domain()
++    with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as parent:
++        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=parent)
++        probe = domain.current_token(participant=owner.rng_participant, operation=parent)
++        with domain.admission(lineage=parent) as gate:
++            assert gate.resolve_cuda(torch.device("cuda:0")) == 0
++        owner.stats()
++        if mutate:
++            owner.clear()
++        domain.validate_current(token=probe, operation=parent)
++        if mutate:
++            with pytest.raises(ValueError, match="destination changed"):
++                owner.load_prepared(candidate, lineage=parent)
++        else:
++            owner.load_prepared(candidate, lineage=parent)
++            _assert_tree_equal(owner.serialize(), state)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_preflight_retains_exclusion_through_parent_completion(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    competitor, attempted, finished, errors = _competing_clear(owner)
++    observed: list[tuple[int, bool]] = []
++    try:
++        with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"), torch.device("cuda:1"))):
++            with process_rng_domain().operation(participant=owner.rng_participant, operation_kind="sample", lineage=None) as parent:
++                owner.device = torch.device("cuda")
++                simulated_cuda.selected = 1
++                simulated_cuda.events.clear()
++                result = owner.sample(2, lineage=parent)
++                nested = list(simulated_cuda.events)
++                assert result["observations"].shape == (2, 2)
++                assert owner.observations is not None and owner.observations.device == torch.device("cuda:0")
++                selected_output = result["mask"] if family == "flat" else result["weights"]
++                assert selected_output.device == torch.device("cuda:1")
++                assert [event for event in nested if event[0] == "current"] == [("current", 1)]
++                assert any(event[:3] == ("work", "randperm" if family == "flat" else "tensor", (1,)) for event in nested)
++                assert _syncs(nested) == (0, 1)
++                competitor.start()
++                assert attempted.wait(2)
++                assert not finished.wait(0.1)
++                simulated_cuda.on_sync = lambda index: observed.append((index, finished.is_set()))
++                simulated_cuda.events.clear()
++            outer = list(simulated_cuda.events)
++            assert _syncs(outer) == (0, 1)
++            assert not finished.is_set()
++    finally:
++        if competitor.ident is not None:
++            competitor.join(5)
++    assert not competitor.is_alive() and not errors
++    assert finished.is_set()
++    assert observed and all(not was_finished for _, was_finished in observed)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_sibling_sampling_stales_core_currency_without_target_mutation(family: str) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    sibling = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    _push(sibling, _rows(), recorded=True)
++    state = owner.serialize()
++    with process_rng_domain().operation(participant=owner.rng_participant, operation_kind="install", lineage=None) as parent:
++        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=parent)
++        sibling.sample(2, lineage=parent)
++        with pytest.raises((ValueError, RuntimeError)):
++            owner.load_prepared(candidate, lineage=parent)
++        _assert_tree_equal(owner.serialize(), state)
++        fresh = owner.prepare_serialized(state, expected_obs_dim=2, lineage=parent)
++        owner.load_prepared(fresh, lineage=parent)
++    _assert_tree_equal(owner.serialize(), state)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_preflight_undeclared_target_refuses_before_draw_or_data_effect(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"),)):
++        with process_rng_domain().operation(participant=owner.rng_participant, operation_kind="sample", lineage=None) as parent:
++            owner.device = torch.device("cuda:4")
++            numpy_before, torch_before = np.random.get_state(), torch.get_rng_state().clone()
++            with pytest.raises(RuntimeError, match="preflight"):
++                owner.sample(2, lineage=parent)
++            _assert_numpy_state(np.random.get_state(), numpy_before)
++            assert torch.equal(torch.get_rng_state(), torch_before)
++    _assert_tree_equal(owner.serialize(), before)
++
++
++def _assert_cloned_then_completed(events: list[tuple], devices: tuple[int, ...]) -> None:
++    for index in devices:
++        assert any(event[:2] == ("finished", "clone") and index in event[2] for event in events)
++    assert _syncs(events) == devices
++    first_completion = next(position for position, event in enumerate(events) if event[0] == "sync")
++    assert all(
++        position < first_completion
++        for position, event in enumerate(events)
++        if event[:2] == ("finished", "clone") and any(index in event[2] for index in devices)
++    )
++
++
++def test_per_archive_fixture_preserves_real_legacy_rows(simulated_cuda: _SimCUDA) -> None:
++    archive = _family_archive("per", 3)
++    assert archive.archived_row_count == 4
++    assert archive.source_formats["replay_kind"] == "prioritized"
++    assert torch.equal(archive.query_rows(offset=0, limit=4)["observations"].cpu(), _rows()["observations"])
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_mutated_legacy_dto_clones_extra_gpu_value_before_schema_refusal(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    validated = owner.validate_serialized(_legacy_transport(family), expected_obs_dim=2)
++    assert isinstance(validated.legacy_state, dict)
++    validated.legacy_state["malformed_extra"] = _CUDAData(torch.tensor([7.0]), 3)
++    before = owner.serialize()
++    python_before, numpy_before, torch_before = random.getstate(), np.random.get_state(), torch.get_rng_state().clone()
++    simulated_cuda.events.clear()
++    with pytest.raises(ValueError, match="key set mismatch"):
++        owner.materialize_validated(validated, lineage=None)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    assert random.getstate() == python_before
++    _assert_numpy_state(np.random.get_state(), numpy_before)
++    assert torch.equal(torch.get_rng_state(), torch_before)
++    _assert_cloned_then_completed(events, (3,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("prepare", [False, True])
++def test_direct_extra_transport_key_refuses_without_touching_gpu_value(family: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    transport = {**before, "malformed_extra": _CUDAData(torch.tensor([7.0]), 3)}
++    owner.device = torch.device("cuda:4")  # Unused destination must remain lazy.
++    simulated_cuda.events.clear()
++    with pytest.raises(ValueError, match="key set mismatch"):
++        if prepare:
++            owner.prepare_serialized(transport, expected_obs_dim=2, lineage=None)
++        else:
++            owner.validate_serialized(transport, expected_obs_dim=2)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("with_archive", [False, True])
++def test_stale_gpu_candidate_stages_sources_before_currentness_refusal(family: str, with_archive: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cuda:0"))
++    _push(owner, _rows(), recorded=True)
++    transport = owner.serialize()
++    if with_archive:
++        transport["historical_archives"] = [history._record(_family_archive(family, 3))]
++    owner.device = torch.device("cuda:1")
++    candidate = owner.prepare_serialized(transport, expected_obs_dim=2, lineage=None)
++    owner.clear()  # Invalidates owner revision; issuer-held GPU material survives.
++    owner.device = torch.device("cuda:4")
++    before = owner.serialize()
++    simulated_cuda.events.clear()
++    with pytest.raises(ValueError, match="destination changed"):
++        owner.load_prepared(candidate, lineage=None)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    _assert_cloned_then_completed(events, (1, 3) if with_archive else (1,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_archive_original_state_clone_precedes_nested_content_refusal(family: str, simulated_cuda: _SimCUDA) -> None:
++    record = history._record(_family_archive(family, 3))
++    assert set(record) == {
++        "source_formats",
++        "original_state",
++        "source_digest",
++        "archived_row_count",
++        "reward_semantics",
++        "approval_reference",
++    }
++    record["original_state"]["malformed_extra"] = _CUDAData(torch.tensor([7.0]), 4)
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    transport = {**before, "historical_archives": [record]}
++    simulated_cuda.events.clear()
++    with pytest.raises(ValueError):
++        owner.validate_serialized(transport, expected_obs_dim=2)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    _assert_local(events, (3, 4))
++    _assert_cloned_then_completed(events, (3, 4))
++
++
++_PRODUCER_ROLE = "cuda_producer_poison"
++_PRODUCER_CASES = tuple(
++    f"{family}_{schedule}"
++    for family in ("flat", "per")
++    for schedule in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
++)
++
++
++def _poison_json(stem: str, record: dict[str, Any]) -> None:
++    if "BAC_QUAL_OUTPUT" in os.environ:
++        with (Path(os.environ["BAC_QUAL_OUTPUT"]) / f"{stem}-{_PRODUCER_ROLE}.json").open("x") as stream:
++            json.dump(record, stream, sort_keys=True, allow_nan=False)
++
++
++def _error_record(error: BaseException) -> dict[str, Any]:
++    return {
++        "type": type(error).__name__,
++        "message": str(error),
++        "id": id(error),
++        "children": [_error_record(item) for item in error.exceptions] if isinstance(error, BaseExceptionGroup) else [],
++    }
++
++
++def _producer_child_identity(case: str) -> bool:
++    import test_world_rng_bootstrap as bootstrap
++
++    qualified = bootstrap._child_identity(_PRODUCER_ROLE)
++    if qualified:
++        location = Path(os.environ["BAC_QUAL_OUTPUT"]) / f"spawn-identity-{_PRODUCER_ROLE}.json"
++        record = json.loads(location.read_text())
++        names = (
++            "townlet.exploration.rng_custody",
++            "townlet.training.replay_contract",
++            "townlet.training.replay_buffer",
++            "townlet.training.prioritized_replay_buffer",
++            "test_replay_cuda_producer",
++        )
++        imports = {name: str(Path(sys.modules[name].__file__).resolve()) for name in names}
++        record.update(
++            ppid=os.getppid(),
++            producer_case=case,
++            cuda_producer_imports=imports,
++            cuda_producer_sha256={name: hashlib.sha256(Path(path).read_bytes()).hexdigest() for name, path in imports.items()},
++        )
++        location.write_text(json.dumps(record, sort_keys=True, allow_nan=False))
++    return qualified
++
++
++def _producer_poison_child(case: str, queue: Any) -> None:
++    qualified = _producer_child_identity(case)
++    assert case in _PRODUCER_CASES
++    family, schedule = case.split("_", 1)
++    local, body_error = schedule.startswith("local"), schedule.endswith(("distinct", "same"))
++    body = ValueError(f"{case}: body") if body_error else None
++    first = body if schedule.endswith("same") else RuntimeError(f"{case}: completion0")
++    second = OSError(f"{case}: completion1") if schedule == "local_distinct" else None
++    domain = process_rng_domain()
++    identity = {"case": case, "pid": os.getpid(), "ppid": os.getppid(), "qualified": qualified}
++    before = {
++        "domain": list(domain.status()),
++        "devices": [0, 1],
++        "error_ids": [id(body) if body else None, id(first), id(second) if second else None],
++    }
++    _poison_json("spawn-preflight", {**identity, "before": before})
++    phase, success = "preflight", False
++    observations: dict[str, Any] = {}
++    failure = None
++    try:
++        core = sys.modules["townlet.exploration.rng_custody"]
++        getattr(core, "REPLAY_BUFFER_SERIALIZE_CUDA" if family == "flat" else "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA")
++        if not local:
++            getattr(domain, "device_invocation")  # Availability is not an authentic outcome or a successful poisoning assertion.
++        with pytest.MonkeyPatch.context() as patch, _cuda_simulation(patch) as runtime:
++            owner, control = _owner(family, torch.device("cuda:0")), _owner(family, torch.device("cpu"))
++            _push(owner, _rows(), recorded=True)
++            _push(control, _rows(), recorded=True)
++            owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 1)
++            runtime.events.clear()
++            serialized = owner.serialize()
++            assert torch.equal(serialized["observations"], _rows()["observations"])
++            _assert_local(list(runtime.events), (0, 1))
++            runtime.events.clear()
++            sampled = owner.sample(2, lineage=None)
++            assert sampled["observations"].shape == (2, 2) and _syncs(runtime.events) == (0, 1)
++            observations["healthy_controls"] = True
++            phase = "fault"
++            reached, release, started = Event(), Event(), Event()
++            outcomes: list[BaseException] = []
++            markers: list[bool] = []
++            outcome_errors: list[BaseException] = []
++            invocations: list[Any] = []
++            if local:
++                real_failed = LocalCUDAGate.completion_failed
++
++                def failed(gate: LocalCUDAGate) -> bool:
++                    actual = real_failed(gate)
++                    markers.append(actual)
++                    return actual
++
++                patch.setattr(LocalCUDAGate, "completion_failed", failed)
++            else:
++                real_invocation = domain.device_invocation
++
++                def invocation(*, participant: Any, operation_kind: str, lineage: Any, cuda_devices: tuple[int, ...]) -> Any:
++                    actual = real_invocation(
++                        participant=participant, operation_kind=operation_kind, lineage=lineage, cuda_devices=cuda_devices
++                    )
++                    invocations.append(actual)
++                    return actual
++
++                patch.setattr(domain, "device_invocation", invocation)
++
++            def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
++                if body is not None and name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor):
++                    if result.shape == (4 if local else 2, 2):
++                        started.set()
++                        raise body
++
++            def synchronize(index: int) -> None:
++                reached.set()
++                release.wait(5)
++                if index == 0:
++                    raise first
++                if index == 1 and second is not None:
++                    raise second
++
++            def invoke() -> None:
++                try:
++                    owner.serialize() if local else owner.sample(2, lineage=None)
++                except BaseException as error:
++                    outcomes.append(error)
++                finally:
++                    if not local:
++                        try:
++                            assert len(invocations) == 1
++                            markers.append(invocations[0].completion_failed())  # Same issuing worker, historical outcome only.
++                        except BaseException as error:
++                            outcome_errors.append(error)
++
++            runtime.after_tensor, runtime.on_sync = after_tensor, synchronize
++            before_unlock: list[bool] = []
++            real_owner_operation = owner._owner_operation
++
++            @contextmanager
++            def owner_operation(*, mutation: bool) -> Iterator[None]:
++                with real_owner_operation(mutation=mutation):
++                    try:
++                        yield
++                    finally:
++                        if reached.is_set():
++                            try:
++                                owner._check_custody()
++                            except RuntimeError:
++                                before_unlock.append(True)
++                            else:
++                                before_unlock.append(False)
++
++            patch.setattr(owner, "_owner_operation", owner_operation)
++            runtime.events.clear()
++            worker = Thread(target=invoke)
++            peer, attempted, finished, peer_errors = _competing_clear(owner)
++            blocked = None
++            worker.start()
++            try:
++                did_reach = reached.wait(2)
++                if did_reach:
++                    peer.start()
++                    assert attempted.wait(2)
++                    blocked = not finished.wait(0.1)
++            finally:
++                release.set()
++                worker.join(5)
++                if peer.ident is not None:
++                    peer.join(5)
++            observations.update(
++                reached=did_reach,
++                started_work=started.is_set(),
++                syncs=list(_syncs(runtime.events)),
++                peer_blocked=blocked,
++                worker_errors=[_error_record(error) for error in outcomes],
++                peer_errors=[_error_record(error) for error in peer_errors],
++                completion_failed=markers,
++                outcome_errors=[_error_record(error) for error in outcome_errors],
++                quarantine_before_unlock=before_unlock,
++            )
++            assert not worker.is_alive() and not peer.is_alive() and did_reach and blocked is True
++            assert markers and all(marker is True for marker in markers) and not outcome_errors
++            assert before_unlock == [True]
++            assert len(outcomes) == len(peer_errors) == 1 and isinstance(peer_errors[0], RuntimeError)
++            assert "quarantined" in str(peer_errors[0])
++            expected = [body, first, second] if schedule == "local_distinct" else [first]
++            if schedule == "local_distinct":
++                assert isinstance(outcomes[0], BaseExceptionGroup)
++                assert len(outcomes[0].exceptions) == 3
++                assert all(actual is wanted for actual, wanted in zip(outcomes[0].exceptions, expected, strict=True))
++            else:
++                assert outcomes[0] is first
++            if body_error:
++                assert started.is_set()
++            if local:
++                assert observations["syncs"] == [0, 1]
++            else:
++                assert observations["syncs"] and observations["syncs"][0] == 0
++                assert set(observations["syncs"]) <= {0, 1}  # No permanent generic cleanup-tail promise.
++            with pytest.raises(RuntimeError, match="quarantined"):
++                owner.clear()
++            assert domain.status()[2] is True
++            control.clear()
++            _push(control, _rows(), recorded=True)
++            assert len(control) == 4
++            with pytest.raises(RuntimeError):
++                control.sample(2, lineage=None)
++            assert domain.status()[2] is True
++            observations.update(owner_quarantined=True, cpu_local_available=True, ambient_refused=True, domain_after=list(domain.status()))
++            success, phase = True, "complete"
++    except BaseException as error:
++        failure = _error_record(error)
++        raise
++    finally:
++        _poison_json("spawn-after", {**identity, "phase": phase, "success": success, "observations": observations, "failure": failure})
++    queue.put((f"cuda producer {case} poison quarantines under owner custody", os.getpid(), os.getppid(), qualified))
++
++
++class _ParentBaselineOwner:
++    pass
++
++
++def _parent_rng_snapshot() -> tuple:
++    cuda = torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
++    return random.getstate(), np.random.get_state(), torch.get_rng_state().clone(), cuda
++
++
++def _parent_baseline_record(state: tuple, status: tuple[int, int, bool]) -> dict[str, Any]:
++    return {
++        "domain": list(status),
++        "python": hashlib.sha256(repr(state[0]).encode()).hexdigest(),
++        "numpy": [state[1][0], hashlib.sha256(state[1][1].tobytes()).hexdigest(), *state[1][2:]],
++        "torch": hashlib.sha256(state[2].numpy().tobytes()).hexdigest(),
++        "cuda": None if state[3] is None else [hashlib.sha256(item.cpu().numpy().tobytes()).hexdigest() for item in state[3]],
++    }
++
++
++@pytest.mark.parametrize("case", _PRODUCER_CASES)
++def test_isolated_producer_poison(case: str) -> None:
++    import test_world_rng_bootstrap as bootstrap
++
++    qualified = bootstrap._qualification_active()
++    domain, baseline_owner = process_rng_domain(), _ParentBaselineOwner()
++    devices = tuple(range(torch.cuda.device_count())) if torch.cuda.is_initialized() else ()
++    participant = domain.register(owner=baseline_owner, cuda_devices=devices, entrypoints=frozenset({"baseline"}))
++    context = multiprocessing.get_context("spawn")
++    queue = context.Queue()
++    process = context.Process(target=_producer_poison_child, args=(case, queue), name=_PRODUCER_ROLE)
++    before_record = after_record = None
++    result = None
++    before = None
++    success = paired = False
++    parent_pid = os.getpid()
++    try:
++        with domain.operation(participant=participant, operation_kind="baseline", lineage=None):
++            before = _parent_rng_snapshot()
++        assert domain.status()[2] is False
++        before_record = _parent_baseline_record(before, domain.status())
++        _poison_json("spawn-parent-before", {"case": case, "parent_pid": parent_pid, "qualified": qualified, "before": before_record})
++        process.start()
++        process.join(90)
++        assert not process.is_alive() and process.exitcode == 0
++        result = queue.get(timeout=5)
++        assert result == (f"cuda producer {case} poison quarantines under owner custody", process.pid, parent_pid, qualified)
++        paired = True
++    finally:
++        if process.pid is not None and process.is_alive():
++            process.terminate()
++            process.join(5)
++        try:
++            with domain.operation(participant=participant, operation_kind="baseline", lineage=None):
++                after = _parent_rng_snapshot()
++            after_record = _parent_baseline_record(after, domain.status())
++            if before is not None:
++                _assert_tree_equal(after, before)
++            assert domain.status()[2] is False
++            success = paired
++        finally:
++            domain.unregister(participant=participant)
++            _poison_json(
++                "spawn-observation",
++                {
++                    "case": case,
++                    "process_pid": process.pid,
++                    "queued_pid": None if result is None else result[1],
++                    "parent_pid": parent_pid,
++                    "queued_ppid": None if result is None else result[2],
++                    "exitcode": process.exitcode,
++                    "qualified": None if result is None else result[3],
++                    "message": None if result is None else result[0],
++                    "manifest_sha256": (
++                        hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest() if qualified else None
++                    ),
++                    "before": before_record,
++                    "after": after_record,
++                    "success": success,
++                },
++            )
++            queue.close()
++            queue.join_thread()
++            process.close()
++
++
++def _metadata_plan(owner: ReplayBuffer | PrioritizedReplayBuffer, route: str, args: tuple, admitted: bool, runtime: _SimCUDA) -> tuple:
++    runtime.events.clear()
++    with owner._owner_operation(mutation=False):
++        result = owner._device_plan(route, args, {}, admitted=admitted)
++    assert runtime.events == [], "Metadata planning executed Tensor/runtime work before arming"
++    return result
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("archive_only", [False, True])
++def test_raw_prepare_includes_installed_archive_sources(family: str, archive_only: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    incoming = _legacy_transport(family) if archive_only else owner.serialize()
++    owner.install_historical_archive(_family_archive(family, 3))  # Authentic B activation prerequisite.
++    before = owner.serialize()
++    simulated_cuda.events.clear()
++    prepared = owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++    events = list(simulated_cuda.events)
++    assert isinstance(prepared, PreparedReplay)
++    _assert_tree_equal(owner.serialize(), before)
++    _assert_cloned_then_completed(events, (3,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("prepare", [False, True])
++def test_mapping_view_inventory_preserves_accepted_transport(family: str, prepare: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    mapping = MappingProxyType({name: _CUDAData(value, 2) if isinstance(value, torch.Tensor) else value for name, value in before.items()})
++    simulated_cuda.events.clear()
++    if prepare:
++        result = owner.prepare_serialized(mapping, expected_obs_dim=2, lineage=None)
++        assert isinstance(result, PreparedReplay)
++    else:
++        result = owner.validate_serialized(mapping, expected_obs_dim=2)
++    events = list(simulated_cuda.events)
++    if not prepare:
++        assert torch.equal(result.observations.cpu(), _rows()["observations"])
++    _assert_tree_equal(owner.serialize(), before)
++    if not prepare:
++        _assert_local(events, (2,))
++    _assert_cloned_then_completed(events, (2,))
++
++
++@pytest.mark.parametrize(
++    "family,field", [("flat", "position"), ("flat", "size"), ("per", "position"), ("per", "size_current"), ("per", "priorities")]
++)
++def test_dto_metadata_copy_inventory_is_pure_and_complete(family: str, field: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    dto = owner.validate_serialized(before, expected_obs_dim=2)
++    malformed = replace(dto, **{field: _CUDAData(torch.tensor(1, dtype=torch.int64), 2)})
++    _, devices = _metadata_plan(owner, "materialize_validated", (malformed,), True, simulated_cuda)
++    assert devices == (2,), "Owned DTO reconstruction clones this malformed metadata before refusing it"
++    simulated_cuda.events.clear()
++    with pytest.raises(ValueError):
++        owner.materialize_validated(malformed, lineage=None)
++    events = list(simulated_cuda.events)
++    _assert_tree_equal(owner.serialize(), before)
++    _assert_cloned_then_completed(events, (2,))
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_tensor_version_refuses_without_metadata_tensor_effects(family: str, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    malformed = {**before, "format_version": _CUDAData(torch.tensor(5, dtype=torch.int64), 2)}
++    selected, devices = _metadata_plan(owner, "validate_serialized", (malformed,), False, simulated_cuda)
++    assert selected is None and devices == (2,)
++    with pytest.raises(ValueError, match="format_version") as error:
++        owner.validate_serialized(malformed, expected_obs_dim=2)
++    events = list(simulated_cuda.events)
++    assert "5" in str(error.value)
++    assert any(event[:3] == ("work", "__repr__", (2,)) for event in events)
++    _assert_local(events, (2,))
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("branch", ["capacity", "rank", "unready"])
++def test_early_cpu_refusal_does_not_plan_unused_cuda_target(
++    family: str, branch: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        if branch == "capacity":
++            _push(owner, _rows(), recorded=True)
++            incoming = owner.serialize()
++            if family == "flat":
++                owner = ReplayBuffer(capacity=5, device=torch.device("cpu"))
++            else:
++                owner = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++            owner.device = torch.device("cuda:3")
++            with pytest.raises(ValueError, match="capacity"):
++                owner.validate_serialized(incoming, expected_obs_dim=2)
++            selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
++        elif branch == "rank":
++            rows = _rows()
++            rows["observations"] = torch.ones(4, dtype=torch.float32)
++            revision = owner._replay_revision
++            with pytest.raises(ValueError, match="observations"):
++                _push(owner, rows, recorded=True)
++            assert owner._replay_revision > revision and len(owner) == 0
++            rewards = RewardTensor(
++                rows["rewards"], extrinsic=rows["rewards_extrinsic"], intrinsic=None, shaping=rows["rewards_shaping"], is_composed=False
++            )
++            arguments = (
++                rows["observations"],
++                rows["actions"],
++                rewards,
++                rows["next_observations"],
++                rows["dones"],
++                rows["next_action_masks"],
++            )
++            owner.device = torch.device("cuda:3")
++            selected, devices = _metadata_plan(owner, "push_recorded", arguments, False, simulated_cuda)
++        else:
++            _push(owner, _rows(), recorded=False)
++            request = _request(family)
++            assert not owner.readiness(request).ready and len(owner) == 4
++            owner.device = torch.device("cuda:3")
++            selected, devices = _metadata_plan(owner, "sample_batch", (request,), True, simulated_cuda)
++        assert selected is None and devices == ()
++        if branch == "capacity":
++            with pytest.raises(ValueError, match="capacity"):
++                owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++        elif branch == "rank":
++            revision = owner._replay_revision
++            with pytest.raises(ValueError, match="observations"):
++                _push(owner, rows, recorded=True)
++            assert owner._replay_revision > revision
++        else:
++            with pytest.raises(ValueError, match="unavailable"):
++                owner.sample_batch(request, lineage=None)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("callback", ["sample", "prepare"])
++def test_local_callback_reentry_refuses_before_requesting_admission(family: str, callback: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    _push(owner, _rows(), recorded=True)
++    state = owner.serialize()
++    domain = process_rng_domain()
++    real_admission, real_clone = domain.admission, torch.Tensor.clone
++    requested, refused = [], []
++    entered = False
++
++    def admission(actual: Any, *, lineage: Any) -> Any:
++        requested.append(lineage)
++        return real_admission(lineage=lineage)  # Observe the request; retain real authentication/exclusion.
++
++    def clone(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
++        nonlocal entered
++        result = real_clone(value, *args, **kwargs)
++        if not entered:
++            entered = True
++            with pytest.raises(RuntimeError, match="reentry") as error:
++                owner.sample(2, lineage=None) if callback == "sample" else owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
++            refused.append(error.value)
++        return result
++
++    with monkeypatch.context() as scoped:
++        scoped.setattr(type(domain), "admission", admission)
++        scoped.setattr(torch.Tensor, "clone", clone)
++        actual = owner.serialize()
++    assert entered and len(refused) == 1
++    _assert_tree_equal(actual, state)
++    assert requested == [], "Same-owner callback requested domain while holding owner custody"
++
++
++def _capacity_refusal_fixture(family: str) -> tuple:
++    source = _owner(family, torch.device("cpu"))
++    _push(source, _rows(), recorded=True)
++    incoming = source.serialize()
++    if family == "flat":
++        target = ReplayBuffer(capacity=5, device=torch.device("cpu"))
++    else:
++        target = PrioritizedReplayBuffer(capacity=5, alpha=1.0, beta=0.0, beta_annealing=False, device=torch.device("cpu"))
++    target.device = torch.device("cuda:3")
++    return target, incoming
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("route", ["validate", "prepare"])
++def test_capacity_refusal_does_not_inventory_unused_gpu_rows(
++    family: str, route: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner, incoming = _capacity_refusal_fixture(family)
++    incoming["observations"] = _CUDAData(incoming["observations"], 2)
++    before = owner.serialize()
++    method = "validate_serialized" if route == "validate" else "prepare_serialized"
++    selected, devices = _metadata_plan(owner, method, (incoming,), route == "prepare", simulated_cuda)
++    assert selected is None and devices == (), "Capacity refuses before any row source or destination is touched"
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match="capacity"):
++            if route == "validate":
++                owner.validate_serialized(incoming, expected_obs_dim=2)
++            else:
++                owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_capacity_refusal_does_not_merge_installed_gpu_archive(
++    family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    owner, incoming = _capacity_refusal_fixture(family)
++    owner.install_historical_archive(_family_archive(family, 3))  # Genuine B-dependent installed-archive fixture.
++    before = owner.serialize()
++    selected, devices = _metadata_plan(owner, "prepare_serialized", (incoming,), True, simulated_cuda)
++    assert selected is None and devices == ()
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match="capacity"):
++            owner.prepare_serialized(incoming, expected_obs_dim=2, lineage=None)
++    assert simulated_cuda.events == []
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++def test_bad_plain_push_refuses_before_unused_gpu_dones(family: str, simulated_cuda: _SimCUDA, monkeypatch: pytest.MonkeyPatch) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    before = owner.serialize()
++    rows = _rows()
++    rows["observations"] = torch.ones(4, dtype=torch.float32)
++    rows["dones"] = _CUDAData(rows["dones"], 2)
++    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    owner.device = torch.device("cuda:3")
++    assert owner.action_dim is None
++    selected, devices = _metadata_plan(owner, "push", arguments, False, simulated_cuda)
++    assert selected is None and devices == (), "Plain no-vocabulary push rejects observations before reading dones"
++    revision = owner._replay_revision
++    with monkeypatch.context() as scoped:
++        scoped.setattr(torch, "cuda", _NoCUDA())
++        with pytest.raises(ValueError, match="observations"):
++            owner.push(*arguments)
++    assert simulated_cuda.events == [] and owner._replay_revision > revision
++    _assert_tree_equal(owner.serialize(), before)
++
++
++@pytest.mark.parametrize("family", ["flat", "per"])
++@pytest.mark.parametrize("prefix", ["recorded", "known"])
++@pytest.mark.parametrize("public", [False, True])
++def test_bad_observation_prefix_keeps_necessary_gpu_sources(family: str, prefix: str, public: bool, simulated_cuda: _SimCUDA) -> None:
++    owner = _owner(family, torch.device("cpu"))
++    if prefix == "known":
++        _push(owner, _rows(), recorded=True)
++    before = owner.serialize()
++    rows = _rows()
++    rows["observations"] = torch.ones(4, dtype=torch.float32)
++    rows["dones"] = _CUDAData(rows["dones"], 2)
++    rewards = RewardTensor(rows["rewards"], extrinsic=None, intrinsic=None, shaping=None, is_composed=False)
++    arguments = (rows["observations"], rows["actions"], rewards, rows["next_observations"], rows["dones"])
++    if prefix == "recorded":
++        arguments = (*arguments, _CUDAData(rows["next_action_masks"], 2))
++    method = "push_recorded" if prefix == "recorded" else "push"
++    owner.device = torch.device("cuda:3")
++    selected, devices = _metadata_plan(owner, method, arguments, False, simulated_cuda)
++    assert selected is None and devices == (2,)
++    if public:
++        revision = owner._replay_revision
++        with pytest.raises(ValueError, match="observations"):
++            getattr(owner, method)(*arguments)
++        events = list(simulated_cuda.events)
++        assert owner._replay_revision > revision
++        _assert_tree_equal(owner.serialize(), before)
++        _assert_local(events, (2,))

@@ -1,0 +1,402 @@
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+index e5d383bc79ad9789f6b4ad9478ed7bef932b914e..48a5cd8b0b827e4fdc51fe5dcabd3b30c3d60b66 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py
+@@ -1,20 +1,26 @@
+ """Flat/PER producer controls; CUDA hardware qualification is separate.
+ 
+ The constructor sentinel catches eager CUDA access. CPU controls exercise real
+ storage, sampling and issuer-owned preparation without enabling local policies.
+ """
+ 
+ import copy
++import hashlib
++import json
++import multiprocessing
++import os
+ import random
++import sys
+ from collections.abc import Callable, Iterator
+ from contextlib import contextmanager
++from pathlib import Path
+ from threading import Event, Thread
+ from typing import Any
+ 
+ import numpy as np
+ import pytest
+ import torch
+ 
+ from townlet.exploration.rng_custody import LocalCUDAGate, process_rng_domain
+ from townlet.training import historical_checkpoint as history
+ from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+@@ -418,22 +424,22 @@ class _CUDAData(torch.Tensor):
+             result = func(*plain_args, **plain_kwargs)
+         if name != "__get__":
+             cls.runtime.events.append(("finished", name, tuple(sorted(devices))))
+             cls.runtime.after_tensor(name, tuple(sorted(devices)), result)
+         if not devices:
+             return result
+         index = min(devices)
+         return _map_values(result, lambda value: _CUDAData(value, index))
+ 
+ 
+-@pytest.fixture
+-def simulated_cuda(monkeypatch: pytest.MonkeyPatch) -> Iterator[_SimCUDA]:
++@contextmanager
++def _cuda_simulation(monkeypatch: pytest.MonkeyPatch) -> Iterator[_SimCUDA]:
+     """Redirect allocation/movement only; actual producer algorithms remain."""
+     runtime = _SimCUDA()
+     _CUDAData.runtime = runtime
+     real_to = torch.Tensor.to
+     real_complete = LocalCUDAGate.complete
+ 
+     def transfer(value: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
+         positional = list(args)
+         target = kwargs.get("device")
+         if positional and isinstance(positional[0], (str, torch.device)):
+@@ -483,20 +489,26 @@ def simulated_cuda(monkeypatch: pytest.MonkeyPatch) -> Iterator[_SimCUDA]:
+         scoped.setattr(torch.Tensor, "to", transfer)
+         scoped.setattr(LocalCUDAGate, "complete", complete)
+         for name in ("zeros", "ones", "full", "arange", "tensor", "randperm"):
+             scoped.setattr(torch, name, allocator(name, getattr(torch, name)))
+         try:
+             yield runtime
+         finally:
+             _CUDAData.runtime = None
+ 
+ 
++@pytest.fixture
++def simulated_cuda(monkeypatch: pytest.MonkeyPatch) -> Iterator[_SimCUDA]:
++    with _cuda_simulation(monkeypatch) as runtime:
++        yield runtime
++
++
+ def _syncs(events: list[tuple]) -> tuple[int, ...]:
+     return tuple(event[1] for event in events if event[0] == "sync")
+ 
+ 
+ def _assert_local(events: list[tuple], devices: tuple[int, ...]) -> None:
+     assert [event[1] for event in events if event[0] == "arm"] == [devices]
+     assert _syncs(events) == devices
+     assert all(event[3] for event in events if event[0] == "work"), "Tensor work began before authentic completion arming"
+ 
+ 
+@@ -1060,10 +1072,318 @@ def test_archive_original_state_clone_precedes_nested_content_refusal(family: st
+     _push(owner, _rows(), recorded=True)
+     before = owner.serialize()
+     transport = {**before, "historical_archives": [record]}
+     simulated_cuda.events.clear()
+     with pytest.raises(ValueError):
+         owner.validate_serialized(transport, expected_obs_dim=2)
+     events = list(simulated_cuda.events)
+     _assert_tree_equal(owner.serialize(), before)
+     _assert_local(events, (3, 4))
+     _assert_cloned_then_completed(events, (3, 4))
++
++
++_PRODUCER_ROLE = "cuda_producer_poison"
++_PRODUCER_CASES = tuple(
++    f"{family}_{schedule}"
++    for family in ("flat", "per")
++    for schedule in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
++)
++
++
++def _poison_json(stem: str, record: dict[str, Any]) -> None:
++    if "BAC_QUAL_OUTPUT" in os.environ:
++        with (Path(os.environ["BAC_QUAL_OUTPUT"]) / f"{stem}-{_PRODUCER_ROLE}.json").open("x") as stream:
++            json.dump(record, stream, sort_keys=True, allow_nan=False)
++
++
++def _error_record(error: BaseException) -> dict[str, Any]:
++    return {
++        "type": type(error).__name__,
++        "message": str(error),
++        "id": id(error),
++        "children": [_error_record(item) for item in error.exceptions] if isinstance(error, BaseExceptionGroup) else [],
++    }
++
++
++def _producer_child_identity(case: str) -> bool:
++    import test_world_rng_bootstrap as bootstrap
++
++    qualified = bootstrap._child_identity(_PRODUCER_ROLE)
++    if qualified:
++        location = Path(os.environ["BAC_QUAL_OUTPUT"]) / f"spawn-identity-{_PRODUCER_ROLE}.json"
++        record = json.loads(location.read_text())
++        names = (
++            "townlet.exploration.rng_custody",
++            "townlet.training.replay_contract",
++            "townlet.training.replay_buffer",
++            "townlet.training.prioritized_replay_buffer",
++            "test_replay_cuda_producer",
++        )
++        imports = {name: str(Path(sys.modules[name].__file__).resolve()) for name in names}
++        record.update(
++            ppid=os.getppid(),
++            producer_case=case,
++            cuda_producer_imports=imports,
++            cuda_producer_sha256={name: hashlib.sha256(Path(path).read_bytes()).hexdigest() for name, path in imports.items()},
++        )
++        location.write_text(json.dumps(record, sort_keys=True, allow_nan=False))
++    return qualified
++
++
++def _producer_poison_child(case: str, queue: Any) -> None:
++    qualified = _producer_child_identity(case)
++    assert case in _PRODUCER_CASES
++    family, schedule = case.split("_", 1)
++    local, body_error = schedule.startswith("local"), schedule.endswith(("distinct", "same"))
++    body = ValueError(f"{case}: body") if body_error else None
++    first = body if schedule.endswith("same") else RuntimeError(f"{case}: completion0")
++    second = OSError(f"{case}: completion1") if schedule == "local_distinct" else None
++    domain = process_rng_domain()
++    identity = {"case": case, "pid": os.getpid(), "ppid": os.getppid(), "qualified": qualified}
++    before = {
++        "domain": list(domain.status()),
++        "devices": [0, 1],
++        "error_ids": [id(body) if body else None, id(first), id(second) if second else None],
++    }
++    _poison_json("spawn-preflight", {**identity, "before": before})
++    phase, success = "preflight", False
++    observations: dict[str, Any] = {}
++    failure = None
++    try:
++        core = sys.modules["townlet.exploration.rng_custody"]
++        getattr(core, "REPLAY_BUFFER_SERIALIZE_CUDA" if family == "flat" else "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA")
++        if not local:
++            getattr(domain, "device_invocation")  # Availability is not an authentic outcome or a successful poisoning assertion.
++        with pytest.MonkeyPatch.context() as patch, _cuda_simulation(patch) as runtime:
++            owner, control = _owner(family, torch.device("cuda:0")), _owner(family, torch.device("cpu"))
++            _push(owner, _rows(), recorded=True)
++            _push(control, _rows(), recorded=True)
++            owner.legality_recorded = _CUDAData(torch.ones(4, dtype=torch.bool), 1)
++            runtime.events.clear()
++            serialized = owner.serialize()
++            assert torch.equal(serialized["observations"], _rows()["observations"])
++            _assert_local(list(runtime.events), (0, 1))
++            runtime.events.clear()
++            sampled = owner.sample(2, lineage=None)
++            assert sampled["observations"].shape == (2, 2) and _syncs(runtime.events) == (0, 1)
++            observations["healthy_controls"] = True
++            phase = "fault"
++            reached, release, started = Event(), Event(), Event()
++            outcomes: list[BaseException] = []
++            markers: list[bool] = []
++            outcome_errors: list[BaseException] = []
++            invocations: list[Any] = []
++            if local:
++                real_failed = LocalCUDAGate.completion_failed
++
++                def failed(gate: LocalCUDAGate) -> bool:
++                    actual = real_failed(gate)
++                    markers.append(actual)
++                    return actual
++
++                patch.setattr(LocalCUDAGate, "completion_failed", failed)
++            else:
++                real_invocation = domain.device_invocation
++
++                def invocation(*, participant: Any, operation_kind: str, lineage: Any, cuda_devices: tuple[int, ...]) -> Any:
++                    actual = real_invocation(
++                        participant=participant, operation_kind=operation_kind, lineage=lineage, cuda_devices=cuda_devices
++                    )
++                    invocations.append(actual)
++                    return actual
++
++                patch.setattr(domain, "device_invocation", invocation)
++
++            def after_tensor(name: str, devices: tuple[int, ...], result: Any) -> None:
++                if body is not None and name == "__getitem__" and devices == (0,) and isinstance(result, torch.Tensor):
++                    if result.shape == (4 if local else 2, 2):
++                        started.set()
++                        raise body
++
++            def synchronize(index: int) -> None:
++                reached.set()
++                release.wait(5)
++                if index == 0:
++                    raise first
++                if index == 1 and second is not None:
++                    raise second
++
++            def invoke() -> None:
++                try:
++                    owner.serialize() if local else owner.sample(2, lineage=None)
++                except BaseException as error:
++                    outcomes.append(error)
++                finally:
++                    if not local:
++                        try:
++                            assert len(invocations) == 1
++                            markers.append(invocations[0].completion_failed())  # Same issuing worker, historical outcome only.
++                        except BaseException as error:
++                            outcome_errors.append(error)
++
++            runtime.after_tensor, runtime.on_sync = after_tensor, synchronize
++            before_unlock: list[bool] = []
++            real_owner_operation = owner._owner_operation
++
++            @contextmanager
++            def owner_operation(*, mutation: bool) -> Iterator[None]:
++                with real_owner_operation(mutation=mutation):
++                    try:
++                        yield
++                    finally:
++                        if reached.is_set():
++                            try:
++                                owner._check_custody()
++                            except RuntimeError:
++                                before_unlock.append(True)
++                            else:
++                                before_unlock.append(False)
++
++            patch.setattr(owner, "_owner_operation", owner_operation)
++            runtime.events.clear()
++            worker = Thread(target=invoke)
++            peer, attempted, finished, peer_errors = _competing_clear(owner)
++            blocked = None
++            worker.start()
++            try:
++                did_reach = reached.wait(2)
++                if did_reach:
++                    peer.start()
++                    assert attempted.wait(2)
++                    blocked = not finished.wait(0.1)
++            finally:
++                release.set()
++                worker.join(5)
++                if peer.ident is not None:
++                    peer.join(5)
++            observations.update(
++                reached=did_reach,
++                started_work=started.is_set(),
++                syncs=list(_syncs(runtime.events)),
++                peer_blocked=blocked,
++                worker_errors=[_error_record(error) for error in outcomes],
++                peer_errors=[_error_record(error) for error in peer_errors],
++                completion_failed=markers,
++                outcome_errors=[_error_record(error) for error in outcome_errors],
++                quarantine_before_unlock=before_unlock,
++            )
++            assert not worker.is_alive() and not peer.is_alive() and did_reach and blocked is True
++            assert markers and all(marker is True for marker in markers) and not outcome_errors
++            assert before_unlock == [True]
++            assert len(outcomes) == len(peer_errors) == 1 and isinstance(peer_errors[0], RuntimeError)
++            assert "quarantined" in str(peer_errors[0])
++            expected = [body, first, second] if schedule == "local_distinct" else [first]
++            if schedule == "local_distinct":
++                assert isinstance(outcomes[0], BaseExceptionGroup)
++                assert len(outcomes[0].exceptions) == 3
++                assert all(actual is wanted for actual, wanted in zip(outcomes[0].exceptions, expected, strict=True))
++            else:
++                assert outcomes[0] is first
++            if body_error:
++                assert started.is_set()
++            if local:
++                assert observations["syncs"] == [0, 1]
++            else:
++                assert observations["syncs"] and observations["syncs"][0] == 0
++                assert set(observations["syncs"]) <= {0, 1}  # No permanent generic cleanup-tail promise.
++            with pytest.raises(RuntimeError, match="quarantined"):
++                owner.clear()
++            assert domain.status()[2] is True
++            control.clear()
++            _push(control, _rows(), recorded=True)
++            assert len(control) == 4
++            with pytest.raises(RuntimeError):
++                control.sample(2, lineage=None)
++            assert domain.status()[2] is True
++            observations.update(owner_quarantined=True, cpu_local_available=True, ambient_refused=True, domain_after=list(domain.status()))
++            success, phase = True, "complete"
++    except BaseException as error:
++        failure = _error_record(error)
++        raise
++    finally:
++        _poison_json("spawn-after", {**identity, "phase": phase, "success": success, "observations": observations, "failure": failure})
++    queue.put((f"cuda producer {case} poison quarantines under owner custody", os.getpid(), os.getppid(), qualified))
++
++
++class _ParentBaselineOwner:
++    pass
++
++
++def _parent_rng_snapshot() -> tuple:
++    cuda = torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None
++    return random.getstate(), np.random.get_state(), torch.get_rng_state().clone(), cuda
++
++
++def _parent_baseline_record(state: tuple, status: tuple[int, int, bool]) -> dict[str, Any]:
++    return {
++        "domain": list(status),
++        "python": hashlib.sha256(repr(state[0]).encode()).hexdigest(),
++        "numpy": [state[1][0], hashlib.sha256(state[1][1].tobytes()).hexdigest(), *state[1][2:]],
++        "torch": hashlib.sha256(state[2].numpy().tobytes()).hexdigest(),
++        "cuda": None if state[3] is None else [hashlib.sha256(item.cpu().numpy().tobytes()).hexdigest() for item in state[3]],
++    }
++
++
++@pytest.mark.parametrize("case", _PRODUCER_CASES)
++def test_isolated_producer_poison(case: str) -> None:
++    import test_world_rng_bootstrap as bootstrap
++
++    qualified = bootstrap._qualification_active()
++    domain, baseline_owner = process_rng_domain(), _ParentBaselineOwner()
++    devices = tuple(range(torch.cuda.device_count())) if torch.cuda.is_initialized() else ()
++    participant = domain.register(owner=baseline_owner, cuda_devices=devices, entrypoints=frozenset({"baseline"}))
++    context = multiprocessing.get_context("spawn")
++    queue = context.Queue()
++    process = context.Process(target=_producer_poison_child, args=(case, queue), name=_PRODUCER_ROLE)
++    before_record = after_record = None
++    result = None
++    before = None
++    success = paired = False
++    parent_pid = os.getpid()
++    try:
++        with domain.operation(participant=participant, operation_kind="baseline", lineage=None):
++            before = _parent_rng_snapshot()
++        assert domain.status()[2] is False
++        before_record = _parent_baseline_record(before, domain.status())
++        _poison_json("spawn-parent-before", {"case": case, "parent_pid": parent_pid, "qualified": qualified, "before": before_record})
++        process.start()
++        process.join(90)
++        assert not process.is_alive() and process.exitcode == 0
++        result = queue.get(timeout=5)
++        assert result == (f"cuda producer {case} poison quarantines under owner custody", process.pid, parent_pid, qualified)
++        paired = True
++    finally:
++        if process.pid is not None and process.is_alive():
++            process.terminate()
++            process.join(5)
++        try:
++            with domain.operation(participant=participant, operation_kind="baseline", lineage=None):
++                after = _parent_rng_snapshot()
++            after_record = _parent_baseline_record(after, domain.status())
++            if before is not None:
++                _assert_tree_equal(after, before)
++            assert domain.status()[2] is False
++            success = paired
++        finally:
++            domain.unregister(participant=participant)
++            _poison_json(
++                "spawn-observation",
++                {
++                    "case": case,
++                    "process_pid": process.pid,
++                    "queued_pid": None if result is None else result[1],
++                    "parent_pid": parent_pid,
++                    "queued_ppid": None if result is None else result[2],
++                    "exitcode": process.exitcode,
++                    "qualified": None if result is None else result[3],
++                    "message": None if result is None else result[0],
++                    "manifest_sha256": (
++                        hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest() if qualified else None
++                    ),
++                    "before": before_record,
++                    "after": after_record,
++                    "success": success,
++                },
++            )
++            queue.close()
++            queue.join_thread()
++            process.close()

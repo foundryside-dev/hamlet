@@ -1,0 +1,94 @@
+--- a/docs/remediation/bac/STATUS.md
++++ b/docs/remediation/bac/STATUS.md
+@@ -1,8 +1,16 @@
+ # BAC implementation status
+ 
++## 2026-11-13 — flat/PER CUDA producer work in progress at R98
++
++R98 is a durability checkpoint, not producer acceptance. At candidate `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, based on `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, 24 reachable CPU controls pass and 129 tests collect. Owned-file Ruff/Black and the unchanged global defaults600 gate pass. Owned-three mypy fails only on the required, not-yet-implemented core `device_invocation` API. Collection and simulated CUDA controls are not hardware evidence.
++
++Independent Astra review remains **CHANGES REQUIRED**. Source repairs cover archive/Mapping/DTO inventory, protected diagnostic rendering, same-owner reentry and the reported annotation errors. I5 remains open: metadata-determinable refusal paths still inventory unused sources or destinations. The next repair must cover the complete bounded validation prefixes, not only the reported examples. Full producer runtime, concrete local-contract activation, invocation outcomes, ten producer poison children and parent completion handoff remain owed.
++
++The [evidence index](EVIDENCE-INDEX.md) preserves the R90–R98 failed attempts, exact source identities and overlapping controls. The child-verification tool is independently qualified; its synthetic checks do not qualify the unrun producer children. Real one-/two-device CUDA, required runner and remaining integration work, global typing, full suites, coverage, slow/learning scenarios, fresh final review and exact final CI remain required. **28 qualified / 38 remaining / 66 original packages** is unchanged.
++
+ ## 2026-11-13 — CUDA custody core CPU component qualified at R89
+ 
+-R89 bounded core CPU/protocol component qualified: root1515 unique PASS (67 core +1290 coherent +109 replay +49 owner), with two CUDA-hardware SKIP and one prior required ordinary-runner deselection still owed. Independent Astra's same67 PASS overlap root's67. Ten qualified spawn children and two real inherited-gate fork trials retain strict ancestry/source custody; the rejected initial two-worker batch is preserved and corrected one-worker runs supply accepted qualification. Owned/public types and global Ruff/Black/defaults600 PASS; global mypy still fails15 required oracle6/POP-lineage9 errors. B6 concrete producer/hardware integration and full-programme38 remaining packages stay open;28/38/66 accounting is unchanged. Application execution is closed.
++R89 bounded core CPU/protocol component qualified: root1515 unique PASS (67 core +1290 coherent +109 replay +49 owner), with two CUDA-hardware SKIP and one prior required ordinary-runner deselection still owed. Independent Astra's same67 PASS overlap root's67. Ten qualified spawn children and two real inherited-gate fork trials retain strict ancestry/source custody; the rejected initial two-worker batch is preserved and corrected one-worker runs supply accepted qualification. Owned/public types and global Ruff/Black/defaults600 PASS; global mypy still fails15 required oracle6/POP-lineage9 errors. B6 concrete producer/hardware integration and full-programme38 remaining packages stay open;28/38/66 accounting is unchanged. R89 qualification execution is closed.
+ 
+ See the [core contract](CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md) for exact scope and publication identity.
+ 
+--- a/docs/remediation/bac/EVIDENCE-INDEX.md
++++ b/docs/remediation/bac/EVIDENCE-INDEX.md
+@@ -2,7 +2,19 @@
+ 
+ Checkpoint publication, bounded component qualification and whole-programme acceptance are separate. The [evidence process](EVIDENCE-PROCESS.md) governs additions; historical evidence is preserved.
+ 
+-## Current checkpoint: WIP17 / R89
++## Current checkpoint: WIP18 / R98 — work in progress
++
++The [manifest](evidence/wave35-wip-18.json) and [selection plan](evidence/wave35-wip-18/selection-plan.json) preserve the finite R90–R98 interval. R98 executed candidate is `abb7f417b8098b139db3d5156f4c320b21ab8f6d`, base `9acd85d3ccd897051288a13fd16e610b9ee1fca1`, candidate-manifest SHA-256 `02adec84e69868cdcf6e065d9d02f9736cb17c0c13d1450f2fed0ac43b622fe1`. Publication documentation/evidence changes are distinct from the executed application identity.
++
++**This is an incomplete producer checkpoint.** Astra's source review is CHANGES REQUIRED: I5 metadata-prefix planning remains open. The selected capacity/plain-push witnesses and two annotation errors are repaired; those examples do not close the wider refusal class. R98 has 24 reachable CPU controls PASS, 129 collected, owned Ruff/Black and global defaults600 PASS, and one owned-three mypy failure for the missing core `device_invocation` API. Actual B-dependent producer execution, ten poison children, parent handoff and real CUDA remain unqualified.
++
++The archive retains earlier failed capture/fixture/static/runtime attempts and every generated unrun template. R97's six intended failures preceded the selected repair; its four positive planning controls overlap the R98 selection. Historical repetitions and collection are not summed as unique coverage. The child verifier's author/root runs repeat the same 58 synthetic cases; seven independent mutation refusals are tooling evidence only. Prospective harness self-hash clarification and preservation of the exact historical synthetic-test source do not rewrite WIP17's provenance.
++
++WIP17 is remotely verified at `9acd85d3ccd897051288a13fd16e610b9ee1fca1`: Config passed; Lint failed on 15 mypy errors (six oracle, nine population-lineage); Tests failed with its exact cause still unclassified. Three connector log attempts closed transport; the CLI fallback was forbidden. This access limitation waives no gate. WIP18's remote identity and CI are separately checked after push; publication does not imply green CI or merge authority.
++
++**28 qualified / 38 remaining / 66 original packages** remains unchanged. I5's structural repair continues, followed by core/producer integration. Full programme, runner, coverage, slow/learning, hardware, fresh review and final remote CI obligations remain as recorded below and in [STATUS](STATUS.md).
++
++## Historical checkpoint: WIP17 / R89
+ 
+ The [manifest](evidence/wave35-wip-17.json) and [selection plan](evidence/wave35-wip-17/selection-plan.json) bind executed candidate `8416a6c8f887153d02ce8e19be9328d0fafe661e` to base `e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32`. The [publication guard](evidence/wave35-wip-17/publication-guard.json) records the reviewed core-contract and STATUS prose differences; application source, tests, configurations, scripts and defaults ratchet retain their exact execution identities. Immutable repository paths are in `objects`; `inputs.original` retains logical provenance.
+ 
+@@ -16,7 +28,7 @@
+ 
+ **28 qualified /38 remaining /66 original packages** is unchanged. Two unavailable-CUDA skips, one required ordinary-runner deselection, global types, actual replay/BANK/ENV/POP/native integration, full/default suites, coverage, slow/learning checks and final fresh review/CI remain required. The offered16-worker CUDA server has not yet been accessed or qualified; its GPU count is unknown. Original absolute execution timestamps remain unavailable; actual elapsed durations and child associations are preserved.
+ 
+-## Publication and history
++## Historical WIP17 publication and earlier checkpoints
+ 
+ Before assembly, the exact existing remote branch was verified at WIP16 commit `e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32`. Its Config Validation passed; Lint and Tests failed. Tests completed at2026-11-13 12:43:18 UTC, with its cause still unclassified because raw-log retrieval was unavailable. The local type errors do not establish the hosted Tests cause. WIP17 remote identity and CI are verified after commit/push; neither is inferred from assembly. No PR, merge, release or whole-BAC acceptance is claimed.
+ 
+--- a/README.md
++++ b/README.md
+@@ -383,6 +383,8 @@
+ 
+ The RNG custody core now provides scoped CUDA admission and idle enrollment, explicit per-invocation device operations, and source-bound local CUDA completion. Its bounded CPU/protocol component is qualified at R89; see [the core contract](docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) for exact APIs and evidence. The production local-GPU contract manifest remains empty; B6 producer integration and real GPU qualification remain required. Programme accounting stays28 qualified/38 remaining/66 total.
+ 
++Subsequent flat/PER CUDA producer work is staged and incomplete. The R98 checkpoint retains an open validation-prefix defect and required core integration; see [BAC status](docs/remediation/bac/STATUS.md) and the [evidence index](docs/remediation/bac/EVIDENCE-INDEX.md). It does not extend R89 qualification or advance package acceptance.
++
+ T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
+ row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each
+ row's descriptor and live payload through Linear → ReLU → Linear with an explicit positive
+--- a/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md
++++ b/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md
+@@ -8,7 +8,7 @@
+ 
+ Current [rng_custody.py](../../../src/townlet/exploration/rng_custody.py) is821 lines, SHA256 `0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477`. Focused [CUDA admission regression](../../../tests/test_townlet/regressions/bac/test_rng_cuda_admission.py) is1409 lines, SHA256 `b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e`.
+ 
+-R89 qualifies this bounded core CPU/protocol component. Root records1515 unique PASS:67 new core,1290 coherent existing,109 replay and49 owner regression cases. Two CUDA-hardware controls remain SKIP, and one previously required ordinary-runner case remains deselected and owed. The focused67 include ten actual qualified spawn children and two real inherited-gate fork trials, with strict source/import/manifest/PID/PPID ancestry checks. Independent Astra executed the same67 with complete custody verification and PASS; those overlap root's67 and add no unique cases. All application execution is closed.
++R89 qualifies this bounded core CPU/protocol component. Root records1515 unique PASS:67 new core,1290 coherent existing,109 replay and49 owner regression cases. Two CUDA-hardware controls remain SKIP, and one previously required ordinary-runner case remains deselected and owed. The focused67 include ten actual qualified spawn children and two real inherited-gate fork trials, with strict source/import/manifest/PID/PPID ancestry checks. Independent Astra executed the same67 with complete custody verification and PASS; those overlap root's67 and add no unique cases. All R89 qualification execution is closed.
+ 
+ An initial ten-case pytest batch passed but was rejected by the strong verifier because it actually used two workers. That rejected evidence is retained. Corrected separate one-worker runs supply the accepted child qualification; repeated attempts are not extra unique cases. Immutable R89 component receipt `wave35/r89-cuda-core-component-receipt.json`, SHA256 `dda5f267a4db95acf62b5ec885e28e2a7911845824b15c63b5a30a537abc8332`, and independent verification `P/T18e-R0-CUDA-CORE-INDEPENDENT-VERIFICATION.md`, SHA256 `306d71862be4b66688bcb8aef2160a77202c6180d090b34cc7dff1f2d1d37b7f`, bind these final results.
+ 
+@@ -72,6 +72,10 @@
+ 
+ New gate entries and every gate method check the actual process PID before lock acquisition, scope/thread/policy checks or CUDA effects. Real inherited use raises built-in `RuntimeError` with exact text `RNG custody cannot be inherited by another process`. Open issuing-thread scope, real RLock ownership and unchanged local binding are also authenticated. Gate/contract/operation/participant/token capabilities are process identities, noncopyable and nonportable; synchronous scopes cannot cross await/task ownership or be used after exit. Genuine domain custody does not intercept arbitrary raw library calls or detect raw mutable aliases.
+ 
++## Subsequent producer checkpoint boundary
++
++R98 stages separate flat/PER producer changes and does not extend R89 core qualification. Its source review remains CHANGES REQUIRED for metadata-prefix planning. The adopted invocation-outcome API and concrete production local-contract activation remain unimplemented dependencies. Ten producer poison children are still unrun and are distinct from R89's ten qualified core children. See the [evidence index](EVIDENCE-INDEX.md) for the separate candidate and outstanding gates.
++
+ ## Remaining integration and hardware obligations
+ 
+ The core change supplies no replay CUDA preflight wrapper, per-producer selected/retained/input/staged inventory, local route activation, owner mutation revision/publication implementation or parent call-site migration. Those require their own bounded source and causal evidence. Existing same-object/raw-alias quiescence and real parent/role/all-child publication responsibilities remain. Real CUDA initialization and initialized-query RNG preservation, actual asynchronous completion under owner exclusion and applicable one-/two-device tests remain required. B6 actual producer/hardware work, the deselected required ordinary-runner case,15 global type errors and the remaining38 programme packages stay open despite this core component qualification.
+--- a/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md
++++ b/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md
+@@ -1,4 +1,6 @@
+ # Shared and flat/PER replay custody — R81 source contract, R84 status
++
++The R81 source capsule below is historical. R98 stages later CUDA producer changes with an open validation-prefix defect and core dependencies; see the [evidence index](EVIDENCE-INDEX.md). The old source hashes, CPU results and CUDA limitations do not qualify the later source.
+ 
+ Current recurrent behavior and R84 CPU component evidence are documented in the [recurrent replay custody contract](CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md). The shared and flat/PER interfaces below retain their R81 source basis. R84 supersedes this document's historical pending recurrent-B/defaults/style work; CUDA, owner/caller integration and programme gates remain open. See [BAC status](STATUS.md) for current gate outcomes.
+ 

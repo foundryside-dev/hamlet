@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r95-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r95-static",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "ruff-owned",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ]
+    },
+    {
+      "name": "black-owned",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+      ]
+    }
+  ]
+}

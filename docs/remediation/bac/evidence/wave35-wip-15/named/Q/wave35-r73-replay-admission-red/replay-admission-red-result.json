@@ -1,0 +1,27 @@
+{
+  "name": "replay-admission-red",
+  "exit_code": 1,
+  "seconds": 4.497868061065674,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-k",
+    "test_direct_ambient_sample_waits_for_registered_peer"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r73-replay-admission-red/replay-admission-red.log",
+  "sha256": "2b69478922936975b6c8bd4b6f02f46fcc4875d8150ab4e5e22960e2b25dd044",
+  "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "fc65aba14dfecbd91458ca533047498786605bc3ed26d8da1bee4110f60a555a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

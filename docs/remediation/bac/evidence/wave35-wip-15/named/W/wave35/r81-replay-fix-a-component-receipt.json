@@ -1,0 +1,385 @@
+{
+  "scope": "Bounded replay repair A: flat/PER validated DTOs, shared prepared-handle ownership and typed guard signatures, shared/flat/PER publication controls",
+  "status": "QUALIFIED WITHIN THIS FINITE CPU REPAIR SLICE ONLY; no originalpackageclosure",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+  "source_scope": "five whole bodies3735; contract374/flat728/PER1164/test1098/domain371",
+  "collection": 54,
+  "runtime": {
+    "root_ordinary": 53,
+    "root_poison": 1,
+    "independent_ordinary": 53,
+    "independent_poison": 1,
+    "unique_selected_cases": 54,
+    "overlap": "Independent actual executions repeat the same54; do not add as108 unique",
+    "warnings": 0,
+    "skips": 0,
+    "root_child": {
+      "pid": 42153,
+      "parent_pid": 42083,
+      "ppid": 42083
+    },
+    "independent_child": {
+      "pid": 42369,
+      "parent_pid": 42298,
+      "ppid": 42298
+    }
+  },
+  "static": "R81globalRuffPASS; ownedBlackPASS; ownedfourmypyPASS; actualall3publicPreparedReplayassert_typePASS; globaldefaultsFAIL601 recurrentrequired. R79 globalmypy15FAIL and recurrentBlackFAIL remain source-bound prior results, not rerunR81.",
+  "review": "wave35-preparation/T18e-R0-REPLAY-FIX-A-PRODUCTION3-REVIEW.md",
+  "review_sha256": "49741e76e1f77fc71ff7a176945b170eb17660a496fbd2d37613f96011b47178",
+  "reviewer": "bac_astra_replay_fix_a_review (Astra medium)",
+  "producer": "bac_replay_fix_a (SOL high)",
+  "independence": "Different source author/reviewer models/actors; reviewer actually executed separately named same-source adversarial controls, results/root serial custody retained",
+  "custody": "Each named check815sources573configs13protectedartifacts14registered1available; controller/import/thread/staticappropriatecustody plusbothactualchildren verified",
+  "clocks": "Absolute UTC start/end absent in producer records; actualelapsed results preserved, no inferred timestamps",
+  "checks": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection-spec.json",
+      "spec_sha256": "5c545fa65473e2209fa597b59dddede74461e699c1d5429a6e148756e8f50b86",
+      "results": [
+        {
+          "name": "collection",
+          "exit_code": 0,
+          "seconds": 4.34928035736084,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection.log",
+          "sha256": "e790f1d19972299e0613c42c30f77543d65165984e3be3472186da3a876f4e02",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection/identity-controller.json": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection-custody.json": "5cb95eabd1dee5e1897b5ec559864e638e0bbb06ef238a72a3003f0472cc08d9",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection-result.json": "024bd281b914f541afdc6c5afeee238973104e9e75d6b082359796780a770aef",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection.log": "e790f1d19972299e0613c42c30f77543d65165984e3be3472186da3a876f4e02"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static-spec.json",
+      "spec_sha256": "6f8d88bff458418f26209e43e65e37f25cb3c9fec8d37c3fc875801f9e14c3c7",
+      "results": [
+        {
+          "name": "black-owned",
+          "exit_code": 0,
+          "seconds": 1.6042344570159912,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--workers",
+            "1"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/black-owned.log",
+          "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "no-defaults",
+          "exit_code": 1,
+          "seconds": 1.0028648376464844,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/no-defaults.log",
+          "sha256": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "ruff-global",
+          "exit_code": 0,
+          "seconds": 0.16869640350341797,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "."
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/ruff-global.log",
+          "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/black-owned-result.json": "6a9c3abdf27741218653ce2b57e9a0f015b029f4a7ef206e229bbbc6f75dc03c",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/black-owned.log": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/no-defaults-result.json": "c49f54d62b973afa09873b77255409b78ca9d545dfb34f5cd6e73afbe92255ee",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/no-defaults.log": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/ruff-global-result.json": "48944a71a2f4bea365f9f76500b897c4ebbef534c5251bb1ce4c1dc43a0e2a28",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/ruff-global.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/static-custody.json": "4b9c5fc4cf6aa681b52d0453ca457f2084a36c01b866ede4bb2f0887adbf8f7d"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types-spec.json",
+      "spec_sha256": "ac7b70478f9011cb15bbefbf61d682706361068baf1ef3f3927524e48ce7d9f1",
+      "results": [
+        {
+          "name": "owned-mypy",
+          "exit_code": 0,
+          "seconds": 2.4964685440063477,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py",
+            "src/townlet/training/sequential_replay_buffer.py",
+            "--follow-imports=silent"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/owned-mypy.log",
+          "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "public-types",
+          "exit_code": 0,
+          "seconds": 0.9095809459686279,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "--follow-imports=silent",
+            "-c",
+            "from typing import Any, assert_type\nfrom townlet.training.replay_contract import PreparedReplay\nfrom townlet.training.replay_buffer import ReplayBuffer\nfrom townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer\nfrom townlet.training.sequential_replay_buffer import SequentialReplayBuffer\n\ndef check_prepared_result(flat: ReplayBuffer, per: PrioritizedReplayBuffer, seq: SequentialReplayBuffer, data: dict[str, Any]) -> None:\n    assert_type(flat.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n    assert_type(per.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n    assert_type(seq.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/public-types.log",
+          "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/owned-mypy-result.json": "c6b3a14bd6e974469e42d1f62b4c61f59c11697dbfca7f70cf73f65c50f596dd",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/owned-mypy.log": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/public-types-result.json": "b4a4e0041cf233fc94af8971712a793ade8ed0ce53f2a713b9f67b2a4b0aba16",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/public-types.log": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/static-custody.json": "b8227695108ea65e4e8afbd2fb7fee89922a981f724cc5c3c99a6d2abab1c60a"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current-spec.json",
+      "spec_sha256": "0de1f1453cc0c9acb1f171b65ceedd50178649057e2f9f37a7dc2bdec2c76f9e",
+      "results": [
+        {
+          "name": "replay-current",
+          "exit_code": 0,
+          "seconds": 6.935328722000122,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--deselect",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current.log",
+          "sha256": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current/identity-controller.json": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current-custody.json": "68d734b69e2913d00508db62aaa189304afbe22b79de48c102f80f3e21e87e52",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current-result.json": "26efb1b55e5f072e298016cbcad98be16ad4b5a0aad006c58135efa7ad968193",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current.log": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison-spec.json",
+      "spec_sha256": "542fa08832d1fd1056772cab89ddb453478204562dc57063aaa22f0fca20396f",
+      "results": [
+        {
+          "name": "replay-poison",
+          "exit_code": 0,
+          "seconds": 7.869251251220703,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison.log",
+          "sha256": "4456c5abec522a517c1d5db6cafe81902ce283ece9c0378765aec9b6b1e220fc",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/identity-controller.json": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json": "bcdd8df06f9bf9579c635d5f22094220093a05c30f9ce893a7bd6d443d859874",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/spawn-identity-replay_poison.json": "b4ae56c269d58c86fc66a97831ff4f3e5524cfa49496a4fe808de30f59abbf61",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/spawn-observation-replay_poison.json": "3ca7f14316cbcceee9b48cb1654cd907fd8ea949ab3df9e05f242a5cd2ff70c9",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison-custody.json": "779ef8c241af2bf098d88c6922e416e75d7c1b629ffd50db7e01759a2d85d6b7",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison-result.json": "1936669522d7cf701ccc7b5d640423a188861600fce5d04ebad65883874b86f6",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison.log": "4456c5abec522a517c1d5db6cafe81902ce283ece9c0378765aec9b6b1e220fc"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current-spec.json",
+      "spec_sha256": "4027fb86091bcaad81baca491b8d082e0fdea5bbd0e4722aff803fce714be5b2",
+      "results": [
+        {
+          "name": "replay-current",
+          "exit_code": 0,
+          "seconds": 6.732235908508301,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--deselect",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current.log",
+          "sha256": "4328d83a465a579ed7e322f964b64c4c80140498fa8f654a095f3bdce58d8e78",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current/identity-controller.json": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current-custody.json": "ad6e554a6d1278520d0b3d4143d7f02804558b96b79601c4c9e87c2a9c74fb0d",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current-result.json": "3823e43ba640ab7ad48c3c84bc405624e3f347908bc8cd19871d61cddd6af99f",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current.log": "4328d83a465a579ed7e322f964b64c4c80140498fa8f654a095f3bdce58d8e78"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison-spec.json",
+      "spec_sha256": "6c190c93584de50e67260912253f4a32e3c7977f50b6049cc78955d945a40be8",
+      "results": [
+        {
+          "name": "replay-poison",
+          "exit_code": 0,
+          "seconds": 8.101341724395752,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison.log",
+          "sha256": "3628934394c5658b633f46c14b3950edd42447f90eacf40d1592a7bcf7f80144",
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/identity-controller.json": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json": "53895c847c52d0eac9dabbbe171ee1909581d89bab14925501b12abc5ee40633",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/spawn-identity-replay_poison.json": "5e3c755f58b0974c9919a992cb96da4c9997d33746797fd5906def10cb3c9681",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/spawn-observation-replay_poison.json": "47c5d6ecbc2238c839109351c47aaa11ab76ca08371ddec32dd23dcad81c68e1",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison-custody.json": "d4673ef17f84d854898c214a19b4d660e538520dcebdb0a5bcbc0d34539939c0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison-result.json": "f099ed185cf5750ae9ab739929e7d6afe66ec3e5654d42da6e8e7f9710f77c00",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison.log": "3628934394c5658b633f46c14b3950edd42447f90eacf40d1592a7bcf7f80144"
+      }
+    }
+  ],
+  "closed_within_scope": [
+    "B1 confirmedflat/PER stale/current-target and invalidmutableDTO authority defects",
+    "B2 shared identity-only handle and issuer-held material",
+    "B5 typed publicguards/preparedreturn and actualcallerdiagnostic exposure",
+    "B4 shared/flat/PER nested currentness, cleanstaging failure, uncertainpublication quarantine, alias independence and actualallfamilypoisonrefusal"
+  ],
+  "acceptance_owed": [
+    "Recurrent mutableDTO B1 assessment/control",
+    "Recurrent B3 scratch classification/stateproof and B4 staging/publication/alias controls",
+    "Recurrent source default/style fixes",
+    "B6 approvedadditiveCUDA/core design implementation and realhardware qualification",
+    "Actual producer/caller/BANK/runtime/ENV/parent/native joint integration",
+    "Existing required owner/global/coverage/slow/learning/freshdesign+implementation reviews and exactfinalremoteCI"
+  ],
+  "programme_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "next_checkpoint": "Prepare finite R73-R81 WIP15 evidence with reviewed neutraltool/contract; realterminalsubject/receipt/independentreview/publication stillowed; no newcommit yet"
+}

@@ -1,0 +1,17 @@
+--- T18e-R0-EVIDENCE-PROCESS-NEXT-FIX1-DRAFT.md
++++ T18e-R0-EVIDENCE-PROCESS-NEXT-FINAL.md
+@@ -16,7 +16,7 @@
+ 
+ WIP13 is the immutable R55–R58 checkpoint: `docs/remediation/bac/evidence/wave35-wip-13.json` and `wave35-wip-13/selection-plan.json`. WIP14 is the landed R59–R72 checkpoint: `docs/remediation/bac/evidence/wave35-wip-14.json` and `wave35-wip-14/selection-plan.json`. Their receipts, historical selectors/tests and published bytes remain historical evidence. Do not rerun their fixed-interval selectors to select later rounds or rewrite their metadata to fit the new tool.
+ 
+-The next interval begins R73. WIP15 and terminal R81 are tentative until root seals the checkpoint contract, complete actual interval/attempt inventory, frozen qualification subject and terminal receipt. No next-checkpoint selection, assembly or publication is claimed here. Independent tooling review and root's frozen synthetic rerun are prerequisites to real use; passing synthetic tests does not qualify application behavior or actual terminal evidence.
++The next interval starts immediately after the current chain tip's terminal round. Root seals the explicit checkpoint ID and finite interval, complete actual interval/attempt inventory, frozen qualification subject and terminal receipt before selection. Current publication and result status lives in EVIDENCE-INDEX. Independent tooling review and root's frozen synthetic rerun are prerequisites to real use; passing synthetic tests does not qualify application behavior or actual terminal evidence.
+ 
+ ## The sealed contract and finite selection
+ 
+@@ -80,4 +80,4 @@
+ 
+ ---
+ 
+-Source verification for this FIX1 replacement draft, 2026-11-13: the frozen neutral implementation and tests were verified by SHA-256 without executing application code or changing either source. `bac_checkpoint_contract.py`: 573 lines, `6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3`. `test_checkpoint_contract.py`: 616 lines, `b0dd9f8a3f7420771f237cc35be453040b134924a59225d1ba7c5fdb88a0d07d`. The exact replacement-document hash is supplied separately in the handoff to avoid a self-referential hash. This preparation draft has not replaced the tracked process document.
++Source verification provenance, 2026-11-13: the frozen neutral implementation and tests were verified by SHA-256 without executing application code or changing either source. `bac_checkpoint_contract.py`: 573 lines, `6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3`. `test_checkpoint_contract.py`: 616 lines, `b0dd9f8a3f7420771f237cc35be453040b134924a59225d1ba7c5fdb88a0d07d`.

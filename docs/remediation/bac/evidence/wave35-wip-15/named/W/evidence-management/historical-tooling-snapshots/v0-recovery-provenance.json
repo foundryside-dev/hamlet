@@ -1,0 +1,34 @@
+{
+  "diff_reference": {
+    "bytes": 4114,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-NEXT-CHECKPOINT-TOOLING-FIX1-SCOPED-DIFF.txt",
+    "sha256": "f1173ed4e0ca88447e15b92475141b77a4ba9337aa800642403d1785f8e737ce"
+  },
+  "location_note": "Paths identify present recovery inputs and outputs only; no claim is made that recovered snapshots previously existed at these archive paths.",
+  "method": "Reverse the authenticated retained FIX1 unified diff in memory against hash-verified current FIX1 bytes; check every hunk context/count, then verify both full known V0 hashes before writing exclusive nonexecutable .py.txt data snapshots. No snapshot was imported or executed.",
+  "schema": "bac-tooling-snapshot-recovery-v1",
+  "snapshots": [
+    {
+      "admitted_source_name": "bac_checkpoint_contract.py",
+      "bytes": 38193,
+      "current_fix1_sha256": "6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3",
+      "executable": false,
+      "lines": 568,
+      "snapshot_path": "historical-tooling-snapshots/bac_checkpoint_contract-v0.py.txt",
+      "v0_sha256": "66f62969169247eaf3ff90a5859018801bcb87f897fb032857bd263d480eb0d8",
+      "verification": "Recovered bytes exactly match the pre-existing known V0 SHA-256; current FIX1 bytes unchanged."
+    },
+    {
+      "admitted_source_name": "test_checkpoint_contract.py",
+      "bytes": 39244,
+      "current_fix1_sha256": "b0dd9f8a3f7420771f237cc35be453040b134924a59225d1ba7c5fdb88a0d07d",
+      "executable": false,
+      "lines": 584,
+      "snapshot_path": "historical-tooling-snapshots/test_checkpoint_contract-v0.py.txt",
+      "v0_sha256": "f17f102f486a5c5256e68326624949387a0cf9e1aeebf71eac9e688f3181376b",
+      "verification": "Recovered bytes exactly match the pre-existing known V0 SHA-256; current FIX1 bytes unchanged."
+    }
+  ],
+  "timestamp": null,
+  "timestamp_unavailable_reason": "No original snapshot creation or recovery timestamp is asserted."
+}

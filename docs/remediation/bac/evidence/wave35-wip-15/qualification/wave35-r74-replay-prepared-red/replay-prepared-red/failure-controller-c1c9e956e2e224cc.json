@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_per_prepared_restore_is_bound_to_issuing_owner",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_per_prepared_restore_is_bound_to_issuing_owner() -> None:\n        \"\"\"RED: equal geometry cannot authorize another buffer's prepared handle.\"\"\"\n        source = _per(local=True)\n        other = _per(local=True)\n        source.update_unit_priorities(np.array([0], dtype=np.int64), torch.tensor([9.0], dtype=torch.float32))\n        source.sample_batch(_per_request())\n        other.clear()\n        other.push_recorded(*_flat_rows(offset=30.0))\n        other.update_unit_priorities(np.array([3], dtype=np.int64), torch.tensor([0.02], dtype=torch.float32))\n        other.configure_sampling(sampling_mode=_SUCCESSIVE, rng=np.random.Generator(np.random.PCG64(1337)), origin=\"authored\")\n        candidate = source.prepare_serialized(source.serialize(), expected_obs_dim=1)\n        before = other.serialize()\n>       with pytest.raises(ValueError, match=\"[Pp]repared|[Ff]oreign|[Dd]estination\"):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:493: Failed",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b"
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "bac-publication-document-integration-v1",
+  "source_snippets": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-R81-PUBLICATION-SNIPPETS.md",
+  "source_sha256": "bc7ca17fdd829cc873597748dd4c717189f20137ca313e5472e7fdeddecff243",
+  "integration_changes": [
+    "STATUS title made dated and publication-state-neutral",
+    "Replaced temporary WIP15 pending wording with immutable evidence references and explicit separate remote/CI verification",
+    "README adds current replay contract link; no broader README/source/CI refresh claimed",
+    "Earlier STATUS assessments remain byte-preserved below the new dated section"
+  ],
+  "documents": [
+    {
+      "path": "docs/remediation/bac/STATUS.md",
+      "before_sha256": "4032a33374ed042dd75c52d240c8399652857d7bdec8cb29f93879e1d0ef8e90",
+      "after_sha256": "7dba8e1d95f734ab9dfa3ad53e8646cc661c86f44eefca1687f558b5f52f00eb"
+    },
+    {
+      "path": "README.md",
+      "before_sha256": "95557c1c4dbedfe3fb302c559a3bda3cfa1a8fef8e27bbd717ff5516cabf2aaa",
+      "after_sha256": "f9ec1316b895f7bce7a5950499aec03f1a28495d9f08a62efa799d80dafc2b2a"
+    }
+  ],
+  "independent_review": "pending with terminal subject v2"
+}

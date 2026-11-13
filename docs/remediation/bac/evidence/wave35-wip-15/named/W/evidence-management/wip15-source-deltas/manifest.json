@@ -1,0 +1,603 @@
+{
+  "schema": "bac-candidate-source-deltas-v1",
+  "status": "ARCHIVED PATCH DATA; NOT APPLIED OR EXECUTED",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "base_tree": "a86529dfe1759dca3f8daad8a98cd161526fb2ad",
+  "contract": {
+    "path": "wave35/r81-checkpoint-contract.json",
+    "sha256": "5fd9322ad4e56a4a0193c6e13214e02f8e1c52a5ec68cbd2369865ceaaae57b8",
+    "bytes": 5211
+  },
+  "method": "Read-only git rev-parse; git diff --binary --full-index --no-ext-diff --no-textconv BASE TREE; git diff --name-only -z; git ls-tree -r -l -z. Patch bytes transferred directly from subprocess output to exclusive mode-0600 files without displaying or interpreting source bodies. Only JSON metadata parsed.",
+  "checks": "All 10 component receipt hashes match. Available top-level manifest_sha256 references match measured candidate JSON bytes; absent fields not invented. All nine manifest base/tree and changed-path sets match Git metadata. Every recorded source path exists in its candidate tree.",
+  "limitations": "Git ls-tree supplies blob IDs and sizes, not SHA256 content hashes. Manifest source-file SHA256 values are retained assertions, not independently recomputed from Git blobs. Reconstruction requires applying each delta to the named durable base; no application, independent reconstruction or remote availability verification occurred here. Patches are nonexecutable evidence DATA, never imported or executed. Two preparation attempts stopped on absent top-level manifest_sha256 fields before any output directory or file was created.",
+  "candidates": [
+    {
+      "round": 73,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+      "candidate_manifest": {
+        "path": "wave35/r73-candidate.json",
+        "sha256": "fc65aba14dfecbd91458ca533047498786605bc3ed26d8da1bee4110f60a555a",
+        "bytes": 206903
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r73-replay-stagea-receipt.json",
+          "sha256": "55af950829bb32176ab976b757a461aa2514fda99d11e998b947fea304c13700",
+          "bytes": 2796,
+          "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+          "scope": "R0 direct replay StageA causal tests; no production fix or package closure"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 1,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r73.patch",
+        "sha256": "e99e07010e5138f7beda3272a87cb22bc1e975acc5c0ea5a959fcb9f8d4d3804",
+        "bytes": 17317,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "1134abc8ab8ae23ed28ee1c5f1e6c2c7655d20f6",
+          "bytes": 16553
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "70cb5aa08781dfab6f195c9377fbf5753c6a3845422ea23ced2d812c6b2dbd95"
+      }
+    },
+    {
+      "round": 74,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+      "candidate_manifest": {
+        "path": "wave35/r74-candidate.json",
+        "sha256": "426a7de7f7c6505cd5ff502606e062f8958bfbc24def55748fed550edd48029a",
+        "bytes": 206903
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r74-replay-stagea-fix1-receipt.json",
+          "sha256": "98ee3a1114ac0556be89af709675cc357b9e8a887578df213f79125576d744e2",
+          "bytes": 4672,
+          "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+          "scope": "R0 direct replay StageA test-quality fix1; production unchanged"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 0,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r74.patch",
+        "sha256": "2dea042bc899b57f68708c3ad5f8e46ed673698d15142495ed0313e18eed60e3",
+        "bytes": 25371,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "26e7f05432748e9012ccc5b208544eb2659fab0c",
+          "bytes": 24444
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "3c93193a3028c5979768ce474da2a7f54be55c4ebd888f14c40a57dc1cfe389d"
+      }
+    },
+    {
+      "round": 75,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "c46acb9860c50cfe4162c65d696a8662947179fc",
+      "candidate_manifest": {
+        "path": "wave35/r75-candidate.json",
+        "sha256": "8a65e8b33d08442c6f37c98907945196a22b7e60d82be5b337a7b5d05b5d2b55",
+        "bytes": 206903
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r75-replay-stagea-fix2-receipt.json",
+          "sha256": "e91f096991d134ffb268f632703967082b925594b31a8024169a9d71fe8c76b6",
+          "bytes": 3209,
+          "candidate_tree": "c46acb9860c50cfe4162c65d696a8662947179fc",
+          "scope": "Replay StageA test-only PER active-prefix fix2, production unchanged"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 0,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r75.patch",
+        "sha256": "f3f084b1dfcb229324dd9a246eae69a8b09f32616ee85d3a9e3713dd2fddf05d",
+        "bytes": 25822,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "11797c5b490ddcd19c285bfedc3d5a2f479655d2",
+          "bytes": 24886
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "89eb912354b00470811f90f82868496820dc651d65ccf76c87e5378db73fa2e4"
+      }
+    },
+    {
+      "round": 76,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+      "candidate_manifest": {
+        "path": "wave35/r76-candidate.json",
+        "sha256": "7403ba79434c65940524f844c8e1e9703eb2aed2fcfa5217f7166e331a15749d",
+        "bytes": 207108
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r76-replay-poison-receipt.json",
+          "sha256": "f0304d5140e8b6c5f3b477bd1d87485949d61cb1d3dc6c4b3892cba589e47ae8",
+          "bytes": 2372,
+          "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+          "scope": "R76 replay poison consumer test only; initial receipt remains immutable"
+        },
+        {
+          "root": "W",
+          "path": "wave35/r76-replay-stageb-initial-receipt.json",
+          "sha256": "37122e2432de18be98f7b07d0e3757cb9a90460cde181abf32963f7ca06d9667",
+          "bytes": 6498,
+          "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+          "scope": "R76 StageB initial production, collection, healthy, causal and static evidence; poison UNRUN at that historical receipt"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 0,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r76.patch",
+        "sha256": "d7010e7c575a2880e062d31453202f8bb897757d3669e3fd081a35b67b7ae75e",
+        "bytes": 77637,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "src/townlet/training/prioritized_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "b0a927abbcfef1133dfff3a9ec043bf64bdd2c61",
+          "bytes": 60565
+        },
+        "src/townlet/training/replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "7fe965e724cdb814da0f718a9aceaf2bc91f494d",
+          "bytes": 35217
+        },
+        "src/townlet/training/replay_contract.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "f7e4467ac550c5dfd43cefe985fe70a4d5dac35d",
+          "bytes": 15804
+        },
+        "src/townlet/training/sequential_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e0e0f79d47256a382865b6b1726296cbf4727bd6",
+          "bytes": 99495
+        },
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "5cfdd1b6085c39c104c406996e84834d13aa299c",
+          "bytes": 29292
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "src/townlet/training/prioritized_replay_buffer.py": "6d0fd54102363bb89b27590fef3e97ccdca3de6dbdce214c0c4b1219759b2bc0",
+        "src/townlet/training/replay_buffer.py": "85a30028b21a2400fbbe43f82ac7422a20320c7173535a4e3bfcb342a81e29b3",
+        "src/townlet/training/replay_contract.py": "eb40cf7a78d0ddec538a05649b34ddb2c5521dc1ac8f68de3319344b0fd73b7a",
+        "src/townlet/training/sequential_replay_buffer.py": "b29a5be9b48c99180ef64730802f041cf4536b30b8771d2ad945ceca7569bad6",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "e70c17a0e79497a06cef3c78f4b09fc8a2310401d8a39bffec5d1d4d2d892ab2"
+      }
+    },
+    {
+      "round": 77,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+      "candidate_manifest": {
+        "path": "wave35/r77-candidate.json",
+        "sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+        "bytes": 207094
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r77-replay-fix-a-tests-receipt.json",
+          "sha256": "5cd5e356cf256527a427c3e43ffd6d668ec89e155851241112f12b9a2eea0c18",
+          "bytes": 16937,
+          "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+          "scope": "R77 tests-first replay repair A; production unchanged; not component qualification"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 1,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r77.patch",
+        "sha256": "dcb995252615593726237e03a8ebd81eed352348bf0f8948cf8cdeffe22ea091",
+        "bytes": 96218,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "src/townlet/training/prioritized_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "b0a927abbcfef1133dfff3a9ec043bf64bdd2c61",
+          "bytes": 60565
+        },
+        "src/townlet/training/replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "7fe965e724cdb814da0f718a9aceaf2bc91f494d",
+          "bytes": 35217
+        },
+        "src/townlet/training/replay_contract.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "f7e4467ac550c5dfd43cefe985fe70a4d5dac35d",
+          "bytes": 15804
+        },
+        "src/townlet/training/sequential_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e0e0f79d47256a382865b6b1726296cbf4727bd6",
+          "bytes": 99495
+        },
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "93275b80018bdb22b852b82595eb48b55fbfa8a3",
+          "bytes": 47468
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "src/townlet/training/prioritized_replay_buffer.py": "6d0fd54102363bb89b27590fef3e97ccdca3de6dbdce214c0c4b1219759b2bc0",
+        "src/townlet/training/replay_buffer.py": "85a30028b21a2400fbbe43f82ac7422a20320c7173535a4e3bfcb342a81e29b3",
+        "src/townlet/training/replay_contract.py": "eb40cf7a78d0ddec538a05649b34ddb2c5521dc1ac8f68de3319344b0fd73b7a",
+        "src/townlet/training/sequential_replay_buffer.py": "b29a5be9b48c99180ef64730802f041cf4536b30b8771d2ad945ceca7569bad6",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "db262e93e89fdda40f4e4f94e86857c21905079ed76216e0dd6514c636293d5e"
+      }
+    },
+    {
+      "round": 78,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "690c2599c3c25c6352f046f9ea44deb30b9f0b86",
+      "candidate_manifest": {
+        "path": "wave35/r78-candidate.json",
+        "sha256": "2302a70a32dc303c4795937c509c06e7bac376fec5291fbf27567c7dbb89d2d0",
+        "bytes": 207094
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r78-replay-fixture-fix1-receipt.json",
+          "sha256": "00d2f1b8510b88f8b3464582e288ec1c946e95ed34e122a6b2ccc697d07632c0",
+          "bytes": 3003,
+          "candidate_tree": "690c2599c3c25c6352f046f9ea44deb30b9f0b86",
+          "scope": "R78 narrow test prerequisite fix1, not production repair"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 1,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r78.patch",
+        "sha256": "ef49a19c701377806c95384ec5972f63567c2d8ad00266b2b2d64cfc47465c7e",
+        "bytes": 96654,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "src/townlet/training/prioritized_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "b0a927abbcfef1133dfff3a9ec043bf64bdd2c61",
+          "bytes": 60565
+        },
+        "src/townlet/training/replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "7fe965e724cdb814da0f718a9aceaf2bc91f494d",
+          "bytes": 35217
+        },
+        "src/townlet/training/replay_contract.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "f7e4467ac550c5dfd43cefe985fe70a4d5dac35d",
+          "bytes": 15804
+        },
+        "src/townlet/training/sequential_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e0e0f79d47256a382865b6b1726296cbf4727bd6",
+          "bytes": 99495
+        },
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "0d55f00ef005054afd2b569981a37dc5650c5993",
+          "bytes": 47889
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "src/townlet/training/prioritized_replay_buffer.py": "6d0fd54102363bb89b27590fef3e97ccdca3de6dbdce214c0c4b1219759b2bc0",
+        "src/townlet/training/replay_buffer.py": "85a30028b21a2400fbbe43f82ac7422a20320c7173535a4e3bfcb342a81e29b3",
+        "src/townlet/training/replay_contract.py": "eb40cf7a78d0ddec538a05649b34ddb2c5521dc1ac8f68de3319344b0fd73b7a",
+        "src/townlet/training/sequential_replay_buffer.py": "b29a5be9b48c99180ef64730802f041cf4536b30b8771d2ad945ceca7569bad6",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "a3231697ad7bc553acb31edbd2187dd377099ca62b65081040e04858f87173c3"
+      }
+    },
+    {
+      "round": 79,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "b63744a51ce4844ed6f35180d2a2e8e664407e78",
+      "candidate_manifest": {
+        "path": "wave35/r79-candidate.json",
+        "sha256": "b35815c3065890eadfb7f394c588a7b6b0b8cceddbb25095a928316077592dfd",
+        "bytes": 207094
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r79-replay-fix-a-production1-receipt.json",
+          "sha256": "702b2951da2082427b15db3268ba030601ae53777d9569127248f6f709542dfd",
+          "bytes": 18734,
+          "candidate_tree": "b63744a51ce4844ed6f35180d2a2e8e664407e78",
+          "scope": "R79 fixed replay A productionround1; required lint correction remains"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 1,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r79.patch",
+        "sha256": "b230cd8cb110194486e914738105ba1187dfc6eac87f48f10a0be8207506aa6b",
+        "bytes": 101219,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "src/townlet/training/prioritized_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "b92d1dc2f53e633be0774c6135c42a25d3e97101",
+          "bytes": 61979
+        },
+        "src/townlet/training/replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "ca6a87feb0fc5b14dad0ba0cf370309f26ce7972",
+          "bytes": 36124
+        },
+        "src/townlet/training/replay_contract.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "72602db3accd0a2656f7fb95632b584422015175",
+          "bytes": 16986
+        },
+        "src/townlet/training/sequential_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e0e0f79d47256a382865b6b1726296cbf4727bd6",
+          "bytes": 99495
+        },
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "84f3c971f4d41989faccfb42a44bc75bc9ccb7e4",
+          "bytes": 47876
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "src/townlet/training/prioritized_replay_buffer.py": "b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8",
+        "src/townlet/training/replay_buffer.py": "817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214",
+        "src/townlet/training/replay_contract.py": "58f641301c6398bee4048fae8c4802850e6717e15e36f9720caaf9034eb7bf94",
+        "src/townlet/training/sequential_replay_buffer.py": "b29a5be9b48c99180ef64730802f041cf4536b30b8771d2ad945ceca7569bad6",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "5870d5315dd6f975f6e9513a492ba08f84671576f18e70f62795b122e13eabd7"
+      }
+    },
+    {
+      "round": 80,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+      "candidate_manifest": {
+        "path": "wave35/r80-candidate.json",
+        "sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+        "bytes": 207094
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r80-replay-fix-a-production2-receipt.json",
+          "sha256": "fa41a4e6a38279b6aba1f8b3876bebefed87f7f22ef63035bbf5c8f9524178cc",
+          "bytes": 12273,
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "scope": "R80 productionround2 generic syntax prerequisites only"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 1,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r80.patch",
+        "sha256": "4c30a48bcda51546df097fd479f9129ea894acd47d34c6798428c2748f717abf",
+        "bytes": 101253,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "src/townlet/training/prioritized_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "b92d1dc2f53e633be0774c6135c42a25d3e97101",
+          "bytes": 61979
+        },
+        "src/townlet/training/replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "ca6a87feb0fc5b14dad0ba0cf370309f26ce7972",
+          "bytes": 36124
+        },
+        "src/townlet/training/replay_contract.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "c8c71b0019151d620fd87aded2c5cedc0fd0d19a",
+          "bytes": 17025
+        },
+        "src/townlet/training/sequential_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e0e0f79d47256a382865b6b1726296cbf4727bd6",
+          "bytes": 99495
+        },
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "84f3c971f4d41989faccfb42a44bc75bc9ccb7e4",
+          "bytes": 47876
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "src/townlet/training/prioritized_replay_buffer.py": "b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8",
+        "src/townlet/training/replay_buffer.py": "817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214",
+        "src/townlet/training/replay_contract.py": "c13aa14190b5ab5be1cea2a520f920011abaf41f9b6a903537f2f47aea6c4a39",
+        "src/townlet/training/sequential_replay_buffer.py": "b29a5be9b48c99180ef64730802f041cf4536b30b8771d2ad945ceca7569bad6",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "5870d5315dd6f975f6e9513a492ba08f84671576f18e70f62795b122e13eabd7"
+      }
+    },
+    {
+      "round": 81,
+      "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+      "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+      "candidate_manifest": {
+        "path": "wave35/r81-candidate.json",
+        "sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+        "bytes": 207094
+      },
+      "component_receipts": [
+        {
+          "root": "W",
+          "path": "wave35/r81-replay-fix-a-component-receipt.json",
+          "sha256": "71abc4a628b8a698cdb878fb71857d207ecf50fbdde3c84e90ba4ddc44564cc4",
+          "bytes": 23102,
+          "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+          "scope": "Bounded replay repair A: flat/PER validated DTOs, shared prepared-handle ownership and typed guard signatures, shared/flat/PER publication controls"
+        }
+      ],
+      "top_level_receipt_manifest_sha256_fields_checked": 1,
+      "patch": {
+        "path": "evidence-management/wip15-source-deltas/r81.patch",
+        "sha256": "c23d31d0652560d1bc02c243c0e3c5a2c749d150301d4fd47230f5c0f99d1f3a",
+        "bytes": 101205,
+        "mode": "0600"
+      },
+      "changed_paths": [
+        "src/townlet/training/prioritized_replay_buffer.py",
+        "src/townlet/training/replay_buffer.py",
+        "src/townlet/training/replay_contract.py",
+        "src/townlet/training/sequential_replay_buffer.py",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+      ],
+      "changed_git_path_metadata": {
+        "src/townlet/training/prioritized_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "b92d1dc2f53e633be0774c6135c42a25d3e97101",
+          "bytes": 61979
+        },
+        "src/townlet/training/replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "ca6a87feb0fc5b14dad0ba0cf370309f26ce7972",
+          "bytes": 36124
+        },
+        "src/townlet/training/replay_contract.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e9f98dbf3d4976da3d0f01d79e78c67015515949",
+          "bytes": 16977
+        },
+        "src/townlet/training/sequential_replay_buffer.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "e0e0f79d47256a382865b6b1726296cbf4727bd6",
+          "bytes": 99495
+        },
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": {
+          "mode": "100644",
+          "type": "blob",
+          "git_object": "84f3c971f4d41989faccfb42a44bc75bc9ccb7e4",
+          "bytes": 47876
+        }
+      },
+      "candidate_source_path_count": 815,
+      "candidate_source_paths_missing_from_tree": [],
+      "changed_recorded_source_sha256": {
+        "src/townlet/training/prioritized_replay_buffer.py": "b989a8f153cf6a2686140efcfb6ce1d4914f4379785c2c094e1cc5d1142033b8",
+        "src/townlet/training/replay_buffer.py": "817495558b45a51ba5df3751f83d1985135e23d9dfe6f827e3e323c45df01214",
+        "src/townlet/training/replay_contract.py": "8de53fc6814a16bafb703728ed396d7b9a1298afdb415be4ec8d1d85ac1502a1",
+        "src/townlet/training/sequential_replay_buffer.py": "b29a5be9b48c99180ef64730802f041cf4536b30b8771d2ad945ceca7569bad6",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py": "5870d5315dd6f975f6e9513a492ba08f84671576f18e70f62795b122e13eabd7"
+      }
+    }
+  ]
+}

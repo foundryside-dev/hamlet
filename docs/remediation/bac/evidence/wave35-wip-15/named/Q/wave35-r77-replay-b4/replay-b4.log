@@ -1,0 +1,119 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 54 items / 39 deselected / 15 selected
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py ........FF [ 66%]
+....F                                                                    [100%]
+
+=================================== FAILURES ===================================
+_ test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-flat] _
+
+kind = 'flat', stage = 'archive-copy'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb65dc3dbf0>
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    @pytest.mark.parametrize("stage", ["tensor-copy", "archive-copy"])
+    def test_replay_staging_fault_preserves_full_live_state_and_healthy_use(
+        kind: str, stage: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _publication_owner(kind)
+        if stage == "archive-copy":
+>           _install_real_historical_archive(owner)
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:796: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:759: in _install_real_historical_archive
+    owner.load_from_serialized(legacy, lineage=None)
+src/townlet/training/replay_buffer.py:715: in load_from_serialized
+    self.load_for_mode(state, requested_mode="auto", lineage=lineage)
+src/townlet/training/replay_buffer.py:706: in load_for_mode
+    validated = self._validate_serialized(state, expected_obs_dim=None)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:575: in _validate_serialized
+    tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'actions': tensor([0, 1, 0]), 'capacity': 8, 'dones': tensor([False, False,  True]), 'format_version': 4, ...}
+field = 'rewards_extrinsic'
+
+    @staticmethod
+    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
+        value = state[field]
+        if not isinstance(value, torch.Tensor) or value.dtype != dtype or tuple(value.shape) != shape:
+>           raise ValueError(f"Replay checkpoint {field} must be a tensor of shape {shape} and dtype {dtype}")
+E           ValueError: Replay checkpoint rewards_extrinsic must be a tensor of shape (3,) and dtype torch.float32
+
+src/townlet/training/replay_buffer.py:476: ValueError
+_ test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-per] _
+
+kind = 'per', stage = 'archive-copy'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb65db04e50>
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    @pytest.mark.parametrize("stage", ["tensor-copy", "archive-copy"])
+    def test_replay_staging_fault_preserves_full_live_state_and_healthy_use(
+        kind: str, stage: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        owner = _publication_owner(kind)
+        if stage == "archive-copy":
+>           _install_real_historical_archive(owner)
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:796: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:759: in _install_real_historical_archive
+    owner.load_from_serialized(legacy, lineage=None)
+src/townlet/training/prioritized_replay_buffer.py:1135: in load_from_serialized
+    self.load_for_mode(state, requested_mode="auto", lineage=lineage)
+src/townlet/training/prioritized_replay_buffer.py:1127: in load_for_mode
+    validated = self.validate_serialized(state, expected_obs_dim=None)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:119: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1082: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:967: in _validate_serialized
+    tensors[name] = self._require_tensor(state, name, dtype=dtype, shape=shape)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+state = {'actions': tensor([0, 1, 0]), 'alpha': 0.6, 'beta': 0.4, 'beta_annealing': False, ...}
+field = 'rewards_extrinsic'
+
+    @staticmethod
+    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
+        value = state[field]
+        if not isinstance(value, torch.Tensor):
+>           raise ValueError(f"PER checkpoint {field} must be a tensor; got {type(value).__name__}. Regenerate the checkpoint.")
+E           ValueError: PER checkpoint rewards_extrinsic must be a tensor; got NoneType. Regenerate the checkpoint.
+
+src/townlet/training/prioritized_replay_buffer.py:816: ValueError
+_ test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[per] _
+
+kind = 'per'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    def test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate(kind: str) -> None:
+        owner = _publication_owner(kind)
+        incoming = _incoming_repair_state(owner)
+        expected = copy.deepcopy(incoming)
+        candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
+        material = owner._retained_material
+        incoming["observations"].fill_(900.0)
+        if isinstance(owner, PrioritizedReplayBuffer):
+>           incoming["priorities"].fill_(70.0)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'numpy.ndarray' object has no attribute 'fill_'. Did you mean: 'fill'?
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:894: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[per]
+================= 3 failed, 12 passed, 39 deselected in 0.32s ==================

@@ -1,0 +1,27 @@
+{
+  "name": "replay-current",
+  "exit_code": 0,
+  "seconds": 5.932811737060547,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--deselect",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-current/replay-current.log",
+  "sha256": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d",
+  "candidate_tree": "b63744a51ce4844ed6f35180d2a2e8e664407e78",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "b35815c3065890eadfb7f394c588a7b6b0b8cceddbb25095a928316077592dfd",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,96 @@
+{
+  "schema": "bac-causal-component-receipt-v1",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+  "scope": "R0 direct replay StageA test-quality fix1; production unchanged",
+  "results": {
+    "collection": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-collection-spec.json",
+        "sha256": "bdb1a703052bb9d1356b4d284cde0bd4e0677263119fccd62d4a309f7922fc9c"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-collection/collection-custody.json",
+          "sha256": "d054cceb8898af9a924b6d25406e430beae9fd13ba42bb4e13f6003c16769443"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-collection/collection-result.json",
+          "sha256": "65fe772346fdda36ed534c72501806b6d0223e1667acde31871aa4d3491f267f"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    },
+    "replay-healthy": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy-spec.json",
+        "sha256": "d41e38d49a2931d31af0a79131d501251d02f465758a5154a09ea9c59fd4783b"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy/replay-healthy-custody.json",
+          "sha256": "1efc02554cd8a91dc9552d81b5e89e0fdf848422f53861240e863ec54303d9cb"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy/replay-healthy-result.json",
+          "sha256": "f7f81f705a98922fb749dac17ec2a5e0406c953b2fc1e612cae8299a576cf51d"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    },
+    "replay-prepared-red": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red-spec.json",
+        "sha256": "8711ec5eda513c1d6dc9a15e8f3c3a220699723e16b1ea616929a7407cb30e0c"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red/replay-prepared-red-failure-index.json",
+          "sha256": "41f19c2707421c407088587fbbbb955916a0592d8daa5611114d85ffeac8b76f"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red/replay-prepared-red-negative-custody.json",
+          "sha256": "7ced909c7d7b254b0913214bcee0ed6041c772f22d35f65f31445e3ec50faf1f"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red/replay-prepared-red-result.json",
+          "sha256": "6b06c78bb0a542c77afe98a1fd61a5d9cc4f02f26d5e62962a30255cd8a984de"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    },
+    "replay-custody-api-red": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red-spec.json",
+        "sha256": "485adf8a93d6ed548a4d196c007f189c1935c8b5879bf071c4233803ae2eea9f"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red/replay-custody-api-red-failure-index.json",
+          "sha256": "92650a97b38dea3420138ee4aa4dc9e842d2b88baf3f73dd8540f54307103e6c"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red/replay-custody-api-red-negative-custody.json",
+          "sha256": "c01bdcb01d8e41101efc3f6068e660aafc55a999bb8e7c2749b5cc6b256f9925"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red/replay-custody-api-red-result.json",
+          "sha256": "4f0eeac1830aa41d3a35fd69b7ad018597590fff7c4aaf29e8573cdf81e269bc"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    }
+  },
+  "outcomes": {
+    "collection": 19,
+    "healthy_pass": 10,
+    "prepared_intended_behavior_fail": 4,
+    "missing_participant_attribute_fail": 3,
+    "missing_lineage_keyword_fail": 1,
+    "owner_guard_unreached_assertion": 1
+  },
+  "clock_limit": "Existing harness records actual per-job elapsed seconds but no UTC start/end; these are unavailable, not inferred from mtime.",
+  "all_sessions_closed": true,
+  "review_status": "same Astra scoped test re-review pending; no GREEN source approval",
+  "predecessor": "wave35/r73-replay-stagea-receipt.json"
+}

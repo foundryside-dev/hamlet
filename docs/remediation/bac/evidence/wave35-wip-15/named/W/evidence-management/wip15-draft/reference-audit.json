@@ -1,0 +1,1307 @@
+{
+  "schema": "bac-wip15-draft-reference-audit-v1",
+  "status": "DRAFT",
+  "checks": [
+    {
+      "where": "R74.0.results.collection.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-collection-spec.json",
+      "expected": "bdb1a703052bb9d1356b4d284cde0bd4e0677263119fccd62d4a309f7922fc9c",
+      "actual": "bdb1a703052bb9d1356b4d284cde0bd4e0677263119fccd62d4a309f7922fc9c",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.collection.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-collection/collection-custody.json",
+      "expected": "d054cceb8898af9a924b6d25406e430beae9fd13ba42bb4e13f6003c16769443",
+      "actual": "d054cceb8898af9a924b6d25406e430beae9fd13ba42bb4e13f6003c16769443",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.collection.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-collection/collection-result.json",
+      "expected": "65fe772346fdda36ed534c72501806b6d0223e1667acde31871aa4d3491f267f",
+      "actual": "65fe772346fdda36ed534c72501806b6d0223e1667acde31871aa4d3491f267f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-healthy.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy-spec.json",
+      "expected": "d41e38d49a2931d31af0a79131d501251d02f465758a5154a09ea9c59fd4783b",
+      "actual": "d41e38d49a2931d31af0a79131d501251d02f465758a5154a09ea9c59fd4783b",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-healthy.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy/replay-healthy-custody.json",
+      "expected": "1efc02554cd8a91dc9552d81b5e89e0fdf848422f53861240e863ec54303d9cb",
+      "actual": "1efc02554cd8a91dc9552d81b5e89e0fdf848422f53861240e863ec54303d9cb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-healthy.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy/replay-healthy-result.json",
+      "expected": "f7f81f705a98922fb749dac17ec2a5e0406c953b2fc1e612cae8299a576cf51d",
+      "actual": "f7f81f705a98922fb749dac17ec2a5e0406c953b2fc1e612cae8299a576cf51d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-prepared-red.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red-spec.json",
+      "expected": "8711ec5eda513c1d6dc9a15e8f3c3a220699723e16b1ea616929a7407cb30e0c",
+      "actual": "8711ec5eda513c1d6dc9a15e8f3c3a220699723e16b1ea616929a7407cb30e0c",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-prepared-red.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red/replay-prepared-red-failure-index.json",
+      "expected": "41f19c2707421c407088587fbbbb955916a0592d8daa5611114d85ffeac8b76f",
+      "actual": "41f19c2707421c407088587fbbbb955916a0592d8daa5611114d85ffeac8b76f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-prepared-red.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red/replay-prepared-red-negative-custody.json",
+      "expected": "7ced909c7d7b254b0913214bcee0ed6041c772f22d35f65f31445e3ec50faf1f",
+      "actual": "7ced909c7d7b254b0913214bcee0ed6041c772f22d35f65f31445e3ec50faf1f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-prepared-red.records.2",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-prepared-red/replay-prepared-red-result.json",
+      "expected": "6b06c78bb0a542c77afe98a1fd61a5d9cc4f02f26d5e62962a30255cd8a984de",
+      "actual": "6b06c78bb0a542c77afe98a1fd61a5d9cc4f02f26d5e62962a30255cd8a984de",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-custody-api-red.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red-spec.json",
+      "expected": "485adf8a93d6ed548a4d196c007f189c1935c8b5879bf071c4233803ae2eea9f",
+      "actual": "485adf8a93d6ed548a4d196c007f189c1935c8b5879bf071c4233803ae2eea9f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-custody-api-red.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red/replay-custody-api-red-failure-index.json",
+      "expected": "92650a97b38dea3420138ee4aa4dc9e842d2b88baf3f73dd8540f54307103e6c",
+      "actual": "92650a97b38dea3420138ee4aa4dc9e842d2b88baf3f73dd8540f54307103e6c",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-custody-api-red.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red/replay-custody-api-red-negative-custody.json",
+      "expected": "c01bdcb01d8e41101efc3f6068e660aafc55a999bb8e7c2749b5cc6b256f9925",
+      "actual": "c01bdcb01d8e41101efc3f6068e660aafc55a999bb8e7c2749b5cc6b256f9925",
+      "status": "MATCH"
+    },
+    {
+      "where": "R74.0.results.replay-custody-api-red.records.2",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red/replay-custody-api-red-result.json",
+      "expected": "4f0eeac1830aa41d3a35fd69b7ad018597590fff7c4aaf29e8573cdf81e269bc",
+      "actual": "4f0eeac1830aa41d3a35fd69b7ad018597590fff7c4aaf29e8573cdf81e269bc",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.collection.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-collection-spec.json",
+      "expected": "a50ee1332140aa3f21a6c54aad4277a11d3bd44764d8deb3d615de2cd02c885e",
+      "actual": "a50ee1332140aa3f21a6c54aad4277a11d3bd44764d8deb3d615de2cd02c885e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.collection.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-collection/collection-custody.json",
+      "expected": "c1bdc5249cfcbcbfdff02d3debb923dca672c20c8836d59e8ace226ce049e5a4",
+      "actual": "c1bdc5249cfcbcbfdff02d3debb923dca672c20c8836d59e8ace226ce049e5a4",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.collection.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-collection/collection-result.json",
+      "expected": "71c4a423dc38460915f0c07c478fd21ee9ec21be7982226bb232845aee110e12",
+      "actual": "71c4a423dc38460915f0c07c478fd21ee9ec21be7982226bb232845aee110e12",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.replay-per-fixture.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture-spec.json",
+      "expected": "160bd89924ec0ff3e1d40754dcc46e7c602bc4af79283cc462d70004ca5920f8",
+      "actual": "160bd89924ec0ff3e1d40754dcc46e7c602bc4af79283cc462d70004ca5920f8",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.replay-per-fixture.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture/replay-per-fixture-custody.json",
+      "expected": "a53a8b128491612562a3c7022316c604e9960241df6086c2fdc53c8e850728a8",
+      "actual": "a53a8b128491612562a3c7022316c604e9960241df6086c2fdc53c8e850728a8",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.replay-per-fixture.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture/replay-per-fixture-result.json",
+      "expected": "9ab13644fb3f6e9d33130a43c438aff4e50cc1838fd51058c07d41a0c85c093e",
+      "actual": "9ab13644fb3f6e9d33130a43c438aff4e50cc1838fd51058c07d41a0c85c093e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.replay-healthy.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-healthy-spec.json",
+      "expected": "eb28a077d0e5e53f3e6417d8b460b40ed81132de4af44bdce6efff8620ab789d",
+      "actual": "eb28a077d0e5e53f3e6417d8b460b40ed81132de4af44bdce6efff8620ab789d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.replay-healthy.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-healthy/replay-healthy-custody.json",
+      "expected": "e5fee1fe92abd23c0c6818bdbdc5bebaed10e33e6a3a064ecb4d92ddccb905fd",
+      "actual": "e5fee1fe92abd23c0c6818bdbdc5bebaed10e33e6a3a064ecb4d92ddccb905fd",
+      "status": "MATCH"
+    },
+    {
+      "where": "R75.0.results.replay-healthy.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-healthy/replay-healthy-result.json",
+      "expected": "7150c12f45114194a7f169efc0ff3e1d6e3173a9ee52759ef251f5c859b70b96",
+      "actual": "7150c12f45114194a7f169efc0ff3e1d6e3173a9ee52759ef251f5c859b70b96",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/identity-controller.json",
+      "expected": "ad1c810c245be2cd4e94edac5733a4d3d9d9b9f61a213451ea3b0ef565be4682",
+      "actual": "ad1c810c245be2cd4e94edac5733a4d3d9d9b9f61a213451ea3b0ef565be4682",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "71d5c3044a06c95b8a95b34f790f438b3ae60fdcbdce4a62c0935ab26a00a6fa",
+      "actual": "71d5c3044a06c95b8a95b34f790f438b3ae60fdcbdce4a62c0935ab26a00a6fa",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "9e898015d787e0b955e9dae5e724c1cede3d6d051b66c2e6ab6e09adef4c3311",
+      "actual": "9e898015d787e0b955e9dae5e724c1cede3d6d051b66c2e6ab6e09adef4c3311",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "c3ebe9ffc60991ccea4bccf728d4a3696b1346e23959ebee4da249b8ad216736",
+      "actual": "c3ebe9ffc60991ccea4bccf728d4a3696b1346e23959ebee4da249b8ad216736",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison-custody.json",
+      "expected": "553d4e7d6c0485c76e9069aee89899b51a0e949e50472647993a3d3e4580d5be",
+      "actual": "553d4e7d6c0485c76e9069aee89899b51a0e949e50472647993a3d3e4580d5be",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison-result.json",
+      "expected": "76773d434d85eaa7eda092982f895d3397cdadd254d30e76eb2ca80908f5e173",
+      "actual": "76773d434d85eaa7eda092982f895d3397cdadd254d30e76eb2ca80908f5e173",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison.log",
+      "expected": "752d79d0b426afc06af2d2305ca94ae463d3e4e60c37c796c241dce98778bcd9",
+      "actual": "752d79d0b426afc06af2d2305ca94ae463d3e4e60c37c796c241dce98778bcd9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.collection.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-collection-spec.json",
+      "expected": "a71cf14ed9411e6f15c7192753043d12dc027e7a523701b3d0619ab4f6bd7a16",
+      "actual": "a71cf14ed9411e6f15c7192753043d12dc027e7a523701b3d0619ab4f6bd7a16",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.collection.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-collection/collection-custody.json",
+      "expected": "90497fd47aadbae5aff7a777eb1ef7a86fde94af00309d68fb48e0a4d8f6128d",
+      "actual": "90497fd47aadbae5aff7a777eb1ef7a86fde94af00309d68fb48e0a4d8f6128d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.collection.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-collection/collection-result.json",
+      "expected": "847eefaa10731af988ee0971020ae310d2c5675743e7f0d5b49d604cdce964a2",
+      "actual": "847eefaa10731af988ee0971020ae310d2c5675743e7f0d5b49d604cdce964a2",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.static.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static-spec.json",
+      "expected": "e3a30bbe2802455698628b1d4e4b3ad00785b17222d75c4442f01fee9b4fefa3",
+      "actual": "e3a30bbe2802455698628b1d4e4b3ad00785b17222d75c4442f01fee9b4fefa3",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.static.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/black-global-result.json",
+      "expected": "e951208afa123f5453b689e0e167d009ddbb05072e3a92f81337f20f7d7bcf28",
+      "actual": "e951208afa123f5453b689e0e167d009ddbb05072e3a92f81337f20f7d7bcf28",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.static.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/expression-doc-result.json",
+      "expected": "e4d6cb376720cc5f031c915da30a43aafb0a7525798cbc2b2d6f32cb12f09c9a",
+      "actual": "e4d6cb376720cc5f031c915da30a43aafb0a7525798cbc2b2d6f32cb12f09c9a",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.static.records.2",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/no-defaults-result.json",
+      "expected": "95a7320471da7c00892819849c44cb15828e6ae42786b3c81f9d62498ee7baff",
+      "actual": "95a7320471da7c00892819849c44cb15828e6ae42786b3c81f9d62498ee7baff",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.static.records.3",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/ruff-global-result.json",
+      "expected": "424de189ed9e94d8b94f84d0a86038ddacba6af4adfa94f6b61102e44e569710",
+      "actual": "424de189ed9e94d8b94f84d0a86038ddacba6af4adfa94f6b61102e44e569710",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.static.records.4",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/static-custody.json",
+      "expected": "908be9fb3270a427a0a1d28116fa41c88205fa315a85b09039c76e545838aee0",
+      "actual": "908be9fb3270a427a0a1d28116fa41c88205fa315a85b09039c76e545838aee0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.types.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types-spec.json",
+      "expected": "ca5e004a627ec21da91ffea972b9f0a306eb3e19a443d0c27f339cac4044610f",
+      "actual": "ca5e004a627ec21da91ffea972b9f0a306eb3e19a443d0c27f339cac4044610f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.types.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types/mypy-result.json",
+      "expected": "4292929d9bf64ee48400567d83b4667f3b463421a6ae56eb953e1f17b07c97ff",
+      "actual": "4292929d9bf64ee48400567d83b4667f3b463421a6ae56eb953e1f17b07c97ff",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.types.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types/owned-mypy-result.json",
+      "expected": "d09bb9470e498614d7835e4a6bc345b1f5ea13d50e3b6dfdea566fce2cebe3d5",
+      "actual": "d09bb9470e498614d7835e4a6bc345b1f5ea13d50e3b6dfdea566fce2cebe3d5",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.types.records.2",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types/static-custody.json",
+      "expected": "bab19ac436bfd8189e6a88fa1e23c0d291d48f84194fc0f4d5b9fd31e3c9eea4",
+      "actual": "bab19ac436bfd8189e6a88fa1e23c0d291d48f84194fc0f4d5b9fd31e3c9eea4",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.replay-healthy.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-healthy-spec.json",
+      "expected": "c78023909898a91f62d83b66ee5a84877be33d5a1c4a7f279d30e468e0e4b957",
+      "actual": "c78023909898a91f62d83b66ee5a84877be33d5a1c4a7f279d30e468e0e4b957",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.replay-healthy.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-healthy/replay-healthy-custody.json",
+      "expected": "bbc2db0229710b38c0b1296af76e67590e0ea56bfed49816c25b801930812b17",
+      "actual": "bbc2db0229710b38c0b1296af76e67590e0ea56bfed49816c25b801930812b17",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.replay-healthy.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-healthy/replay-healthy-result.json",
+      "expected": "dc566a7d001c4aa9299fee6404d46a0dbd1752a014fb5822191e9148eb80b828",
+      "actual": "dc566a7d001c4aa9299fee6404d46a0dbd1752a014fb5822191e9148eb80b828",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.replay-causal.spec",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-causal-spec.json",
+      "expected": "2185fbb709677c3ca3a8963fef177a7fcf474d7e8971f6dbc4de8d9344764056",
+      "actual": "2185fbb709677c3ca3a8963fef177a7fcf474d7e8971f6dbc4de8d9344764056",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.replay-causal.records.0",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-causal/replay-causal-custody.json",
+      "expected": "d103c7fd6188109efa738fe597758205233e93f79141cb5975f66cf312ae19bb",
+      "actual": "d103c7fd6188109efa738fe597758205233e93f79141cb5975f66cf312ae19bb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R76.1.results.replay-causal.records.1",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-causal/replay-causal-result.json",
+      "expected": "ab3fa85f991e07a643f161d1732e175c117324509cfd410d2785e767a91e41c9",
+      "actual": "ab3fa85f991e07a643f161d1732e175c117324509cfd410d2785e767a91e41c9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection/identity-controller.json",
+      "expected": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "actual": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection-custody.json",
+      "expected": "61329d0c243ffb6fffe5b53a4bcc5377218a412ec5c4b68eee2bbbaf137fa052",
+      "actual": "61329d0c243ffb6fffe5b53a4bcc5377218a412ec5c4b68eee2bbbaf137fa052",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection-result.json",
+      "expected": "893eea741d243c01fb21b9a78454d3b083f184e611a8a625858f3a5519840704",
+      "actual": "893eea741d243c01fb21b9a78454d3b083f184e611a8a625858f3a5519840704",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection.log",
+      "expected": "ff8f022fd5fe21a02e525c2fb37e8f92946a6dff7b4feb9412116452168148f9",
+      "actual": "ff8f022fd5fe21a02e525c2fb37e8f92946a6dff7b4feb9412116452168148f9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy/failure-controller-75486a6bb507f59a.json",
+      "expected": "8efdea99196286a2340871d40efe97f3aa9e36aac7240d3b3f931d7e73a3a8b9",
+      "actual": "8efdea99196286a2340871d40efe97f3aa9e36aac7240d3b3f931d7e73a3a8b9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy/failure-controller-a3a142ec4b3ca1bd.json",
+      "expected": "0040ca9b081a64415f8f5e9af8baa8413f0d76646c9bde0bf5ed48a75b927a54",
+      "actual": "0040ca9b081a64415f8f5e9af8baa8413f0d76646c9bde0bf5ed48a75b927a54",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy/identity-controller.json",
+      "expected": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "actual": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy-failure-index.json",
+      "expected": "25643bad9f17075c10600ddf6abbc4744209371df726f315750964fb6ceab3b0",
+      "actual": "25643bad9f17075c10600ddf6abbc4744209371df726f315750964fb6ceab3b0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy-negative-custody.json",
+      "expected": "9b1da47f16bab802c4013604ef43d44f81a333478f3bdcf7fbe77a810ad56e5b",
+      "actual": "9b1da47f16bab802c4013604ef43d44f81a333478f3bdcf7fbe77a810ad56e5b",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy-result.json",
+      "expected": "0a37d9e6e60064b5b34f6c7f6f5fadab5f98dc1640a7cac6985d1843df2669d9",
+      "actual": "0a37d9e6e60064b5b34f6c7f6f5fadab5f98dc1640a7cac6985d1843df2669d9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy.log",
+      "expected": "f683cf1db08b6ba8719ae4a9fe1a3e3b33a10a456029522c4b7ff576902533cb",
+      "actual": "f683cf1db08b6ba8719ae4a9fe1a3e3b33a10a456029522c4b7ff576902533cb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-0309b87a66ce2b4e.json",
+      "expected": "2e7c175f12b5034ae400c708fd1a035969632e0fb7e4dc105a6c3681b5f4ed4c",
+      "actual": "2e7c175f12b5034ae400c708fd1a035969632e0fb7e4dc105a6c3681b5f4ed4c",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-0928ba9f50415f7b.json",
+      "expected": "c4612cb8ffb49d36b15062c5e9e955e98095dbbdeb602f85d759aafaf05c3abc",
+      "actual": "c4612cb8ffb49d36b15062c5e9e955e98095dbbdeb602f85d759aafaf05c3abc",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-1705883f12dc79aa.json",
+      "expected": "8d5da2e487619ae56e10c2066ec8b731d2721220dab63da9bf94af180f2563d0",
+      "actual": "8d5da2e487619ae56e10c2066ec8b731d2721220dab63da9bf94af180f2563d0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-1c85c688c496c940.json",
+      "expected": "782a20d350ad8923d96ebb3beabf85d041746f8af10a362bde146e0729d57cc0",
+      "actual": "782a20d350ad8923d96ebb3beabf85d041746f8af10a362bde146e0729d57cc0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-1feaa3c78170d1a6.json",
+      "expected": "ad909bceb190d4fbf72f54013c4ce87bfee3e69acb8353f9f84891f6213efa2a",
+      "actual": "ad909bceb190d4fbf72f54013c4ce87bfee3e69acb8353f9f84891f6213efa2a",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-250b3e695af837df.json",
+      "expected": "fedba0364971d97430922ac70f379ea84e675a9dd42be626df4e2c03a4c99c78",
+      "actual": "fedba0364971d97430922ac70f379ea84e675a9dd42be626df4e2c03a4c99c78",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-2d13dd00accedcfa.json",
+      "expected": "e14d453207a9eefb8e2c4e32efc3f6f0e4e1c938a5d9f32e3abb5141bc7f0055",
+      "actual": "e14d453207a9eefb8e2c4e32efc3f6f0e4e1c938a5d9f32e3abb5141bc7f0055",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-5bbeee38fd365b5b.json",
+      "expected": "9daa221217c01052da1ffa254cdd4fff631b3b9ca5bb8b7486fa54e1f45f64b0",
+      "actual": "9daa221217c01052da1ffa254cdd4fff631b3b9ca5bb8b7486fa54e1f45f64b0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-60ada0e7543a67d8.json",
+      "expected": "e5084d66e5e75a1b0cc3900b478135244be84c79f77ab1105e5c29f47912e100",
+      "actual": "e5084d66e5e75a1b0cc3900b478135244be84c79f77ab1105e5c29f47912e100",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-9301e65ac9a96f89.json",
+      "expected": "0b98e0b2ca9217141c052cf1cdd6251c6ca29c40ca3dc2d1d7c63bfb02483437",
+      "actual": "0b98e0b2ca9217141c052cf1cdd6251c6ca29c40ca3dc2d1d7c63bfb02483437",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-d9f4b2788501b22f.json",
+      "expected": "97d60c77a68a0aeb3a78584ae1215cd74364d6df91abc65b814efd233106ee86",
+      "actual": "97d60c77a68a0aeb3a78584ae1215cd74364d6df91abc65b814efd233106ee86",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-dbd6c780d631b9f9.json",
+      "expected": "20f73e6d9b18b7f9b882f951367b6af45d3e773a97824ae6ce3830291adda775",
+      "actual": "20f73e6d9b18b7f9b882f951367b6af45d3e773a97824ae6ce3830291adda775",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-e7cc991ba30b22d4.json",
+      "expected": "92f58dd9df06d5da99abcb269b7fb8dabb892ce70720f32b119c5ea9a9bebdde",
+      "actual": "92f58dd9df06d5da99abcb269b7fb8dabb892ce70720f32b119c5ea9a9bebdde",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-f257b6781f78c4b8.json",
+      "expected": "348e804765ec3c1b26254e4decf9f08d5d42a027f051e097b7092a2b93200d4a",
+      "actual": "348e804765ec3c1b26254e4decf9f08d5d42a027f051e097b7092a2b93200d4a",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/identity-controller.json",
+      "expected": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "actual": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2-failure-index.json",
+      "expected": "ed7852cfb0e871a4ef55d02d2699d0e98371a2a2f2531185ff6c270b5742675f",
+      "actual": "ed7852cfb0e871a4ef55d02d2699d0e98371a2a2f2531185ff6c270b5742675f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2-negative-custody.json",
+      "expected": "1d9a88c4bf6423869dc957efdaedbe0ef98b8eeb3840987f79b5e0c04df17659",
+      "actual": "1d9a88c4bf6423869dc957efdaedbe0ef98b8eeb3840987f79b5e0c04df17659",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2-result.json",
+      "expected": "23da944be11c3007c3e52782340a7fe16b767c64577e286a0770d41900c851bc",
+      "actual": "23da944be11c3007c3e52782340a7fe16b767c64577e286a0770d41900c851bc",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2.log",
+      "expected": "b26c4d87f024380ab4bdc9b59285c688c78ce6effee9ed770e73d25f02ef9f33",
+      "actual": "b26c4d87f024380ab4bdc9b59285c688c78ce6effee9ed770e73d25f02ef9f33",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/failure-controller-66b71f48dca97f59.json",
+      "expected": "fef2af51417c44232b7c3119c7c6fcf94e6c31d03117f5e1879686ef4cf9f913",
+      "actual": "fef2af51417c44232b7c3119c7c6fcf94e6c31d03117f5e1879686ef4cf9f913",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/failure-controller-75486a6bb507f59a.json",
+      "expected": "e2c5cf054c28f57153c6fcf54534b3ba008337c8a852cce3f83bf73fa3d11b43",
+      "actual": "e2c5cf054c28f57153c6fcf54534b3ba008337c8a852cce3f83bf73fa3d11b43",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/failure-controller-a3a142ec4b3ca1bd.json",
+      "expected": "c313b6ad61bfd815cd7f609fd303ba4c1ed727f5ac518f0e4a673185acc1407b",
+      "actual": "c313b6ad61bfd815cd7f609fd303ba4c1ed727f5ac518f0e4a673185acc1407b",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/identity-controller.json",
+      "expected": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "actual": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4-failure-index.json",
+      "expected": "220b9ccf04d6ce97233e0c68134fd0e4d301d6f69ab1bb9567bf2f12cedb13d8",
+      "actual": "220b9ccf04d6ce97233e0c68134fd0e4d301d6f69ab1bb9567bf2f12cedb13d8",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4-negative-custody.json",
+      "expected": "2dcc51a1132aadcee7db438dc4fbeebf7c173ee9a9a08c66edfa00dce0d67d19",
+      "actual": "2dcc51a1132aadcee7db438dc4fbeebf7c173ee9a9a08c66edfa00dce0d67d19",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4-result.json",
+      "expected": "292a45da76fe262bd07048da1447e88cf524946881b09ccac0f38032dadf4656",
+      "actual": "292a45da76fe262bd07048da1447e88cf524946881b09ccac0f38032dadf4656",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4.log",
+      "expected": "12cfbebcc848479af2ea1d4d438da44ce8c4ac662e32fff0813558dcdddd3fac",
+      "actual": "12cfbebcc848479af2ea1d4d438da44ce8c4ac662e32fff0813558dcdddd3fac",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/identity-controller.json",
+      "expected": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "actual": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "74b6bca366ae63560310019c530fa1bb4ea687ffa1b2de1c496e8f34cccdaa6b",
+      "actual": "74b6bca366ae63560310019c530fa1bb4ea687ffa1b2de1c496e8f34cccdaa6b",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "723c8b14bc7606d3c6784b22678649b5f087be286fb51eebb33d744a8a96c22f",
+      "actual": "723c8b14bc7606d3c6784b22678649b5f087be286fb51eebb33d744a8a96c22f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "7e3ff36a57b92b21d149692bf7a3767429fec05fe3ea8d7beb6f4b9e9638fc1b",
+      "actual": "7e3ff36a57b92b21d149692bf7a3767429fec05fe3ea8d7beb6f4b9e9638fc1b",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison-custody.json",
+      "expected": "b284b7e524c0a7d97ad860bab993292bf13fb06e06245c3d8b1845a8a2f3ccbf",
+      "actual": "b284b7e524c0a7d97ad860bab993292bf13fb06e06245c3d8b1845a8a2f3ccbf",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison-result.json",
+      "expected": "b90f38995168a9352c1512c6f217e385adf04aa5acd8ffff9186bfbc2011e0cc",
+      "actual": "b90f38995168a9352c1512c6f217e385adf04aa5acd8ffff9186bfbc2011e0cc",
+      "status": "MATCH"
+    },
+    {
+      "where": "R77.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison.log",
+      "expected": "74107aa406cd7895d089b2b0c4e49c7b0cc0788002f643696c487d693b6c617e",
+      "actual": "74107aa406cd7895d089b2b0c4e49c7b0cc0788002f643696c487d693b6c617e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R78.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r78-fixture-fix/fixture-fix/identity-controller.json",
+      "expected": "b55ae9b01388b84b809861f71cb681f4f8e2b6e1dcd164eef6d04e34e75b375e",
+      "actual": "b55ae9b01388b84b809861f71cb681f4f8e2b6e1dcd164eef6d04e34e75b375e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R78.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r78-fixture-fix/fixture-fix-custody.json",
+      "expected": "6b7ff3f13ce9ceae7c606c8e29bbb5326ee71afd503d3bb23308bc1d1eecf273",
+      "actual": "6b7ff3f13ce9ceae7c606c8e29bbb5326ee71afd503d3bb23308bc1d1eecf273",
+      "status": "MATCH"
+    },
+    {
+      "where": "R78.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r78-fixture-fix/fixture-fix-result.json",
+      "expected": "88201fbce06eb9e1f05aeca903e74aeeea355d5dfa3983015dd38a271fec7321",
+      "actual": "88201fbce06eb9e1f05aeca903e74aeeea355d5dfa3983015dd38a271fec7321",
+      "status": "MATCH"
+    },
+    {
+      "where": "R78.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r78-fixture-fix/fixture-fix.log",
+      "expected": "b6b19b5deb48d287f2e77fb084e947bc7987a58ffcbd30e9477e245ce09dd4df",
+      "actual": "b6b19b5deb48d287f2e77fb084e947bc7987a58ffcbd30e9477e245ce09dd4df",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-collection/collection/identity-controller.json",
+      "expected": "7bc610c93222b3f337bcf209e86e538d6be41d45a46827f1faa0e46c1a52e553",
+      "actual": "7bc610c93222b3f337bcf209e86e538d6be41d45a46827f1faa0e46c1a52e553",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-collection/collection-custody.json",
+      "expected": "2625a7b27109ba1c9f68d8a7881b7d0e09a4026bab5f7fd19803558f58268632",
+      "actual": "2625a7b27109ba1c9f68d8a7881b7d0e09a4026bab5f7fd19803558f58268632",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-collection/collection-result.json",
+      "expected": "0fe870fc0f61d60d1d2242f8f5aa970c2bdc48f23d4f27991375196d259ed081",
+      "actual": "0fe870fc0f61d60d1d2242f8f5aa970c2bdc48f23d4f27991375196d259ed081",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-collection/collection.log",
+      "expected": "9ef35d2db113503bbef4ac9da815d166ed1ed395479eccd55d85651a7ec4de34",
+      "actual": "9ef35d2db113503bbef4ac9da815d166ed1ed395479eccd55d85651a7ec4de34",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/black-global-result.json",
+      "expected": "adf68b135c94112378dc073b6df60eda4b65f012b3642ffb563f14657c252bbb",
+      "actual": "adf68b135c94112378dc073b6df60eda4b65f012b3642ffb563f14657c252bbb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/black-global.log",
+      "expected": "8d3d3dfc1691dffbd3d6e0e7090f4b6988e7c9448062b2db34d039fcaa0c90b0",
+      "actual": "8d3d3dfc1691dffbd3d6e0e7090f4b6988e7c9448062b2db34d039fcaa0c90b0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/expression-doc-result.json",
+      "expected": "b8dfb07db348ac69abc808857bbcaa6079b565f23f9d4300f4e4586112dedb81",
+      "actual": "b8dfb07db348ac69abc808857bbcaa6079b565f23f9d4300f4e4586112dedb81",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/expression-doc.log",
+      "expected": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "actual": "67392c0159789f0e64e7422db75ae98c3d2ba12578f4628823c9fa575fb58cdf",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/no-defaults-result.json",
+      "expected": "61adf14f3243bf14b1282e7cc44ff04a9ff078b4257beb5ca1df8fe80a8e94c3",
+      "actual": "61adf14f3243bf14b1282e7cc44ff04a9ff078b4257beb5ca1df8fe80a8e94c3",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/no-defaults.log",
+      "expected": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+      "actual": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/ruff-global-result.json",
+      "expected": "c5bd52b04227cf0d05cbea1d365a33dffbddede42b60728c405c2e414d44a7a0",
+      "actual": "c5bd52b04227cf0d05cbea1d365a33dffbddede42b60728c405c2e414d44a7a0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/ruff-global.log",
+      "expected": "1f200ab194ce12161ea21ee812136a7216e6a192b0768ba6560e398b6f3368d1",
+      "actual": "1f200ab194ce12161ea21ee812136a7216e6a192b0768ba6560e398b6f3368d1",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-static/static-custody.json",
+      "expected": "e5a7a5214b3ae718ec5a8575acf100c4cdd653abada5fb2fe81296474154073e",
+      "actual": "e5a7a5214b3ae718ec5a8575acf100c4cdd653abada5fb2fe81296474154073e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-types/mypy-result.json",
+      "expected": "3b96d808da3bb4c4e1057feff24349cc526ba0262365b3805877ce5e29b9e6b0",
+      "actual": "3b96d808da3bb4c4e1057feff24349cc526ba0262365b3805877ce5e29b9e6b0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-types/mypy.log",
+      "expected": "97b0acc6db53ae2cfe9037794211464b7dc01c75e6909adcf3c440a4dfa5a6e7",
+      "actual": "97b0acc6db53ae2cfe9037794211464b7dc01c75e6909adcf3c440a4dfa5a6e7",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-types/owned-mypy-result.json",
+      "expected": "07d4192a362fd5bbc4001a00824330c8765032e3b775922ef1d551db8949e0bb",
+      "actual": "07d4192a362fd5bbc4001a00824330c8765032e3b775922ef1d551db8949e0bb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-types/owned-mypy.log",
+      "expected": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "actual": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-types/static-custody.json",
+      "expected": "095913c0534c0e30ebaa4e539af959d33ac06b9485ec202c71f3bcd90406c021",
+      "actual": "095913c0534c0e30ebaa4e539af959d33ac06b9485ec202c71f3bcd90406c021",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-current/replay-current/identity-controller.json",
+      "expected": "7bc610c93222b3f337bcf209e86e538d6be41d45a46827f1faa0e46c1a52e553",
+      "actual": "7bc610c93222b3f337bcf209e86e538d6be41d45a46827f1faa0e46c1a52e553",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-current/replay-current-custody.json",
+      "expected": "4fab7d02d4778011efc9ec9337b3d5829658cccdbf945887f26ceb8e004055ce",
+      "actual": "4fab7d02d4778011efc9ec9337b3d5829658cccdbf945887f26ceb8e004055ce",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-current/replay-current-result.json",
+      "expected": "6c28c612a67fb73f3ffaa12cf3b53d5c047f43ab805bdbc45071f910c36e8eb5",
+      "actual": "6c28c612a67fb73f3ffaa12cf3b53d5c047f43ab805bdbc45071f910c36e8eb5",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-current/replay-current.log",
+      "expected": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d",
+      "actual": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison/identity-controller.json",
+      "expected": "7bc610c93222b3f337bcf209e86e538d6be41d45a46827f1faa0e46c1a52e553",
+      "actual": "7bc610c93222b3f337bcf209e86e538d6be41d45a46827f1faa0e46c1a52e553",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "eadc7ae9a76b4d01dff15fe80fc934b8462e13cdd634daa79eff64f76890d414",
+      "actual": "eadc7ae9a76b4d01dff15fe80fc934b8462e13cdd634daa79eff64f76890d414",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "579cb08dc227f596191721dc3ab9678cc06abb535faa1568805a457d5e5a4299",
+      "actual": "579cb08dc227f596191721dc3ab9678cc06abb535faa1568805a457d5e5a4299",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "e27966f47a6a4ee36494e90f6d074d3fbabcd1958ff644f5218d119ff814b54f",
+      "actual": "e27966f47a6a4ee36494e90f6d074d3fbabcd1958ff644f5218d119ff814b54f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison-custody.json",
+      "expected": "71852cecc5806a3c802f1a8887c6f8c8d02b5a94c7beb16ffee0ddcc9ef5297f",
+      "actual": "71852cecc5806a3c802f1a8887c6f8c8d02b5a94c7beb16ffee0ddcc9ef5297f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison-result.json",
+      "expected": "67304074620db23144f48e2040a625bd82540b6daaf684129282045a5cd3ddf1",
+      "actual": "67304074620db23144f48e2040a625bd82540b6daaf684129282045a5cd3ddf1",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-replay-poison/replay-poison.log",
+      "expected": "c5bd091cf75499010d6f7fb85dadf27042781fef167f21401eed2d5112ff0efb",
+      "actual": "c5bd091cf75499010d6f7fb85dadf27042781fef167f21401eed2d5112ff0efb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-public-types/public-types-result.json",
+      "expected": "22b1bedca561d204a84bac811b0dd650cb9dc4792232a3e56c73c0d67e3b23a3",
+      "actual": "22b1bedca561d204a84bac811b0dd650cb9dc4792232a3e56c73c0d67e3b23a3",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-public-types/public-types.log",
+      "expected": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "actual": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R79.0.attempts.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-public-types/static-custody.json",
+      "expected": "5bb4b097d72a755b02f86a40cc25b8727a0abf41e204ae1561510c9f19c7f06e",
+      "actual": "5bb4b097d72a755b02f86a40cc25b8727a0abf41e204ae1561510c9f19c7f06e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection/identity-controller.json",
+      "expected": "9456e9633a57364a24c1f10ecbc2d525ebd7b96dc5d5248de31eea3f68562eb5",
+      "actual": "9456e9633a57364a24c1f10ecbc2d525ebd7b96dc5d5248de31eea3f68562eb5",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection-custody.json",
+      "expected": "99022260c081c4c949bcdb6df537cdb8bdcf02b63ea8ff05f13b9be0cd4e6d89",
+      "actual": "99022260c081c4c949bcdb6df537cdb8bdcf02b63ea8ff05f13b9be0cd4e6d89",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection-result.json",
+      "expected": "0b09380707262ea4032ff5c50a207b648abc5deb61ce926c67ae49d452cba175",
+      "actual": "0b09380707262ea4032ff5c50a207b648abc5deb61ce926c67ae49d452cba175",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection.log",
+      "expected": "8cd79675fa2938d3ec5c6f16afe5657fc7f3dcb95868192ef68231b5677e7bc7",
+      "actual": "8cd79675fa2938d3ec5c6f16afe5657fc7f3dcb95868192ef68231b5677e7bc7",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/black-owned-result.json",
+      "expected": "a67ad121626f9bd3e8415887a912fb993597c48c57b941084e47a3c774a5a302",
+      "actual": "a67ad121626f9bd3e8415887a912fb993597c48c57b941084e47a3c774a5a302",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/black-owned.log",
+      "expected": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+      "actual": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/no-defaults-result.json",
+      "expected": "0dd18d5239bb46629c318d09eb537b81f90cf4dd6c0cebf5813c50eef35204ed",
+      "actual": "0dd18d5239bb46629c318d09eb537b81f90cf4dd6c0cebf5813c50eef35204ed",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/no-defaults.log",
+      "expected": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+      "actual": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/ruff-global-result.json",
+      "expected": "79f4fcdd2db9e2e81070daca77442e1d44aed035dcc84af1ca433af3740ea16c",
+      "actual": "79f4fcdd2db9e2e81070daca77442e1d44aed035dcc84af1ca433af3740ea16c",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/ruff-global.log",
+      "expected": "99566d6da8b000f7e86b620b85baa954e1a02cf0ceed2e71fdf2f52e205dc99e",
+      "actual": "99566d6da8b000f7e86b620b85baa954e1a02cf0ceed2e71fdf2f52e205dc99e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/static-custody.json",
+      "expected": "df20bcf68eb3fa4f52b74d70cec56d43b42b48afe3d2c2064c8ca9bfb83618a2",
+      "actual": "df20bcf68eb3fa4f52b74d70cec56d43b42b48afe3d2c2064c8ca9bfb83618a2",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/owned-mypy-result.json",
+      "expected": "11778038b3c84f3de895c6fd66826da7d387a00932cdb008afd7b8cdf97d4dfb",
+      "actual": "11778038b3c84f3de895c6fd66826da7d387a00932cdb008afd7b8cdf97d4dfb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/owned-mypy.log",
+      "expected": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "actual": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/public-types-result.json",
+      "expected": "305fb2eb4a990d07d580374398d4cd5946367f3d5e081d408cff5811d3504240",
+      "actual": "305fb2eb4a990d07d580374398d4cd5946367f3d5e081d408cff5811d3504240",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/public-types.log",
+      "expected": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "actual": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R80.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/static-custody.json",
+      "expected": "07332c1243a2ddec84b3daad7947af14c7248c1e1cde5fafe4e10122372da3fa",
+      "actual": "07332c1243a2ddec84b3daad7947af14c7248c1e1cde5fafe4e10122372da3fa",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection/identity-controller.json",
+      "expected": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "actual": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection-custody.json",
+      "expected": "5cb95eabd1dee5e1897b5ec559864e638e0bbb06ef238a72a3003f0472cc08d9",
+      "actual": "5cb95eabd1dee5e1897b5ec559864e638e0bbb06ef238a72a3003f0472cc08d9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection-result.json",
+      "expected": "024bd281b914f541afdc6c5afeee238973104e9e75d6b082359796780a770aef",
+      "actual": "024bd281b914f541afdc6c5afeee238973104e9e75d6b082359796780a770aef",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.0.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-collection/collection.log",
+      "expected": "e790f1d19972299e0613c42c30f77543d65165984e3be3472186da3a876f4e02",
+      "actual": "e790f1d19972299e0613c42c30f77543d65165984e3be3472186da3a876f4e02",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/black-owned-result.json",
+      "expected": "6a9c3abdf27741218653ce2b57e9a0f015b029f4a7ef206e229bbbc6f75dc03c",
+      "actual": "6a9c3abdf27741218653ce2b57e9a0f015b029f4a7ef206e229bbbc6f75dc03c",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/black-owned.log",
+      "expected": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+      "actual": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/no-defaults-result.json",
+      "expected": "c49f54d62b973afa09873b77255409b78ca9d545dfb34f5cd6e73afbe92255ee",
+      "actual": "c49f54d62b973afa09873b77255409b78ca9d545dfb34f5cd6e73afbe92255ee",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/no-defaults.log",
+      "expected": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+      "actual": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/ruff-global-result.json",
+      "expected": "48944a71a2f4bea365f9f76500b897c4ebbef534c5251bb1ce4c1dc43a0e2a28",
+      "actual": "48944a71a2f4bea365f9f76500b897c4ebbef534c5251bb1ce4c1dc43a0e2a28",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/ruff-global.log",
+      "expected": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "actual": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.1.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-static/static-custody.json",
+      "expected": "4b9c5fc4cf6aa681b52d0453ca457f2084a36c01b866ede4bb2f0887adbf8f7d",
+      "actual": "4b9c5fc4cf6aa681b52d0453ca457f2084a36c01b866ede4bb2f0887adbf8f7d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/owned-mypy-result.json",
+      "expected": "c6b3a14bd6e974469e42d1f62b4c61f59c11697dbfca7f70cf73f65c50f596dd",
+      "actual": "c6b3a14bd6e974469e42d1f62b4c61f59c11697dbfca7f70cf73f65c50f596dd",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/owned-mypy.log",
+      "expected": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "actual": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/public-types-result.json",
+      "expected": "b4a4e0041cf233fc94af8971712a793ade8ed0ce53f2a713b9f67b2a4b0aba16",
+      "actual": "b4a4e0041cf233fc94af8971712a793ade8ed0ce53f2a713b9f67b2a4b0aba16",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/public-types.log",
+      "expected": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "actual": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.2.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-types/static-custody.json",
+      "expected": "b8227695108ea65e4e8afbd2fb7fee89922a981f724cc5c3c99a6d2abab1c60a",
+      "actual": "b8227695108ea65e4e8afbd2fb7fee89922a981f724cc5c3c99a6d2abab1c60a",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current/identity-controller.json",
+      "expected": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "actual": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current-custody.json",
+      "expected": "68d734b69e2913d00508db62aaa189304afbe22b79de48c102f80f3e21e87e52",
+      "actual": "68d734b69e2913d00508db62aaa189304afbe22b79de48c102f80f3e21e87e52",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current-result.json",
+      "expected": "26efb1b55e5f072e298016cbcad98be16ad4b5a0aad006c58135efa7ad968193",
+      "actual": "26efb1b55e5f072e298016cbcad98be16ad4b5a0aad006c58135efa7ad968193",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.3.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-current/replay-current.log",
+      "expected": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d",
+      "actual": "3ac1ae6313cf5569a806d46dcfaa007c659bf73b0227185f55b9d78a4acca26d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/identity-controller.json",
+      "expected": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "actual": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "bcdd8df06f9bf9579c635d5f22094220093a05c30f9ce893a7bd6d443d859874",
+      "actual": "bcdd8df06f9bf9579c635d5f22094220093a05c30f9ce893a7bd6d443d859874",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "b4ae56c269d58c86fc66a97831ff4f3e5524cfa49496a4fe808de30f59abbf61",
+      "actual": "b4ae56c269d58c86fc66a97831ff4f3e5524cfa49496a4fe808de30f59abbf61",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "3ca7f14316cbcceee9b48cb1654cd907fd8ea949ab3df9e05f242a5cd2ff70c9",
+      "actual": "3ca7f14316cbcceee9b48cb1654cd907fd8ea949ab3df9e05f242a5cd2ff70c9",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison-custody.json",
+      "expected": "779ef8c241af2bf098d88c6922e416e75d7c1b629ffd50db7e01759a2d85d6b7",
+      "actual": "779ef8c241af2bf098d88c6922e416e75d7c1b629ffd50db7e01759a2d85d6b7",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison-result.json",
+      "expected": "1936669522d7cf701ccc7b5d640423a188861600fce5d04ebad65883874b86f6",
+      "actual": "1936669522d7cf701ccc7b5d640423a188861600fce5d04ebad65883874b86f6",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.4.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-replay-poison/replay-poison.log",
+      "expected": "4456c5abec522a517c1d5db6cafe81902ce283ece9c0378765aec9b6b1e220fc",
+      "actual": "4456c5abec522a517c1d5db6cafe81902ce283ece9c0378765aec9b6b1e220fc",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current/identity-controller.json",
+      "expected": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "actual": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current-custody.json",
+      "expected": "ad6e554a6d1278520d0b3d4143d7f02804558b96b79601c4c9e87c2a9c74fb0d",
+      "actual": "ad6e554a6d1278520d0b3d4143d7f02804558b96b79601c4c9e87c2a9c74fb0d",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current-result.json",
+      "expected": "3823e43ba640ab7ad48c3c84bc405624e3f347908bc8cd19871d61cddd6af99f",
+      "actual": "3823e43ba640ab7ad48c3c84bc405624e3f347908bc8cd19871d61cddd6af99f",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.5.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-current/replay-current.log",
+      "expected": "4328d83a465a579ed7e322f964b64c4c80140498fa8f654a095f3bdce58d8e78",
+      "actual": "4328d83a465a579ed7e322f964b64c4c80140498fa8f654a095f3bdce58d8e78",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/identity-controller.json",
+      "expected": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "actual": "46156ce10fa2cbf698aa62353bbf4cf42310821923737fcdab0fc9460f177bcb",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "53895c847c52d0eac9dabbbe171ee1909581d89bab14925501b12abc5ee40633",
+      "actual": "53895c847c52d0eac9dabbbe171ee1909581d89bab14925501b12abc5ee40633",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "5e3c755f58b0974c9919a992cb96da4c9997d33746797fd5906def10cb3c9681",
+      "actual": "5e3c755f58b0974c9919a992cb96da4c9997d33746797fd5906def10cb3c9681",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "47c5d6ecbc2238c839109351c47aaa11ab76ca08371ddec32dd23dcad81c68e1",
+      "actual": "47c5d6ecbc2238c839109351c47aaa11ab76ca08371ddec32dd23dcad81c68e1",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison-custody.json",
+      "expected": "d4673ef17f84d854898c214a19b4d660e538520dcebdb0a5bcbc0d34539939c0",
+      "actual": "d4673ef17f84d854898c214a19b4d660e538520dcebdb0a5bcbc0d34539939c0",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison-result.json",
+      "expected": "f099ed185cf5750ae9ab739929e7d6afe66ec3e5654d42da6e8e7f9710f77c00",
+      "actual": "f099ed185cf5750ae9ab739929e7d6afe66ec3e5654d42da6e8e7f9710f77c00",
+      "status": "MATCH"
+    },
+    {
+      "where": "R81.0.checks.6.files",
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison.log",
+      "expected": "3628934394c5658b633f46c14b3950edd42447f90eacf40d1592a7bcf7f80144",
+      "actual": "3628934394c5658b633f46c14b3950edd42447f90eacf40d1592a7bcf7f80144",
+      "status": "MATCH"
+    }
+  ],
+  "all184_measured_references_match": true,
+  "historical_report_resolution": "Five root-recovered literal SHA-matching prefixes measured; provenance records included. No claim of original-time snapshot existence.",
+  "remaining_historical_report_ref_issues": [],
+  "api_hash_resolution": "Final1c983b02 approved by APIreview0aba60bd; unchanged reportdb992558 embeds historical0a5d80e3, explicitly superseded by review addendum.",
+  "blocking_inputs": [
+    "Root must adopt/seal the actual WIP15 R73–R81 contract; this draft is not a seal.",
+    "New selector independent review b4d773b3 requires S1 actual child-attempt contradiction checks and S2 honest UNRUN checks. Fixed tooling hashes, root rerun and independent scoped re-review remain pending.",
+    "Freeze a real qualification-subject JSON with exact final contract reference; obtain independently evidenced terminal review of that subject and candidate. No terminal subject/review is fabricated here.",
+    "Root must reconcile this receipt's proposed authoritative check grouping and terminal pointers, per-attempt result/spec/child mapping, and full finite directory inventory before sealing.",
+    "Documentation replacement is a draft: align tracked evidence process with final approved neutral schema; publish corrected API1c983b02 and immutable API review0aba60bd; root owns final evidence index/chain/navigation.",
+    "Rehash all selected inputs, helper versions and reused catalog targets immediately before real selection; no selector or assembler was run by drafter.",
+    "Tooling reviewer records distinct-agent independence but cannot independently establish precise other-model runtime identity; root must retain that limitation and resolve any strict other-model gate without inventing metadata."
+  ]
+}

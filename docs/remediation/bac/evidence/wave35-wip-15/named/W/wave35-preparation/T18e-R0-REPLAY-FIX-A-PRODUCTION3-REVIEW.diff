@@ -1,0 +1,66 @@
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index c8c71b00..e9f98dbf 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -126,33 +126,33 @@ def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+     return lineage
+ 
+ 
+-def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+-    method: Callable[Concatenate[_Owner, _Arguments], _Result],
+-) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
++def replay_read[Owner: ReplayCustody, Result, **Arguments](
++    method: Callable[Concatenate[Owner, Arguments], Result],
++) -> Callable[Concatenate[Owner, Arguments], Result]:
+     @wraps(method)
+-    def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
++    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+         with self._owner_operation(mutation=False):
+             return method(self, *args, **kwargs)
+ 
+     return guarded
+ 
+ 
+-def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+-    method: Callable[Concatenate[_Owner, _Arguments], _Result],
+-) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
++def replay_mutation[Owner: ReplayCustody, Result, **Arguments](
++    method: Callable[Concatenate[Owner, Arguments], Result],
++) -> Callable[Concatenate[Owner, Arguments], Result]:
+     @wraps(method)
+-    def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
++    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+         with self._owner_operation(mutation=True):
+             return method(self, *args, **kwargs)
+ 
+     return guarded
+ 
+ 
+-def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+-    method: Callable[Concatenate[_Owner, _Arguments], _Result],
+-) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
++def replay_sample[Owner: ReplayCustody, Result, **Arguments](
++    method: Callable[Concatenate[Owner, Arguments], Result],
++) -> Callable[Concatenate[Owner, Arguments], Result]:
+     @wraps(method)
+-    def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
++    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+         with self._domain_operation("sample", _required_lineage(kwargs)):
+             with self._owner_operation(mutation=True):
+                 return method(self, *args, **kwargs)
+@@ -160,11 +160,11 @@ def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+     return guarded
+ 
+ 
+-def replay_prepare[_Owner: ReplayCustody, **_Arguments](
+-    method: Callable[Concatenate[_Owner, _Arguments], object],
+-) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
++def replay_prepare[Owner: ReplayCustody, **Arguments](
++    method: Callable[Concatenate[Owner, Arguments], object],
++) -> Callable[Concatenate[Owner, Arguments], PreparedReplay]:
+     @wraps(method)
+-    def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> PreparedReplay:
++    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> PreparedReplay:
+         with self._domain_operation("prepare", _required_lineage(kwargs)) as lease:
+             with self._owner_operation(mutation=False):
+                 return self._issue_replay(method(self, *args, **kwargs), lease)

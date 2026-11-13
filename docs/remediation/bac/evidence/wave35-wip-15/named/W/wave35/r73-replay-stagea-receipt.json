@@ -1,0 +1,51 @@
+{
+  "schema": "bac-causal-component-receipt-v1",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+  "manifest_sha256": "fc65aba14dfecbd91458ca533047498786605bc3ed26d8da1bee4110f60a555a",
+  "scope": "R0 direct replay StageA causal tests; no production fix or package closure",
+  "results": {
+    "collection": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r73-collection/collection-result.json",
+      "sha256": "629e3792cfc3e8b38f6cd2ff645ead7c8a93ba3cfe8049bfcb9f97ecaf2e7199",
+      "exit_code": 0,
+      "seconds": 4.621024131774902,
+      "verified_custody": "815source573config13artifact/controller/index/import/threads/14registryMAIN1 PASS"
+    },
+    "replay-healthy": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r73-replay-healthy/replay-healthy-result.json",
+      "sha256": "57d6600cfc87961d54e186ecd3bb155089b1c7b886a6833d70997d85bb79c058",
+      "exit_code": 0,
+      "seconds": 4.35194206237793,
+      "verified_custody": "815source573config13artifact/controller/index/import/threads/14registryMAIN1 PASS"
+    },
+    "replay-admission-red": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r73-replay-admission-red/replay-admission-red-result.json",
+      "sha256": "614cef81a5666cc2ec5117c3b6b2831dddb80b67262c51d7ef6fad8ced93dbca",
+      "exit_code": 1,
+      "seconds": 4.497868061065674,
+      "verified_custody": "815source573config13artifact/controller/index/import/threads/14registryMAIN1 PASS"
+    },
+    "replay-owner-red": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r73-replay-owner-red/replay-owner-red-result.json",
+      "sha256": "aa5c79329657a70222d7d28217c72d53efcf4b73fb189181dd888770848680b4",
+      "exit_code": 1,
+      "seconds": 4.386615753173828,
+      "verified_custody": "815source573config13artifact/controller/index/import/threads/14registryMAIN1 PASS"
+    },
+    "replay-prepared-red": {
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r73-replay-prepared-red/replay-prepared-red-result.json",
+      "sha256": "4aef2db94e625abcbc56e18fce1bb9bca952018e233458514e9dc80ea2f62a9f",
+      "exit_code": 1,
+      "seconds": 4.579408645629883,
+      "verified_custody": "815source573config13artifact/controller/index/import/threads/14registryMAIN1 PASS"
+    }
+  },
+  "not_run": [
+    "explicit-lineage API node (behavior RED already established)",
+    "poisonchild (qualified protocol owed)",
+    "hardware and whole programme gates"
+  ],
+  "review": "Astra StageA quality gaps open: actual admission witness, unconditional thread cleanup assertion, discriminating full-state refusal, exact local generator continuation",
+  "all_sessions_closed": true
+}

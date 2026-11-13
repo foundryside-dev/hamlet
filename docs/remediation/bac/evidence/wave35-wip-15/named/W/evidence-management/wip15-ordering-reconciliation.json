@@ -1,0 +1,54 @@
+{
+  "schema": "bac-checkpoint-ordering-reconciliation-v1",
+  "initial_final_receipt": {
+    "root": "W",
+    "path": "evidence-management/wip15-r81-terminal-receipt-final.json",
+    "sha256": "dea2e15755054f82d7b96060253c901ac2fca6c6563684444cbbd42a3c6c64dd",
+    "bytes": 503467
+  },
+  "initial_final_plan_attempt": {
+    "status": "FAILED BEFORE OUTPUT",
+    "exit_code": 1,
+    "message": "attempt descendant set changed: wave35-r73-collection",
+    "provenance": "Actual exec result e08c3a; transcribed metadata, no separately captured raw log"
+  },
+  "diagnosis": {
+    "all68_normalized_descendant_sets_identical": true,
+    "ordering_only_changed_attempts": [
+      "wave35-r73-collection--collection",
+      "wave35-r73-replay-admission-red--replay-admission-red",
+      "wave35-r73-replay-healthy--replay-healthy",
+      "wave35-r73-replay-owner-red--replay-owner-red",
+      "wave35-r73-replay-prepared-red--replay-prepared-red",
+      "wave35-r74-collection--collection",
+      "wave35-r74-replay-custody-api-red--replay-custody-api-red",
+      "wave35-r74-replay-healthy--replay-healthy",
+      "wave35-r74-replay-prepared-red--replay-prepared-red",
+      "wave35-r75-collection--collection",
+      "wave35-r75-replay-healthy--replay-healthy",
+      "wave35-r75-replay-per-fixture--replay-per-fixture",
+      "wave35-r76-collection--collection",
+      "wave35-r76-replay-causal--replay-causal",
+      "wave35-r76-replay-healthy--replay-healthy",
+      "wave35-r76-replay-poison--replay-poison",
+      "wave35-r77-collection--collection",
+      "wave35-r77-replay-b1-b2--replay-b1-b2",
+      "wave35-r77-replay-b4--replay-b4",
+      "wave35-r77-replay-healthy--replay-healthy",
+      "wave35-r77-replay-poison--replay-poison",
+      "wave35-r78-fixture-fix--fixture-fix",
+      "wave35-r79-collection--collection",
+      "wave35-r79-replay-current--replay-current",
+      "wave35-r79-replay-poison--replay-poison",
+      "wave35-r80-collection--collection",
+      "wave35-r81-collection--collection",
+      "wave35-r81-independent-replay-current--replay-current",
+      "wave35-r81-independent-replay-poison--replay-poison",
+      "wave35-r81-replay-current--replay-current",
+      "wave35-r81-replay-poison--replay-poison"
+    ],
+    "cause": "Draft used global path ordering; actual reviewed selector requires recursive traversal order. No byte, member, result, custody, count or source fact differs.",
+    "full_final_receipt_validator": "PASS after ordering-only canonicalization in memory; diagnostic only, no plan or seal output, exec744f65"
+  },
+  "scope": "Receipt representation repair only; no source/tool changes or runtime rerun"
+}

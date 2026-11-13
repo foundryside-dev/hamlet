@@ -1,0 +1,25 @@
+{
+  "name": "replay-poison",
+  "exit_code": 0,
+  "seconds": 8.101341724395752,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r81-independent-replay-poison/replay-poison.log",
+  "sha256": "3628934394c5658b633f46c14b3950edd42447f90eacf40d1592a7bcf7f80144",
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

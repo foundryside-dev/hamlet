@@ -1,0 +1,34 @@
+{
+  "schema": "bac-root-preparation-attempts-v1",
+  "attempts": [
+    {
+      "id": "root-review-input-preparation-1",
+      "status": "STOPPED BEFORE SUBJECT CREATION",
+      "cause": "Strict byte validation found provisional V0 tooling-report path now contains appended FIX1 report",
+      "partial_output": "wip15-root-command-child-reconciliation.json",
+      "application_runtime": "none"
+    },
+    {
+      "id": "root-review-input-preparation-2",
+      "status": "RECONCILED",
+      "remapping": [
+        {
+          "original": {
+            "root": "W",
+            "path": "wave35-preparation/T18e-R0-NEXT-CHECKPOINT-TOOLING-REPORT.md",
+            "sha256": "6f2f7bce2d2e0d17ec8509eb0215631a5ec3255cd9e28c89272d3ce0fadfae19",
+            "bytes": 14658
+          },
+          "retained_same_bytes": {
+            "root": "W",
+            "path": "wave35-preparation/T18e-R0-NEXT-CHECKPOINT-TOOLING-REPORT-V0-SNAPSHOT.md",
+            "sha256": "6f2f7bce2d2e0d17ec8509eb0215631a5ec3255cd9e28c89272d3ce0fadfae19",
+            "bytes": 14658
+          },
+          "reason": "Draft snapshot referred to V0 report; current report appended FIX1. Preserve V0 exact bytes and separately select current report. No silent hash refresh."
+        }
+      ]
+    }
+  ],
+  "scope": "Publication metadata preparation, not application test attempts"
+}

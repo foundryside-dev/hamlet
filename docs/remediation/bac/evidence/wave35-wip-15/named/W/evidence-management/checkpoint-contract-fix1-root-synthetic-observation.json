@@ -1,0 +1,30 @@
+{
+  "schema": "bac-root-synthetic-observation-v1",
+  "observer": "root",
+  "scope": "Checkpoint tooling FIX1 synthetic tests only; not application or actual archive qualification",
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "test_checkpoint_contract.py"
+  ],
+  "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management",
+  "exit_code": 0,
+  "test_count": 30,
+  "runner_reported_seconds": 1.223,
+  "output": "Ran 30 tests in 1.223s\nOK",
+  "provenance": "Transcribed from actual exec_command result020f8f. No separately retained raw log or absolute test start/end timestamps.",
+  "source_files": {
+    "bac_checkpoint_contract.py": {
+      "sha256": "6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3",
+      "lines": 573
+    },
+    "test_checkpoint_contract.py": {
+      "sha256": "b0dd9f8a3f7420771f237cc35be453040b134924a59225d1ba7c5fdb88a0d07d",
+      "lines": 616
+    }
+  },
+  "independent_review": "pending scoped FIX1 re-review",
+  "actual_selection_assembly_publication": "UNRUN"
+}

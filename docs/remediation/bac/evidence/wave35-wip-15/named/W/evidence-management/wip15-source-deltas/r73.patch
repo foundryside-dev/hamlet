@@ -1,0 +1,421 @@
+diff --git a/tests/test_townlet/regressions/bac/test_replay_rng_custody.py b/tests/test_townlet/regressions/bac/test_replay_rng_custody.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..1134abc8ab8ae23ed28ee1c5f1e6c2c7655d20f6
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_replay_rng_custody.py
+@@ -0,0 +1,415 @@
++"""Direct replay RNG and owner custody; healthy controls precede R0 RED nodes.
++
++The healthy controls call the current public signatures. R0 nodes that pass a
++required lineage are expected to fail at the missing keyword on the frozen
++producer. The two concurrency nodes use the current signatures to exhibit
++actual admission/owner exclusion bypass and need signature migration at GREEN.
++"""
++
++from __future__ import annotations
++
++import pickle
++import random
++import threading
++from typing import Any
++
++import numpy as np
++import pytest
++import torch
++
++from townlet.config.bac_options import ReplayOptions
++from townlet.exploration.rng_custody import process_rng_domain
++from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
++from townlet.training.replay_buffer import ReplayBuffer
++from townlet.training.replay_contract import ReplayRequest
++from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
++from townlet.training.state import RewardTensor
++
++
++_CPU = torch.device("cpu")
++_SUCCESSIVE = "successive_without_replacement"
++
++
++@pytest.fixture(autouse=True)
++def _restore_cpu_ambient_states() -> Any:
++    """Keep genuine direct draws from changing other tests' starting streams."""
++    python_state = random.getstate()
++    numpy_state = np.random.get_state()
++    torch_state = torch.get_rng_state().clone()
++    try:
++        yield
++    finally:
++        random.setstate(python_state)
++        np.random.set_state(numpy_state)
++        torch.set_rng_state(torch_state)
++
++
++def _flat_rows() -> tuple[torch.Tensor, torch.Tensor, RewardTensor, torch.Tensor, torch.Tensor, torch.Tensor]:
++    observations = torch.tensor([[1.0], [2.0], [3.0]], dtype=torch.float32)
++    actions = torch.tensor([0, 1, 0], dtype=torch.int64)
++    rewards = RewardTensor(total=torch.tensor([1.0, 2.0, 3.0], dtype=torch.float32))
++    successors = torch.tensor([[2.0], [3.0], [4.0]], dtype=torch.float32)
++    dones = torch.tensor([False, False, True], dtype=torch.bool)
++    masks = torch.tensor([[True, True], [True, True], [True, True]], dtype=torch.bool)
++    return observations, actions, rewards, successors, dones, masks
++
++
++def _flat() -> ReplayBuffer:
++    owner = ReplayBuffer(capacity=8, device=_CPU)
++    owner.push_recorded(*_flat_rows())
++    return owner
++
++
++def _per(*, local: bool) -> PrioritizedReplayBuffer:
++    owner = PrioritizedReplayBuffer(capacity=8, alpha=0.6, beta=0.4, beta_annealing=False, device=_CPU)
++    owner.push_recorded(*_flat_rows())
++    if local:
++        owner.configure_sampling(sampling_mode=_SUCCESSIVE, rng=np.random.Generator(np.random.PCG64(719)), origin="authored")
++    return owner
++
++
++def _episode() -> dict[str, torch.Tensor]:
++    return {
++        "observations": torch.tensor([[1.0], [2.0], [3.0]], dtype=torch.float32),
++        "actions": torch.tensor([0, 1, 0], dtype=torch.int64),
++        "rewards": torch.tensor([1.0, 2.0, 3.0], dtype=torch.float32),
++        "next_observations": torch.tensor([[2.0], [3.0], [4.0]], dtype=torch.float32),
++        "dones": torch.tensor([False, False, True], dtype=torch.bool),
++    }
++
++
++def _sequence_direct() -> SequentialReplayBuffer:
++    owner = SequentialReplayBuffer(capacity=8, device=_CPU)
++    owner.store_episode(_episode())
++    return owner
++
++
++def _options() -> ReplayOptions:
++    return ReplayOptions(
++        sampling_mode=_SUCCESSIVE,
++        uniform_sequence_adapter="legacy_episode_length_with_replacement",
++        sequence_mode="fixed_full",
++        retention_mode="whole_episode",
++        sequence_objective="window_mean",
++        priority_reduction="max_abs",
++    )
++
++
++def _sequence_qualified(*, prioritized: bool) -> SequentialReplayBuffer:
++    options = _options()
++    if prioritized:
++        owner = SequentialReplayBuffer.for_prioritized_replay(
++            8,
++            _CPU,
++            options=options,
++            action_dim=2,
++            legality_mode="captured",
++            alpha=0.6,
++            beta=0.4,
++            beta_annealing=False,
++            beta_vector_tick_horizon=100,
++            current_vector_tick=0,
++            rng=np.random.Generator(np.random.PCG64(911)),
++            origin="authored",
++        )
++    else:
++        owner = SequentialReplayBuffer.for_replay(8, _CPU, options=options, action_dim=2, legality_mode="captured")
++    episode = {
++        **_episode(),
++        "rewards_extrinsic": None,
++        "rewards_intrinsic": None,
++        "rewards_shaping": None,
++    }
++    owner.store_captured_episode(
++        episode,
++        next_action_masks=torch.tensor([[True, True], [True, True], [True, True]], dtype=torch.bool),
++        legality_recorded=torch.tensor([True, True, True], dtype=torch.bool),
++    )
++    return owner
++
++
++def _flat_request() -> ReplayRequest:
++    return ReplayRequest(1, 1, 1, "uniform_without_replacement", "feedforward", "transition")
++
++
++def _per_request() -> ReplayRequest:
++    return ReplayRequest(1, 1, 1, _SUCCESSIVE, "feedforward", "transition")
++
++
++def _sequence_request() -> ReplayRequest:
++    return ReplayRequest(1, 2, 1, _SUCCESSIVE, "fixed_full", "window_mean")
++
++
++def test_healthy_flat_recorded_rows_and_both_sample_apis() -> None:
++    owner = _flat()
++    assert owner.readiness(_flat_request()).ready
++    direct = owner.sample(1)
++    batch = owner.sample_batch(_flat_request())
++    assert direct["observations"].shape == (1, 1)
++    assert batch.observations.shape == (1, 1)
++    assert batch.legality_recorded.tolist() == [True]
++    assert batch.sampling.population_size == 3
++
++
++@pytest.mark.parametrize("local", [False, True], ids=["global", "owned-generator"])
++def test_healthy_per_recorded_rows_and_both_sample_apis(local: bool) -> None:
++    owner = _per(local=local)
++    assert owner.readiness(_per_request()).ready
++    direct = owner.sample(1)
++    batch = owner.sample_batch(_per_request())
++    assert direct["observations"].shape == (1, 1)
++    assert batch.observations.shape == (1, 1)
++    assert batch.legality_recorded.tolist() == [True]
++    assert batch.sampling.population_size == 3
++
++
++def test_healthy_recurrent_direct_episode_and_sample() -> None:
++    owner = _sequence_direct()
++    batch = owner.sample_sequences(1, 2)
++    assert batch["observations"].shape == (1, 2, 1)
++    assert batch["mask"].tolist() == [[True, True]]
++
++
++@pytest.mark.parametrize("prioritized", [False, True], ids=["uniform", "owned-generator-priority"])
++def test_healthy_recurrent_qualified_readiness_and_sample(prioritized: bool) -> None:
++    owner = _sequence_qualified(prioritized=prioritized)
++    assert owner.readiness(_sequence_request()).ready
++    batch = owner.sample_batch(_sequence_request())
++    assert batch.observations.shape == (1, 2, 1)
++    assert batch.legality_recorded.tolist() == [[True, True]]
++    assert batch.sampling.population_size > 0
++
++
++def _direct_owner(kind: str) -> ReplayBuffer | PrioritizedReplayBuffer | SequentialReplayBuffer:
++    if kind == "flat":
++        return _flat()
++    if kind == "per":
++        return _per(local=False)
++    if kind == "recurrent":
++        return _sequence_direct()
++    raise AssertionError(kind)
++
++
++def _direct_draw(kind: str, owner: ReplayBuffer | PrioritizedReplayBuffer | SequentialReplayBuffer) -> object:
++    if kind == "recurrent":
++        assert isinstance(owner, SequentialReplayBuffer)
++        return owner.sample_sequences(1, 2)
++    if kind == "per":
++        assert isinstance(owner, PrioritizedReplayBuffer)
++        return owner.sample(1)
++    assert isinstance(owner, ReplayBuffer)
++    return owner.sample(1)
++
++
++class _DomainPeer:
++    """A real registered lifetime owner, not a private-world stand-in."""
++
++
++def _peer() -> tuple[_DomainPeer, Any]:
++    owner = _DomainPeer()
++    participant = process_rng_domain().register(owner=owner, cuda_devices=(), entrypoints=frozenset({"hold"}))
++    return owner, participant
++
++
++@pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
++def test_direct_ambient_sample_waits_for_registered_peer(kind: str) -> None:
++    """RED: current direct API executes while an unrelated domain owner holds the lease.
++
++    This intentionally invokes the current signature to expose actual bypass.
++    The call must change to explicit lineage=None when the API changes.
++    """
++    owner = _direct_owner(kind)
++    peer, participant = _peer()
++    attempted, done = threading.Event(), threading.Event()
++    outcome: list[object] = []
++
++    def draw() -> None:
++        attempted.set()
++        try:
++            outcome.append(_direct_draw(kind, owner))
++        except BaseException as error:
++            outcome.append(error)
++        finally:
++            done.set()
++
++    worker = threading.Thread(target=draw, name=f"replay-direct-{kind}", daemon=True)
++    try:
++        with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None):
++            worker.start()
++            assert attempted.wait(3), "the direct sampler did not reach its attempt"
++            assert not done.wait(0.5), "direct replay sampling bypassed the held process domain"
++    finally:
++        worker.join(timeout=5)
++    assert not worker.is_alive(), "direct sampler did not leave the held operation"
++    assert len(outcome) == 1 and not isinstance(outcome[0], BaseException)
++    assert peer is not None
++
++
++def test_explicit_lineage_refuses_unrelated_reentry_and_allows_authentic_nesting() -> None:
++    """API RED first: frozen ReplayBuffer.sample has no required lineage keyword.
++
++    Once the signature exists, both calls exercise the actual common domain.
++    """
++    owner = _flat()
++    peer, participant = _peer()
++    before = torch.get_rng_state().clone()
++    with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None) as lease:
++        with pytest.raises(RuntimeError, match="Unrelated same-thread RNG reentry is forbidden"):
++            owner.sample(1, lineage=None)
++        assert torch.equal(before, torch.get_rng_state())
++        batch = owner.sample(1, lineage=lease)
++        assert batch["observations"].shape == (1, 1)
++    assert peer is not None
++
++
++class _PausingReplayBuffer(ReplayBuffer):
++    """Pause only before the real torch.randperm; never replace its sampler."""
++
++    def __init__(self) -> None:
++        super().__init__(capacity=8, device=_CPU)
++        self.entered = threading.Event()
++        self.resume = threading.Event()
++
++    def _indices(self, batch_size: int) -> torch.Tensor:
++        self.entered.set()
++        if not self.resume.wait(5):
++            raise AssertionError("sample pause was not released")
++        return super()._indices(batch_size)
++
++
++def test_same_owner_clear_waits_until_real_sample_finishes() -> None:
++    """RED: current clear mutates the same owner while sample is in flight.
++
++    Current signatures are used here; migrate sample to explicit lineage=None
++    when production adopts the required API.
++    """
++    owner = _PausingReplayBuffer()
++    owner.push_recorded(*_flat_rows())
++    sample_done, clear_done = threading.Event(), threading.Event()
++    results: list[object] = []
++
++    def sample() -> None:
++        try:
++            results.append(owner.sample(1))
++        except BaseException as error:
++            results.append(error)
++        finally:
++            sample_done.set()
++
++    def clear() -> None:
++        try:
++            owner.clear()
++        except BaseException as error:
++            results.append(error)
++        finally:
++            clear_done.set()
++
++    sampler = threading.Thread(target=sample, name="replay-same-owner-sample", daemon=True)
++    clearer = threading.Thread(target=clear, name="replay-same-owner-clear", daemon=True)
++    try:
++        sampler.start()
++        assert owner.entered.wait(3), "real sampling did not reach its pause"
++        clearer.start()
++        assert not clear_done.wait(0.5), "clear mutated the owner during its sample"
++    finally:
++        owner.resume.set()
++        sampler.join(timeout=5)
++        if clearer.ident is not None:
++            clearer.join(timeout=5)
++    assert not sampler.is_alive() and not clearer.is_alive()
++    assert sample_done.is_set() and clear_done.is_set()
++    assert len(results) == 1 and not isinstance(results[0], BaseException)
++    assert owner.retained_transitions == 0
++
++
++def test_flat_prepared_restore_is_stale_after_same_owner_clear() -> None:
++    """RED: a destination-issued candidate must not resurrect cleared rows."""
++    owner = _flat()
++    candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1)
++    owner.clear()
++    with pytest.raises(ValueError, match="[Pp]repared|[Dd]estination|[Ss]tale"):
++        owner.load_prepared(candidate)
++    assert owner.retained_transitions == 0
++
++
++def test_flat_prepared_restore_is_one_use() -> None:
++    """RED: a second publication of the same prepared identity is forbidden."""
++    owner = _flat()
++    candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1)
++    owner.load_prepared(candidate)
++    with pytest.raises(ValueError, match="[Pp]repared|[Cc]onsumed"):
++        owner.load_prepared(candidate)
++
++
++def test_per_prepared_restore_is_bound_to_issuing_owner() -> None:
++    """RED: equal geometry cannot authorize another buffer's prepared handle."""
++    source = _per(local=True)
++    other = _per(local=True)
++    candidate = source.prepare_serialized(source.serialize(), expected_obs_dim=1)
++    before = other.serialize()
++    with pytest.raises(ValueError, match="[Pp]repared|[Ff]oreign|[Dd]estination"):
++        other.load_prepared(candidate)
++    after = other.serialize()
++    assert after["size_current"] == before["size_current"]
++    assert np.array_equal(after["priorities"], before["priorities"])
++    assert torch.equal(after["observations"], before["observations"])
++    assert pickle.dumps(after["sampling_rng"]) == pickle.dumps(before["sampling_rng"])
++
++
++def test_flat_prepared_restore_refuses_intervening_peer_operation() -> None:
++    """RED: even a released no-draw peer lease invalidates a prior token."""
++    owner = _flat()
++    peer, participant = _peer()
++    candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1)
++    with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None):
++        pass
++    before = owner.retained_transitions
++    with pytest.raises(ValueError, match="[Pp]repared|[Ss]tale|[Cc]urrency"):
++        owner.load_prepared(candidate)
++    assert owner.retained_transitions == before
++    assert peer is not None
++
++
++def test_owned_per_sampling_advances_only_its_transport_generator() -> None:
++    """Healthy algorithm control: qualified local PER does not draw global NumPy."""
++    owner = _per(local=True)
++    global_before = pickle.dumps(np.random.get_state())
++    local_before = pickle.dumps(owner.serialize()["sampling_rng"]["state"])
++    owner.sample_batch(_per_request())
++    state = owner.serialize()
++    assert pickle.dumps(np.random.get_state()) == global_before
++    assert pickle.dumps(state["sampling_rng"]["state"]) != local_before
++    restored = PrioritizedReplayBuffer(capacity=8, alpha=0.6, beta=0.4, beta_annealing=False, device=_CPU)
++    restored.load_from_serialized(state)
++    assert owner.sample_batch(_per_request()).sampling.indices.tolist() == restored.sample_batch(_per_request()).sampling.indices.tolist()
++
++
++def test_recurrent_priority_sampling_advances_only_its_transport_generator() -> None:
++    """Healthy algorithm control: qualified local sequence priority owns its draws."""
++    owner = _sequence_qualified(prioritized=True)
++    global_before = pickle.dumps(np.random.get_state())
++    python_before = random.getstate()
++    local_before = pickle.dumps(owner.serialize()["priority_state"]["rng"])
++    owner.sample_batch(_sequence_request())
++    state = owner.serialize()
++    assert pickle.dumps(np.random.get_state()) == global_before
++    assert random.getstate() == python_before
++    assert pickle.dumps(state["priority_state"]["rng"]) != local_before
++    restored = _sequence_qualified(prioritized=True)
++    restored.load_from_serialized(state)
++    assert owner.sample_batch(_sequence_request()).unit_ids.tolist() == restored.sample_batch(_sequence_request()).unit_ids.tolist()
++
++
++def test_global_sample_primitives_advance_their_selected_ambient_stream() -> None:
++    """Healthy characterization: direct flat/PER/recurrent paths keep their streams."""
++    torch_before = torch.get_rng_state().clone()
++    _flat().sample(1)
++    assert not torch.equal(torch_before, torch.get_rng_state())
++
++    numpy_before = pickle.dumps(np.random.get_state())
++    _per(local=False).sample(1)
++    assert pickle.dumps(np.random.get_state()) != numpy_before
++
++    python_before = random.getstate()
++    _sequence_direct().sample_sequences(1, 2)
++    assert random.getstate() != python_before

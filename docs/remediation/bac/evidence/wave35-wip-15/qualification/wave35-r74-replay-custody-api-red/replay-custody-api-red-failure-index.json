@@ -1,0 +1,61 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+  "unique_node_phase_failures": 5,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'PrioritizedReplayBuffer' object has no attribute 'rng_participant'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'SequentialReplayBuffer' object has no attribute 'rng_participant'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[recurrent]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: ReplayBuffer.sample() got an unexpected keyword argument 'lineage'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_explicit_lineage_refuses_unrelated_reentry_and_allows_authentic_nesting",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'ReplayBuffer' object has no attribute 'rng_participant'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+      where <threading.Event at 0x7f2c6cc608a0: unset> = <test_replay_rng_custody._PausingReplayBuffer object at 0x7f2c6cd0b620>.clear_reached",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_same_owner_clear_waits_until_real_sample_finishes",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

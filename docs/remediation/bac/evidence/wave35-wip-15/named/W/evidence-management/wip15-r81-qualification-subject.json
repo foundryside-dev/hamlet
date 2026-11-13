@@ -1,0 +1,52 @@
+{
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "contract": {
+    "root": "W",
+    "path": "wave35/r81-checkpoint-contract.json",
+    "sha256": "5fd9322ad4e56a4a0193c6e13214e02f8e1c52a5ec68cbd2369865ceaaae57b8",
+    "bytes": 5211
+  },
+  "checkpoint_id": "wave35-wip-15",
+  "series": "wave35",
+  "interval": [
+    73,
+    81
+  ],
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r81-candidate.json",
+    "sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+    "bytes": 207094
+  },
+  "execution_subtrees": {
+    "src": "f662a49b70b042e8894a23428e854be802a3b582",
+    "tests": "01c96e5f28b51a5d74d456e4aa6cfeb6c74be075",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip15-r81-terminal-review-input.json",
+    "sha256": "d7bdd941ebef473bfc9905fc8839e99c0899377a2c563a154c6d1e797e1a74f2",
+    "bytes": 493498
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Bounded replay repair A: flat/PER validated DTOs, shared prepared-handle ownership and typed guard signatures, shared/flat/PER publication controls; source-bound historical attempts retained; no whole replay/CUDA/caller/programme closure.",
+  "required_next": [
+    "Recurrent mutableDTO B1 assessment/control",
+    "Recurrent B3 scratch classification/stateproof and B4 staging/publication/alias controls",
+    "Recurrent source default/style fixes",
+    "B6 approvedadditiveCUDA/core design implementation and realhardware qualification",
+    "Actual producer/caller/BANK/runtime/ENV/parent/native joint integration",
+    "Existing required owner/global/coverage/slow/learning/freshdesign+implementation reviews and exactfinalremoteCI"
+  ],
+  "review_task": "Verify finite attempt completeness/truth, exact source/process/child linkage and immutable review/document/helper closure. No application acceptance beyond qualified A or whole-programme closure. Final receipt copies this input and adds subject/independent review refs plus SEALED status; substantive changes need fresh subject/review."
+}

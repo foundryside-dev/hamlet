@@ -1,0 +1,18 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r79-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-public-types",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "public-types",
+      "args": [
+        "-m",
+        "mypy",
+        "--follow-imports=silent",
+        "-c",
+        "from typing import Any, assert_type\nfrom townlet.training.replay_contract import PreparedReplay\nfrom townlet.training.replay_buffer import ReplayBuffer\nfrom townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer\nfrom townlet.training.sequential_replay_buffer import SequentialReplayBuffer\n\ndef check_prepared_result(flat: ReplayBuffer, per: PrioritizedReplayBuffer, seq: SequentialReplayBuffer, data: dict[str, Any]) -> None:\n    assert_type(flat.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n    assert_type(per.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n    assert_type(seq.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n"
+      ]
+    }
+  ]
+}

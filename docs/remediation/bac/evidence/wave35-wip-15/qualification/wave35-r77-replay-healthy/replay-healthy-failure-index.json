@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: Replay checkpoint rewards_extrinsic must be a tensor of shape (3,) and dtype torch.float32",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: PER checkpoint rewards_extrinsic must be a tensor; got NoneType. Regenerate the checkpoint.",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-per]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

@@ -25,14 +25,21 @@ import numpy as np
 import torch
 
 from townlet.config.bac_options import ReplayOptions
+from townlet.exploration.rng_custody import RNGOperation
 from townlet.training import historical_checkpoint as history
 from townlet.training import per_sampling
 from townlet.training.replay_contract import (
     HistoricalLegalityUnavailable,
+    PreparedReplay,
     ReplayBatch,
+    ReplayCustody,
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
+    replay_mutation,
+    replay_prepare,
+    replay_read,
+    replay_sample,
     validate_successor_masks,
 )
 
@@ -191,7 +198,7 @@ class _PreparedSequenceState(_SequentialRestoreCandidate):
     priority: _PriorityState | None
 
 
-class SequentialReplayBuffer:
+class SequentialReplayBuffer(ReplayCustody):
     """
     Replay buffer that maintains temporal structure for LSTM training.
 
@@ -234,11 +241,14 @@ class SequentialReplayBuffer:
         self.next_episode_id = self.next_transition_id = 0
         self._historical_archives: tuple[history.HistoricalReplayArchive, ...] = ()
         self._priority: _PriorityState | None = None
+        self._init_custody(device)
 
+    @replay_read
     def __len__(self) -> int:
         """Return number of episodes stored."""
         return len(self.episodes)
 
+    @replay_mutation
     def clear(self) -> None:
         """Reset buffer to empty state and deallocate all episode storage.
 
@@ -251,6 +261,7 @@ class SequentialReplayBuffer:
         self.num_transitions = 0
         self._priority = priority
 
+    @replay_read
     def stats(self) -> dict[str, Any]:
         """Return buffer statistics for introspection.
 
@@ -286,6 +297,7 @@ class SequentialReplayBuffer:
             "legacy_transport_transitions": self.legacy_transport_transitions,
         }
 
+    @replay_mutation
     def store_episode(self, episode: Episode) -> None:
         """
         Store a complete episode.
@@ -402,7 +414,10 @@ class SequentialReplayBuffer:
             oldest_episode = self.episodes.popleft()  # O(1) instead of O(n) pop(0)
             self.num_transitions -= len(oldest_episode["observations"])
 
-    def sample_sequences(self, batch_size: int, seq_len: int) -> dict[str, torch.Tensor]:
+    @replay_sample
+    def sample_sequences(
+        self, batch_size: int, seq_len: int, *, lineage: RNGOperation | None
+    ) -> dict[str, torch.Tensor]:
         """
         Sample a batch of sequential transitions.
 
@@ -503,6 +518,7 @@ class SequentialReplayBuffer:
 
         return batch
 
+    @replay_read
     def serialize(self) -> dict[str, Any]:
         """Own exact5/inspection transport or qualified uniform6/prioritized7 state."""
         if self._configured:
@@ -748,47 +764,72 @@ class SequentialReplayBuffer:
         validated = self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
         return self._materialize_serialized(validated)
 
+    @replay_read
     def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ValidatedSequentialState:
         """Own exact5/inspection/current6/7 structure without drawing or installation."""
         return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
 
-    def materialize_validated(self, state: _ValidatedSequentialState) -> _SequentialRestoreCandidate:
+    @replay_prepare
+    def materialize_validated(self, state: _ValidatedSequentialState, *, lineage: RNGOperation | None) -> object:
         """Materialize one restore candidate from already validated structure."""
         return self._materialize_serialized(state)
 
-    def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _SequentialRestoreCandidate:
+    @replay_prepare
+    def prepare_serialized(
+        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None
+    ) -> object:
         """Validate and materialize the one candidate that will be installed."""
         return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
 
-    def load_prepared(self, candidate: _SequentialRestoreCandidate) -> None:
+    def load_prepared(self, candidate: object, *, lineage: RNGOperation | None) -> None:
         """Install a fully validated, already materialized restore candidate."""
-        if not isinstance(candidate, _PreparedSequenceState) or candidate.capacity != self.capacity or candidate.device != self.device:
-            raise ValueError("Sequential installation requires a compatible prepared replay candidate")
-        if self._configured and (
-            not candidate.configured
-            or candidate.action_dim != self.action_dim
-            or candidate.legality_mode != self.legality_mode
-            or candidate.replay_options != self.replay_options
-        ):
-            raise ValueError("prepared replay cannot downgrade or replace the target's configured geometry/options")
-        if self._configured and (self._priority is None) != (candidate.priority is None):
-            raise ValueError("prepared replay cannot replace uniform/prioritized identity; prepare against the intended target")
-        if self._priority is not None and candidate.priority is not None and self._priority.config != candidate.priority.config:
-            raise ValueError("prepared replay priority configuration/origin differs from target")
-        for archive in self._historical_archives:
-            if not any(item.source_digest == archive.source_digest for item in candidate.archives):
-                raise ValueError("prepared replay cannot discard retained target history; prepare again against the current target")
-        self.num_transitions = candidate.num_transitions
-        self.episodes = candidate.episodes
-        self._configured, self.action_dim, self.legality_mode = candidate.configured, candidate.action_dim, candidate.legality_mode
-        self.replay_options = candidate.replay_options
-        self.next_episode_id, self.next_transition_id = candidate.next_episode_id, candidate.next_transition_id
-        self._historical_archives = candidate.archives
-        self._priority = candidate.priority
+        with self._domain_operation("install", lineage) as lease:
+            with self._owner_operation(mutation=False):
+                if not isinstance(candidate, PreparedReplay):
+                    raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+                material = self._prepared_payload(candidate)
+                if (
+                    not isinstance(material, _PreparedSequenceState)
+                    or material.capacity != self.capacity
+                    or material.device != self.device
+                ):
+                    raise ValueError("Sequential installation requires a compatible prepared replay candidate")
+                if self._configured and (
+                    not material.configured
+                    or material.action_dim != self.action_dim
+                    or material.legality_mode != self.legality_mode
+                    or material.replay_options != self.replay_options
+                ):
+                    raise ValueError("prepared replay cannot downgrade or replace the target's configured geometry/options")
+                if self._configured and (self._priority is None) != (material.priority is None):
+                    raise ValueError("prepared replay cannot replace uniform/prioritized identity; prepare against the intended target")
+                if (
+                    self._priority is not None
+                    and material.priority is not None
+                    and self._priority.config != material.priority.config
+                ):
+                    raise ValueError("prepared replay priority configuration/origin differs from target")
+                archives = self._merge_archives(material.archives, expected_obs_dim=None)
+                episodes = deque(self._own_fragment(episode, device=self.device) for episode in material.episodes)
+                policy = None if material.replay_options is None else material.replay_options.model_copy(deep=True)
+                priority = self._restore_priority(material.priority)
 
-    def load_from_serialized(self, state: Mapping[str, Any]) -> None:
+                def publish() -> None:
+                    self.num_transitions, self.episodes = material.num_transitions, episodes
+                    self._configured, self.action_dim, self.legality_mode = (
+                        material.configured,
+                        material.action_dim,
+                        material.legality_mode,
+                    )
+                    self.replay_options = policy
+                    self.next_episode_id, self.next_transition_id = material.next_episode_id, material.next_transition_id
+                    self._historical_archives, self._priority = archives, priority
+                self._validate_replay(candidate, lease)
+                self._publish_replay(candidate, publish)
+
+    def load_from_serialized(self, state: Mapping[str, Any], *, lineage: RNGOperation | None) -> None:
         """Restore only after the complete exact-current artifact validates."""
-        self.load_prepared(self.prepare_serialized(state, expected_obs_dim=None))
+        self.load_prepared(self.prepare_serialized(state, expected_obs_dim=None, lineage=lineage), lineage=lineage)
 
     @staticmethod
     def _resolved_options(value: object) -> ReplayOptions:
@@ -980,6 +1021,7 @@ class SequentialReplayBuffer:
         )
         return result
 
+    @replay_mutation
     def set_vector_tick(self, vector_tick: int) -> None:
         """Advance the absolute PER clock independently of optimizer opportunities."""
         state = self._priority
@@ -1088,12 +1130,14 @@ class SequentialReplayBuffer:
         )
 
     @property
+    @replay_read
     def retained_transitions(self) -> int:
         if self._configured:
             return self.num_transitions
         return 0
 
     @property
+    @replay_read
     def legacy_transport_transitions(self) -> int:
         if self._configured:
             return 0
@@ -1178,6 +1222,7 @@ class SequentialReplayBuffer:
         rows["next_action_masks"], rows["legality_recorded"] = masks, recorded
         return rows
 
+    @replay_mutation
     def store_captured_episode(
         self, episode: Mapping[str, Any], *, next_action_masks: torch.Tensor, legality_recorded: torch.Tensor
     ) -> None:
@@ -1254,6 +1299,7 @@ class SequentialReplayBuffer:
                 count += length - request.sequence_length + 1
         return valid, count
 
+    @replay_read
     def readiness(self, request: ReplayRequest) -> ReplayReadiness:
         self._check_request(request)
         _, population = self._sampleable(request)
@@ -1267,7 +1313,8 @@ class SequentialReplayBuffer:
             return ReplayReadiness(False, self.retained_transitions, population, "batch_unavailable")
         return ReplayReadiness(True, self.retained_transitions, population, "ready")
 
-    def sample_batch(self, request: ReplayRequest) -> SequentialReplayBatch:
+    @replay_sample
+    def sample_batch(self, request: ReplayRequest, *, lineage: RNGOperation | None) -> SequentialReplayBatch:
         ready = self.readiness(request)
         if not ready.ready:
             raise ValueError(
@@ -1396,6 +1443,7 @@ class SequentialReplayBuffer:
             sampling=receipt,
         )
 
+    @replay_mutation
     def update_priorities(self, unit_ids: torch.Tensor, td_errors: torch.Tensor, *, loss_mask: torch.Tensor) -> None:
         """Reduce selected real context errors and atomically replace affected domains."""
         state = self._priority
@@ -1615,11 +1663,12 @@ class SequentialReplayBuffer:
             raise ValueError("historical archive replay kind differs from sequential storage")
         original = owned.original_state
         capacity = self._require_int(original["capacity"], "archive.capacity", minimum=1, maximum=_MAX_ID)
-        validator = SequentialReplayBuffer(capacity, torch.device("cpu"))
-        validator.validate_serialized(original, expected_obs_dim=expected_obs_dim)
+        validator = _SequentialArchiveValidator(capacity, torch.device("cpu"))
+        validator._validate_serialized(original, expected_obs_dim=expected_obs_dim)
         return owned
 
     @property
+    @replay_read
     def historical_archives(self) -> tuple[history.HistoricalReplayArchive, ...]:
         return tuple(self._own_archive(archive, expected_obs_dim=None) for archive in self._historical_archives)
 
@@ -1668,9 +1717,14 @@ class SequentialReplayBuffer:
             self._empty_priority(),
         )
 
+    @replay_prepare
     def prepare_archived_import(
-        self, archives: tuple[history.HistoricalReplayArchive, ...], *, expected_obs_dim: int | None
-    ) -> _SequentialRestoreCandidate:
+        self,
+        archives: tuple[history.HistoricalReplayArchive, ...],
+        *,
+        expected_obs_dim: int | None,
+        lineage: RNGOperation | None,
+    ) -> object:
         self._configuration()
         if not isinstance(archives, tuple):
             raise ValueError("prepare_archived_import requires an immutable tuple of archive records")
@@ -1796,9 +1850,15 @@ class SequentialReplayBuffer:
         episodes = tuple(self._own_fragment(episode, device=episode["observations"].device) for episode in legacy.episodes)
         return _ValidatedInspectionState(legacy.num_transitions, episodes, legacy.capacity, archives)
 
+    @replay_prepare
     def prepare_for_mode(
-        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, requested_mode: history.AccessMode
-    ) -> _SequentialRestoreCandidate:
+        self,
+        state: Mapping[str, Any],
+        *,
+        expected_obs_dim: int | None,
+        requested_mode: history.AccessMode,
+        lineage: RNGOperation | None,
+    ) -> object:
         if requested_mode not in ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inference"):
             raise ValueError("requested_mode is unsupported")
         validated = self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
@@ -1810,6 +1870,15 @@ class SequentialReplayBuffer:
             raise ValueError("current captured replay cannot discard qualified rows/history through archival reset")
         return self._materialize_serialized(validated)
 
-    def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode) -> None:
-        candidate = self.prepare_for_mode(state, expected_obs_dim=None, requested_mode=requested_mode)
-        self.load_prepared(candidate)
+    def load_for_mode(
+        self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None
+    ) -> None:
+        candidate = self.prepare_for_mode(state, expected_obs_dim=None, requested_mode=requested_mode, lineage=lineage)
+        self.load_prepared(candidate, lineage=lineage)
+
+
+class _SequentialArchiveValidator(SequentialReplayBuffer):
+    """Validation-only temporary; never a sampling lifetime owner."""
+
+    def _init_custody(self, device: torch.device) -> None:
+        pass

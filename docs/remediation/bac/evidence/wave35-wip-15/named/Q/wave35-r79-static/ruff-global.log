@@ -1,0 +1,54 @@
+UP047 Generic function `replay_read` should use type parameters
+   --> src/townlet/training/replay_contract.py:134:5
+    |
+134 |   def replay_read(
+    |  _____^
+135 | |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+136 | | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    | |_^
+137 |       @wraps(method)
+138 |       def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+    |
+help: Use type parameters
+
+UP047 Generic function `replay_mutation` should use type parameters
+   --> src/townlet/training/replay_contract.py:145:5
+    |
+145 |   def replay_mutation(
+    |  _____^
+146 | |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+147 | | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    | |_^
+148 |       @wraps(method)
+149 |       def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+    |
+help: Use type parameters
+
+UP047 Generic function `replay_sample` should use type parameters
+   --> src/townlet/training/replay_contract.py:156:5
+    |
+156 |   def replay_sample(
+    |  _____^
+157 | |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+158 | | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    | |_^
+159 |       @wraps(method)
+160 |       def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+    |
+help: Use type parameters
+
+UP047 Generic function `replay_prepare` should use type parameters
+   --> src/townlet/training/replay_contract.py:168:5
+    |
+168 |   def replay_prepare(
+    |  _____^
+169 | |     method: Callable[Concatenate[_Owner, _Arguments], object],
+170 | | ) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
+    | |_^
+171 |       @wraps(method)
+172 |       def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> PreparedReplay:
+    |
+help: Use type parameters
+
+Found 4 errors.
+No fixes available (4 hidden fixes can be enabled with the `--unsafe-fixes` option).

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[per]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'per'\n\n    @pytest.mark.parametrize(\"kind\", [\"flat\", \"per\"])\n    def test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate(kind: str) -> None:\n        owner = _publication_owner(kind)\n        incoming = _incoming_repair_state(owner)\n        expected = copy.deepcopy(incoming)\n        candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)\n        material = owner._retained_material\n        incoming[\"observations\"].fill_(900.0)\n        if isinstance(owner, PrioritizedReplayBuffer):\n>           incoming[\"priorities\"].fill_(70.0)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE           AttributeError: 'numpy.ndarray' object has no attribute 'fill_'. Did you mean: 'fill'?\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:894: AttributeError",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

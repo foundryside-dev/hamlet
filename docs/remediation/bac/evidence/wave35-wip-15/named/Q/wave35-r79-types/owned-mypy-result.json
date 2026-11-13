@@ -1,0 +1,21 @@
+{
+  "name": "owned-mypy",
+  "exit_code": 0,
+  "seconds": 26.70473074913025,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "mypy",
+    "src/townlet/training/replay_contract.py",
+    "src/townlet/training/replay_buffer.py",
+    "src/townlet/training/prioritized_replay_buffer.py",
+    "src/townlet/training/sequential_replay_buffer.py",
+    "--follow-imports=silent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r79-types/owned-mypy.log",
+  "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+  "candidate_tree": "b63744a51ce4844ed6f35180d2a2e8e664407e78",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "b35815c3065890eadfb7f394c588a7b6b0b8cceddbb25095a928316077592dfd",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

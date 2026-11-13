@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_explicit_lineage_refuses_unrelated_reentry_and_allows_authentic_nesting",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_explicit_lineage_refuses_unrelated_reentry_and_allows_authentic_nesting() -> None:\n        \"\"\"API RED first: frozen ReplayBuffer.sample has no required lineage keyword.\n    \n        Once the signature exists, both calls exercise the actual common domain.\n        \"\"\"\n        owner = _flat()\n        peer, participant = _peer()\n        before = torch.get_rng_state().clone()\n        with process_rng_domain().operation(participant=participant, operation_kind=\"hold\", lineage=None) as lease:\n            with pytest.raises(RuntimeError, match=\"Unrelated same-thread RNG reentry is forbidden\"):\n>               owner.sample(1, lineage=None)\nE               TypeError: ReplayBuffer.sample() got an unexpected keyword argument 'lineage'\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:365: TypeError",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b"
+}

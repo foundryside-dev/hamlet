@@ -1,0 +1,250 @@
+{
+  "scope": "R77 tests-first replay repair A; production unchanged; not component qualification",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+  "manifest_sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+  "collection": 54,
+  "checks": [
+    {
+      "name": "collection",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection-spec.json",
+      "spec_sha256": "dfd528551e0b097f0e646a19b692d04b362a5a32e99ee45d81111f9fc8d37ae0",
+      "result": {
+        "name": "collection",
+        "exit_code": 0,
+        "seconds": 4.992530107498169,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "--collect-only"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection.log",
+        "sha256": "ff8f022fd5fe21a02e525c2fb37e8f92946a6dff7b4feb9412116452168148f9",
+        "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+        "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+        "manifest_sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection/identity-controller.json": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection-custody.json": "61329d0c243ffb6fffe5b53a4bcc5377218a412ec5c4b68eee2bbbaf137fa052",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection-result.json": "893eea741d243c01fb21b9a78454d3b083f184e611a8a625858f3a5519840704",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-collection/collection.log": "ff8f022fd5fe21a02e525c2fb37e8f92946a6dff7b4feb9412116452168148f9"
+      }
+    },
+    {
+      "name": "replay-healthy",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy-spec.json",
+      "spec_sha256": "6ab24421c1b7b1895112e2a861c0a7af96874824b98673fc5daa0c686653c259",
+      "result": {
+        "name": "replay-healthy",
+        "exit_code": 1,
+        "seconds": 24.74000358581543,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "-k",
+          "healthy or sampling_advances_only or global_sample_primitives or direct_configured_per"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy.log",
+        "sha256": "f683cf1db08b6ba8719ae4a9fe1a3e3b33a10a456029522c4b7ff576902533cb",
+        "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+        "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+        "manifest_sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy/failure-controller-75486a6bb507f59a.json": "8efdea99196286a2340871d40efe97f3aa9e36aac7240d3b3f931d7e73a3a8b9",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy/failure-controller-a3a142ec4b3ca1bd.json": "0040ca9b081a64415f8f5e9af8baa8413f0d76646c9bde0bf5ed48a75b927a54",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy/identity-controller.json": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy-failure-index.json": "25643bad9f17075c10600ddf6abbc4744209371df726f315750964fb6ceab3b0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy-negative-custody.json": "9b1da47f16bab802c4013604ef43d44f81a333478f3bdcf7fbe77a810ad56e5b",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy-result.json": "0a37d9e6e60064b5b34f6c7f6f5fadab5f98dc1640a7cac6985d1843df2669d9",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-healthy/replay-healthy.log": "f683cf1db08b6ba8719ae4a9fe1a3e3b33a10a456029522c4b7ff576902533cb"
+      }
+    },
+    {
+      "name": "replay-b1-b2",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2-spec.json",
+      "spec_sha256": "fd48f08508e4aceb577a19c3c32f31ca744428209a4992f6e0b0f7831edf8229",
+      "result": {
+        "name": "replay-b1-b2",
+        "exit_code": 1,
+        "seconds": 13.613089799880981,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "-k",
+          "validated_replay_cannot or mutated_validation_material or prepared_replay_has or prepared_handle_substitution or reinitialized_authentic"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2.log",
+        "sha256": "b26c4d87f024380ab4bdc9b59285c688c78ce6effee9ed770e73d25f02ef9f33",
+        "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+        "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+        "manifest_sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-0309b87a66ce2b4e.json": "2e7c175f12b5034ae400c708fd1a035969632e0fb7e4dc105a6c3681b5f4ed4c",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-0928ba9f50415f7b.json": "c4612cb8ffb49d36b15062c5e9e955e98095dbbdeb602f85d759aafaf05c3abc",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-1705883f12dc79aa.json": "8d5da2e487619ae56e10c2066ec8b731d2721220dab63da9bf94af180f2563d0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-1c85c688c496c940.json": "782a20d350ad8923d96ebb3beabf85d041746f8af10a362bde146e0729d57cc0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-1feaa3c78170d1a6.json": "ad909bceb190d4fbf72f54013c4ce87bfee3e69acb8353f9f84891f6213efa2a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-250b3e695af837df.json": "fedba0364971d97430922ac70f379ea84e675a9dd42be626df4e2c03a4c99c78",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-2d13dd00accedcfa.json": "e14d453207a9eefb8e2c4e32efc3f6f0e4e1c938a5d9f32e3abb5141bc7f0055",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-5bbeee38fd365b5b.json": "9daa221217c01052da1ffa254cdd4fff631b3b9ca5bb8b7486fa54e1f45f64b0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-60ada0e7543a67d8.json": "e5084d66e5e75a1b0cc3900b478135244be84c79f77ab1105e5c29f47912e100",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-9301e65ac9a96f89.json": "0b98e0b2ca9217141c052cf1cdd6251c6ca29c40ca3dc2d1d7c63bfb02483437",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-d9f4b2788501b22f.json": "97d60c77a68a0aeb3a78584ae1215cd74364d6df91abc65b814efd233106ee86",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-dbd6c780d631b9f9.json": "20f73e6d9b18b7f9b882f951367b6af45d3e773a97824ae6ce3830291adda775",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-e7cc991ba30b22d4.json": "92f58dd9df06d5da99abcb269b7fb8dabb892ce70720f32b119c5ea9a9bebdde",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/failure-controller-f257b6781f78c4b8.json": "348e804765ec3c1b26254e4decf9f08d5d42a027f051e097b7092a2b93200d4a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2/identity-controller.json": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2-failure-index.json": "ed7852cfb0e871a4ef55d02d2699d0e98371a2a2f2531185ff6c270b5742675f",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2-negative-custody.json": "1d9a88c4bf6423869dc957efdaedbe0ef98b8eeb3840987f79b5e0c04df17659",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2-result.json": "23da944be11c3007c3e52782340a7fe16b767c64577e286a0770d41900c851bc",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b1-b2/replay-b1-b2.log": "b26c4d87f024380ab4bdc9b59285c688c78ce6effee9ed770e73d25f02ef9f33"
+      }
+    },
+    {
+      "name": "replay-b4",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4-spec.json",
+      "spec_sha256": "34d892a89d5276929609db5747b379aecd84bdd3ae19a9632e24ee4c3935d32f",
+      "result": {
+        "name": "replay-b4",
+        "exit_code": 1,
+        "seconds": 10.450058698654175,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "-k",
+          "same_held_outer or held_outer_preparation or staging_fault or partial_replay_publication or installed_replay_owns"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4.log",
+        "sha256": "12cfbebcc848479af2ea1d4d438da44ce8c4ac662e32fff0813558dcdddd3fac",
+        "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+        "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+        "manifest_sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/failure-controller-66b71f48dca97f59.json": "fef2af51417c44232b7c3119c7c6fcf94e6c31d03117f5e1879686ef4cf9f913",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/failure-controller-75486a6bb507f59a.json": "e2c5cf054c28f57153c6fcf54534b3ba008337c8a852cce3f83bf73fa3d11b43",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/failure-controller-a3a142ec4b3ca1bd.json": "c313b6ad61bfd815cd7f609fd303ba4c1ed727f5ac518f0e4a673185acc1407b",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4/identity-controller.json": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4-failure-index.json": "220b9ccf04d6ce97233e0c68134fd0e4d301d6f69ab1bb9567bf2f12cedb13d8",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4-negative-custody.json": "2dcc51a1132aadcee7db438dc4fbeebf7c173ee9a9a08c66edfa00dce0d67d19",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4-result.json": "292a45da76fe262bd07048da1447e88cf524946881b09ccac0f38032dadf4656",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-b4/replay-b4.log": "12cfbebcc848479af2ea1d4d438da44ce8c4ac662e32fff0813558dcdddd3fac"
+      }
+    },
+    {
+      "name": "replay-poison",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison-spec.json",
+      "spec_sha256": "ee429dbebbc164a66a61b391779f94085ca07a70e416ae427716881cedf14a66",
+      "result": {
+        "name": "replay-poison",
+        "exit_code": 0,
+        "seconds": 24.565738677978516,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison.log",
+        "sha256": "74107aa406cd7895d089b2b0c4e49c7b0cc0788002f643696c487d693b6c617e",
+        "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+        "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+        "manifest_sha256": "f95dceabad63cc0f5d62942e9447bebaa19c2242a9637c97fdf8d74c1c22a8d8",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/identity-controller.json": "5f262af36d22467a3de5564854fbb4efd85adc5808d1dc3df93f317b0f5493eb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json": "74b6bca366ae63560310019c530fa1bb4ea687ffa1b2de1c496e8f34cccdaa6b",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/spawn-identity-replay_poison.json": "723c8b14bc7606d3c6784b22678649b5f087be286fb51eebb33d744a8a96c22f",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison/spawn-observation-replay_poison.json": "7e3ff36a57b92b21d149692bf7a3767429fec05fe3ea8d7beb6f4b9e9638fc1b",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison-custody.json": "b284b7e524c0a7d97ad860bab993292bf13fb06e06245c3d8b1845a8a2f3ccbf",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison-result.json": "b90f38995168a9352c1512c6f217e385adf04aa5acd8ffff9186bfbc2011e0cc",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r77-replay-poison/replay-poison.log": "74107aa406cd7895d089b2b0c4e49c7b0cc0788002f643696c487d693b6c617e"
+      }
+    }
+  ],
+  "counts_by_job": {
+    "healthy": {
+      "passed": 14,
+      "failed": 2,
+      "note": "Includes original11healthy plus5newB4staging; overlapsB4."
+    },
+    "b1_b2": {
+      "passed": 4,
+      "failed": 14,
+      "note": "All14 reach intended DIDNOTRAISE defect assertions."
+    },
+    "b4": {
+      "passed": 12,
+      "failed": 3,
+      "note": "Archive2 and ndarraymethod1 are test prerequisites, not productionRED."
+    },
+    "poison": {
+      "passed": 1,
+      "failed": 0,
+      "note": "Expanded allfamily prepare/install/clear refusal; actual child38789,parent38734,PPID38734."
+    }
+  },
+  "unique_executed": 45,
+  "unique_passed": 28,
+  "unique_failed": 17,
+  "overlap": "Healthy andB4 overlap5cases,3PASS2FAIL; do not sum attempts as unique. Original9 causal nodes not rerun atR77.",
+  "custody": "Every named check815sources573configs13artifacts14registered1available verified; actual child separately verified",
+  "clocks": "Elapsed result seconds actual; absolute UTC start/end unavailable, not inferred.",
+  "next": "Narrow archive fixture and four ndarray method repairs, then exact3 prerequisite nodes and scoped review; B1/B2 productionfix after genuineRED+review. CUDA/coredesign and recurrence remain required."
+}

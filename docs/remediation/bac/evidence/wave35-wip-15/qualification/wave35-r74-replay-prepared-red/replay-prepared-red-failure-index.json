@@ -1,0 +1,33 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+  "unique_node_phase_failures": 4,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_refuses_intervening_peer_operation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_is_one_use",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_is_stale_after_same_owner_clear",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_per_prepared_restore_is_bound_to_issuing_owner",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

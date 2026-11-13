@@ -1,0 +1,53 @@
+{
+  "schema": "bac-root-command-child-reconciliation-v1",
+  "scope": "Root rechecked all54 structured command/source/log records and five actual child associations; no runtime rerun",
+  "commands_checked": 54,
+  "children": [
+    {
+      "attempt": "wave35-r76-replay-poison--replay-poison",
+      "result_sha256": "76773d434d85eaa7eda092982f895d3397cdadd254d30e76eb2ca80908f5e173",
+      "spec_sha256": "6447a42aeeb70159e94766a66d97fafb3398c796ecbb911f0a16ac845a479acb",
+      "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+      "child_pid": 37026,
+      "parent_pid": 37001,
+      "child_ppid": 37001
+    },
+    {
+      "attempt": "wave35-r77-replay-poison--replay-poison",
+      "result_sha256": "b90f38995168a9352c1512c6f217e385adf04aa5acd8ffff9186bfbc2011e0cc",
+      "spec_sha256": "ee429dbebbc164a66a61b391779f94085ca07a70e416ae427716881cedf14a66",
+      "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+      "child_pid": 38789,
+      "parent_pid": 38734,
+      "child_ppid": 38734
+    },
+    {
+      "attempt": "wave35-r79-replay-poison--replay-poison",
+      "result_sha256": "67304074620db23144f48e2040a625bd82540b6daaf684129282045a5cd3ddf1",
+      "spec_sha256": "e390169d57f84f2c3aa3d9805a8330401713a82acf1c8dbe2ba33916d98c519f",
+      "candidate_tree": "b63744a51ce4844ed6f35180d2a2e8e664407e78",
+      "child_pid": 40507,
+      "parent_pid": 40434,
+      "child_ppid": 40434
+    },
+    {
+      "attempt": "wave35-r81-independent-replay-poison--replay-poison",
+      "result_sha256": "f099ed185cf5750ae9ab739929e7d6afe66ec3e5654d42da6e8e7f9710f77c00",
+      "spec_sha256": "6c190c93584de50e67260912253f4a32e3c7977f50b6049cc78955d945a40be8",
+      "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+      "child_pid": 42369,
+      "parent_pid": 42298,
+      "child_ppid": 42298
+    },
+    {
+      "attempt": "wave35-r81-replay-poison--replay-poison",
+      "result_sha256": "1936669522d7cf701ccc7b5d640423a188861600fce5d04ebad65883874b86f6",
+      "spec_sha256": "542fa08832d1fd1056772cab89ddb453478204562dc57063aaa22f0fca20396f",
+      "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+      "child_pid": 42153,
+      "parent_pid": 42083,
+      "child_ppid": 42083
+    }
+  ],
+  "limitation": "Recorded PID/spec/result correlation verifies genuine recorded association; no historical literal attempt_id or absent UTC timestamps are invented."
+}

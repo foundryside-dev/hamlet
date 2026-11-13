@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r74-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-custody-api-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "replay-custody-api-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-k",
+        "test_direct_ambient_sample_waits or test_same_owner_clear or test_explicit_lineage"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_per_prepared_restore_is_bound_to_issuing_owner",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_per_prepared_restore_is_bound_to_issuing_owner() -> None:\n        \"\"\"RED: equal geometry cannot authorize another buffer's prepared handle.\"\"\"\n        source = _per(local=True)\n        other = _per(local=True)\n        candidate = source.prepare_serialized(source.serialize(), expected_obs_dim=1)\n        before = other.serialize()\n>       with pytest.raises(ValueError, match=\"[Pp]repared|[Ff]oreign|[Dd]estination\"):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:350: Failed",
+  "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc"
+}

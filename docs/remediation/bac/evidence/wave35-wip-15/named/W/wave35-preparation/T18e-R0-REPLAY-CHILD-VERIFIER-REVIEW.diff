@@ -1,0 +1,483 @@
+--- /workspace/bac-review-2026-11-01/qualification/verify_bac_publication_spawn_identity.py
++++ /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py
+@@ -1,4 +1,4 @@
+-"""Verify one explicitly named real child and parent PID correlation."""
++"""Verify the sealed replay poison child; no application imports."""
+ 
+ import fcntl
+ import hashlib
+@@ -7,96 +7,148 @@
+ import sys
+ from pathlib import Path
+ 
++ROLE = "replay_poison"
++MESSAGE = "replay poison fail closed"
++HARNESS_SHA256 = "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
++REPLAY_ARGS = (
++    "-m", "pytest",
++    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
++    "--no-cov", "-p", "no:cacheprovider", "-p", "no:benchmark", "-p", "bac_source_identity", "-q",
++)
++BOOTSTRAP_MODULES = ("world_curiosity_state", "rng_custody", "rnd")
++REPLAY_MODULES = ("replay_buffer", "prioritized_replay_buffer", "sequential_replay_buffer", "replay_contract")
++IDENTITY_FIELDS = {"sha", "candidate_tree", "module", "worker", "torch", "threads"}
++CHILD_FIELDS = IDENTITY_FIELDS | {"pid", "ppid", "manifest_sha256", "debug", "interop_threads", "imports", "replay_imports"}
++OBSERVATION_FIELDS = {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256", "parent_pid"}
+ 
+-spec = json.loads(Path(sys.argv[1]).read_text())
+-assert len(sys.argv) == 5, "SPEC JOB_INDEX CASE EXPECTED_MESSAGE required"
+-job = spec["jobs"][int(sys.argv[2])]
+-case = sys.argv[3]
+-expected_message = sys.argv[4]
+-assert case in {
+-    "binding_poison", "domains_poison", "bootstrap_poison_setter",
+-    "bootstrap_poison_cleanup", "bootstrap_poison_completion",
+-    "owner_capture_poison_setter", "owner_capture_poison_cleanup", "owner_capture_poison_completion",
+-    "bank_restore_poison_setter", "bank_restore_poison_cleanup", "bank_restore_poison_completion",
+-    "bank_install_poison_completion",
+-}
+-root = Path(spec["root"]).resolve()
+-manifest_path = Path(spec["manifest"])
+-manifest_bytes = manifest_path.read_bytes()
+-manifest_hash = hashlib.sha256(manifest_bytes).hexdigest()
+-manifest = json.loads(manifest_bytes)
+-output = Path(spec["output"])
+-job_dir = output / job["name"]
+-result = json.loads((output / (job["name"] + "-result.json")).read_text())
+-assert result["manifest_sha256"] == manifest_hash
+-assert result["candidate_tree"] == manifest["candidate_tree"]
+-assert result["base_commit"] == manifest["base_commit"]
+ 
+-controller = json.loads((job_dir / "identity-controller.json").read_text())
+-child_path = job_dir / f"spawn-identity-{case}.json"
+-observation_path = job_dir / f"spawn-observation-{case}.json"
+-child = json.loads(child_path.read_text())
+-observed = json.loads(observation_path.read_text())
+-assert set(observed) == {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256"}
+-assert type(child["pid"]) is int and child["pid"] > 0
+-assert observed["process_pid"] == observed["queued_pid"] == child["pid"]
+-assert observed["exitcode"] == 0 and observed["qualified"] is True
+-assert observed["message"] == expected_message
+-assert observed["manifest_sha256"] == child["manifest_sha256"] == manifest_hash
+-assert child["worker"] == case and controller["worker"] == "controller"
+-for identity in (controller, child):
+-    assert identity["sha"] == manifest["base_commit"]
+-    assert identity["candidate_tree"] == manifest["candidate_tree"]
+-    assert Path(identity["module"]).resolve() == root / "src/townlet/__init__.py"
+-    assert identity["threads"] == 1
+-assert child["torch"] == controller["torch"]
+-assert child["debug"] is True
+-assert type(child["interop_threads"]) is int and child["interop_threads"] == 5
+-expected_imports = {
+-    name: str(root / "src/townlet/exploration" / (name + ".py"))
+-    for name in ("world_curiosity_state", "rng_custody", "rnd")
+-}
+-assert child["imports"] == expected_imports
++def require(condition, message):
++    if not condition:
++        raise ValueError(message)
+ 
+-assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == manifest["base_commit"]
+-with (root / ".superpowers/bac-qualification-index.lock").open("a") as lock:
+-    fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+-    try:
+-        assert subprocess.check_output(["git", "write-tree"], cwd=root, text=True).strip() == manifest["candidate_tree"]
+-    finally:
+-        fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+-assert subprocess.run(["git", "diff", "--quiet"], cwd=root).returncode == 0
+-for relative, expected_hash in manifest["source_files"].items():
+-    assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected_hash, relative
+-for relative, expected_hash in manifest["configs"].items():
+-    assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected_hash, relative
+-for relative, expected_hash in manifest["artifacts"].items():
+-    assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected_hash, relative
+-assert subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=root, text=True) == manifest["worktree_registry"]
+ 
+-receipt = {
+-    "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+-    "job": job["name"],
+-    "case": case,
+-    "expected_message": expected_message,
+-    "parent_job_exit_code": result["exit_code"],
+-    "base_commit": manifest["base_commit"],
+-    "candidate_tree": manifest["candidate_tree"],
+-    "manifest_sha256": manifest_hash,
+-    "child_pid": child["pid"],
+-    "torch": child["torch"],
+-    "threads": child["threads"],
+-    "interop_threads": child["interop_threads"],
+-    "debug": child["debug"],
+-    "source_guards": len(manifest["source_files"]),
+-    "configs": len(manifest["configs"]),
+-    "artifacts": len(manifest["artifacts"]),
+-    "child_receipt_sha256": hashlib.sha256(child_path.read_bytes()).hexdigest(),
+-    "parent_observation_sha256": hashlib.sha256(observation_path.read_bytes()).hexdigest(),
+-    "verifier_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+-    "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts.",
+-}
+-destination = job_dir / f"spawn-custody-{case}.json"
+-assert not destination.exists(), destination
+-destination.write_text(json.dumps(receipt, indent=2) + "\n")
+-print(json.dumps(receipt, indent=2))
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def read_json(path):
++    data = Path(path).read_bytes()
++    value = json.loads(data)
++    require(type(value) is dict, f"JSON object required: {path}")
++    return value, digest(data)
++
++
++def positive_pid(value):
++    return type(value) is int and value > 0
++
++
++def check_repository(root, manifest):
++    require(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == manifest["base_commit"], "HEAD mismatch")
++    with (root / ".superpowers/bac-qualification-index.lock").open("a") as lock:
++        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
++        try:
++            tree = subprocess.check_output(["git", "write-tree"], cwd=root, text=True).strip()
++            require(tree == manifest["candidate_tree"], "index tree mismatch")
++        finally:
++            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
++    require(subprocess.run(["git", "diff", "--quiet"], cwd=root).returncode == 0, "unstaged changes")
++    registry = subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=root, text=True)
++    require(registry == manifest["worktree_registry"], "worktree registry mismatch")
++
++
++def check_inventory(root, manifest):
++    for category in ("source_files", "configs", "artifacts"):
++        inventory = manifest[category]
++        require(type(inventory) is dict, f"invalid {category}")
++        for relative, expected in inventory.items():
++            path = Path(relative)
++            require(not path.is_absolute() and ".." not in path.parts, f"unsafe inventory path: {relative}")
++            target = (root / path).resolve()
++            require(target.is_relative_to(root), f"inventory escapes root: {relative}")
++            require(digest(target.read_bytes()) == expected, f"{category} hash mismatch: {relative}")
++
++
++def check_bindings(spec, job, result, root, manifest, manifest_hash):
++    require(set(spec) == {"root", "manifest", "output", "workers", "jobs"}, "spec schema mismatch")
++    require(set(job) == {"name", "args"} and job["name"] == "replay-poison", "job schema/name mismatch")
++    require(type(spec["workers"]) is int and spec["workers"] == 1, "CPU harness concurrency mismatch")
++    fields = {"name", "exit_code", "seconds", "command", "log", "sha256", "candidate_tree", "base_commit", "manifest_sha256", "harness_sha256"}
++    require(set(result) == fields, "result schema mismatch")
++    require(type(result["exit_code"]) is int and result["exit_code"] == 0, "parent job failed")
++    require(result["name"] == job["name"], "result name mismatch")
++    require(type(job["args"]) is list and all(type(arg) is str for arg in job["args"]), "invalid command args")
++    require(job["args"] == list(REPLAY_ARGS), "sealed replay command mismatch")
++    require(result["command"] == [str(root / ".venv/bin/python"), *job["args"]], "result command mismatch")
++    require(result["harness_sha256"] == HARNESS_SHA256, "harness mismatch")
++    require(result["manifest_sha256"] == manifest_hash, "result manifest mismatch")
++    for field in ("base_commit", "candidate_tree"):
++        require(type(manifest[field]) is str and bool(manifest[field]) and result[field] == manifest[field], f"result {field} mismatch")
++    log_path = Path(spec["output"]) / (job["name"] + ".log")
++    require(Path(result["log"]) == log_path, "result log path mismatch")
++    require(digest(log_path.read_bytes()) == result["sha256"], "result log hash mismatch")
++
++
++def verify(spec_path, job_index=0):
++    spec, spec_hash = read_json(spec_path)
++    require(type(job_index) is int and 0 <= job_index < len(spec["jobs"]), "invalid job index")
++    job = spec["jobs"][job_index]
++    name = job["name"]
++    require(type(name) is str and name not in ("", ".", "..") and Path(name).name == name, "invalid job name")
++    root = Path(spec["root"]).resolve()
++    manifest, manifest_hash = read_json(spec["manifest"])
++    output = Path(spec["output"])
++    job_dir = output / name
++    destination = job_dir / f"replay-spawn-custody-{ROLE}.json"
++    require(not destination.exists(), "custody destination already exists")
++    result, result_hash = read_json(output / (name + "-result.json"))
++    check_bindings(spec, job, result, root, manifest, manifest_hash)
++    controller, controller_hash = read_json(job_dir / "identity-controller.json")
++    child, child_hash = read_json(job_dir / f"spawn-identity-{ROLE}.json")
++    observed, observed_hash = read_json(job_dir / f"spawn-observation-{ROLE}.json")
++    require(set(controller) == IDENTITY_FIELDS, "controller schema mismatch")
++    require(set(child) == CHILD_FIELDS, "child schema mismatch")
++    require(set(observed) == OBSERVATION_FIELDS, "observation schema mismatch")
++    for value in (child["pid"], child["ppid"], observed["parent_pid"], observed["process_pid"], observed["queued_pid"]):
++        require(positive_pid(value), "PID must be a positive exact integer")
++    require(observed["process_pid"] == observed["queued_pid"] == child["pid"], "child/Process/queue PID mismatch")
++    require(child["ppid"] == observed["parent_pid"] != child["pid"], "parent/PPID mismatch")
++    require(type(observed["exitcode"]) is int and observed["exitcode"] == 0, "child failed")
++    require(observed["qualified"] is True and observed["message"] == MESSAGE, "qualified success message mismatch")
++    require(observed["manifest_sha256"] == child["manifest_sha256"] == manifest_hash, "child manifest mismatch")
++    require(child["worker"] == ROLE and controller["worker"] == "controller", "role mismatch")
++    for identity in (controller, child):
++        require(identity["sha"] == manifest["base_commit"], "identity commit mismatch")
++        require(identity["candidate_tree"] == manifest["candidate_tree"], "identity tree mismatch")
++        require(Path(identity["module"]).resolve() == root / "src/townlet/__init__.py", "package import mismatch")
++        require(type(identity["threads"]) is int and identity["threads"] == 1, "intra-op profile mismatch")
++    require(child["torch"] == controller["torch"], "Torch version mismatch")
++    require(child["debug"] is True, "debug disabled")
++    require(type(child["interop_threads"]) is int and child["interop_threads"] == 5, "interop profile mismatch")
++    require(child["imports"] == {n: str(root / "src/townlet/exploration" / (n + ".py")) for n in BOOTSTRAP_MODULES}, "bootstrap imports mismatch")
++    replay_imports = {"townlet.training." + n: str(root / "src/townlet/training" / (n + ".py")) for n in REPLAY_MODULES}
++    require(child["replay_imports"] == replay_imports, "replay imports mismatch")
++    for path in [root / "src/townlet/__init__.py", *map(Path, child["imports"].values()), *map(Path, replay_imports.values())]:
++        require(str(path.relative_to(root)) in manifest["source_files"], "import absent from source manifest")
++    check_inventory(root, manifest)
++    check_repository(root, manifest)
++    receipt = {
++        "status": "REPLAY SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
++        "job": name, "case": ROLE, "expected_message": MESSAGE, "parent_job_exit_code": result["exit_code"],
++        "base_commit": manifest["base_commit"], "candidate_tree": manifest["candidate_tree"],
++        "manifest_sha256": manifest_hash, "spec_sha256": spec_hash, "result_sha256": result_hash,
++        "controller_sha256": controller_hash, "child_receipt_sha256": child_hash,
++        "parent_observation_sha256": observed_hash, "verifier_sha256": digest(Path(__file__).read_bytes()),
++        "harness_sha256": HARNESS_SHA256, "child_pid": child["pid"], "parent_pid": observed["parent_pid"],
++        "child_ppid": child["ppid"], "torch": child["torch"], "threads": 1, "interop_threads": 5, "debug": True,
++        "source_guards": len(manifest["source_files"]), "configs": len(manifest["configs"]), "artifacts": len(manifest["artifacts"]),
++        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
++        "scope": "This CPU replay poison consumer child only; no restoration-failure, CUDA, other-process or whole-package qualification.",
++    }
++    with destination.open("x") as stream:
++        stream.write(json.dumps(receipt, indent=2) + "\n")
++    return receipt
++
++
++if __name__ == "__main__":
++    require(len(sys.argv) in (2, 3), "SPEC [JOB_INDEX] required")
++    print(json.dumps(verify(sys.argv[1], int(sys.argv[2]) if len(sys.argv) == 3 else 0), indent=2))
+--- /dev/null
++++ /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py
+@@ -0,0 +1,234 @@
++"""Synthetic data tests only; root runs after tooling freeze and review."""
++
++import importlib.util
++import json
++import tempfile
++import unittest
++from pathlib import Path
++from types import SimpleNamespace
++from unittest.mock import patch
++
++VERIFIER = Path('/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py')
++spec = importlib.util.spec_from_file_location('replay_verifier_under_test', VERIFIER)
++verifier = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(verifier)
++
++
++class ReplayVerifierTests(unittest.TestCase):
++    def setUp(self):
++        self.temporary = tempfile.TemporaryDirectory(prefix='replay-verifier-data-')
++        self.addCleanup(self.temporary.cleanup)
++        self.base = Path(self.temporary.name)
++        self.root = self.base / 'synthetic-data-root'
++        (self.root / '.superpowers').mkdir(parents=True)
++        self.output = self.base / 'evidence'
++        self.job_dir = self.output / 'replay-poison'
++        self.job_dir.mkdir(parents=True)
++        self.paths = {
++            'manifest': self.base / 'manifest.json', 'spec': self.base / 'spec.json',
++            'result': self.output / 'replay-poison-result.json',
++            'controller': self.job_dir / 'identity-controller.json',
++            'child': self.job_dir / 'spawn-identity-replay_poison.json',
++            'observed': self.job_dir / 'spawn-observation-replay_poison.json',
++        }
++        imports = {n: str(self.root / 'src/townlet/exploration' / (n + '.py')) for n in verifier.BOOTSTRAP_MODULES}
++        replay = {'townlet.training.' + n: str(self.root / 'src/townlet/training' / (n + '.py')) for n in verifier.REPLAY_MODULES}
++        source_files = {}
++        for item in [str(self.root / 'src/townlet/__init__.py'), *imports.values(), *replay.values()]:
++            path = Path(item)
++            path.parent.mkdir(parents=True, exist_ok=True)
++            path.write_bytes(b'SYNTHETIC DATA; NEVER IMPORT OR EXECUTE\n')
++            source_files[str(path.relative_to(self.root))] = verifier.digest(path.read_bytes())
++        for name in ('config-data', 'artifact-data'):
++            (self.root / name).write_bytes(b'synthetic fixture data')
++        self.manifest = {
++            'base_commit': 'a' * 40, 'candidate_tree': 'b' * 40, 'worktree_registry': 'synthetic registry\n',
++            'source_files': source_files,
++            'configs': {'config-data': verifier.digest(b'synthetic fixture data')},
++            'artifacts': {'artifact-data': verifier.digest(b'synthetic fixture data')},
++        }
++        self.write('manifest', self.manifest)
++        manifest_hash = verifier.digest(self.paths['manifest'].read_bytes())
++        self.spec_data = {
++            'root': str(self.root), 'manifest': str(self.paths['manifest']), 'output': str(self.output), 'workers': 1,
++            'jobs': [{'name': 'replay-poison', 'args': list(verifier.REPLAY_ARGS)}],
++        }
++        self.write('spec', self.spec_data)
++        log = self.output / 'replay-poison.log'
++        log.write_bytes(b'synthetic success log\n')
++        self.result = {
++            'name': 'replay-poison', 'exit_code': 0, 'seconds': 1.0,
++            'command': [str(self.root / '.venv/bin/python'), *self.spec_data['jobs'][0]['args']],
++            'log': str(log), 'sha256': verifier.digest(log.read_bytes()),
++            'base_commit': self.manifest['base_commit'], 'candidate_tree': self.manifest['candidate_tree'],
++            'manifest_sha256': manifest_hash, 'harness_sha256': verifier.HARNESS_SHA256,
++        }
++        self.write('result', self.result)
++        self.controller = {
++            'sha': self.manifest['base_commit'], 'candidate_tree': self.manifest['candidate_tree'],
++            'module': str(self.root / 'src/townlet/__init__.py'), 'worker': 'controller', 'torch': 'synthetic-version', 'threads': 1,
++        }
++        self.write('controller', self.controller)
++        self.child = {
++            **self.controller, 'worker': 'replay_poison', 'pid': 102, 'ppid': 101, 'manifest_sha256': manifest_hash,
++            'debug': True, 'interop_threads': 5, 'imports': imports, 'replay_imports': replay,
++        }
++        self.write('child', self.child)
++        self.observed = {
++            'process_pid': 102, 'queued_pid': 102, 'parent_pid': 101, 'exitcode': 0,
++            'qualified': True, 'message': verifier.MESSAGE, 'manifest_sha256': manifest_hash,
++        }
++        self.write('observed', self.observed)
++        self.git_values = {'HEAD': self.manifest['base_commit'], 'tree': self.manifest['candidate_tree'], 'registry': self.manifest['worktree_registry']}
++        self.start_patch('subprocess.check_output', side_effect=self.metadata)
++        self.start_patch('subprocess.run', return_value=SimpleNamespace(returncode=0))
++        self.start_patch('fcntl.flock', return_value=None)
++
++    def start_patch(self, name, **kwargs):
++        mocker = patch.object(verifier.subprocess if name.startswith('subprocess') else verifier.fcntl, name.split('.')[1], **kwargs)
++        result = mocker.start()
++        self.addCleanup(mocker.stop)
++        return result
++
++    def metadata(self, args, **kwargs):
++        self.assertEqual(kwargs['cwd'], self.root)
++        commands = {('git', 'rev-parse', 'HEAD'): 'HEAD', ('git', 'write-tree'): 'tree', ('git', 'worktree', 'list', '--porcelain'): 'registry'}
++        self.assertIn(tuple(args), commands)
++        return self.git_values[commands[tuple(args)]]
++
++    def write(self, name, value):
++        self.paths[name].write_text(json.dumps(value))
++
++    def invoke(self):
++        return verifier.verify(self.paths['spec'])
++
++    def refuse(self):
++        with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
++            self.invoke()
++        self.assertFalse((self.job_dir / 'replay-spawn-custody-replay_poison.json').exists())
++
++    def test_positive_and_exclusive_destination(self):
++        receipt = self.invoke()
++        self.assertEqual(receipt['child_pid'], 102)
++        self.assertEqual(receipt['parent_pid'], receipt['child_ppid'])
++        self.assertEqual(receipt['spec_sha256'], verifier.digest(self.paths['spec'].read_bytes()))
++        self.assertEqual(receipt['verifier_sha256'], verifier.digest(VERIFIER.read_bytes()))
++        destination = self.job_dir / 'replay-spawn-custody-replay_poison.json'
++        original = destination.read_bytes()
++        with self.assertRaises(ValueError):
++            self.invoke()
++        self.assertEqual(destination.read_bytes(), original)
++
++    def test_identity_and_observation_controls(self):
++        controls = [
++            ('child', 'worker', 'bank_install_poison_completion'), ('observed', 'message', 'other success'),
++            ('child', 'pid', 103), ('observed', 'process_pid', 103), ('observed', 'queued_pid', 103),
++            ('child', 'ppid', 100), ('observed', 'parent_pid', 100), ('child', 'pid', True),
++            ('observed', 'process_pid', 102.0), ('observed', 'parent_pid', 0),
++            ('observed', 'exitcode', 1), ('observed', 'qualified', False), ('child', 'debug', False),
++            ('child', 'interop_threads', 1), ('controller', 'threads', True),
++            ('child', 'manifest_sha256', 'wrong'), ('child', 'candidate_tree', 'wrong'),
++        ]
++        for record, field, bad in controls:
++            with self.subTest(record=record, field=field, bad=bad):
++                data = getattr(self, record)
++                original = data[field]
++                data[field] = bad
++                self.write(record, data)
++                self.refuse()
++                data[field] = original
++                self.write(record, data)
++
++    def test_import_maps(self):
++        for field in ('imports', 'replay_imports'):
++            original = self.child[field].copy()
++            for mode in ('missing', 'wrong', 'extra'):
++                with self.subTest(field=field, mode=mode):
++                    changed = original.copy()
++                    key = next(iter(changed))
++                    if mode == 'missing':
++                        del changed[key]
++                    elif mode == 'wrong':
++                        changed[key] += '.wrong'
++                    else:
++                        changed['unexpected'] = 'unexpected'
++                    self.child[field] = changed
++                    self.write('child', self.child)
++                    self.refuse()
++            self.child[field] = original
++            self.write('child', self.child)
++
++    def test_parent_result_controls(self):
++        for field, value in [('exit_code', 1), ('exit_code', False), ('harness_sha256', 'wrong'), ('manifest_sha256', 'wrong'),
++                             ('candidate_tree', 'wrong'), ('base_commit', 'wrong'), ('command', ['unrelated']), ('sha256', 'wrong')]:
++            with self.subTest(field=field, value=value):
++                original = self.result[field]
++                self.result[field] = value
++                self.write('result', self.result)
++                self.refuse()
++                self.result[field] = original
++                self.write('result', self.result)
++
++    def test_partial_and_unknown_schemas(self):
++        for record in ('spec', 'result', 'controller', 'child', 'observed'):
++            original = json.loads(self.paths[record].read_text())
++            for mode in ('missing', 'extra'):
++                with self.subTest(record=record, mode=mode):
++                    changed = original.copy()
++                    if mode == 'missing':
++                        del changed[next(iter(changed))]
++                    else:
++                        changed['unknown'] = 1
++                    self.write(record, changed)
++                    self.refuse()
++            self.write(record, original)
++
++    def test_missing_child_and_observation(self):
++        for record in ('child', 'observed'):
++            with self.subTest(record=record):
++                saved = self.paths[record].with_suffix('.saved')
++                self.paths[record].rename(saved)
++                self.refuse()
++                saved.rename(self.paths[record])
++
++    def test_source_config_artifact_mismatch(self):
++        for category in ('source_files', 'configs', 'artifacts'):
++            path = self.root / next(iter(self.manifest[category]))
++            original = path.read_bytes()
++            path.write_bytes(b'changed synthetic data')
++            self.refuse()
++            path.write_bytes(original)
++
++    def test_repository_metadata_mismatch(self):
++        for key in self.git_values:
++            original = self.git_values[key]
++            self.git_values[key] = 'wrong'
++            self.refuse()
++            self.git_values[key] = original
++
++    def test_manifest_mutation(self):
++        self.manifest['candidate_tree'] = 'changed'
++        self.write('manifest', self.manifest)
++        self.refuse()
++
++    def test_negative_job_index(self):
++        with self.assertRaises(ValueError):
++            verifier.verify(self.paths['spec'], -1)
++
++    def test_coherently_changed_command_refused(self):
++        self.spec_data['jobs'][0]['args'] = ['-m', 'pytest', 'unrelated']
++        self.result['command'] = [str(self.root / '.venv/bin/python'), '-m', 'pytest', 'unrelated']
++        self.write('spec', self.spec_data)
++        self.write('result', self.result)
++        self.refuse()
++
++    def test_parent_child_same_pid_refused(self):
++        self.child['ppid'] = self.child['pid']
++        self.observed['parent_pid'] = self.child['pid']
++        self.write('child', self.child)
++        self.write('observed', self.observed)
++        self.refuse()
++
++
++if __name__ == '__main__':
++    unittest.main()

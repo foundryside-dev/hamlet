@@ -1,0 +1,39 @@
+{
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "runs": [
+    {
+      "id": 43380483349,
+      "name": "Config Validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 43380483338,
+      "name": "Lint",
+      "status": "completed",
+      "conclusion": "failure",
+      "known_failure": "six oracle type errors from prior actual log"
+    },
+    {
+      "id": 43380483451,
+      "name": "Tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "job_id": 131736848095,
+      "failure_step": "Run fast test suite",
+      "cause": "Unknown: connector log retrieval twice Transport closed; gh sandbox blocked then approved network request Forbidden. Run metadata verifies failure at fast-suite step, not assertion/cause."
+    }
+  ],
+  "test_job": {
+    "id": 131736848095,
+    "started_at": "2026-11-13T06:41:50Z",
+    "completed_at": "2026-11-13T08:04:21Z",
+    "step7": {
+      "name": "Run fast test suite",
+      "started_at": "2026-11-13T06:44:19Z",
+      "completed_at": "2026-11-13T08:04:20Z",
+      "conclusion": "failure"
+    }
+  },
+  "limitation": "No raw test log acquired. Empty redirected wip14-tests-ci.log is NOT test evidence; no cause or counts inferred."
+}

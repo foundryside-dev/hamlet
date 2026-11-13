@@ -1,0 +1,133 @@
+{
+  "schema": "bac-checkpoint-selection-contract-v1",
+  "checkpoint_id": "wave35-wip-15",
+  "series": "wave35",
+  "interval_start": 73,
+  "terminal_round": 81,
+  "baseline_inventory": {
+    "root": "W",
+    "path": "evidence-management/inventory-v2.json",
+    "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129",
+    "bytes": 2755978
+  },
+  "catalog": [
+    {
+      "checkpoint_id": "wave35-wip-13",
+      "format": "wip13-artifacts-v1",
+      "interval": [
+        55,
+        58
+      ],
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-13.json",
+        "sha256": "f05ca336a4c96c9c36c17ca2edd0c5778937f719f8bc4fadcfabfe2ea9c45cdb",
+        "bytes": 81982
+      },
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
+        "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b",
+        "bytes": 146067
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-14",
+      "format": "incremental-v2",
+      "interval": [
+        59,
+        72
+      ],
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+        "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a",
+        "bytes": 619867
+      },
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-14/selection-plan.json",
+        "sha256": "2195ce33e7a08039434f3018e5e426b3924a6564e1211181b249040c79ef8ea8",
+        "bytes": 763830
+      }
+    }
+  ],
+  "required_components": [
+    {
+      "root": "W",
+      "path": "wave35/r73-replay-stagea-receipt.json",
+      "sha256": "55af950829bb32176ab976b757a461aa2514fda99d11e998b947fea304c13700",
+      "bytes": 2796,
+      "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+      "scope": "R0 direct replay StageA causal tests; no production fix or package closure"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r74-replay-stagea-fix1-receipt.json",
+      "sha256": "98ee3a1114ac0556be89af709675cc357b9e8a887578df213f79125576d744e2",
+      "bytes": 4672,
+      "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+      "scope": "R0 direct replay StageA test-quality fix1; production unchanged"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r75-replay-stagea-fix2-receipt.json",
+      "sha256": "e91f096991d134ffb268f632703967082b925594b31a8024169a9d71fe8c76b6",
+      "bytes": 3209,
+      "candidate_tree": "c46acb9860c50cfe4162c65d696a8662947179fc",
+      "scope": "Replay StageA test-only PER active-prefix fix2, production unchanged"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r76-replay-poison-receipt.json",
+      "sha256": "f0304d5140e8b6c5f3b477bd1d87485949d61cb1d3dc6c4b3892cba589e47ae8",
+      "bytes": 2372,
+      "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+      "scope": "R76 replay poison consumer test only; initial receipt remains immutable"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r76-replay-stageb-initial-receipt.json",
+      "sha256": "37122e2432de18be98f7b07d0e3757cb9a90460cde181abf32963f7ca06d9667",
+      "bytes": 6498,
+      "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+      "scope": "R76 StageB initial production, collection, healthy, causal and static evidence; poison UNRUN at that historical receipt"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r77-replay-fix-a-tests-receipt.json",
+      "sha256": "5cd5e356cf256527a427c3e43ffd6d668ec89e155851241112f12b9a2eea0c18",
+      "bytes": 16937,
+      "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+      "scope": "R77 tests-first replay repair A; production unchanged; not component qualification"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r78-replay-fixture-fix1-receipt.json",
+      "sha256": "00d2f1b8510b88f8b3464582e288ec1c946e95ed34e122a6b2ccc697d07632c0",
+      "bytes": 3003,
+      "candidate_tree": "690c2599c3c25c6352f046f9ea44deb30b9f0b86",
+      "scope": "R78 narrow test prerequisite fix1, not production repair"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r79-replay-fix-a-production1-receipt.json",
+      "sha256": "702b2951da2082427b15db3268ba030601ae53777d9569127248f6f709542dfd",
+      "bytes": 18734,
+      "candidate_tree": "b63744a51ce4844ed6f35180d2a2e8e664407e78",
+      "scope": "R79 fixed replay A productionround1; required lint correction remains"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r80-replay-fix-a-production2-receipt.json",
+      "sha256": "fa41a4e6a38279b6aba1f8b3876bebefed87f7f22ef63035bbf5c8f9524178cc",
+      "bytes": 12273,
+      "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+      "scope": "R80 productionround2 generic syntax prerequisites only"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r81-replay-fix-a-component-receipt.json",
+      "sha256": "71abc4a628b8a698cdb878fb71857d207ecf50fbdde3c84e90ba4ddc44564cc4",
+      "bytes": 23102,
+      "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+      "scope": "Bounded replay repair A: flat/PER validated DTOs, shared prepared-handle ownership and typed guard signatures, shared/flat/PER publication controls"
+    }
+  ]
+}

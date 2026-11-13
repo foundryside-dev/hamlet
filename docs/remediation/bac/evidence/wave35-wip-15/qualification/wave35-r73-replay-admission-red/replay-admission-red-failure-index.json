@@ -1,0 +1,41 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where wait = <threading.Event at 0x7f4b58e29c70: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7f4b58f73450: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[recurrent]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7f4b58fd9d10: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

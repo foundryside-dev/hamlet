@@ -1,0 +1,255 @@
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:129:17
+    |
+129 | def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                 ^^^^^^
+130 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+131 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+128 |
+    - def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+129 + def replay_read[Owner: ReplayCustody, _Result, **_Arguments](
+130 +     method: Callable[Concatenate[Owner, _Arguments], _Result],
+131 + ) -> Callable[Concatenate[Owner, _Arguments], _Result]:
+132 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+133 +     def guarded(self: Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+134 |         with self._owner_operation(mutation=False):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:129:40
+    |
+129 | def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                                        ^^^^^^^
+130 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+131 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+128 |
+    - def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+129 + def replay_read[_Owner: ReplayCustody, Result, **_Arguments](
+130 +     method: Callable[Concatenate[_Owner, _Arguments], Result],
+131 + ) -> Callable[Concatenate[_Owner, _Arguments], Result]:
+132 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+133 +     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> Result:
+134 |         with self._owner_operation(mutation=False):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:129:51
+    |
+129 | def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                                                   ^^^^^^^^^^
+130 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+131 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+128 |
+    - def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+129 + def replay_read[_Owner: ReplayCustody, _Result, **Arguments](
+130 +     method: Callable[Concatenate[_Owner, Arguments], _Result],
+131 + ) -> Callable[Concatenate[_Owner, Arguments], _Result]:
+132 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+133 +     def guarded(self: _Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> _Result:
+134 |         with self._owner_operation(mutation=False):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:140:21
+    |
+140 | def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                     ^^^^^^
+141 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+142 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+139 |
+    - def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+140 + def replay_mutation[Owner: ReplayCustody, _Result, **_Arguments](
+141 +     method: Callable[Concatenate[Owner, _Arguments], _Result],
+142 + ) -> Callable[Concatenate[Owner, _Arguments], _Result]:
+143 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+144 +     def guarded(self: Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+145 |         with self._owner_operation(mutation=True):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:140:44
+    |
+140 | def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                                            ^^^^^^^
+141 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+142 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+139 |
+    - def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+140 + def replay_mutation[_Owner: ReplayCustody, Result, **_Arguments](
+141 +     method: Callable[Concatenate[_Owner, _Arguments], Result],
+142 + ) -> Callable[Concatenate[_Owner, _Arguments], Result]:
+143 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+144 +     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> Result:
+145 |         with self._owner_operation(mutation=True):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:140:55
+    |
+140 | def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                                                       ^^^^^^^^^^
+141 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+142 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+139 |
+    - def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+140 + def replay_mutation[_Owner: ReplayCustody, _Result, **Arguments](
+141 +     method: Callable[Concatenate[_Owner, Arguments], _Result],
+142 + ) -> Callable[Concatenate[_Owner, Arguments], _Result]:
+143 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+144 +     def guarded(self: _Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> _Result:
+145 |         with self._owner_operation(mutation=True):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:151:19
+    |
+151 | def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                   ^^^^^^
+152 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+153 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+150 |
+    - def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+151 + def replay_sample[Owner: ReplayCustody, _Result, **_Arguments](
+152 +     method: Callable[Concatenate[Owner, _Arguments], _Result],
+153 + ) -> Callable[Concatenate[Owner, _Arguments], _Result]:
+154 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+155 +     def guarded(self: Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+156 |         with self._domain_operation("sample", _required_lineage(kwargs)):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:151:42
+    |
+151 | def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                                          ^^^^^^^
+152 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+153 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+150 |
+    - def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+151 + def replay_sample[_Owner: ReplayCustody, Result, **_Arguments](
+152 +     method: Callable[Concatenate[_Owner, _Arguments], Result],
+153 + ) -> Callable[Concatenate[_Owner, _Arguments], Result]:
+154 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+155 +     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> Result:
+156 |         with self._domain_operation("sample", _required_lineage(kwargs)):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:151:53
+    |
+151 | def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+    |                                                     ^^^^^^^^^^
+152 |     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+153 | ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+150 |
+    - def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+151 + def replay_sample[_Owner: ReplayCustody, _Result, **Arguments](
+152 +     method: Callable[Concatenate[_Owner, Arguments], _Result],
+153 + ) -> Callable[Concatenate[_Owner, Arguments], _Result]:
+154 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> _Result:
+155 +     def guarded(self: _Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> _Result:
+156 |         with self._domain_operation("sample", _required_lineage(kwargs)):
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:163:20
+    |
+163 | def replay_prepare[_Owner: ReplayCustody, **_Arguments](
+    |                    ^^^^^^
+164 |     method: Callable[Concatenate[_Owner, _Arguments], object],
+165 | ) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+162 |
+    - def replay_prepare[_Owner: ReplayCustody, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], object],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
+163 + def replay_prepare[Owner: ReplayCustody, **_Arguments](
+164 +     method: Callable[Concatenate[Owner, _Arguments], object],
+165 + ) -> Callable[Concatenate[Owner, _Arguments], PreparedReplay]:
+166 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> PreparedReplay:
+167 +     def guarded(self: Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> PreparedReplay:
+168 |         with self._domain_operation("prepare", _required_lineage(kwargs)) as lease:
+    |
+
+UP049 [*] Generic function uses private type parameters
+   --> src/townlet/training/replay_contract.py:163:45
+    |
+163 | def replay_prepare[_Owner: ReplayCustody, **_Arguments](
+    |                                             ^^^^^^^^^^
+164 |     method: Callable[Concatenate[_Owner, _Arguments], object],
+165 | ) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
+    |
+help: Rename type parameter to remove leading underscores
+    |
+162 |
+    - def replay_prepare[_Owner: ReplayCustody, **_Arguments](
+    -     method: Callable[Concatenate[_Owner, _Arguments], object],
+    - ) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
+163 + def replay_prepare[_Owner: ReplayCustody, **Arguments](
+164 +     method: Callable[Concatenate[_Owner, Arguments], object],
+165 + ) -> Callable[Concatenate[_Owner, Arguments], PreparedReplay]:
+166 |     @wraps(method)
+    -     def guarded(self: _Owner, /, *args: _Arguments.args, **kwargs: _Arguments.kwargs) -> PreparedReplay:
+167 +     def guarded(self: _Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> PreparedReplay:
+168 |         with self._domain_operation("prepare", _required_lineage(kwargs)) as lease:
+    |
+
+Found 11 errors.
+[*] 11 fixable with the `--fix` option.

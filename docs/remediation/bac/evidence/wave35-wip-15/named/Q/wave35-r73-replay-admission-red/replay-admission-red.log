@@ -1,0 +1,127 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 18 items / 15 deselected / 3 selected
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py FFF        [100%]
+
+=================================== FAILURES ===================================
+__________ test_direct_ambient_sample_waits_for_registered_peer[flat] __________
+
+kind = 'flat'
+
+    @pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
+    def test_direct_ambient_sample_waits_for_registered_peer(kind: str) -> None:
+        """RED: current direct API executes while an unrelated domain owner holds the lease.
+    
+        This intentionally invokes the current signature to expose actual bypass.
+        The call must change to explicit lineage=None when the API changes.
+        """
+        owner = _direct_owner(kind)
+        peer, participant = _peer()
+        attempted, done = threading.Event(), threading.Event()
+        outcome: list[object] = []
+    
+        def draw() -> None:
+            attempted.set()
+            try:
+                outcome.append(_direct_draw(kind, owner))
+            except BaseException as error:
+                outcome.append(error)
+            finally:
+                done.set()
+    
+        worker = threading.Thread(target=draw, name=f"replay-direct-{kind}", daemon=True)
+        try:
+            with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None):
+                worker.start()
+                assert attempted.wait(3), "the direct sampler did not reach its attempt"
+>               assert not done.wait(0.5), "direct replay sampling bypassed the held process domain"
+E               AssertionError: direct replay sampling bypassed the held process domain
+E               assert not True
+E                +  where True = wait(0.5)
+E                +    where wait = <threading.Event at 0x7f4b58fd9d10: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:240: AssertionError
+__________ test_direct_ambient_sample_waits_for_registered_peer[per] ___________
+
+kind = 'per'
+
+    @pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
+    def test_direct_ambient_sample_waits_for_registered_peer(kind: str) -> None:
+        """RED: current direct API executes while an unrelated domain owner holds the lease.
+    
+        This intentionally invokes the current signature to expose actual bypass.
+        The call must change to explicit lineage=None when the API changes.
+        """
+        owner = _direct_owner(kind)
+        peer, participant = _peer()
+        attempted, done = threading.Event(), threading.Event()
+        outcome: list[object] = []
+    
+        def draw() -> None:
+            attempted.set()
+            try:
+                outcome.append(_direct_draw(kind, owner))
+            except BaseException as error:
+                outcome.append(error)
+            finally:
+                done.set()
+    
+        worker = threading.Thread(target=draw, name=f"replay-direct-{kind}", daemon=True)
+        try:
+            with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None):
+                worker.start()
+                assert attempted.wait(3), "the direct sampler did not reach its attempt"
+>               assert not done.wait(0.5), "direct replay sampling bypassed the held process domain"
+E               AssertionError: direct replay sampling bypassed the held process domain
+E               assert not True
+E                +  where True = wait(0.5)
+E                +    where wait = <threading.Event at 0x7f4b58e29c70: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:240: AssertionError
+_______ test_direct_ambient_sample_waits_for_registered_peer[recurrent] ________
+
+kind = 'recurrent'
+
+    @pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
+    def test_direct_ambient_sample_waits_for_registered_peer(kind: str) -> None:
+        """RED: current direct API executes while an unrelated domain owner holds the lease.
+    
+        This intentionally invokes the current signature to expose actual bypass.
+        The call must change to explicit lineage=None when the API changes.
+        """
+        owner = _direct_owner(kind)
+        peer, participant = _peer()
+        attempted, done = threading.Event(), threading.Event()
+        outcome: list[object] = []
+    
+        def draw() -> None:
+            attempted.set()
+            try:
+                outcome.append(_direct_draw(kind, owner))
+            except BaseException as error:
+                outcome.append(error)
+            finally:
+                done.set()
+    
+        worker = threading.Thread(target=draw, name=f"replay-direct-{kind}", daemon=True)
+        try:
+            with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None):
+                worker.start()
+                assert attempted.wait(3), "the direct sampler did not reach its attempt"
+>               assert not done.wait(0.5), "direct replay sampling bypassed the held process domain"
+E               AssertionError: direct replay sampling bypassed the held process domain
+E               assert not True
+E                +  where True = wait(0.5)
+E                +    where wait = <threading.Event at 0x7f4b58f73450: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:240: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[recurrent]
+======================= 3 failed, 15 deselected in 0.12s =======================

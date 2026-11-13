@@ -1,0 +1,427 @@
+{
+  "schema": "bac-page-refresh-receipt-v1",
+  "recorded_at_utc": "2026-11-13T08:51:15Z",
+  "scope": "User-authorized one-time refresh of existing BAC tracker; no package closure or source qualification.",
+  "page_id": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "url": "https://chatgpt.com/space/page_6ffffcb967fc8191a354fbe3661e4cb8",
+  "title": "BAC Work Completed and Remaining",
+  "skill": "pages:maintain-space",
+  "skill_resource": "skill://plugin_connector_1p_4a72ddeef4c481918f92d8e8df18fb2c/maintain-space/SKILL.md",
+  "before_sequence": 32,
+  "after_sequence": 33,
+  "projection_sequence": 33,
+  "read_guard": "Full native read supplied no content.through_sequence; exact observed block hashes used, no invented base_sequence.",
+  "edit_receipt": {
+    "new_sequence": 33,
+    "through_sequence": 33,
+    "operation_results": [
+      {
+        "operation_index": 0,
+        "preceding_block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+          "relative_position_base64": "AL+M+KELkw5B"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+            "hash": "2158702c459393b1bd02ca7ed02210b660e779fac07be0915cf36e677b810d59"
+          }
+        ]
+      },
+      {
+        "operation_index": 1,
+        "preceding_block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+          "relative_position_base64": "AL+M+KELqkFB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+            "hash": "5ef216526b11d1f35eb0195f5c6175e876ffb2815855688c3204a7a4c2d14ec8"
+          }
+        ]
+      },
+      {
+        "operation_index": 2,
+        "preceding_block_id": "08d6fbb6-b262-4acb-84ac-d3c973974444",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+          "relative_position_base64": "AL+M+KEL/lNB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+            "hash": "f2870984e0457cb8e843ecbe9acd666ca1f8d20126afa42dee14d10454a2f119"
+          }
+        ]
+      },
+      {
+        "operation_index": 3,
+        "preceding_block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+        "created_block_ids": [],
+        "continuation_position": {
+          "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+          "relative_position_base64": "AOmdg5gC1xxB"
+        },
+        "affected_blocks": [
+          {
+            "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+            "hash": "802abfb095a414ebe78597da20897ba85cdbb2d9d084ad87b59b8bda89edb07e"
+          }
+        ]
+      }
+    ]
+  },
+  "readback": "Native read_page(view=full); complete block-by-block markdown/hash/order comparison.",
+  "checks": {
+    "block_count_before": 32,
+    "block_count_after": 32,
+    "ids_order_unchanged": true,
+    "title_unchanged": true,
+    "changed_indices": [
+      3,
+      18,
+      29,
+      30
+    ],
+    "expected_changes_exact": true,
+    "untouched_blocks_exact": true,
+    "package_ids_before": [
+      "PW01",
+      "PW02",
+      "PW03",
+      "PW04",
+      "PW05",
+      "PW06",
+      "PW07",
+      "PW08",
+      "PW08a",
+      "PW09",
+      "PW10",
+      "PW11",
+      "PW12",
+      "PW13",
+      "PW14",
+      "PW15",
+      "PW16",
+      "T01",
+      "T02",
+      "T03",
+      "T03a",
+      "T04",
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "T08a",
+      "T09",
+      "T09a",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T15",
+      "T16",
+      "T17",
+      "T18",
+      "T18a",
+      "T18b",
+      "T18c",
+      "T18d",
+      "T18e",
+      "T18f",
+      "T19",
+      "T20",
+      "T21",
+      "T22",
+      "T23",
+      "T24",
+      "T25",
+      "T26",
+      "T27",
+      "T28",
+      "T29",
+      "T30",
+      "T31",
+      "T32",
+      "T33",
+      "T34",
+      "T35",
+      "T36",
+      "T37",
+      "T38",
+      "T39",
+      "T40"
+    ],
+    "package_ids_after": [
+      "PW01",
+      "PW02",
+      "PW03",
+      "PW04",
+      "PW05",
+      "PW06",
+      "PW07",
+      "PW08",
+      "PW08a",
+      "PW09",
+      "PW10",
+      "PW11",
+      "PW12",
+      "PW13",
+      "PW14",
+      "PW15",
+      "PW16",
+      "T01",
+      "T02",
+      "T03",
+      "T03a",
+      "T04",
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "T08a",
+      "T09",
+      "T09a",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T15",
+      "T16",
+      "T17",
+      "T18",
+      "T18a",
+      "T18b",
+      "T18c",
+      "T18d",
+      "T18e",
+      "T18f",
+      "T19",
+      "T20",
+      "T21",
+      "T22",
+      "T23",
+      "T24",
+      "T25",
+      "T26",
+      "T27",
+      "T28",
+      "T29",
+      "T30",
+      "T31",
+      "T32",
+      "T33",
+      "T34",
+      "T35",
+      "T36",
+      "T37",
+      "T38",
+      "T39",
+      "T40"
+    ],
+    "package_tables_unchanged": true,
+    "accounting_unchanged": true,
+    "sequence": 33,
+    "projection_sequence": 33
+  },
+  "package_count": 66,
+  "accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "changed_blocks": [
+    {
+      "canonical_index_zero_based": 3,
+      "block_id": "f8f1ed01-b39f-4bf5-b3df-1f1fcd8cdd7a",
+      "before_hash": "187897f9d1f9b6381015d91c168304a9e844f272adb2e288b4436f25d1a17b4b",
+      "after_hash": "2158702c459393b1bd02ca7ed02210b660e779fac07be0915cf36e677b810d59",
+      "before_markdown": "| Area | Status | What this means |\n| --- | --- | --- |\n| Original package releases | 28 qualified, 38 remaining | All 66 canonical package IDs remain unchanged; final acceptance on one common source revision is still owed. |\n| Later component delivery | Bounded BANK/owner CPU component qualified | Managed RNG admission occurs before the BANK lock; authentic lineage reaches private/shared operations. Native state and gradients are captured together, saved native configuration is reconstructed offside, required owners stay alive through publication, and final currency plus uncertain-completion checks fail closed. See the [BANK contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md). |\n| Current work | Complete parent/runner integration after qualified component delivery | R72 proves all five families and both scopes: restored fresh-episode learning, exact BANK continuation under identical authentic inputs, saved native/optimizer/gradient configuration, archive fresh/clone future learning, owner lifetime and isolated poison/install-exit behavior. Independent exact stochastic or mid-episode simulator trajectories remain deferred by C10/K01; current-parent replay and joint publication obligations remain required. |\n| Published checkpoint | [WIP14 678513c7](https://github.com/foundryside-dev/hamlet/commit/678513c7540a61114d59a17d1b1e0eb8a06ce0a2) | Remote SHA 678513c7540a61114d59a17d1b1e0eb8a06ce0a2, publication tree a86529dfe1759dca3f8daad8a98cd161526fb2ad, verified by GitHub Primary ref/commit-tree and git ls-remote. [WIP14 evidence](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/evidence/wave35-wip-14.json) binds the actual executed R72 candidate c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc; publication and execution identities are distinct. [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43380483349), [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43380483338/job/131736847699): the remote mypy log confirms six oracle-driver errors, exit 1. [Tests in progress](https://github.com/foundryside-dev/hamlet/actions/runs/43380483451). These are exact-WIP14 results, not final green CI. |\n| Evidence and review | Source, runtime and documentation review passed within scope | Coherent selection: 1,290 PASS and two unavailable-CUDA skips. Independent Astra repeated 155 BANK cases within that selection; do not add them. CLI validated 34 packs across 35 actual processes. Exact source/process custody includes 13 coherent and four independent children. The sealed R72 receipt SHA-256 is e2bad20684bfe39082cf8979deac2b340f9585994b7705bea27a75e7efeb35d6. Earlier R64/R67 evidence retains its own candidate identity. |\n| Overall BAC acceptance | Whole integration and final repository gates remain open | Global types still owe six oracle errors. The known ordinary-runner test was explicitly deselected only from the bounded component suite and remains required. Full current-parent replay/network/optimizer/scheduler/curriculum restoration, joint all-child publication/failure handling, full repository and coverage, slow/hardware, learning, final 54 requirements/22 lenses and exact-final-remote CI remain open. CUDA remains unqualified. Historical WIP13 CI had Config PASS, Lint FAIL (then BANK14/oracle6) and Tests FAIL; individual historical test signatures remain unavailable after log transport/access failures. |",
+      "after_markdown": "| Area | Status | What this means |\n| --- | --- | --- |\n| Original package releases | 28 qualified, 38 remaining | All 66 canonical package IDs remain unchanged; final acceptance on one common source revision is still owed. |\n| Later component delivery | Bounded BANK/owner CPU component qualified | Managed RNG admission occurs before the BANK lock; authentic lineage reaches private/shared operations. Native state and gradients are captured together, saved native configuration is reconstructed offside, required owners stay alive through publication, and final currency plus uncertain-completion checks fail closed. See the [BANK contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md). |\n| Current work | Direct replay repairs before parent/runner integration; no package closure | R73–R75 retain their source-bound RED controls and corrected Stage A test review. At R76 candidate ea50156c, healthy11 + causal9 + isolated poison1 are 21 distinct passes; actual child PID/PPID custody passed the independently reviewed verifier. Initial production review still requires B1 stale validation, B2 issuer-held material, B4 causal publication controls, B5 typed signatures and B6 CUDA capability reconciliation. R77 candidate 275c9adc is tests-first, production unchanged: 54 collected; B1/B2 14 genuine defect failures + four passes; B4 12 passes + three fixture-prerequisite failures; expanded poison passes. The old healthy filter overlaps five B4 cases: do not sum runs (45 distinct executed: 28 pass, 17 fail; earlier nine causal cases not rerun at R77). Narrow fixture repair is underway before production repair and scoped review. Full current-parent replay and joint publication remain required; C10/K01 still defer independent exact simulator trajectories. |\n| Published checkpoint | [WIP14 678513c7](https://github.com/foundryside-dev/hamlet/commit/678513c7540a61114d59a17d1b1e0eb8a06ce0a2) | Remote SHA 678513c7540a61114d59a17d1b1e0eb8a06ce0a2, publication tree a86529dfe1759dca3f8daad8a98cd161526fb2ad, verified by GitHub Primary ref/commit-tree and git ls-remote. [WIP14 evidence](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/evidence/wave35-wip-14.json) binds the actual executed R72 candidate c4b3765a1b9734a82b1a7eaaccbb1489da23d9bc; publication and execution identities are distinct. [Config PASS](https://github.com/foundryside-dev/hamlet/actions/runs/43380483349), [Lint FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43380483338/job/131736847699): the remote mypy log confirms six oracle-driver errors, exit 1. [Tests FAIL](https://github.com/foundryside-dev/hamlet/actions/runs/43380483451/job/131736848095) at the fast-suite step; cause and counts remain unknown because raw-log access failed. These are exact-WIP14 results, not final green CI. |\n| Evidence and review | Source, runtime and documentation review passed within scope | Coherent selection: 1,290 PASS and two unavailable-CUDA skips. Independent Astra repeated 155 BANK cases within that selection; do not add them. CLI validated 34 packs across 35 actual processes. Exact source/process custody includes 13 coherent and four independent children. The sealed R72 receipt SHA-256 is e2bad20684bfe39082cf8979deac2b340f9585994b7705bea27a75e7efeb35d6. Earlier R64/R67 evidence retains its own candidate identity. |\n| Overall BAC acceptance | Whole integration and final repository gates remain open | WIP14 global types still owe six oracle errors; the later R76 replay candidate reports nine (oracle6 + visible POP3), with decorated API type erasure undercounting migrations. R76 Ruff, Black and defaults checks also failed. The known ordinary-runner test was explicitly deselected only from the bounded component suite and remains required. Full current-parent replay/network/optimizer/scheduler/curriculum restoration, joint all-child publication/failure handling, full repository and coverage, slow/hardware, learning, final 54 requirements/22 lenses and exact-final-remote CI remain open. CUDA remains unqualified. Historical WIP13 CI had Config PASS, Lint FAIL (then BANK14/oracle6) and Tests FAIL; individual historical test signatures remain unavailable after log transport/access failures. |"
+    },
+    {
+      "canonical_index_zero_based": 18,
+      "block_id": "0c57d265-7c4a-4081-aeaf-aabbffe8ba3d",
+      "before_hash": "ecde8efd926cf74eff79ce8d0f3337577e5252c339e631279bbeb7a3f27c8646",
+      "after_hash": "5ef216526b11d1f35eb0195f5c6175e876ffb2815855688c3204a7a4c2d14ec8",
+      "before_markdown": "1. Complete full current-parent Q/replay/network/optimizer/scheduler/curriculum restoration and joint all-child publication/failure handling on top of the published, qualified BANK/owner component. Preserve genuine replay sampling/readiness and learning, current authority and owner lifetime; bounded BANK success does not qualify these parent behaviors.",
+      "after_markdown": "1. Finish the narrow R77 fixture prerequisite repair, rerun its exact controls and obtain scoped review, then repair the demonstrated replay production defects and remaining B1/B2/B4/B5/B6 obligations. Preserve genuine RED attempts and avoid overlap double-counting. Complete full current-parent Q/replay/network/optimizer/scheduler/curriculum restoration and joint all-child publication/failure handling on top of the published, qualified BANK/owner component. Preserve genuine replay sampling/readiness and learning, current authority and owner lifetime; bounded BANK success does not qualify these parent behaviors."
+    },
+    {
+      "canonical_index_zero_based": 29,
+      "block_id": "93ae8e1c-6be1-472c-91ea-96717cd9e395",
+      "before_hash": "ff47b715bfeff12f2e58b569303f5a50506b2ffd2cc3bc8c7320114da9004951",
+      "after_hash": "f2870984e0457cb8e843ecbe9acd666ca1f8d20126afa42dee14d10454a2f119",
+      "before_markdown": "**No user decision blocks current CPU integration work.** The promised 16-worker CUDA server is not yet available or verified; CUDA and the hardware skips remain unqualified. Before admission, prepare reviewed additive capture/harness versions with portable resource measurement, explicit GPU profiles, bounded job/device concurrency and immutable process/receipt custody. Preserve historical hashed helpers and attempts. Hardware availability alone closes no gate. Strict per-world curiosity is required, with the explicit shared alternative preserved; omitted scope retains shared behavior. Shared Q and policy feedback remain permitted under the declared controlled-trace isolation guarantee.",
+      "after_markdown": "**No user decision blocks current CPU integration work.** The promised 16-worker CUDA server is not yet available or verified; CUDA and the hardware skips remain unqualified. Astra's additive CUDA design (initial 97755650; fix1 c8a899fd) passed scoped independent design review 1ad148e4; implementation and hardware execution remain unrun. Before admission, implement and qualify the reviewed design and additive capture/harness versions with portable resource measurement, explicit GPU profiles, bounded job/device concurrency and immutable process/receipt custody. Preserve historical hashed helpers and attempts. Hardware availability alone closes no gate. Strict per-world curiosity is required, with the explicit shared alternative preserved; omitted scope retains shared behavior. Shared Q and policy feedback remain permitted under the declared controlled-trace isolation guarantee."
+    },
+    {
+      "canonical_index_zero_based": 30,
+      "block_id": "f9b84af3-e043-4879-bf57-df25750f714b",
+      "before_hash": "49cec6db6c1c14af77021c729d637411d3f8c6ed482e17d0c14f16d31af54a91",
+      "after_hash": "802abfb095a414ebe78597da20897ba85cdbb2d9d084ad87b59b8bda89edb07e",
+      "before_markdown": "Current producers, callers, tests and documentation evolve together without legacy adapters or compatibility loaders. Preserve historical artifacts, backups, source archives and current captured replay. C10/K01's simulator-continuation deferral remains explicit. The [current evidence index](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/EVIDENCE-INDEX.md) and [WIP14 manifest](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/evidence/wave35-wip-14.json) retain 88 checks and 92 attempts: 45 passed, 22 failed, 20 unrun, four diagnostic and one partial. The incremental publication stores 575 new objects / 10,150,788 bytes and reuses nine verified objects, preserving 1,157 logical aliases and the historical 296,657,580-byte baseline. The [evidence process](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/EVIDENCE-PROCESS.md) keeps immutable failures, predecessor links and exact source/process identities; evidence-chain cleanup changes storage and traceability, not acceptance. Pre-publication pending wording in the sealed component documents is superseded for publication status by the later exact remote verification; their bounded source claims remain unchanged.",
+      "after_markdown": "Current producers, callers, tests and documentation evolve together without legacy adapters or compatibility loaders. Preserve historical artifacts, backups, source archives and current captured replay. C10/K01's simulator-continuation deferral remains explicit. The [current evidence index](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/EVIDENCE-INDEX.md) and [WIP14 manifest](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/evidence/wave35-wip-14.json) retain 88 checks and 92 attempts: 45 passed, 22 failed, 20 unrun, four diagnostic and one partial. The incremental publication stores 575 new objects / 10,150,788 bytes and reuses nine verified objects, preserving 1,157 logical aliases and the historical 296,657,580-byte baseline. The [evidence process](https://github.com/foundryside-dev/hamlet/blob/678513c7540a61114d59a17d1b1e0eb8a06ce0a2/docs/remediation/bac/EVIDENCE-PROCESS.md) keeps immutable failures, predecessor links and exact source/process identities; evidence-chain cleanup changes storage and traceability, not acceptance. Pre-publication pending wording in the sealed component documents is superseded for publication status by the later exact remote verification; their bounded source claims remain unchanged. The next evidence interval starts at R73, with terminal round unset. R73–R77 attempts and reviews remain local, source-bound evidence; WIP14 is still the latest durable remote checkpoint. The next checkpoint is draft and not publishable until its finite inventory, terminal evidence and independent review are sealed."
+    }
+  ],
+  "unchanged_block_hashes": [
+    {
+      "block_id": "661e1c14-2945-433a-a2dd-c07232cc7ce9",
+      "hash": "b030100d918fecc480f16acc0b7d38a50f8e0e458004cd9d37731e99d8e4807c"
+    },
+    {
+      "block_id": "4dd2cd78-69ab-4d71-a50c-b787c9630d0a",
+      "hash": "5d01156655f92ccb120a08c6aec0f1250ec4ff2e7e677216e5dc24444762cf08"
+    },
+    {
+      "block_id": "efba1b4f-fa4c-42ad-80b1-f0bbf679df4c",
+      "hash": "e4695ccbc31408393a7eccd6a2e5474e236a54bcbc449f80aa5d9d8650e929c7"
+    },
+    {
+      "block_id": "c110550b-1bc5-4da8-9b01-6c5a53f24ee5",
+      "hash": "3fcf63b2455e6b7b4a5dfbab370fd4caa3f147f032057653b847c25d814e617b"
+    },
+    {
+      "block_id": "f44db084-bed6-4f09-9f2f-2eb887ec1c6d",
+      "hash": "3b09248a6101db446fc488205a1622a69b49af99de4818ee5a3ef0cec9ee1b7b"
+    },
+    {
+      "block_id": "790d9963-7e47-4651-b23e-e999eac52208",
+      "hash": "a00b9b7365ac68cc0dee42d259b5b71ee1836a2c28b6957fb9b8538bfe0fae30"
+    },
+    {
+      "block_id": "52e90f4c-0329-4f5d-8ea3-2abe9f3cc6d0",
+      "hash": "5ce7f9e137572c6e8f556b4b73ca81295cde2ae741160f73f675f1464e039fd5"
+    },
+    {
+      "block_id": "a2c94ffc-738d-49e5-a702-456dbfe804db",
+      "hash": "103e1b3dca7dbce0f7bbc364d5e28bcd9af7a7089b4fb94dfb19912af7ec2052"
+    },
+    {
+      "block_id": "3485f73f-6f82-4f7a-872e-dc14dc24def8",
+      "hash": "d9199263b2097e12e522d20fb3dd7ebd5fc431fa31402b8761be2f4c57ab0c02"
+    },
+    {
+      "block_id": "0765a558-d180-4df7-93d1-dad2fd27a1a4",
+      "hash": "b0a4521edbfafdc6f2c60157e5020a9f00df95954d41fd3bcf84bb4a22883de4"
+    },
+    {
+      "block_id": "326c6942-06b3-483d-a07e-439d9dd11a98",
+      "hash": "4d693120964c1ebce90b339c0b9a49adc356d4e8770df4fbf18dd87ebdf11749"
+    },
+    {
+      "block_id": "ce23befe-acc7-4b8a-9450-0ba5552665cb",
+      "hash": "4d40636ec9fcc5555ba2d55de785541ab567b95bbd4088060b89b6af1da48d7b"
+    },
+    {
+      "block_id": "4aecb7b0-3081-4d83-b5b5-b4987dd5df09",
+      "hash": "61121fb1a105438d9f79a0cdce587b81ab519a6f528513d25587e4f1bd421948"
+    },
+    {
+      "block_id": "7efeee03-c539-44ff-9668-db208c111cda",
+      "hash": "56abee5feafa9f64972dfb9e03e83619b2cfa2a56b707c0d6288427e4b54f638"
+    },
+    {
+      "block_id": "b960f71d-37d4-4a44-ab8d-7f7de1b6d1bd",
+      "hash": "3e285b1d7dd12ab0cc1f8e183d80785f8f5254c3c070eb3e816bbaebc5e88215"
+    },
+    {
+      "block_id": "bce85c47-36c1-43ae-bd15-a0c962ba98a8",
+      "hash": "4d83d08e5ee06824a2191f43b88a9ef9b97b18d7b672c953efeffbff9af2533b"
+    },
+    {
+      "block_id": "2b20ec51-020c-47df-9b41-de6e3fb78d60",
+      "hash": "e22a243cd4c9cb5f85ea9a68c73bfa8e24883d5fed953b1ad9018bbadce93398"
+    },
+    {
+      "block_id": "77175114-dc44-4b58-be48-0e2fe2e841e6",
+      "hash": "7625a7cd50c99699fc9605146edd5b6b1e16f7d0ee1907d352884a29904fe938"
+    },
+    {
+      "block_id": "27f67e60-f3d2-4e25-9031-89424bbae5bc",
+      "hash": "d6ec339c008292fa021c1cf747d95b3d3a5919cd43aabe42c2d9ce7dd2d57118"
+    },
+    {
+      "block_id": "72d91648-057a-434c-8622-0fcc6854e284",
+      "hash": "325b0ec8cfa2ab7b85edf9ae9f94d0858511947fde7c66efb2bcf628ee1ecf6a"
+    },
+    {
+      "block_id": "036067cf-c969-4097-8055-a24521614dac",
+      "hash": "613112c7498f3ff7768f6f38bf56f6997799ce5589cc47f541150befa9699d7e"
+    },
+    {
+      "block_id": "034bd0e9-6539-46d9-9d90-819adb48e034",
+      "hash": "b4c0be69182c1c0bd763822dc5d0880d41dc3089c7ac9552557cc512b830abf2"
+    },
+    {
+      "block_id": "8e7d6d6c-b262-4b9e-941a-09a148ca2189",
+      "hash": "cafea870237351f239a375895511748a9fa35f97285903eb6841c808496500a6"
+    },
+    {
+      "block_id": "df5664ae-4b97-428d-81e8-0a124170561d",
+      "hash": "fb675a0258901eb75357caa61d14bb23a1d202a4e60f1bc3f7ec629c809f3e9a"
+    },
+    {
+      "block_id": "a86e859a-0056-4712-8404-c85c3ba765e9",
+      "hash": "aea9259c68c9a233c84cd5fa9e083b2e9c638900c7c41723cf062287b8325cf6"
+    },
+    {
+      "block_id": "3595d5d3-c721-48c6-8944-1bdcbda6aaa3",
+      "hash": "f96efd5009d93bb268c71fadcc7dbdf454a0c53e50d917f1bc025e1c9375e6d9"
+    },
+    {
+      "block_id": "08d6fbb6-b262-4acb-84ac-d3c973974444",
+      "hash": "a8861f6a6fdf52295a935dfc980630fcf8fff7fd6e3451a4d438dc26c340f6ac"
+    },
+    {
+      "block_id": "31f00378-a589-46b2-887c-0784684dabd2",
+      "hash": "1d248423a7ef3bf54265dbe467dcedbe0d0e6a9489abf9b69aca7a1e982ce67a"
+    }
+  ],
+  "sources": [
+    {
+      "path": "wave35/r77-replay-fix-a-tests-receipt.json",
+      "sha256": "5cd5e356cf256527a427c3e43ffd6d668ec89e155851241112f12b9a2eea0c18"
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-REPLAY-EVIDENCE-HANDOFF.md",
+      "sha256": "d639235c436d8dace0cd58d0d6a36c6abc3e3f247b00165cf41d2da264bed100"
+    },
+    {
+      "path": "evidence-management/wip14-final-ci-observation.json",
+      "sha256": "aabfb31db6716aeed07d48dc38b650fd96824d031a4c1e80ce07fc6d7ddf9411"
+    },
+    {
+      "path": "CURRENT-STATE.json",
+      "sha256": "ceadc4a46f13d69bd97afde6eb1a510406747e0b4c42fe8f4ccc5d9998a02f5c",
+      "note": "Live context; newer immutable receipts/review and root instructions prevail over old pending wording."
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-REPLAY-CUDA-ADDITIVE-DESIGN.md",
+      "sha256": "97755650bf2a1ea6c7381e35a75fca31bf8afe643f7166cac6fa67d0f60bc8a3"
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-REPLAY-CUDA-ADDITIVE-DESIGN-FIX1.md",
+      "sha256": "c8a899fdf6b4d8bbd83e44f97e1f7d4ff228f76782861e8f87532bf47bdc2870"
+    },
+    {
+      "path": "wave35-preparation/P/T18e-R0-REPLAY-CUDA-DESIGN-FIX1-INDEPENDENT-REVIEW.md",
+      "sha256": "1ad148e45e6861b4a600ce25a87d3617d9292bd8ede2840f683a9e80b0be37e1"
+    }
+  ],
+  "limitations": [
+    "Readback verifies saved native Markdown and block structure, not a rendered visual preview.",
+    "WIP14 CI test cause/counts unknown because raw log inaccessible.",
+    "R76/R77 checks are source-bound local evidence, not new durable publication or package closure.",
+    "CUDA design approval only; implementation/hardware unrun; promised16-worker server unprovided/unqualified."
+  ],
+  "preserved": "All66 package IDs, 28/38 accounting, 32 block IDs/order and all28 untouched blocks match full prior read. No page/space creation, schedule, comments, messages to others, app/helper/Git/index/branch/worktree change."
+}

@@ -7,17 +7,169 @@ No missing-mask inference is performed here. Explicitly unconstrained adapters
 must supply their declared all-legal mask; constrained old history is archival.
 """
 
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass, fields, replace
-from typing import Literal
+from functools import wraps
+from threading import RLock
+from typing import Concatenate, Literal, NoReturn
+from weakref import WeakKeyDictionary
 
 import numpy as np
 import numpy.typing as npt
 import torch
 from torch import Tensor
 
+from townlet.exploration.rng_custody import RNGCurrentToken, RNGOperation, RNGParticipant, process_rng_domain
+
 
 class HistoricalLegalityUnavailable(ValueError):  # noqa: N818 - approved public interface
     """Unknown historical legality belongs in the approved archive, not replay."""
+
+
+class PreparedReplay:
+    """Identity-only publication capability; material stays with its issuer."""
+
+    __slots__ = ("__weakref__",)
+
+    def __new__(cls) -> NoReturn:
+        raise TypeError("Prepared replay capabilities are issued by their owner")
+
+    def __init__(self) -> None:
+        raise TypeError("Prepared replay capabilities cannot be reinitialized")
+
+    def __reduce__(self) -> NoReturn:
+        raise TypeError("Prepared replay capabilities cannot be copied or serialized")
+
+
+class ReplayCustody:
+    """One process lease before one replay owner's mutation exclusion."""
+
+    def _init_custody(self, device: torch.device) -> None:
+        if not isinstance(device, torch.device) or device.type not in ("cpu", "cuda"):
+            raise ValueError("replay custody requires an explicit CPU or CUDA torch.device")
+        index = device.index
+        devices: tuple[int, ...]
+        if device.type == "cuda":
+            if index is None or type(index) is not int or index < 0:
+                raise ValueError("CUDA replay custody requires an explicit initialized device index")
+            devices = (index,)
+        else:
+            devices = ()
+        self._replay_lock = RLock()
+        self._replay_revision = 0
+        self._replay_healthy = True
+        self._replay_prepared: WeakKeyDictionary[PreparedReplay, tuple[int, RNGCurrentToken, object]] = WeakKeyDictionary()
+        self._replay_participant = process_rng_domain().register(
+            owner=self, cuda_devices=devices, entrypoints=frozenset({"sample", "prepare", "install"})
+        )
+
+    @property
+    def rng_participant(self) -> RNGParticipant:
+        return self._replay_participant
+
+    def _check_custody(self) -> None:
+        if not self._replay_healthy:
+            raise RuntimeError("Replay owner is quarantined after uncertain publication")
+
+    @contextmanager
+    def _owner_operation(self, *, mutation: bool) -> Iterator[None]:
+        with self._replay_lock:
+            self._check_custody()
+            if mutation:
+                self._replay_revision += 1
+            yield
+
+    @contextmanager
+    def _domain_operation(self, kind: str, lineage: RNGOperation | None) -> Iterator[RNGOperation]:
+        with process_rng_domain().operation(participant=self._replay_participant, operation_kind=kind, lineage=lineage) as lease:
+            yield lease
+
+    def _issue_replay(self, payload: object, lease: RNGOperation) -> PreparedReplay:
+        handle = object.__new__(PreparedReplay)
+        token = process_rng_domain().current_token(participant=self._replay_participant, operation=lease)
+        self._replay_prepared[handle] = (self._replay_revision, token, payload)
+        return handle
+
+    def _prepared_payload(self, handle: object) -> object:
+        if not isinstance(handle, PreparedReplay) or handle not in self._replay_prepared:
+            raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+        return self._replay_prepared[handle][2]
+
+    def _validate_replay(self, handle: PreparedReplay, lease: RNGOperation) -> None:
+        recorded = self._replay_prepared.get(handle)
+        if recorded is None:
+            raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+        revision, token, _ = recorded
+        if revision != self._replay_revision:
+            raise ValueError("Prepared replay destination changed")
+        process_rng_domain().validate_current(token=token, operation=lease)
+
+    def _publish_replay(self, handle: PreparedReplay, publish: Callable[[], None]) -> None:
+        try:
+            publish()
+        except BaseException:
+            self._replay_healthy = False
+            self._replay_revision += 1
+            raise
+        del self._replay_prepared[handle]
+        self._replay_revision += 1
+
+
+def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+    try:
+        lineage = arguments["lineage"]
+    except KeyError:
+        raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+    if lineage is not None and not isinstance(lineage, RNGOperation):
+        raise ValueError("RNG operation lineage is foreign or expired")
+    return lineage
+
+
+def replay_read[Owner: ReplayCustody, Result, **Arguments](
+    method: Callable[Concatenate[Owner, Arguments], Result],
+) -> Callable[Concatenate[Owner, Arguments], Result]:
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+        with self._owner_operation(mutation=False):
+            return method(self, *args, **kwargs)
+
+    return guarded
+
+
+def replay_mutation[Owner: ReplayCustody, Result, **Arguments](
+    method: Callable[Concatenate[Owner, Arguments], Result],
+) -> Callable[Concatenate[Owner, Arguments], Result]:
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+        with self._owner_operation(mutation=True):
+            return method(self, *args, **kwargs)
+
+    return guarded
+
+
+def replay_sample[Owner: ReplayCustody, Result, **Arguments](
+    method: Callable[Concatenate[Owner, Arguments], Result],
+) -> Callable[Concatenate[Owner, Arguments], Result]:
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> Result:
+        with self._domain_operation("sample", _required_lineage(kwargs)):
+            with self._owner_operation(mutation=True):
+                return method(self, *args, **kwargs)
+
+    return guarded
+
+
+def replay_prepare[Owner: ReplayCustody, **Arguments](
+    method: Callable[Concatenate[Owner, Arguments], object],
+) -> Callable[Concatenate[Owner, Arguments], PreparedReplay]:
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> PreparedReplay:
+        with self._domain_operation("prepare", _required_lineage(kwargs)) as lease:
+            with self._owner_operation(mutation=False):
+                return self._issue_replay(method(self, *args, **kwargs), lease)
+
+    return guarded
 
 
 def _integer(name: str, value: int, minimum: int) -> None:

@@ -1,0 +1,85 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd",
+  "unique_node_phase_failures": 14,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 10,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-ids]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-illegal-successor]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-nonfinite]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-priorities]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-nonfinite]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-illegal-successor]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Failed: DID NOT RAISE <class 'TypeError'>",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_public_material_constructor",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Failed: DID NOT RAISE <class 'AttributeError'>",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_writable_payload_storage",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

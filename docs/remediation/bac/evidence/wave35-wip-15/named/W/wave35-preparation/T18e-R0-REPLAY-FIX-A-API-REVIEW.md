@@ -1,0 +1,29 @@
+# Replay Fix-A API/report — source-ground-truth prose review
+
+2026-11-13. **No material publication-handoff defect found.** API/signature, currentness, failure and remaining-scope statements agree with the retained final source and bounded review, subject to the small wording refinement below. This is a prose-only handoff review, not renewed implementation/runtime qualification or whole-programme approval.
+
+Reviewed `T18e-R0-REPLAY-FIX-A-CURRENT-API.md` SHA256 `0a5d80e305d55252ab0deb91dfb962c7f2f32c3171b125a82161b58fe18970c4` and final `T18e-R0-REPLAY-FIX-A-REPORT.md` SHA256 `db992558e9744e16063df86f31400bdda33ffb29a90cd82c7d1011f10cff3232` against retained five-body source and sealed `T18e-R0-REPLAY-FIX-A-PRODUCTION3-REVIEW.md` SHA256 `49741e76e1f77fc71ff7a176945b170eb17660a496fbd2d37613f96011b47178`. The sealed review hash is unchanged. Rehashed all five production/test/domain bodies: each matches the3735-line R81 inventory in the API and sealed review. No new source body, runtime/import/test, source edit, direct Git/index action, delegation, branch/worktree or copied source; only this review artifact was written.
+
+## Accuracy assessment
+
+The flat/PER signatures accurately distinguish validation DTO types, required expected_obs_dim arguments, required lineage keywords and actual public PreparedReplay results. The static decorator transformation versus wraps/internal object-return metadata distinction is explicit and correct. Owner-local APIs are not incorrectly assigned new lineage/admission requirements. Recurrent declarations are clearly attributed supplier facts, supplemented by actual retained runtime/type results, not represented as an A source inspection.
+
+The identity-only handle and issuer-held revision/token/material association match the inspected contract. Prepared issuance and install retain actual domain-before-owner ordering, full owned validation/current-target checks, staged copies, final currentness checks, one-use consumption and partial-publication quarantine. The description correctly separates domain poison from healthy owner-local work, recognizes failed admitted work can stale currency, and forbids treating status as admission. It does not grant alias/callback purity beyond the accepted profile. Both held-outer and released preparation are expressly conditioned on core currency/generation/revision rules rather than promised unconditionally.
+
+Direct global versus qualified local PER sampling, flat selected-device sampling and generator transport are accurately preserved. The CUDA paragraph correctly records the current unindexed/lazy capability defect and completion-lifetime work as still required, rather than treating narrow existing constructors as an accepted replacement contract or CPU evidence as CUDA qualification.
+
+The report's final closure supersedes earlier explicitly historical pending/freeze sections without rewriting their receipts. Root and independent53+1 runs are attributed separately and counted as the same54 cases. Independent durations, paths and hashes agree with this reviewer's actual execution/seal. The root runtime result metadata was additionally checked read-only and matches the report's R81 tree/base/manifest,6.935328722000122s current and7.869251251220703s poison, log hashes and commands. Short identical log hashes are expressly not treated as sufficient source identity. R79 global mypy15 is correctly labeled historical rather than an R81 rerun or completed caller migration. Author development Ruff/Black execution is distinguished from root/independent qualification.
+
+The retained scope is precise: only confirmed flat/PER B1, shared B2/B5 and flat/PER/shared B4 are approved. Recurrent mutable-DTO validation/current-target issuance remains explicitly required under original B1 alongside B3 scratch classification, recurrent B4/default/style; B6, callers, broader suites and final fresh programme reviews remain open. No scope waiver, additional unique coverage or accounting increment is claimed.
+
+## Minor wording precision
+
+In the API preparation paragraph, “current payloads remain active captured replay” is too broad if read as a claim that every supported current-format payload is captured. The retained flat/PER validators also accept current-format unconstrained active rows with their corresponding legality metadata. Prefer “current payloads retain active rows and their validated legality mode.” This is a nonblocking prose precision note, not a production defect or new validation requirement; no capability or test change is requested.
+
+The rest of the handoff is suitable for bounded publication with the original source/evidence seals preserved. This prose assessment does not reopen or replace the sealed production review, nor discharge any stated remaining gate.
+
+## Exact wording correction — final publication seal
+
+Verified corrected CURRENT-API SHA256 `1c983b02f3fdd610857fc40b95eb454b5b3f701d02b869e35ea3d57e4befd63f`. The sentence now reads “current payloads retain active rows and their validated legality mode.” Reversing only that phrase in a read-only stream reproduces the original reviewed API SHA256 `0a5d80e305d55252ab0deb91dfb962c7f2f32c3171b125a82161b58fe18970c4`, confirming no other API bytes changed. The minor wording note is addressed; the corrected handoff is approved within the same bounded scope.
+
+Report remains unchanged at SHA256 `db992558e9744e16063df86f31400bdda33ffb29a90cd82c7d1011f10cff3232`; its embedded API hash records the originally authored version. This addendum supplies the authoritative corrected API hash for publication, without rewriting historical report/seal bytes. Publish the corrected API using `1c983b02...`, not the historical `0a5d80e3...` reference. No source/runtime or scope change occurred; all earlier remaining-gate qualifications stand.

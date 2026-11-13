@@ -1,0 +1,133 @@
+{
+  "schema": "bac-causal-component-receipt-v1",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+  "scope": "initial replay producer implementation; unresolved independent material findings, no qualification",
+  "results": {
+    "collection": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-collection-spec.json",
+        "sha256": "a71cf14ed9411e6f15c7192753043d12dc027e7a523701b3d0619ab4f6bd7a16"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-collection/collection-custody.json",
+          "sha256": "90497fd47aadbae5aff7a777eb1ef7a86fde94af00309d68fb48e0a4d8f6128d"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-collection/collection-result.json",
+          "sha256": "847eefaa10731af988ee0971020ae310d2c5675743e7f0d5b49d604cdce964a2"
+        }
+      ],
+      "custody": "815source573config13artifact/index/14registryMAIN1 PASS; pytest named runs include import/thread/controller proof, statics do notclaimruntime."
+    },
+    "static": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static-spec.json",
+        "sha256": "e3a30bbe2802455698628b1d4e4b3ad00785b17222d75c4442f01fee9b4fefa3"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/black-global-result.json",
+          "sha256": "e951208afa123f5453b689e0e167d009ddbb05072e3a92f81337f20f7d7bcf28"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/expression-doc-result.json",
+          "sha256": "e4d6cb376720cc5f031c915da30a43aafb0a7525798cbc2b2d6f32cb12f09c9a"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/no-defaults-result.json",
+          "sha256": "95a7320471da7c00892819849c44cb15828e6ae42786b3c81f9d62498ee7baff"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/ruff-global-result.json",
+          "sha256": "424de189ed9e94d8b94f84d0a86038ddacba6af4adfa94f6b61102e44e569710"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-static/static-custody.json",
+          "sha256": "908be9fb3270a427a0a1d28116fa41c88205fa315a85b09039c76e545838aee0"
+        }
+      ],
+      "custody": "815source573config13artifact/index/14registryMAIN1 PASS; pytest named runs include import/thread/controller proof, statics do notclaimruntime."
+    },
+    "types": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types-spec.json",
+        "sha256": "ca5e004a627ec21da91ffea972b9f0a306eb3e19a443d0c27f339cac4044610f"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types/mypy-result.json",
+          "sha256": "4292929d9bf64ee48400567d83b4667f3b463421a6ae56eb953e1f17b07c97ff"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types/owned-mypy-result.json",
+          "sha256": "d09bb9470e498614d7835e4a6bc345b1f5ea13d50e3b6dfdea566fce2cebe3d5"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-types/static-custody.json",
+          "sha256": "bab19ac436bfd8189e6a88fa1e23c0d291d48f84194fc0f4d5b9fd31e3c9eea4"
+        }
+      ],
+      "custody": "815source573config13artifact/index/14registryMAIN1 PASS; pytest named runs include import/thread/controller proof, statics do notclaimruntime."
+    },
+    "replay-healthy": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-healthy-spec.json",
+        "sha256": "c78023909898a91f62d83b66ee5a84877be33d5a1c4a7f279d30e468e0e4b957"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-healthy/replay-healthy-custody.json",
+          "sha256": "bbc2db0229710b38c0b1296af76e67590e0ea56bfed49816c25b801930812b17"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-healthy/replay-healthy-result.json",
+          "sha256": "dc566a7d001c4aa9299fee6404d46a0dbd1752a014fb5822191e9148eb80b828"
+        }
+      ],
+      "custody": "815source573config13artifact/index/14registryMAIN1 PASS; pytest named runs include import/thread/controller proof, statics do notclaimruntime."
+    },
+    "replay-causal": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-causal-spec.json",
+        "sha256": "2185fbb709677c3ca3a8963fef177a7fcf474d7e8971f6dbc4de8d9344764056"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-causal/replay-causal-custody.json",
+          "sha256": "d103c7fd6188109efa738fe597758205233e93f79141cb5975f66cf312ae19bb"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-causal/replay-causal-result.json",
+          "sha256": "ab3fa85f991e07a643f161d1732e175c117324509cfd410d2785e767a91e41c9"
+        }
+      ],
+      "custody": "815source573config13artifact/index/14registryMAIN1 PASS; pytest named runs include import/thread/controller proof, statics do notclaimruntime."
+    }
+  },
+  "outcomes": {
+    "collection": 21,
+    "healthy_pass": 11,
+    "prior_causal_pass": 9,
+    "owned_mypy": "PASS4files",
+    "global_mypy": "FAIL9=oracle6+visiblePOP3; erased decorator types undercount migrations",
+    "ruff": "FAILtestimportsort",
+    "black": "FAIL5ownedfiles",
+    "defaults": "FAIL601>600",
+    "expression": "PASS"
+  },
+  "not_run": [
+    "replay-poison pending reviewed newverifier",
+    "newB1/B2/B4 regressions not yet authored",
+    "broader caller/global/hardware qualification"
+  ],
+  "source_review": {
+    "report": "wave35-preparation/T18e-R0-REPLAY-STAGEB-REVIEW.md",
+    "sha256": "9524f846dac668dfe7708483b0c0d9a19c8acb40a0ebb277a8fbcb21beee507e",
+    "addendum": "wave35-preparation/T18e-R0-REPLAY-STAGEB-ADDENDUM.md",
+    "addendum_sha256": "8da36b3f249077acacb9ddbe3e4182e9e7718f96e51848ba4a664a417bd6f405"
+  },
+  "all_sessions_closed": true,
+  "clock_limit": "Existing harness actual elapsed durations; UTC job start/end unavailable, not inferred."
+}

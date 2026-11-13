@@ -1,0 +1,85 @@
+{
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "contract": {
+    "root": "W",
+    "path": "wave35/r81-checkpoint-contract.json",
+    "sha256": "5fd9322ad4e56a4a0193c6e13214e02f8e1c52a5ec68cbd2369865ceaaae57b8",
+    "bytes": 5211
+  },
+  "checkpoint_id": "wave35-wip-15",
+  "series": "wave35",
+  "interval": [
+    73,
+    81
+  ],
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r81-candidate.json",
+    "sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+    "bytes": 207094
+  },
+  "execution_subtrees": {
+    "src": "f662a49b70b042e8894a23428e854be802a3b582",
+    "tests": "01c96e5f28b51a5d74d456e4aa6cfeb6c74be075",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip15-r81-terminal-review-input-v3.json",
+    "sha256": "ce23b5213d58846817bf0c1fca92ec2bacb1337f7c536bf5539e653d9aec2a81",
+    "bytes": 499335
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Bounded replay repair A: flat/PER validated DTOs, shared prepared-handle ownership and typed guard signatures, shared/flat/PER publication controls; source-bound historical attempts retained; no whole replay/CUDA/caller/programme closure.",
+  "required_next": [
+    "Recurrent mutableDTO B1 assessment/control",
+    "Recurrent B3 scratch classification/stateproof and B4 staging/publication/alias controls",
+    "Recurrent source default/style fixes",
+    "B6 approvedadditiveCUDA/core design implementation and realhardware qualification",
+    "Actual producer/caller/BANK/runtime/ENV/parent/native joint integration",
+    "Existing required owner/global/coverage/slow/learning/freshdesign+implementation reviews and exactfinalremoteCI"
+  ],
+  "review_task": "Scoped v2-to-v3 representation review:31 descendant lists canonicalized to selector traversal order; all68 normalized sets identical. Added exact failed initial final-selection proposal/history and reconciliation records. All other facts/documents/source remain unchanged. Final receipt copies v3 input, adding review refs/status only.",
+  "supersedes": {
+    "root": "W",
+    "path": "evidence-management/wip15-r81-qualification-subject-v2.json",
+    "sha256": "65c17baba878a0a3efda8d70719b8f2a485d93053c11a4dc2847611225c0eefa",
+    "bytes": 3958
+  },
+  "source_delta_archive": {
+    "manifest": {
+      "root": "W",
+      "path": "evidence-management/wip15-source-deltas/manifest.json",
+      "sha256": "863919de8b807265533a82bd123326a20b3030ba2ff3aadc2cfe1324423d7f4f",
+      "bytes": 27211
+    },
+    "scope": "Nine exact git binary/full-index base-to-candidate patches preserve source deltas as nonexecutable remote evidence. Not applied or executed; current source independently qualified at R81. Source SHA256 fields from candidate records, Git metadata crosschecked; no new source-body review implied."
+  },
+  "publication_document_deltas": {
+    "guarded_status_path": "docs/remediation/bac/STATUS.md",
+    "execution_sha256": "4032a33374ed042dd75c52d240c8399652857d7bdec8cb29f93879e1d0ef8e90",
+    "publication_sha256": "7dba8e1d95f734ab9dfa3ad53e8646cc661c86f44eefca1687f558b5f52f00eb",
+    "reason": "Dated source-verified checkpoint status, independently reviewed as publication prose. Only declared documentation difference permitted against815 guards; application source/tests/configs/artifacts unchanged.",
+    "integration": {
+      "root": "W",
+      "path": "evidence-management/r81-publication-snippets-integration.json",
+      "sha256": "da9f731273d98302cb45b0dfdca523a61236ec30679774a405d02e71feb1c489",
+      "bytes": 1241
+    }
+  },
+  "ordering_reconciliation": {
+    "root": "W",
+    "path": "evidence-management/wip15-ordering-reconciliation.json",
+    "sha256": "5a9512054f1de54a612c82b1ee0706674c8791d2e37418fbb2732590b2036c12",
+    "bytes": 2655
+  }
+}

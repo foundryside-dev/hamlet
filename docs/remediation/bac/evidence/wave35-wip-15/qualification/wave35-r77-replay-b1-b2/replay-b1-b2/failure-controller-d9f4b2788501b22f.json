@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_writable_payload_storage",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_prepared_replay_has_no_writable_payload_storage() -> None:\n        \"\"\"B2 causal RED: authentic identity must have no caller-rebindable material.\"\"\"\n        owner = _flat()\n        candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1, lineage=None)\n        before = _live_replay_state(owner)\n>       with pytest.raises(AttributeError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'AttributeError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:629: Failed",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

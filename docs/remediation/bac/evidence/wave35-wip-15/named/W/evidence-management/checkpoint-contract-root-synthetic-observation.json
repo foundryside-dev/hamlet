@@ -1,0 +1,39 @@
+{
+  "schema": "bac-root-synthetic-observation-v1",
+  "observer": "root",
+  "scope": "Standalone checkpoint contract synthetic tests only; no application/runtime/actual assembly qualification",
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "test_checkpoint_contract.py"
+  ],
+  "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management",
+  "exit_code": 0,
+  "test_count": 28,
+  "runner_reported_seconds": 0.849,
+  "output": "Ran 28 tests in 0.849s\nOK",
+  "provenance": "Transcribed from actual exec_command result cbe94c; not an independently captured raw log; no absolute start/end timestamps were recorded",
+  "source_files": {
+    "bac_checkpoint_delta.py": {
+      "sha256": "33e992e31a2bfcdb0fa70fac315acc92ec3e961831b0d612c2ba8148c16ef8f8",
+      "lines": 469
+    },
+    "test_checkpoint_delta.py": {
+      "sha256": "8af61971bf01a7e2045d344fabad87905af4aaf0b5004418ecf98fa9e13941e2",
+      "lines": 389
+    },
+    "bac_checkpoint_contract.py": {
+      "sha256": "66f62969169247eaf3ff90a5859018801bcb87f897fb032857bd263d480eb0d8",
+      "lines": 568
+    },
+    "test_checkpoint_contract.py": {
+      "sha256": "f17f102f486a5c5256e68326624949387a0cf9e1aeebf71eac9e688f3181376b",
+      "lines": 584
+    }
+  },
+  "application_candidate_unchanged": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "independent_review": "pending",
+  "actual_selection_assembly_publication": "UNRUN"
+}

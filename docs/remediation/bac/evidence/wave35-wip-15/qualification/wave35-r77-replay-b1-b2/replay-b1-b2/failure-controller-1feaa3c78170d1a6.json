@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-nonfinite]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'flat', field = 'observations'\n\n    @pytest.mark.parametrize(\n        (\"kind\", \"field\"),\n        [\n            (\"flat\", \"observations\"),\n            (\"flat\", \"next_action_masks\"),\n            (\"per\", \"observations\"),\n            (\"per\", \"next_action_masks\"),\n            (\"per\", \"priorities\"),\n            (\"per\", \"unit_ids\"),\n        ],\n        ids=[\"flat-nonfinite\", \"flat-illegal-successor\", \"per-nonfinite\", \"per-illegal-successor\", \"per-priorities\", \"per-ids\"],\n    )\n    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:\n        \"\"\"B1 causal RED: returned mutable bytes must be revalidated before issuance.\"\"\"\n        owner = _repair_owner(kind)\n        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)\n        value = getattr(validated, field)\n        if field == \"unit_ids\":\n            value[0] = -1\n        elif field == \"next_action_masks\":\n            value[0].fill_(False)\n        else:\n            value[0] = float(\"nan\")\n        before = _live_replay_state(owner)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

@@ -1,0 +1,30 @@
+{
+  "scope": "R76 replay poison consumer test only; initial receipt remains immutable",
+  "candidate_tree": "ea50156c62b594cb1343f4d2561120b77164707b",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison-spec.json",
+  "spec_sha256": "6447a42aeeb70159e94766a66d97fafb3398c796ecbb911f0a16ac845a479acb",
+  "results": {
+    "passed": 1,
+    "seconds": 8.439117670059204,
+    "warnings": 0,
+    "skipped": 0,
+    "exit_code": 0
+  },
+  "custody": "815 sources,573 configs,13 artifacts,14 registered/1 available worktree; generic and replay child verifiers PASS",
+  "child_pid": 37026,
+  "parent_pid": 37001,
+  "child_ppid": 37001,
+  "files": {
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/identity-controller.json": "ad1c810c245be2cd4e94edac5733a4d3d9d9b9f61a213451ea3b0ef565be4682",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json": "71d5c3044a06c95b8a95b34f790f438b3ae60fdcbdce4a62c0935ab26a00a6fa",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/spawn-identity-replay_poison.json": "9e898015d787e0b955e9dae5e724c1cede3d6d051b66c2e6ab6e09adef4c3311",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison/spawn-observation-replay_poison.json": "c3ebe9ffc60991ccea4bccf728d4a3696b1346e23959ebee4da249b8ad216736",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison-custody.json": "553d4e7d6c0485c76e9069aee89899b51a0e949e50472647993a3d3e4580d5be",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison-result.json": "76773d434d85eaa7eda092982f895d3397cdadd254d30e76eb2ca80908f5e173",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r76-replay-poison/replay-poison.log": "752d79d0b426afc06af2d2305ca94ae463d3e4e60c37c796c241dce98778bcd9"
+  },
+  "verifier_review": "wave35-preparation/T18e-R0-REPLAY-CHILD-VERIFIER-FIX1-INDEPENDENT-REVIEW.md",
+  "clock_limitation": "Absolute UTC start/end absent in producer records; not inferred",
+  "open_scope": "B1/B2/B4/B5/B6 source repairs; B3 prose; callers,CUDA,parent integration and final programme gates; not restoration-setter failure proof"
+}

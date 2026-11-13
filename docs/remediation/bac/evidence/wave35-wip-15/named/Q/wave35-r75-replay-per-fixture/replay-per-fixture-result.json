@@ -1,0 +1,25 @@
+{
+  "name": "replay-per-fixture",
+  "exit_code": 0,
+  "seconds": 5.153067588806152,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_per_live_active_prefix_matches_serialized_rows",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture/replay-per-fixture.log",
+  "sha256": "efb511147ff654810351f4e7e1fdfbd961d94aa4f0745679b7d83959eae1f9ea",
+  "candidate_tree": "c46acb9860c50cfe4162c65d696a8662947179fc",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "8a65e8b33d08442c6f37c98907945196a22b7e60d82be5b337a7b5d05b5d2b55",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

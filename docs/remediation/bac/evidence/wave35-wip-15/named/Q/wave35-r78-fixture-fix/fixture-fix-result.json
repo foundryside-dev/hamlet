@@ -1,0 +1,27 @@
+{
+  "name": "fixture-fix",
+  "exit_code": 0,
+  "seconds": 4.213152885437012,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-per]",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r78-fixture-fix/fixture-fix.log",
+  "sha256": "b6b19b5deb48d287f2e77fb084e947bc7987a58ffcbd30e9477e245ce09dd4df",
+  "candidate_tree": "690c2599c3c25c6352f046f9ea44deb30b9f0b86",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "2302a70a32dc303c4795937c509c06e7bac376fec5291fbf27567c7dbb89d2d0",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

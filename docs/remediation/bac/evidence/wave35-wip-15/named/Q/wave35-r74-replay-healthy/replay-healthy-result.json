@@ -1,0 +1,27 @@
+{
+  "name": "replay-healthy",
+  "exit_code": 0,
+  "seconds": 4.05988073348999,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-k",
+    "healthy or sampling_advances_only or global_sample_primitives or direct_configured_per"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r74-replay-healthy/replay-healthy.log",
+  "sha256": "43c3a120e5c0f5d5ffba85fb0f1f849e397cf0c834409b4f1fe19a0635a8f3d6",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "426a7de7f7c6505cd5ff502606e062f8958bfbc24def55748fed550edd48029a",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

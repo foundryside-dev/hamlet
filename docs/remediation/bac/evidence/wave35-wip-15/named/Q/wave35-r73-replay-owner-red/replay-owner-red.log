@@ -1,0 +1,56 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 18 items / 17 deselected / 1 selected
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py F          [100%]
+
+=================================== FAILURES ===================================
+____________ test_same_owner_clear_waits_until_real_sample_finishes ____________
+
+    def test_same_owner_clear_waits_until_real_sample_finishes() -> None:
+        """RED: current clear mutates the same owner while sample is in flight.
+    
+        Current signatures are used here; migrate sample to explicit lineage=None
+        when production adopts the required API.
+        """
+        owner = _PausingReplayBuffer()
+        owner.push_recorded(*_flat_rows())
+        sample_done, clear_done = threading.Event(), threading.Event()
+        results: list[object] = []
+    
+        def sample() -> None:
+            try:
+                results.append(owner.sample(1))
+            except BaseException as error:
+                results.append(error)
+            finally:
+                sample_done.set()
+    
+        def clear() -> None:
+            try:
+                owner.clear()
+            except BaseException as error:
+                results.append(error)
+            finally:
+                clear_done.set()
+    
+        sampler = threading.Thread(target=sample, name="replay-same-owner-sample", daemon=True)
+        clearer = threading.Thread(target=clear, name="replay-same-owner-clear", daemon=True)
+        try:
+            sampler.start()
+            assert owner.entered.wait(3), "real sampling did not reach its pause"
+            clearer.start()
+>           assert not clear_done.wait(0.5), "clear mutated the owner during its sample"
+E           AssertionError: clear mutated the owner during its sample
+E           assert not True
+E            +  where True = wait(0.5)
+E            +    where wait = <threading.Event at 0x7feaed7bbce0: set>.wait
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:313: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_same_owner_clear_waits_until_real_sample_finishes
+======================= 1 failed, 17 deselected in 0.11s =======================

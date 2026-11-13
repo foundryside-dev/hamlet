@@ -1,0 +1,69 @@
+{
+  "schema": "bac-causal-component-receipt-v1",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "c46acb9860c50cfe4162c65d696a8662947179fc",
+  "scope": "Replay StageA test-only PER active-prefix fix2, production unchanged",
+  "results": {
+    "collection": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-collection-spec.json",
+        "sha256": "a50ee1332140aa3f21a6c54aad4277a11d3bd44764d8deb3d615de2cd02c885e"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-collection/collection-custody.json",
+          "sha256": "c1bdc5249cfcbcbfdff02d3debb923dca672c20c8836d59e8ace226ce049e5a4"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-collection/collection-result.json",
+          "sha256": "71c4a423dc38460915f0c07c478fd21ee9ec21be7982226bb232845aee110e12"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    },
+    "replay-per-fixture": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture-spec.json",
+        "sha256": "160bd89924ec0ff3e1d40754dcc46e7c602bc4af79283cc462d70004ca5920f8"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture/replay-per-fixture-custody.json",
+          "sha256": "a53a8b128491612562a3c7022316c604e9960241df6086c2fdc53c8e850728a8"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-per-fixture/replay-per-fixture-result.json",
+          "sha256": "9ab13644fb3f6e9d33130a43c438aff4e50cc1838fd51058c07d41a0c85c093e"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    },
+    "replay-healthy": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-healthy-spec.json",
+        "sha256": "eb28a077d0e5e53f3e6417d8b460b40ed81132de4af44bdce6efff8620ab789d"
+      },
+      "records": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-healthy/replay-healthy-custody.json",
+          "sha256": "e5fee1fe92abd23c0c6818bdbdc5bebaed10e33e6a3a064ecb4d92ddccb905fd"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r75-replay-healthy/replay-healthy-result.json",
+          "sha256": "7150c12f45114194a7f169efc0ff3e1d6e3173a9ee52759ef251f5c859b70b96"
+        }
+      ],
+      "custody": "815source573config13artifact/index/import/thread/14registryMAIN1 PASS"
+    }
+  },
+  "outcomes": {
+    "collected": 20,
+    "causal_fixture_pass": 1,
+    "healthy_pass": 11
+  },
+  "overlap": "The separate causal fixture is included in healthy11; not12 distinct tests. No broadRED repeat.",
+  "clock_limit": "Existing harness actual elapsed seconds, UTC job start/end unavailable; no mtime inference.",
+  "all_sessions_closed": true,
+  "review_status": "sameAstra scoped fixturefix review pending",
+  "predecessor": "wave35/r74-replay-stagea-fix1-receipt.json"
+}

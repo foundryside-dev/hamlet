@@ -1,0 +1,375 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 54 items / 36 deselected / 18 selected
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py FFFFFFFFFF [ 55%]
+....FFFF                                                                 [100%]
+
+=================================== FAILURES ===================================
+_______ test_validated_replay_cannot_bless_stale_destination_width[flat] _______
+
+kind = 'flat'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    def test_validated_replay_cannot_bless_stale_destination_width(kind: str) -> None:
+        """B1 causal RED: new issuance cannot authorize an old target-dependent DTO."""
+        owner = _repair_owner(kind)
+        saved = owner.serialize()
+        validated = owner.validate_serialized(saved, expected_obs_dim=1)
+        observations, actions, rewards, successors, dones, masks = _flat_rows(offset=20.0)
+        owner.clear()
+        owner.push_recorded(observations.repeat(1, 2), actions, rewards, successors.repeat(1, 2), dones, masks)
+        before = _live_replay_state(owner)
+        with pytest.raises(ValueError, match="[Oo]bs|[Ww]idth"):
+            owner.prepare_serialized(saved, expected_obs_dim=2, lineage=None)
+        _assert_same_transport(before, _live_replay_state(owner))
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:584: Failed
+_______ test_validated_replay_cannot_bless_stale_destination_width[per] ________
+
+kind = 'per'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    def test_validated_replay_cannot_bless_stale_destination_width(kind: str) -> None:
+        """B1 causal RED: new issuance cannot authorize an old target-dependent DTO."""
+        owner = _repair_owner(kind)
+        saved = owner.serialize()
+        validated = owner.validate_serialized(saved, expected_obs_dim=1)
+        observations, actions, rewards, successors, dones, masks = _flat_rows(offset=20.0)
+        owner.clear()
+        owner.push_recorded(observations.repeat(1, 2), actions, rewards, successors.repeat(1, 2), dones, masks)
+        before = _live_replay_state(owner)
+        with pytest.raises(ValueError, match="[Oo]bs|[Ww]idth"):
+            owner.prepare_serialized(saved, expected_obs_dim=2, lineage=None)
+        _assert_same_transport(before, _live_replay_state(owner))
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:584: Failed
+_ test_mutated_validation_material_cannot_gain_prepared_authority[flat-nonfinite] _
+
+kind = 'flat', field = 'observations'
+
+    @pytest.mark.parametrize(
+        ("kind", "field"),
+        [
+            ("flat", "observations"),
+            ("flat", "next_action_masks"),
+            ("per", "observations"),
+            ("per", "next_action_masks"),
+            ("per", "priorities"),
+            ("per", "unit_ids"),
+        ],
+        ids=["flat-nonfinite", "flat-illegal-successor", "per-nonfinite", "per-illegal-successor", "per-priorities", "per-ids"],
+    )
+    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:
+        """B1 causal RED: returned mutable bytes must be revalidated before issuance."""
+        owner = _repair_owner(kind)
+        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
+        value = getattr(validated, field)
+        if field == "unit_ids":
+            value[0] = -1
+        elif field == "next_action_masks":
+            value[0].fill_(False)
+        else:
+            value[0] = float("nan")
+        before = _live_replay_state(owner)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed
+_ test_mutated_validation_material_cannot_gain_prepared_authority[flat-illegal-successor] _
+
+kind = 'flat', field = 'next_action_masks'
+
+    @pytest.mark.parametrize(
+        ("kind", "field"),
+        [
+            ("flat", "observations"),
+            ("flat", "next_action_masks"),
+            ("per", "observations"),
+            ("per", "next_action_masks"),
+            ("per", "priorities"),
+            ("per", "unit_ids"),
+        ],
+        ids=["flat-nonfinite", "flat-illegal-successor", "per-nonfinite", "per-illegal-successor", "per-priorities", "per-ids"],
+    )
+    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:
+        """B1 causal RED: returned mutable bytes must be revalidated before issuance."""
+        owner = _repair_owner(kind)
+        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
+        value = getattr(validated, field)
+        if field == "unit_ids":
+            value[0] = -1
+        elif field == "next_action_masks":
+            value[0].fill_(False)
+        else:
+            value[0] = float("nan")
+        before = _live_replay_state(owner)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed
+_ test_mutated_validation_material_cannot_gain_prepared_authority[per-nonfinite] _
+
+kind = 'per', field = 'observations'
+
+    @pytest.mark.parametrize(
+        ("kind", "field"),
+        [
+            ("flat", "observations"),
+            ("flat", "next_action_masks"),
+            ("per", "observations"),
+            ("per", "next_action_masks"),
+            ("per", "priorities"),
+            ("per", "unit_ids"),
+        ],
+        ids=["flat-nonfinite", "flat-illegal-successor", "per-nonfinite", "per-illegal-successor", "per-priorities", "per-ids"],
+    )
+    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:
+        """B1 causal RED: returned mutable bytes must be revalidated before issuance."""
+        owner = _repair_owner(kind)
+        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
+        value = getattr(validated, field)
+        if field == "unit_ids":
+            value[0] = -1
+        elif field == "next_action_masks":
+            value[0].fill_(False)
+        else:
+            value[0] = float("nan")
+        before = _live_replay_state(owner)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed
+_ test_mutated_validation_material_cannot_gain_prepared_authority[per-illegal-successor] _
+
+kind = 'per', field = 'next_action_masks'
+
+    @pytest.mark.parametrize(
+        ("kind", "field"),
+        [
+            ("flat", "observations"),
+            ("flat", "next_action_masks"),
+            ("per", "observations"),
+            ("per", "next_action_masks"),
+            ("per", "priorities"),
+            ("per", "unit_ids"),
+        ],
+        ids=["flat-nonfinite", "flat-illegal-successor", "per-nonfinite", "per-illegal-successor", "per-priorities", "per-ids"],
+    )
+    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:
+        """B1 causal RED: returned mutable bytes must be revalidated before issuance."""
+        owner = _repair_owner(kind)
+        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
+        value = getattr(validated, field)
+        if field == "unit_ids":
+            value[0] = -1
+        elif field == "next_action_masks":
+            value[0].fill_(False)
+        else:
+            value[0] = float("nan")
+        before = _live_replay_state(owner)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed
+_ test_mutated_validation_material_cannot_gain_prepared_authority[per-priorities] _
+
+kind = 'per', field = 'priorities'
+
+    @pytest.mark.parametrize(
+        ("kind", "field"),
+        [
+            ("flat", "observations"),
+            ("flat", "next_action_masks"),
+            ("per", "observations"),
+            ("per", "next_action_masks"),
+            ("per", "priorities"),
+            ("per", "unit_ids"),
+        ],
+        ids=["flat-nonfinite", "flat-illegal-successor", "per-nonfinite", "per-illegal-successor", "per-priorities", "per-ids"],
+    )
+    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:
+        """B1 causal RED: returned mutable bytes must be revalidated before issuance."""
+        owner = _repair_owner(kind)
+        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
+        value = getattr(validated, field)
+        if field == "unit_ids":
+            value[0] = -1
+        elif field == "next_action_masks":
+            value[0].fill_(False)
+        else:
+            value[0] = float("nan")
+        before = _live_replay_state(owner)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed
+___ test_mutated_validation_material_cannot_gain_prepared_authority[per-ids] ___
+
+kind = 'per', field = 'unit_ids'
+
+    @pytest.mark.parametrize(
+        ("kind", "field"),
+        [
+            ("flat", "observations"),
+            ("flat", "next_action_masks"),
+            ("per", "observations"),
+            ("per", "next_action_masks"),
+            ("per", "priorities"),
+            ("per", "unit_ids"),
+        ],
+        ids=["flat-nonfinite", "flat-illegal-successor", "per-nonfinite", "per-illegal-successor", "per-priorities", "per-ids"],
+    )
+    def test_mutated_validation_material_cannot_gain_prepared_authority(kind: str, field: str) -> None:
+        """B1 causal RED: returned mutable bytes must be revalidated before issuance."""
+        owner = _repair_owner(kind)
+        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
+        value = getattr(validated, field)
+        if field == "unit_ids":
+            value[0] = -1
+        elif field == "next_action_masks":
+            value[0].fill_(False)
+        else:
+            value[0] = float("nan")
+        before = _live_replay_state(owner)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:613: Failed
+___________ test_prepared_replay_has_no_public_material_constructor ____________
+
+    def test_prepared_replay_has_no_public_material_constructor() -> None:
+        """B2 causal RED: callers cannot construct a payload-bearing authority object."""
+>       with pytest.raises(TypeError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'TypeError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:620: Failed
+_____________ test_prepared_replay_has_no_writable_payload_storage _____________
+
+    def test_prepared_replay_has_no_writable_payload_storage() -> None:
+        """B2 causal RED: authentic identity must have no caller-rebindable material."""
+        owner = _flat()
+        candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1, lineage=None)
+        before = _live_replay_state(owner)
+>       with pytest.raises(AttributeError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'AttributeError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:629: Failed
+_ test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-flat] _
+
+kind = 'flat', attack = 'reinitialized'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    @pytest.mark.parametrize("attack", ["fabricated", "copied", "reinitialized"])
+    def test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once(kind: str, attack: str) -> None:
+        owner = _repair_owner(kind)
+        candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1, lineage=None)
+        before = _live_replay_state(owner)
+        if attack == "reinitialized":
+>           with pytest.raises(TypeError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'TypeError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:641: Failed
+_ test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-per] _
+
+kind = 'per', attack = 'reinitialized'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    @pytest.mark.parametrize("attack", ["fabricated", "copied", "reinitialized"])
+    def test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once(kind: str, attack: str) -> None:
+        owner = _repair_owner(kind)
+        candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1, lineage=None)
+        before = _live_replay_state(owner)
+        if attack == "reinitialized":
+>           with pytest.raises(TypeError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'TypeError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:641: Failed
+_ test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[flat] _
+
+kind = 'flat'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    def test_reinitialized_authentic_handle_cannot_substitute_other_issued_material(kind: str) -> None:
+        """B2 causal RED: current identity cannot authenticate another issuance's bytes."""
+        owner = _publication_owner(kind)
+        substitution = _incoming_repair_state(owner)
+        substitution["observations"].add_(30.0)
+        earlier = owner.prepare_serialized(substitution, expected_obs_dim=1, lineage=None)
+        other_material = owner._retained_material
+        intended = _incoming_repair_state(owner)
+        current = owner.prepare_serialized(intended, expected_obs_dim=1, lineage=None)
+        assert current is not earlier
+        before = _live_replay_state(owner)
+        try:
+            type(current).__init__(current, other_material)
+        except TypeError:
+            pass
+        else:
+>           with pytest.raises(ValueError, match="[Pp]repar|[Mm]aterial|[Ii]ssu"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:781: Failed
+_ test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[per] _
+
+kind = 'per'
+
+    @pytest.mark.parametrize("kind", ["flat", "per"])
+    def test_reinitialized_authentic_handle_cannot_substitute_other_issued_material(kind: str) -> None:
+        """B2 causal RED: current identity cannot authenticate another issuance's bytes."""
+        owner = _publication_owner(kind)
+        substitution = _incoming_repair_state(owner)
+        substitution["observations"].add_(30.0)
+        earlier = owner.prepare_serialized(substitution, expected_obs_dim=1, lineage=None)
+        other_material = owner._retained_material
+        intended = _incoming_repair_state(owner)
+        current = owner.prepare_serialized(intended, expected_obs_dim=1, lineage=None)
+        assert current is not earlier
+        before = _live_replay_state(owner)
+        try:
+            type(current).__init__(current, other_material)
+        except TypeError:
+            pass
+        else:
+>           with pytest.raises(ValueError, match="[Pp]repar|[Mm]aterial|[Ii]ssu"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:781: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-nonfinite]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-illegal-successor]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-nonfinite]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-illegal-successor]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-priorities]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-ids]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_public_material_constructor
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_writable_payload_storage
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[per]
+================= 14 failed, 4 passed, 36 deselected in 0.66s ==================

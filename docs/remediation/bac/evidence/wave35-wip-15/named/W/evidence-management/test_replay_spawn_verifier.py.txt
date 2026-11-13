@@ -1,0 +1,241 @@
+"""Synthetic data tests only; root runs after tooling freeze and review."""
+
+import importlib.util
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+VERIFIER = Path('/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py')
+spec = importlib.util.spec_from_file_location('replay_verifier_under_test', VERIFIER)
+verifier = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(verifier)
+
+
+class ReplayVerifierTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix='replay-verifier-data-')
+        self.addCleanup(self.temporary.cleanup)
+        self.base = Path(self.temporary.name)
+        self.root = self.base / 'synthetic-data-root'
+        (self.root / '.superpowers').mkdir(parents=True)
+        self.output = self.base / 'evidence'
+        self.job_dir = self.output / 'replay-poison'
+        self.job_dir.mkdir(parents=True)
+        self.paths = {
+            'manifest': self.base / 'manifest.json', 'spec': self.base / 'spec.json',
+            'result': self.output / 'replay-poison-result.json',
+            'controller': self.job_dir / 'identity-controller.json',
+            'child': self.job_dir / 'spawn-identity-replay_poison.json',
+            'observed': self.job_dir / 'spawn-observation-replay_poison.json',
+        }
+        imports = {n: str(self.root / 'src/townlet/exploration' / (n + '.py')) for n in verifier.BOOTSTRAP_MODULES}
+        replay = {'townlet.training.' + n: str(self.root / 'src/townlet/training' / (n + '.py')) for n in verifier.REPLAY_MODULES}
+        source_files = {}
+        for item in [str(self.root / 'src/townlet/__init__.py'), *imports.values(), *replay.values()]:
+            path = Path(item)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'SYNTHETIC DATA; NEVER IMPORT OR EXECUTE\n')
+            source_files[str(path.relative_to(self.root))] = verifier.digest(path.read_bytes())
+        for name in ('config-data', 'artifact-data'):
+            (self.root / name).write_bytes(b'synthetic fixture data')
+        self.manifest = {
+            'base_commit': 'a' * 40, 'candidate_tree': 'b' * 40, 'worktree_registry': 'synthetic registry\n',
+            'source_files': source_files,
+            'configs': {'config-data': verifier.digest(b'synthetic fixture data')},
+            'artifacts': {'artifact-data': verifier.digest(b'synthetic fixture data')},
+        }
+        self.write('manifest', self.manifest)
+        manifest_hash = verifier.digest(self.paths['manifest'].read_bytes())
+        self.spec_data = {
+            'root': str(self.root), 'manifest': str(self.paths['manifest']), 'output': str(self.output), 'workers': 1,
+            'jobs': [{'name': 'replay-poison', 'args': list(verifier.REPLAY_ARGS)}],
+        }
+        self.write('spec', self.spec_data)
+        log = self.output / 'replay-poison.log'
+        log.write_bytes(b'synthetic success log\n')
+        self.result = {
+            'name': 'replay-poison', 'exit_code': 0, 'seconds': 1.0,
+            'command': [str(self.root / '.venv/bin/python'), *self.spec_data['jobs'][0]['args']],
+            'log': str(log), 'sha256': verifier.digest(log.read_bytes()),
+            'base_commit': self.manifest['base_commit'], 'candidate_tree': self.manifest['candidate_tree'],
+            'manifest_sha256': manifest_hash, 'harness_sha256': verifier.HARNESS_SHA256,
+        }
+        self.write('result', self.result)
+        self.controller = {
+            'sha': self.manifest['base_commit'], 'candidate_tree': self.manifest['candidate_tree'],
+            'module': str(self.root / 'src/townlet/__init__.py'), 'worker': 'controller', 'torch': 'synthetic-version', 'threads': 1,
+        }
+        self.write('controller', self.controller)
+        self.child = {
+            **self.controller, 'worker': 'replay_poison', 'pid': 102, 'ppid': 101, 'manifest_sha256': manifest_hash,
+            'debug': True, 'interop_threads': 5, 'imports': imports, 'replay_imports': replay,
+        }
+        self.write('child', self.child)
+        self.observed = {
+            'process_pid': 102, 'queued_pid': 102, 'parent_pid': 101, 'exitcode': 0,
+            'qualified': True, 'message': verifier.MESSAGE, 'manifest_sha256': manifest_hash,
+        }
+        self.write('observed', self.observed)
+        self.git_values = {'HEAD': self.manifest['base_commit'], 'tree': self.manifest['candidate_tree'], 'registry': self.manifest['worktree_registry']}
+        self.start_patch('subprocess.check_output', side_effect=self.metadata)
+        self.start_patch('subprocess.run', return_value=SimpleNamespace(returncode=0))
+        self.start_patch('fcntl.flock', return_value=None)
+
+    def start_patch(self, name, **kwargs):
+        mocker = patch.object(verifier.subprocess if name.startswith('subprocess') else verifier.fcntl, name.split('.')[1], **kwargs)
+        result = mocker.start()
+        self.addCleanup(mocker.stop)
+        return result
+
+    def metadata(self, args, **kwargs):
+        self.assertEqual(kwargs['cwd'], self.root)
+        commands = {('git', 'rev-parse', 'HEAD'): 'HEAD', ('git', 'write-tree'): 'tree', ('git', 'worktree', 'list', '--porcelain'): 'registry'}
+        self.assertIn(tuple(args), commands)
+        return self.git_values[commands[tuple(args)]]
+
+    def write(self, name, value):
+        self.paths[name].write_text(json.dumps(value))
+
+    def invoke(self):
+        return verifier.verify(self.paths['spec'])
+
+    def refuse(self):
+        with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+            self.invoke()
+        self.assertFalse((self.job_dir / 'replay-spawn-custody-replay_poison.json').exists())
+
+    def test_positive_and_exclusive_destination(self):
+        receipt = self.invoke()
+        self.assertEqual(receipt['child_pid'], 102)
+        self.assertEqual(receipt['parent_pid'], receipt['child_ppid'])
+        self.assertEqual(receipt['spec_sha256'], verifier.digest(self.paths['spec'].read_bytes()))
+        self.assertEqual(receipt['verifier_sha256'], verifier.digest(VERIFIER.read_bytes()))
+        destination = self.job_dir / 'replay-spawn-custody-replay_poison.json'
+        original = destination.read_bytes()
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertEqual(destination.read_bytes(), original)
+
+    def test_identity_and_observation_controls(self):
+        controls = [
+            ('child', 'worker', 'bank_install_poison_completion'), ('observed', 'message', 'other success'),
+            ('child', 'pid', 103), ('observed', 'process_pid', 103), ('observed', 'queued_pid', 103),
+            ('child', 'ppid', 100), ('observed', 'parent_pid', 100), ('child', 'pid', True),
+            ('observed', 'process_pid', 102.0), ('observed', 'parent_pid', 0),
+            ('observed', 'exitcode', 1), ('observed', 'qualified', False), ('child', 'debug', False),
+            ('child', 'interop_threads', 1), ('controller', 'threads', True),
+            ('child', 'manifest_sha256', 'wrong'), ('child', 'candidate_tree', 'wrong'),
+        ]
+        for record, field, bad in controls:
+            with self.subTest(record=record, field=field, bad=bad):
+                data = getattr(self, record)
+                original = data[field]
+                data[field] = bad
+                self.write(record, data)
+                self.refuse()
+                data[field] = original
+                self.write(record, data)
+
+    def test_import_maps(self):
+        for field in ('imports', 'replay_imports'):
+            original = self.child[field].copy()
+            for mode in ('missing', 'wrong', 'extra'):
+                with self.subTest(field=field, mode=mode):
+                    changed = original.copy()
+                    key = next(iter(changed))
+                    if mode == 'missing':
+                        del changed[key]
+                    elif mode == 'wrong':
+                        changed[key] += '.wrong'
+                    else:
+                        changed['unexpected'] = 'unexpected'
+                    self.child[field] = changed
+                    self.write('child', self.child)
+                    self.refuse()
+            self.child[field] = original
+            self.write('child', self.child)
+
+    def test_parent_result_controls(self):
+        for field, value in [('exit_code', 1), ('exit_code', False), ('harness_sha256', 'wrong'), ('manifest_sha256', 'wrong'),
+                             ('candidate_tree', 'wrong'), ('base_commit', 'wrong'), ('command', ['unrelated']), ('sha256', 'wrong')]:
+            with self.subTest(field=field, value=value):
+                original = self.result[field]
+                self.result[field] = value
+                self.write('result', self.result)
+                self.refuse()
+                self.result[field] = original
+                self.write('result', self.result)
+
+    def test_partial_and_unknown_schemas(self):
+        for record in ('spec', 'result', 'controller', 'child', 'observed'):
+            original = json.loads(self.paths[record].read_text())
+            for mode in ('missing', 'extra'):
+                with self.subTest(record=record, mode=mode):
+                    changed = original.copy()
+                    if mode == 'missing':
+                        del changed[next(iter(changed))]
+                    else:
+                        changed['unknown'] = 1
+                    self.write(record, changed)
+                    self.refuse()
+            self.write(record, original)
+
+    def test_invalid_parent_elapsed_seconds(self):
+        for seconds in (None, 0, -1, False, True, "1.0", float('nan'), float('inf'), float('-inf')):
+            with self.subTest(seconds=seconds):
+                self.result['seconds'] = seconds
+                self.write('result', self.result)
+                self.refuse()
+
+    def test_missing_child_and_observation(self):
+        for record in ('child', 'observed'):
+            with self.subTest(record=record):
+                saved = self.paths[record].with_suffix('.saved')
+                self.paths[record].rename(saved)
+                self.refuse()
+                saved.rename(self.paths[record])
+
+    def test_source_config_artifact_mismatch(self):
+        for category in ('source_files', 'configs', 'artifacts'):
+            path = self.root / next(iter(self.manifest[category]))
+            original = path.read_bytes()
+            path.write_bytes(b'changed synthetic data')
+            self.refuse()
+            path.write_bytes(original)
+
+    def test_repository_metadata_mismatch(self):
+        for key in self.git_values:
+            original = self.git_values[key]
+            self.git_values[key] = 'wrong'
+            self.refuse()
+            self.git_values[key] = original
+
+    def test_manifest_mutation(self):
+        self.manifest['candidate_tree'] = 'changed'
+        self.write('manifest', self.manifest)
+        self.refuse()
+
+    def test_negative_job_index(self):
+        with self.assertRaises(ValueError):
+            verifier.verify(self.paths['spec'], -1)
+
+    def test_coherently_changed_command_refused(self):
+        self.spec_data['jobs'][0]['args'] = ['-m', 'pytest', 'unrelated']
+        self.result['command'] = [str(self.root / '.venv/bin/python'), '-m', 'pytest', 'unrelated']
+        self.write('spec', self.spec_data)
+        self.write('result', self.result)
+        self.refuse()
+
+    def test_parent_child_same_pid_refused(self):
+        self.child['ppid'] = self.child['pid']
+        self.observed['parent_pid'] = self.child['pid']
+        self.write('child', self.child)
+        self.write('observed', self.observed)
+        self.refuse()
+
+
+if __name__ == '__main__':
+    unittest.main()

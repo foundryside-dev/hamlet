@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[flat]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'flat'\n\n    @pytest.mark.parametrize(\"kind\", [\"flat\", \"per\"])\n    def test_validated_replay_cannot_bless_stale_destination_width(kind: str) -> None:\n        \"\"\"B1 causal RED: new issuance cannot authorize an old target-dependent DTO.\"\"\"\n        owner = _repair_owner(kind)\n        saved = owner.serialize()\n        validated = owner.validate_serialized(saved, expected_obs_dim=1)\n        observations, actions, rewards, successors, dones, masks = _flat_rows(offset=20.0)\n        owner.clear()\n        owner.push_recorded(observations.repeat(1, 2), actions, rewards, successors.repeat(1, 2), dones, masks)\n        before = _live_replay_state(owner)\n        with pytest.raises(ValueError, match=\"[Oo]bs|[Ww]idth\"):\n            owner.prepare_serialized(saved, expected_obs_dim=2, lineage=None)\n        _assert_same_transport(before, _live_replay_state(owner))\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:584: Failed",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "bac-approved-document-integration-v1",
+  "source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-EVIDENCE-PROCESS-NEXT-FINAL.md",
+  "target": "/workspace/hamlet/docs/remediation/bac/EVIDENCE-PROCESS.md",
+  "before_sha256": "95c787200b0a7f3f4cceaf0cad2b899fcfb9f2053a3ff0fbffd17856f4d3f07d",
+  "after_sha256": "409d31fd8fecc91237d90f3424447cb812258f3b42699faca0d121008461ef75",
+  "review": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-EVIDENCE-PROCESS-NEXT-FINAL-INDEPENDENT-REVIEW.md",
+  "review_sha256": "ca0aebc46af0fd575e6e3a6d59b5a4733ae46e89617838c1c5de17c1996a14e3",
+  "method": "Root exact-byte integration of independently reviewed source-verified reusable process; application R81 unchanged"
+}

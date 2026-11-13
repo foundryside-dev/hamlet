@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_is_stale_after_same_owner_clear",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_flat_prepared_restore_is_stale_after_same_owner_clear() -> None:\n        \"\"\"RED: a destination-issued candidate must not resurrect cleared rows.\"\"\"\n        owner = _flat()\n        candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1)\n        owner.clear()\n>       with pytest.raises(ValueError, match=\"[Pp]repared|[Dd]estination|[Ss]tale\"):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:330: Failed",
+  "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc"
+}

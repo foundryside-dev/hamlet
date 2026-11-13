@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'flat'\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2c6cdad480>\n\n    @pytest.mark.parametrize(\"kind\", [\"flat\", \"per\", \"recurrent\"])\n    def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch: pytest.MonkeyPatch) -> None:\n        \"\"\"Prospective API RED: observe the real replay domain operation before acquisition.\n    \n        The original Stage A source at SHA 70cb5aa0 demonstrated actual bypass.\n        This stronger node requires the new replay participant and explicit lineage.\n        \"\"\"\n        owner = _direct_owner(kind)\n        peer, participant = _peer()\n>       replay_participant = owner.rng_participant\n                             ^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'ReplayBuffer' object has no attribute 'rng_participant'\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:282: AttributeError",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b"
+}

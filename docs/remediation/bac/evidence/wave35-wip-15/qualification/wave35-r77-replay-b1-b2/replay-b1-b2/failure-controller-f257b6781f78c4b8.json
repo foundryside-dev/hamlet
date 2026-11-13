@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[flat]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'flat'\n\n    @pytest.mark.parametrize(\"kind\", [\"flat\", \"per\"])\n    def test_reinitialized_authentic_handle_cannot_substitute_other_issued_material(kind: str) -> None:\n        \"\"\"B2 causal RED: current identity cannot authenticate another issuance's bytes.\"\"\"\n        owner = _publication_owner(kind)\n        substitution = _incoming_repair_state(owner)\n        substitution[\"observations\"].add_(30.0)\n        earlier = owner.prepare_serialized(substitution, expected_obs_dim=1, lineage=None)\n        other_material = owner._retained_material\n        intended = _incoming_repair_state(owner)\n        current = owner.prepare_serialized(intended, expected_obs_dim=1, lineage=None)\n        assert current is not earlier\n        before = _live_replay_state(owner)\n        try:\n            type(current).__init__(current, other_material)\n        except TypeError:\n            pass\n        else:\n>           with pytest.raises(ValueError, match=\"[Pp]repar|[Mm]aterial|[Ii]ssu\"):\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE           Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:781: Failed",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

@@ -1,0 +1,157 @@
+"""Verify the sealed replay poison child; no application imports."""
+
+import fcntl
+import hashlib
+import json
+import math
+import subprocess
+import sys
+from pathlib import Path
+
+ROLE = "replay_poison"
+MESSAGE = "replay poison fail closed"
+HARNESS_SHA256 = "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+REPLAY_ARGS = (
+    "-m", "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+    "--no-cov", "-p", "no:cacheprovider", "-p", "no:benchmark", "-p", "bac_source_identity", "-q",
+)
+BOOTSTRAP_MODULES = ("world_curiosity_state", "rng_custody", "rnd")
+REPLAY_MODULES = ("replay_buffer", "prioritized_replay_buffer", "sequential_replay_buffer", "replay_contract")
+IDENTITY_FIELDS = {"sha", "candidate_tree", "module", "worker", "torch", "threads"}
+CHILD_FIELDS = IDENTITY_FIELDS | {"pid", "ppid", "manifest_sha256", "debug", "interop_threads", "imports", "replay_imports"}
+OBSERVATION_FIELDS = {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256", "parent_pid"}
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def read_json(path):
+    data = Path(path).read_bytes()
+    value = json.loads(data)
+    require(type(value) is dict, f"JSON object required: {path}")
+    return value, digest(data)
+
+
+def positive_pid(value):
+    return type(value) is int and value > 0
+
+
+def check_repository(root, manifest):
+    require(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == manifest["base_commit"], "HEAD mismatch")
+    with (root / ".superpowers/bac-qualification-index.lock").open("a") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            tree = subprocess.check_output(["git", "write-tree"], cwd=root, text=True).strip()
+            require(tree == manifest["candidate_tree"], "index tree mismatch")
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+    require(subprocess.run(["git", "diff", "--quiet"], cwd=root).returncode == 0, "unstaged changes")
+    registry = subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=root, text=True)
+    require(registry == manifest["worktree_registry"], "worktree registry mismatch")
+
+
+def check_inventory(root, manifest):
+    for category in ("source_files", "configs", "artifacts"):
+        inventory = manifest[category]
+        require(type(inventory) is dict, f"invalid {category}")
+        for relative, expected in inventory.items():
+            path = Path(relative)
+            require(not path.is_absolute() and ".." not in path.parts, f"unsafe inventory path: {relative}")
+            target = (root / path).resolve()
+            require(target.is_relative_to(root), f"inventory escapes root: {relative}")
+            require(digest(target.read_bytes()) == expected, f"{category} hash mismatch: {relative}")
+
+
+def check_bindings(spec, job, result, root, manifest, manifest_hash):
+    require(set(spec) == {"root", "manifest", "output", "workers", "jobs"}, "spec schema mismatch")
+    require(set(job) == {"name", "args"} and job["name"] == "replay-poison", "job schema/name mismatch")
+    require(type(spec["workers"]) is int and spec["workers"] == 1, "CPU harness concurrency mismatch")
+    fields = {"name", "exit_code", "seconds", "command", "log", "sha256", "candidate_tree", "base_commit", "manifest_sha256", "harness_sha256"}
+    require(set(result) == fields, "result schema mismatch")
+    require(type(result["exit_code"]) is int and result["exit_code"] == 0, "parent job failed")
+    seconds = result["seconds"]
+    require(type(seconds) in (int, float) and math.isfinite(seconds) and seconds > 0, "parent elapsed seconds must be finite and positive")
+    require(result["name"] == job["name"], "result name mismatch")
+    require(type(job["args"]) is list and all(type(arg) is str for arg in job["args"]), "invalid command args")
+    require(job["args"] == list(REPLAY_ARGS), "sealed replay command mismatch")
+    require(result["command"] == [str(root / ".venv/bin/python"), *job["args"]], "result command mismatch")
+    require(result["harness_sha256"] == HARNESS_SHA256, "harness mismatch")
+    require(result["manifest_sha256"] == manifest_hash, "result manifest mismatch")
+    for field in ("base_commit", "candidate_tree"):
+        require(type(manifest[field]) is str and bool(manifest[field]) and result[field] == manifest[field], f"result {field} mismatch")
+    log_path = Path(spec["output"]) / (job["name"] + ".log")
+    require(Path(result["log"]) == log_path, "result log path mismatch")
+    require(digest(log_path.read_bytes()) == result["sha256"], "result log hash mismatch")
+
+
+def verify(spec_path, job_index=0):
+    spec, spec_hash = read_json(spec_path)
+    require(type(job_index) is int and 0 <= job_index < len(spec["jobs"]), "invalid job index")
+    job = spec["jobs"][job_index]
+    name = job["name"]
+    require(type(name) is str and name not in ("", ".", "..") and Path(name).name == name, "invalid job name")
+    root = Path(spec["root"]).resolve()
+    manifest, manifest_hash = read_json(spec["manifest"])
+    output = Path(spec["output"])
+    job_dir = output / name
+    destination = job_dir / f"replay-spawn-custody-{ROLE}.json"
+    require(not destination.exists(), "custody destination already exists")
+    result, result_hash = read_json(output / (name + "-result.json"))
+    check_bindings(spec, job, result, root, manifest, manifest_hash)
+    controller, controller_hash = read_json(job_dir / "identity-controller.json")
+    child, child_hash = read_json(job_dir / f"spawn-identity-{ROLE}.json")
+    observed, observed_hash = read_json(job_dir / f"spawn-observation-{ROLE}.json")
+    require(set(controller) == IDENTITY_FIELDS, "controller schema mismatch")
+    require(set(child) == CHILD_FIELDS, "child schema mismatch")
+    require(set(observed) == OBSERVATION_FIELDS, "observation schema mismatch")
+    for value in (child["pid"], child["ppid"], observed["parent_pid"], observed["process_pid"], observed["queued_pid"]):
+        require(positive_pid(value), "PID must be a positive exact integer")
+    require(observed["process_pid"] == observed["queued_pid"] == child["pid"], "child/Process/queue PID mismatch")
+    require(child["ppid"] == observed["parent_pid"] != child["pid"], "parent/PPID mismatch")
+    require(type(observed["exitcode"]) is int and observed["exitcode"] == 0, "child failed")
+    require(observed["qualified"] is True and observed["message"] == MESSAGE, "qualified success message mismatch")
+    require(observed["manifest_sha256"] == child["manifest_sha256"] == manifest_hash, "child manifest mismatch")
+    require(child["worker"] == ROLE and controller["worker"] == "controller", "role mismatch")
+    for identity in (controller, child):
+        require(identity["sha"] == manifest["base_commit"], "identity commit mismatch")
+        require(identity["candidate_tree"] == manifest["candidate_tree"], "identity tree mismatch")
+        require(Path(identity["module"]).resolve() == root / "src/townlet/__init__.py", "package import mismatch")
+        require(type(identity["threads"]) is int and identity["threads"] == 1, "intra-op profile mismatch")
+    require(child["torch"] == controller["torch"], "Torch version mismatch")
+    require(child["debug"] is True, "debug disabled")
+    require(type(child["interop_threads"]) is int and child["interop_threads"] == 5, "interop profile mismatch")
+    require(child["imports"] == {n: str(root / "src/townlet/exploration" / (n + ".py")) for n in BOOTSTRAP_MODULES}, "bootstrap imports mismatch")
+    replay_imports = {"townlet.training." + n: str(root / "src/townlet/training" / (n + ".py")) for n in REPLAY_MODULES}
+    require(child["replay_imports"] == replay_imports, "replay imports mismatch")
+    for path in [root / "src/townlet/__init__.py", *map(Path, child["imports"].values()), *map(Path, replay_imports.values())]:
+        require(str(path.relative_to(root)) in manifest["source_files"], "import absent from source manifest")
+    check_inventory(root, manifest)
+    check_repository(root, manifest)
+    receipt = {
+        "status": "REPLAY SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": name, "case": ROLE, "expected_message": MESSAGE, "parent_job_exit_code": result["exit_code"],
+        "base_commit": manifest["base_commit"], "candidate_tree": manifest["candidate_tree"],
+        "manifest_sha256": manifest_hash, "spec_sha256": spec_hash, "result_sha256": result_hash,
+        "controller_sha256": controller_hash, "child_receipt_sha256": child_hash,
+        "parent_observation_sha256": observed_hash, "verifier_sha256": digest(Path(__file__).read_bytes()),
+        "harness_sha256": HARNESS_SHA256, "child_pid": child["pid"], "parent_pid": observed["parent_pid"],
+        "child_ppid": child["ppid"], "torch": child["torch"], "threads": 1, "interop_threads": 5, "debug": True,
+        "source_guards": len(manifest["source_files"]), "configs": len(manifest["configs"]), "artifacts": len(manifest["artifacts"]),
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "This CPU replay poison consumer child only; no restoration-failure, CUDA, other-process or whole-package qualification.",
+    }
+    with destination.open("x") as stream:
+        stream.write(json.dumps(receipt, indent=2) + "\n")
+    return receipt
+
+
+if __name__ == "__main__":
+    require(len(sys.argv) in (2, 3), "SPEC [JOB_INDEX] required")
+    print(json.dumps(verify(sys.argv[1], int(sys.argv[2]) if len(sys.argv) == 3 else 0), indent=2))

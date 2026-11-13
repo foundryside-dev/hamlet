@@ -1,0 +1,11 @@
+{
+  "schema": "bac-approved-document-integration-v1",
+  "source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-CURRENT-API.md",
+  "target": "/workspace/hamlet/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+  "sha256": "1c983b02f3fdd610857fc40b95eb454b5b3f701d02b869e35ea3d57e4befd63f",
+  "method": "Exact-byte integration of source-verified and independently reviewed final API capsule; no prose edits",
+  "review": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-API-REVIEW.md",
+  "review_sha256": "0aba60bd147c4e60edb2b8be08f6e39cabc146aeab9f220dc64f1664b4dc557b",
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "scope": "Bounded A shared/flat/PER with explicit recurrent/CUDA/caller limits; not whole BAC acceptance"
+}

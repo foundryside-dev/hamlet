@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_refuses_intervening_peer_operation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_flat_prepared_restore_refuses_intervening_peer_operation() -> None:\n        \"\"\"RED: even a released no-draw peer lease invalidates a prior token.\"\"\"\n        owner = _flat()\n        source = _flat()\n        source.clear()\n        source.push_recorded(*_flat_rows(offset=40.0))\n        peer, participant = _peer()\n        candidate = owner.prepare_serialized(source.serialize(), expected_obs_dim=1)\n        with process_rng_domain().operation(participant=participant, operation_kind=\"hold\", lineage=None):\n            pass\n        before = owner.serialize()\n>       with pytest.raises(ValueError, match=\"[Pp]repared|[Ss]tale|[Cc]urrency\"):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:509: Failed",
+  "candidate_tree": "6fe4a41e45e35af808e98164b6015a34503cf97b"
+}

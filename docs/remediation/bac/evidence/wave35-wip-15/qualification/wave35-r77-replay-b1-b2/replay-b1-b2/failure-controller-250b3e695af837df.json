@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_public_material_constructor",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_prepared_replay_has_no_public_material_constructor() -> None:\n        \"\"\"B2 causal RED: callers cannot construct a payload-bearing authority object.\"\"\"\n>       with pytest.raises(TypeError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'TypeError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:620: Failed",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

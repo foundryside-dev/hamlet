@@ -1,0 +1,616 @@
+"""Synthetic contract checkpoint fixtures; historical regression cases ported. No real archive, Git, or application execution."""
+
+import copy
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+import bac_checkpoint_contract as d
+
+
+def put(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data if isinstance(data, bytes) else data.encode())
+    return path
+
+
+def js(path, value):
+    return put(path, json.dumps(value, sort_keys=True).encode())
+
+
+def ref(root, path, root_name):
+    p = root / path
+    return {"root": root_name, "path": path, "sha256": d.digest(p), "bytes": p.stat().st_size}
+
+
+class ContractFixture(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        base = Path(self.tmp.name)
+        self.r, self.w, self.q = (base / name for name in ("root", "work", "qualification"))
+        for p in (self.r, self.w, self.q):
+            p.mkdir()
+        self.e = self.r / d.PREFIX
+        self.e.mkdir(parents=True)
+        old = put(self.e / "wave35-wip-12.json", "old")
+        self.old_ref = {"path": old.relative_to(self.r).as_posix(), "sha256": d.digest(old)}
+        i = {"schema": "bac-evidence-inventory-v1", "metrics": {"integrity_failures": 0}, "objects": {d.digest(old): {"bytes": old.stat().st_size, "paths": [self.old_ref["path"]]}}}
+        self.inventory = js(self.w / "inventory.json", i)
+        self.wip13_object = put(self.e / "wave35-wip-13" / "object.txt", "shared")
+        p13 = {"schema": "bac-wip13-delta-plan-v1", "status": "READY FOR ROOT PUBLICATION CHECKS", "inventory_sha256": d.digest(self.inventory), "previous_checkpoint": self.old_ref, "objects": {d.digest(self.wip13_object): {"action": "copy-new", "path": self.wip13_object.relative_to(self.r).as_posix(), "bytes": 6}}}
+        self.plan13 = js(self.e / "wave35-wip-13/selection-plan.json", p13)
+        m13 = {"predecessor": self.old_ref, "selection_plan": {"path": self.plan13.relative_to(self.r).as_posix(), "sha256": d.digest(self.plan13)}, "artifacts": {self.wip13_object.relative_to(self.r).as_posix(): {"sha256": d.digest(self.wip13_object), "bytes": 6, "action": "copy-new"}}}
+        self.manifest13 = js(self.e / "wave35-wip-13.json", m13)
+        self.predecessor = {"path": self.manifest13.relative_to(self.r).as_posix(), "sha256": d.digest(self.manifest13)}
+        self.chain = js(self.e / "checkpoint-chain.json", {"entries": [{"manifest": self.old_ref}, {"manifest": self.predecessor}], "current_checkpoint": self.predecessor})
+        self.a, self.b = "a" * 40, "b" * 40
+        self.base = "c" * 40
+        for n, tree in ((73, self.a), (74, self.b)):
+            js(self.w / f"wave35/r{n}-candidate.json", {"base_commit": self.base, "candidate_tree": tree})
+            js(self.w / f"wave35/r{n}-fixture-resource-preflight.json", {"round": n})
+        self.manifest_ref = ref(self.w, "wave35/r74-candidate.json", "W")
+        self.manifest73 = ref(self.w, "wave35/r73-candidate.json", "W")
+        put(self.q / "wave35-r73-unrun.json", "not-run")
+        put(self.q / "wave35-r74-failed" / "failure.log", "failed")
+        js(self.q / "wave35-r74-failed" / "result.json", {"candidate_tree": self.a, "exit_code": 1})
+        put(self.q / "wave35-r74-passed" / "run.log", "shared")
+        js(self.q / "wave35-r74-passed" / "result.json", {"candidate_tree": self.b, "exit_code": 0})
+        js(self.q / "wave35-r74-passed" / "custody.json", {"candidate_tree": self.b, "controller": 123, "worker": 124, "imports": "observed", "threads": 1, "debug": True})
+        js(self.q / "wave35-r74-passed" / "child.json", {"candidate_tree": self.b, "child_pid": 123})
+        put(self.w / "reviews" / "terminal.md", "independent review")
+        js(self.w / "reviews" / "separation.json", {"reviewer": "reviewer", "producer": "producer"})
+        js(self.w / "wave35" / "review-subject.json", {"candidate_tree": self.b, "scope": "bounded"})
+        put(self.w / "tools" / "verify.py", "# immutable verifier\n")
+        put(self.r / "docs" / "current.md", "approved")
+        self.receipt = {
+            "schema": "bac-checkpoint-terminal-receipt-v1", "status": "SEALED FOR EVIDENCE SELECTION",
+            "interval_start": 73, "terminal_round": 74, "candidate_manifest": {k: v for k, v in self.manifest_ref.items() if k != "root"},
+            "review_subject": ref(self.w, "wave35/review-subject.json", "W"),
+            "base_commit": self.base, "candidate_tree": self.b,
+            "execution_subtrees": {k: "d" * 40 for k in ("src", "tests", "configs", "scripts", ".defaults-ratchet")},
+            "package_accounting": {"qualified": 28, "remaining": 38, "total": 66},
+            "interval_entries": [
+                {"round": 73, "path": "wave35-r73-unrun.json", "kind": "attempt", "status": "UNRUN"},
+                {"round": 74, "path": "wave35-r74-failed", "kind": "attempt", "status": "FAILED"},
+                {"round": 74, "path": "wave35-r74-passed", "kind": "attempt", "status": "PASSED"},
+            ],
+            "attempt_index": [
+                {"check": "r73-preflight", "check_kind": "preflight", "status": "UNRUN", "terminal_attempt": "unrun", "attempts": [self.attempt(73, "unrun", "wave35-r73-unrun.json", "UNRUN", self.manifest73)]},
+                {"check": "r74-owned", "check_kind": "runtime", "status": "PASSED", "qualifying": True, "terminal_attempt": "pass2", "attempts": [self.attempt(74, "fail1", "wave35-r74-failed", "FAILED", self.manifest73), self.attempt(74, "pass2", "wave35-r74-passed", "PASSED", self.manifest_ref)], "expected_children": [{"id": "poison", "status": "EXECUTED", "attempt_id": "pass2", "candidate_tree": self.b, "witness": ref(self.q, "wave35-r74-passed/child.json", "Q")}], "required_dependencies": [ref(self.w, "tools/verify.py", "W")]},
+            ],
+            "component_receipts": [],
+            "reviews": [{**ref(self.w, "reviews/terminal.md", "W"), "role": "terminal", "reviewer": "reviewer", "producer": "producer", "independent": True, "independence_evidence": ref(self.w, "reviews/separation.json", "W"), "scope": "candidate", "disposition": "bounded PASS", "reviewed_subject": [self.manifest_ref, ref(self.w, "wave35/review-subject.json", "W")]}],
+            "documents": [ref(self.r, "docs/current.md", "R")],
+            "dependencies": [{**ref(self.w, "tools/verify.py", "W"), "role": "verifier", "required_by": ["r74-owned"]}],
+            "required_next": ["whole acceptance"], "scope": "bounded component",
+        }
+        self.setup_contract()
+        self.receipt_path = js(self.w / "wave35/r74-receipt.json", self.receipt)
+
+    def setup_contract(self):
+        self.wip14_object = put(self.e / "wave35-wip-14/object.txt", "prior14")
+        p14 = {"schema": "bac-wip14-delta-plan-v1", "status": "READY FOR ROOT PUBLICATION CHECKS", "interval": [59, 72], "inventory_sha256": d.digest(self.inventory), "previous_checkpoint": self.predecessor, "wip13_selection_plan": self.pubref(self.plan13), "objects": {d.digest(self.wip14_object): {"action": "copy-new", "path": self.wip14_object.relative_to(self.r).as_posix(), "bytes": 7}}}
+        self.plan14 = js(self.e / "wave35-wip-14/selection-plan.json", p14)
+        self.manifest14 = js(self.e / "wave35-wip-14.json", {"schema": "bac-incremental-checkpoint-evidence-v2", "previous_record": self.predecessor, "selection_plan": self.pubref(self.plan14), "interval": [59, 72], "round": 72, "objects": p14["objects"]})
+        self.predecessor = self.pubref(self.manifest14)
+        self.chain_data = {"entries": [{"id": "wave35-wip-12", "round": 54, "manifest": self.old_ref}, {"id": "wave35-wip-13", "round": 58, "manifest": self.pubref(self.manifest13), "previous_record": self.old_ref, "selection_plan": self.pubref(self.plan13)}, {"id": "wave35-wip-14", "round": 72, "manifest": self.predecessor, "previous_record": self.pubref(self.manifest13), "selection_plan": self.pubref(self.plan14)}], "current_checkpoint": self.predecessor}
+        js(self.chain, self.chain_data)
+        self.contract_path = self.w / "contract.json"
+        self.contract = {"schema": "bac-checkpoint-selection-contract-v1", "checkpoint_id": "wave35-wip-15", "series": "wave35", "interval_start": 73, "terminal_round": 74, "baseline_inventory": ref(self.w, "inventory.json", "W"), "catalog": [{"checkpoint_id": "wave35-wip-13", "format": "wip13-artifacts-v1", "interval": [55, 58], "manifest": self.pubref(self.manifest13), "selection_plan": self.pubref(self.plan13)}, {"checkpoint_id": "wave35-wip-14", "format": "incremental-v2", "interval": [59, 72], "manifest": self.predecessor, "selection_plan": self.pubref(self.plan14)}], "required_components": []}
+        self.seal_contract()
+
+    def pubref(self, path):
+        return {"path": path.relative_to(self.r).as_posix(), "sha256": d.digest(path)}
+
+    def seal_contract(self):
+        js(self.contract_path, self.contract)
+        contract_ref = ref(self.w, "contract.json", "W")
+        self.receipt.update(checkpoint_id=self.contract["checkpoint_id"], series=self.contract["series"], contract=contract_ref)
+        js(self.w / "wave35/review-subject.json", {"candidate_tree": self.b, "scope": "bounded", "contract": contract_ref})
+        self.receipt["review_subject"] = ref(self.w, "wave35/review-subject.json", "W")
+        self.receipt["reviews"][0]["reviewed_subject"] = [self.manifest_ref, self.receipt["review_subject"]]
+
+    def attempt(self, n, ident, path, status, manifest):
+        tree = self.a if n == 73 or ident == "fail1" else self.b
+        row = {"id": ident, "record_id": ident, "path": path, "status": status, "candidate_manifest": {k: v for k, v in manifest.items() if k != "root"}, "base_commit": self.base, "candidate_tree": tree, "descendants": d.descendants(self.q, path), "environment": "CPU", "hardware": "synthetic", "process_custody": []}
+        if status == "UNRUN":
+            row.update(unrun_reason="captured only", exit_code=None, started_at=None, ended_at=None)
+        else:
+            log = path + ("/failure.log" if status == "FAILED" else "/run.log")
+            row.update(command=["synthetic"], started_at="t1", ended_at="t2", exit_code=1 if status == "FAILED" else 0, counts={"passed": int(status == "PASSED")}, log_paths=[ref(self.q, log, "Q")], result=ref(self.q, path + "/result.json", "Q"), verifier=ref(self.w, "tools/verify.py", "W"))
+            row["duration_seconds"] = 1.0
+            if status == "PASSED":
+                custody = ref(self.q, path + "/custody.json", "Q")
+                row["process_custody"] = [{**custody, "role": role} for role in ("controller", "worker", "import_thread_debug")]
+                row["process_topology"] = "xdist"
+                row["actual_worker_count"] = 1
+            else:
+                row["custody_unavailable_reason"] = "historical failing fixture"
+        return row
+
+    def seal(self):
+        self.receipt_path = js(self.receipt_path, self.receipt)
+
+    def plan(self, draft=False):
+        return d.plan(self.r, self.w, self.q, self.contract_path, self.chain, self.receipt_path, draft=draft)
+
+    def fails(self, fragment):
+        with self.assertRaisesRegex(ValueError, fragment):
+            self.plan()
+
+    def test_additive_reuse_alias_and_immutable_python(self):
+        result = self.plan()
+        self.assertEqual(result["status"], "READY FOR ROOT PUBLICATION CHECKS")
+        self.assertEqual(result["objects"][d.digest(self.wip13_object)]["action"], "reference-existing")
+        self.assertIn("qualification/wave35-r74-failed/failure.log", {r["logical_path"] for r in result["inputs"]})
+        self.assertIn("qualification/wave35-r73-unrun.json", {r["logical_path"] for r in result["inputs"]})
+        self.assertTrue(any(x["path"].endswith("verify.py.txt") for x in result["objects"].values()))
+        self.assertGreater(len(result["inputs"]) - len(result["objects"]), 0)
+        self.assertGreaterEqual(sum(x["sha256"] == d.digest(self.wip13_object) for x in result["inputs"]), 1)
+
+    def test_assemble_synthetic_only_and_draft_rejection(self):
+        draft = self.plan(draft=True)
+        p = js(self.w / "draft-plan.json", draft)
+        args = (self.r, self.w, self.q, self.contract_path, self.chain, p, self.w / "assembly.json")
+        with self.assertRaisesRegex(ValueError, "draft or invalid"):
+            d.assemble(*args)
+        p = js(p, self.plan())
+        report = d.assemble(*args)
+        self.assertEqual(report["status"], "INCOMPLETE PUBLICATION PROPOSAL; ROOT REVIEW REQUIRED")
+        self.assertFalse(report["navigation_approved"])
+        with self.assertRaises(ValueError):
+            d.assemble(*args)
+
+    def test_interval_membership_and_directory_drift(self):
+        put(self.q / "wave35-r74-passed" / "late.log", "late")
+        self.fails("descendant set changed")
+        (self.q / "wave35-r74-passed" / "late.log").unlink()
+        (self.q / "wave35-r74-passed" / "empty-late").mkdir()
+        self.fails("descendant set changed")
+        (self.q / "wave35-r74-passed" / "empty-late").rmdir()
+        put(self.q / "wave35-r74-new-spec.json", "new")
+        self.fails("interval entry mismatch|finite interval membership")
+
+    def test_unindexed_attempt_and_terminal_pointer(self):
+        self.receipt["interval_entries"][2]["kind"] = "support"
+        self.seal(); self.fails("attempt not in interval")
+        self.receipt["interval_entries"][2]["kind"] = "attempt"
+        self.receipt["attempt_index"][1]["terminal_attempt"] = "orphan"
+        self.seal(); self.fails("orphan terminal")
+
+    def test_mixed_source_and_review_subject(self):
+        self.receipt["attempt_index"][1]["attempts"][0]["candidate_tree"] = self.b
+        self.seal(); self.fails("attempt manifest identity mismatch")
+        self.receipt["attempt_index"][1]["attempts"][0]["candidate_tree"] = self.a
+        self.receipt["reviews"][0]["reviewed_subject"] = [self.manifest73]
+        self.seal(); self.fails("terminal review subject mismatch")
+
+    def test_independence_child_and_document(self):
+        self.receipt["reviews"][0]["producer"] = "reviewer"
+        self.seal(); self.fails("review independence")
+        self.receipt["reviews"][0]["producer"] = "producer"
+        self.receipt["reviews"][0].pop("independence_evidence")
+        self.seal(); self.fails("review independence evidence missing")
+        self.receipt["reviews"][0]["independence_evidence"] = ref(self.w, "reviews/separation.json", "W")
+        self.receipt["attempt_index"][1]["expected_children"][0]["witness"]["sha256"] = "0" * 64
+        self.seal(); self.fails("hash mismatch")
+        self.receipt["attempt_index"][1]["expected_children"][0]["witness"] = ref(self.q, "wave35-r74-passed/child.json", "Q")
+        put(self.r / "docs/current.md", "stale")
+        self.seal(); self.fails("hash mismatch")
+
+    def test_review_hash_and_frozen_subject(self):
+        put(self.w / "reviews/terminal.md", "revised review")
+        self.fails("hash mismatch")
+        put(self.w / "reviews/terminal.md", "independent review")
+        self.receipt["reviews"][0]["reviewed_subject"] = [self.manifest_ref]
+        self.seal(); self.fails("frozen qualification review subject mismatch")
+
+    def test_child_source_and_unrun_gate(self):
+        js(self.q / "wave35-r74-passed/child.json", {"candidate_tree": self.a, "child_pid": 123})
+        self.receipt["attempt_index"][1]["attempts"][1]["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        self.receipt["attempt_index"][1]["expected_children"][0]["witness"] = ref(self.q, "wave35-r74-passed/child.json", "Q")
+        self.seal(); self.fails("child witness source mismatch")
+        js(self.q / "wave35-r74-passed/child.json", {"candidate_tree": self.b, "child_pid": 123})
+        self.receipt["attempt_index"][1]["attempts"][1]["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        self.receipt["attempt_index"][1]["expected_children"] = [{"id": "poison", "status": "UNRUN", "reason": "not observed"}]
+        self.seal(); self.fails("unrun child or check cannot satisfy qualification")
+
+    def test_passing_result_and_terminal_child_source_reconciled(self):
+        passed = self.receipt["attempt_index"][1]["attempts"][1]
+        passed["exit_code"] = 9
+        self.seal(); self.fails("passing attempt result invalid")
+        passed["exit_code"] = 0
+        js(self.q / "wave35-r74-passed/child.json", {"candidate_tree": self.a, "child_pid": 123})
+        passed["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        child = self.receipt["attempt_index"][1]["expected_children"][0]
+        child["attempt_id"] = "fail1"
+        child["candidate_tree"] = self.a
+        child["witness"] = ref(self.q, "wave35-r74-passed/child.json", "Q")
+        self.seal(); self.fails("qualifying child must bind terminal attempt")
+
+    def test_structured_result_counts_and_status_reconciled(self):
+        path = self.q / "wave35-r74-passed/result.json"
+        js(path, {"candidate_tree": self.b, "exit_code": 0, "counts": {"passed": 9}, "status": "PASSED"})
+        attempt = self.receipt["attempt_index"][1]["attempts"][1]
+        attempt["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        attempt["result"] = ref(self.q, "wave35-r74-passed/result.json", "Q")
+        self.seal(); self.fails("result counts mismatch")
+        js(path, {"candidate_tree": self.b, "exit_code": 0, "counts": {"passed": 1}, "status": "FAILED"})
+        attempt["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        attempt["result"] = ref(self.q, "wave35-r74-passed/result.json", "Q")
+        self.seal(); self.fails("result status mismatch")
+
+    def test_component_scope_and_dependency_closure(self):
+        js(self.w / "wave35/component.json", {"candidate_tree": self.a})
+        self.receipt["component_receipts"] = [{**ref(self.w, "wave35/component.json", "W"), "candidate_tree": self.b, "scope": "bounded"}]
+        self.contract["required_components"] = self.receipt["component_receipts"]
+        self.seal_contract()
+        self.seal(); self.fails("component receipt source mismatch")
+        self.receipt["component_receipts"][0]["candidate_tree"] = self.a
+        self.seal_contract()
+        self.receipt["dependencies"][0]["required_by"] = ["unknown check"]
+        self.seal(); self.fails("required helper missing from named closure")
+
+    def test_interrupted_diagnostic_partial_attempts_stay_distinct(self):
+        for status in ("INTERRUPTED", "DIAGNOSTIC", "PARTIAL"):
+            ident = status.lower()
+            path = f"wave35-r74-{ident}.json"
+            put(self.q / path, ident)
+            self.receipt["interval_entries"].append({"round": 74, "path": path, "kind": "attempt", "status": status})
+            attempt = self.attempt(74, ident, path, "UNRUN", self.manifest_ref)
+            attempt.update(status=status, command=["synthetic"], started_at="t1", ended_at="t2", exit_code=2, counts={}, custody_unavailable_reason="captured historical diagnostic")
+            if status == "PARTIAL":
+                attempt["exit_code"] = None
+                attempt["counts"] = None
+            attempt.pop("unrun_reason")
+            self.receipt["attempt_index"].append({"check": ident, "check_kind": "diagnostic", "status": status, "terminal_attempt": ident, "attempts": [attempt]})
+        self.seal()
+        result = self.plan()
+        self.assertEqual(result["interval"], [73, 74])
+        self.assertTrue(all(any(row["logical_path"] == "qualification/" + f"wave35-r74-{status.lower()}.json" for row in result["inputs"]) for status in ("INTERRUPTED", "DIAGNOSTIC", "PARTIAL")))
+
+    def test_static_pass_without_pytest_counts_and_current_red(self):
+        for ident, status, code in (("static-local", "PASSED", 0), ("global-mypy", "FAILED", 1)):
+            path = f"wave35-r74-{ident}.log"
+            put(self.q / path, f"{ident}: exit {code}")
+            self.receipt["interval_entries"].append({"round": 74, "path": path, "kind": "attempt", "status": status})
+            attempt = self.attempt(74, ident, path, "UNRUN", self.manifest_ref)
+            attempt.update(status=status, command=["mypy"], started_at=None, ended_at=None, exit_code=code, counts=None, custody_unavailable_reason="static custody has no pytest counts or worker")
+            if status == "PASSED":
+                attempt["verifier_unavailable_reason"] = "external mypy command; command/version in retained static custody"
+            attempt.pop("unrun_reason")
+            self.receipt["attempt_index"].append({"check": ident, "check_kind": "static", "qualifying": False, "status": status, "terminal_attempt": ident, "attempts": [attempt]})
+        self.seal()
+        result = self.plan()
+        self.assertEqual(result["status"], "READY FOR ROOT PUBLICATION CHECKS")
+        self.assertTrue(any(row["logical_path"] == "qualification/wave35-r74-global-mypy.log" for row in result["inputs"]))
+
+    def test_single_process_qualifying_witness_and_false_worker_claim(self):
+        attempt = self.receipt["attempt_index"][1]["attempts"][1]
+        attempt["process_custody"] = [x for x in attempt["process_custody"] if x["role"] != "worker"]
+        attempt["process_topology"] = "single_process"
+        attempt["actual_worker_count"] = 0
+        self.seal()
+        self.assertEqual(self.plan()["status"], "READY FOR ROOT PUBLICATION CHECKS")
+        attempt["actual_worker_count"] = 2
+        self.seal(); self.fails("runtime worker topology mismatch")
+
+    def test_duration_only_qualifying_runtime_preserves_unknown_clock(self):
+        attempt = self.receipt["attempt_index"][1]["attempts"][1]
+        attempt["started_at"] = None
+        attempt["ended_at"] = None
+        attempt["custody_unavailable_reason"] = "absolute timestamps absent in genuine result"
+        attempt["absolute_time_unavailable_reason"] = "harness recorded elapsed seconds only"
+        js(self.q / "wave35-r74-passed/result.json", {"candidate_tree": self.b, "exit_code": 0, "seconds": 1.0, "command": ["synthetic"]})
+        attempt["result"] = ref(self.q, "wave35-r74-passed/result.json", "Q")
+        attempt["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        self.seal()
+        self.assertEqual(self.plan()["status"], "READY FOR ROOT PUBLICATION CHECKS")
+        attempt["duration_seconds"] = None
+        self.seal(); self.fails("qualifying runtime attempt incomplete")
+        attempt["duration_seconds"] = 1.0
+        attempt.pop("absolute_time_unavailable_reason")
+        self.seal(); self.fails("qualifying runtime attempt incomplete")
+        attempt["absolute_time_unavailable_reason"] = "harness recorded elapsed seconds only"
+        attempt["duration_seconds"] = 2.0
+        self.seal(); self.fails("result duration mismatch")
+
+    def test_shared_static_directory_preserves_mixed_commands(self):
+        top = "wave35-r74-static"
+        for ident, status, exit_code in (("global-mypy", "FAILED", 1), ("owned-mypy", "PASSED", 0)):
+            js(self.q / top / f"{ident}-result.json", {"candidate_tree": self.b, "exit_code": exit_code, "status": status, "command": [ident], "seconds": 1.0})
+        self.receipt["interval_entries"].append({"round": 74, "path": top, "kind": "attempt", "status": "MIXED"})
+        for ident, status, exit_code in (("global-mypy", "FAILED", 1), ("owned-mypy", "PASSED", 0)):
+            attempt = self.attempt(74, ident, top, "UNRUN", self.manifest_ref)
+            result = ref(self.q, top + f"/{ident}-result.json", "Q")
+            attempt.update(status=status, record=result, command=[ident], started_at=None, ended_at=None, exit_code=exit_code, counts=None, duration_seconds=1.0, result=result, custody_unavailable_reason="static command has no pytest counts or absolute times")
+            attempt.pop("unrun_reason")
+            if status == "PASSED":
+                attempt["verifier_unavailable_reason"] = "external mypy version recorded in custody"
+            self.receipt["attempt_index"].append({"check": ident, "check_kind": "static", "qualifying": False, "status": status, "terminal_attempt": ident, "attempts": [attempt]})
+        self.seal()
+        result = self.plan()
+        self.assertEqual(result["status"], "READY FOR ROOT PUBLICATION CHECKS")
+        self.assertEqual(len([x for x in result["inputs"] if x["logical_path"].startswith("qualification/" + top)]), 2)
+        owned = self.receipt["attempt_index"][-1]["attempts"][0]
+        original_record = owned["record"]
+        owned.pop("result")
+        self.seal(); self.fails("shared executed record missing result")
+        owned["result"] = original_record
+        owned["record"] = ref(self.q, "wave35-r74-passed/result.json", "Q")
+        self.seal(); self.fails("shared record outside declared directory")
+        owned["record"] = original_record
+        owned["record"] = self.receipt["attempt_index"][-2]["attempts"][0]["record"]
+        self.seal(); self.fails("duplicate shared authoritative record")
+        owned["record"] = original_record
+        self.receipt["attempt_index"][-1]["attempts"][0]["record_id"] = "global-mypy"
+        self.seal(); self.fails("duplicate semantic record ID")
+        self.receipt["attempt_index"][-1]["attempts"][0]["record_id"] = "owned-mypy"
+        self.receipt["attempt_index"][-1]["check"] = "global-mypy"
+        self.seal(); self.fails("duplicate check ID")
+
+    def test_predecessor_plan_and_reuse_hash(self):
+        put(self.e / "wave35-wip-12.json", "changed")
+        self.fails("hash mismatch")
+        put(self.e / "wave35-wip-12.json", "old")
+        put(self.wip13_object, "stale!")
+        self.fails("hash mismatch")
+        put(self.wip13_object, "shared")
+        self.chain = js(self.chain, {"entries": [], "current_checkpoint": self.predecessor})
+        self.fails("current chain predecessor")
+
+    def test_symlink_traversal_and_existing_destination(self):
+        target = self.w / "reviews/terminal.md"
+        target.unlink(); target.symlink_to(self.w / "tools/verify.py")
+        self.fails("symlink path")
+        target.unlink(); put(target, "independent review")
+        result = self.plan()
+        dest = next(row["path"] for row in result["objects"].values() if row["action"] == "copy-new")
+        put(self.r / dest, "collision")
+        self.fails("output exists")
+
+    def test_traversal_and_post_plan_membership_change(self):
+        self.receipt["documents"][0]["path"] = "docs/../docs/current.md"
+        self.seal(); self.fails("unsafe path")
+        self.receipt["documents"][0]["path"] = "docs/./current.md"
+        self.seal(); self.fails("unsafe path")
+        self.receipt["documents"][0]["path"] = "docs/current.md"
+        self.seal()
+        sealed = self.plan()
+        p = js(self.w / "sealed-plan.json", sealed)
+        (self.q / "wave35-r74-passed" / "empty-later").mkdir()
+        with self.assertRaisesRegex(ValueError, "descendant set changed"):
+            d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, p, self.w / "assembly.json")
+        (self.q / "wave35-r74-passed" / "empty-later").rmdir()
+        put(self.q / "wave35-r74-added.json", "late support")
+        with self.assertRaisesRegex(ValueError, "interval entry mismatch|finite interval membership"):
+            d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, p, self.w / "assembly.json")
+
+    def test_symlinked_metadata_and_root_ancestor_rejected(self):
+        original = self.manifest13.read_bytes()
+        actual = put(self.e / "manifest-real.json", original)
+        self.manifest13.unlink()
+        self.manifest13.symlink_to(actual)
+        self.fails("symlink path")
+        self.manifest13.unlink(); put(self.manifest13, original)
+        alias = Path(self.tmp.name) / "root-alias"
+        alias.symlink_to(self.r, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "symlink root ancestor"):
+            d.plan(alias, self.w, self.q, self.contract_path, self.chain, self.receipt_path)
+
+    def test_same_name_changed_bytes_new_object_and_plan_tamper(self):
+        put(self.q / "wave35-r74-passed/run.log", "new-log")
+        self.receipt["attempt_index"][1]["attempts"][1]["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+        self.receipt["attempt_index"][1]["attempts"][1]["log_paths"] = [ref(self.q, "wave35-r74-passed/run.log", "Q")]
+        self.seal()
+        result = self.plan()
+        self.assertEqual(result["objects"][d.digest(self.q / "wave35-r74-passed/run.log")]["action"], "copy-new")
+        result["objects"][d.digest(self.q / "wave35-r74-passed/run.log")]["bytes"] += 1
+        p = js(self.w / "tampered-plan.json", result)
+        with self.assertRaisesRegex(ValueError, "plan inputs"):
+            d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, p, self.w / "report.json")
+
+    def test_unrun_rejects_observed_execution_facts(self):
+        attempt = self.receipt["attempt_index"][0]["attempts"][0]
+        for field, value in (("ended_at", "2026-11-13T00:00:00Z"),
+                             ("counts", {"passed": 99}),
+                             ("counts", {}), ("duration_seconds", 1.0),
+                             ("duration_seconds", 0)):
+            with self.subTest(field=field, value=value):
+                attempt.update(ended_at=None, counts=None, duration_seconds=None)
+                attempt[field] = value
+                self.seal()
+                self.fails("unrun cannot claim execution")
+                attempt[field] = None
+        attempt.update(ended_at=None, counts=None, duration_seconds=None,
+                       custody_unavailable_reason="not executed; no observed timing or counts")
+        self.seal()
+        self.assertEqual(self.plan()["status"], "READY FOR ROOT PUBLICATION CHECKS")
+
+    def test_child_witness_attempt_identity_matches_terminal(self):
+        attempt = self.receipt["attempt_index"][1]["attempts"][1]
+        child = self.receipt["attempt_index"][1]["expected_children"][0]
+        path = "wave35-r74-passed/child.json"
+        for attempt_id in ("older-attempt", "pass2"):
+            js(self.q / path, {"candidate_tree": self.b, "attempt_id": attempt_id,
+                               "child_pid": 123})
+            child["witness"] = ref(self.q, path, "Q")
+            attempt["descendants"] = d.descendants(self.q, "wave35-r74-passed")
+            self.seal()
+            if attempt_id == "older-attempt":
+                self.fails("child witness attempt mismatch")
+            else:
+                self.assertEqual(self.plan()["status"], "READY FOR ROOT PUBLICATION CHECKS")
+
+    def test_forged_independence_and_wrong_terminal_candidate(self):
+        js(self.w / "reviews/separation.json", {"reviewer": "someone-else", "producer": "producer"})
+        self.receipt["reviews"][0]["independence_evidence"] = ref(self.w, "reviews/separation.json", "W")
+        self.seal(); self.fails("review independence identity mismatch")
+        js(self.w / "reviews/separation.json", {"reviewer": "reviewer", "producer": "producer"})
+        self.receipt["reviews"][0]["independence_evidence"] = ref(self.w, "reviews/separation.json", "W")
+        # Same source bytes at another candidate path cannot replace the terminal path.
+        js(self.w / "wave35/other-candidate.json", {"base_commit": self.base, "candidate_tree": self.b})
+        replacement = ref(self.w, "wave35/other-candidate.json", "W")
+        self.receipt["candidate_manifest"] = {k: v for k, v in replacement.items() if k != "root"}
+        self.receipt["reviews"][0]["reviewed_subject"][0] = replacement
+        self.seal(); self.fails("terminal manifest path mismatch")
+
+    def test_contract_interval_identity_components_and_frozen_subject(self):
+        baseline = copy.deepcopy(self.contract)
+        for key, value in (("interval_start", 72), ("interval_start", 74), ("terminal_round", None), ("terminal_round", True), ("series", "../wave35"), ("checkpoint_id", "wave35-wip-14")):
+            with self.subTest(key=key, value=value):
+                self.contract = copy.deepcopy(baseline)
+                self.contract[key] = value
+                js(self.contract_path, self.contract)
+                with self.assertRaises(ValueError):
+                    self.plan()
+        self.contract = baseline
+        self.seal_contract()
+        original = copy.deepcopy(self.receipt)
+        for key, value in (("interval_start", 74), ("terminal_round", 75), ("checkpoint_id", "wave35-wip-16"), ("series", "wave36"), ("contract", {})):
+            self.receipt = copy.deepcopy(original)
+            self.receipt[key] = value
+            self.seal(); self.fails("receipt contract")
+        self.receipt = original
+        js(self.w / "component.json", {"candidate_tree": self.b})
+        component = {**ref(self.w, "component.json", "W"), "scope": "replay", "candidate_tree": self.b}
+        self.contract["required_components"] = [component]
+        self.seal_contract(); self.seal(); self.fails("required component coverage")
+        self.receipt["component_receipts"] = [component]
+        self.seal()
+        self.assertEqual(self.plan()["required_components"], [component])
+        js(self.w / "wave35/review-subject.json", {"candidate_tree": self.b})
+        self.receipt["review_subject"] = ref(self.w, "wave35/review-subject.json", "W")
+        self.seal(); self.fails("frozen subject contract")
+
+    def test_nonfinite_elapsed_boolean_workers_and_missing_round(self):
+        a = self.receipt["attempt_index"][1]["attempts"][1]
+        for value in (float("inf"), float("-inf"), float("nan"), True, 0, -1):
+            a["duration_seconds"] = value
+            self.seal(); self.fails("qualifying runtime attempt incomplete")
+        a["duration_seconds"] = 1
+        a["actual_worker_count"] = True
+        self.seal(); self.fails("runtime worker topology")
+        a["actual_worker_count"] = 1
+        self.receipt["interval_entries"].pop(0)
+        self.seal(); self.fails("finite interval membership")
+
+    def test_catalog_omission_reorder_duplicate_format_and_links(self):
+        original = copy.deepcopy(self.contract)
+        bad_catalogs = [[], original["catalog"][:1], original["catalog"][1:], list(reversed(original["catalog"])), original["catalog"] * 2]
+        for catalog in bad_catalogs:
+            self.contract = copy.deepcopy(original)
+            self.contract["catalog"] = catalog
+            self.seal_contract(); self.seal()
+            with self.assertRaises(ValueError):
+                self.plan()
+        self.contract = copy.deepcopy(original)
+        self.contract["catalog"][0]["format"] = "incremental-v2"
+        self.seal_contract(); self.seal(); self.fails("format mismatch")
+        self.contract = copy.deepcopy(original)
+        self.contract["catalog"][1]["interval"] = [60, 72]
+        self.seal_contract(); self.seal(); self.fails("interval gap")
+        self.contract = original
+        self.seal_contract(); self.seal()
+        chain = copy.deepcopy(self.chain_data)
+        chain["current_checkpoint"] = self.old_ref
+        js(self.chain, chain); self.fails("current chain pointer")
+
+    def reseal_history14(self, plan14, manifest14):
+        js(self.plan14, plan14)
+        manifest14["selection_plan"] = self.pubref(self.plan14)
+        js(self.manifest14, manifest14)
+        self.contract["catalog"][1].update(manifest=self.pubref(self.manifest14), selection_plan=self.pubref(self.plan14))
+        self.chain_data["entries"][-1].update(manifest=self.pubref(self.manifest14), selection_plan=self.pubref(self.plan14))
+        self.chain_data["current_checkpoint"] = self.pubref(self.manifest14)
+        js(self.chain, self.chain_data)
+        self.seal_contract(); self.seal()
+
+    def test_authenticated_catalog_disagreement_and_provenance(self):
+        p = d.read_json(self.plan14)
+        m = d.read_json(self.manifest14)
+        cases = ("object", "escape", "reuse", "plan", "predecessor", "interval")
+        for case in cases:
+            bp, bm = copy.deepcopy(p), copy.deepcopy(m)
+            sha = next(iter(bp["objects"]))
+            if case == "object":
+                bm["objects"][sha]["bytes"] += 1
+            elif case == "escape":
+                bp["objects"][sha]["path"] = d.PREFIX + "other/escaped.txt"
+                bm["objects"] = bp["objects"]
+            elif case == "reuse":
+                bp["objects"][sha]["action"] = "reference-existing"
+                bm["objects"] = bp["objects"]
+            elif case == "plan":
+                bp["wip13_selection_plan"] = self.old_ref
+            elif case == "predecessor":
+                bm["previous_record"] = self.old_ref
+            else:
+                bp["interval"] = [60, 72]
+            self.reseal_history14(bp, bm)
+            with self.subTest(case=case), self.assertRaises(ValueError):
+                self.plan()
+        self.reseal_history14(p, m)
+        self.assertEqual(self.plan(), self.plan())
+
+    def test_contract_drift_after_plan_and_output_collision(self):
+        p = js(self.w / "plan.json", self.plan())
+        self.contract["terminal_round"] = 75
+        js(self.contract_path, self.contract)
+        with self.assertRaises(ValueError):
+            d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, p, self.w / "report.json")
+        self.contract["terminal_round"] = 74
+        self.seal_contract(); self.seal()
+        put(self.e / "wave35-wip-15.json", "collision")
+        self.fails("output exists")
+
+    def test_two_successive_contracts_all_prior_reuse_and_byte_exact_assembly(self):
+        # Data only: baseline, both historical formats and the neutral publication.
+        for label, content in (("baseline", "old"), ("prior14", "prior14"), ("alias", "shared")):
+            path = "wave35-r74-" + label + ".txt"
+            put(self.q / path, content)
+            self.receipt["interval_entries"].append({"round": 74, "path": path, "kind": "support", "status": "DIAGNOSTIC"})
+        self.seal()
+        first = self.plan()
+        self.assertEqual(first, self.plan())
+        for source in (self.e / "wave35-wip-12.json", self.wip13_object, self.wip14_object):
+            self.assertEqual(first["objects"][d.digest(source)]["action"], "reference-existing")
+        plan15 = js(self.w / "plan15.json", first)
+        d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, plan15, self.w / "report15.json")
+        for sha, row in first["objects"].items():
+            self.assertEqual(d.digest(self.r / row["path"]), sha)
+            self.assertEqual((self.r / row["path"]).stat().st_size, row["bytes"])
+        published_plan = js(self.e / "wave35-wip-15/selection-plan.json", first)
+        manifest = {**first, "schema": "bac-checkpoint-publication-v1", "previous_record": first["previous_checkpoint"], "round": 74, "selection_plan": self.pubref(published_plan)}
+        manifest_path = js(self.e / "wave35-wip-15.json", manifest)
+        pair = {"checkpoint_id": "wave35-wip-15", "format": "checkpoint-publication-v1", "interval": [73, 74], "manifest": self.pubref(manifest_path), "selection_plan": self.pubref(published_plan)}
+        self.chain_data["entries"].append({"id": pair["checkpoint_id"], "round": 74, "manifest": pair["manifest"], "previous_record": self.predecessor, "selection_plan": pair["selection_plan"]})
+        self.chain_data["current_checkpoint"] = pair["manifest"]
+        js(self.chain, self.chain_data)
+        # Shift only synthetic fixture data to the next finite interval.
+        for path in list(self.q.iterdir()):
+            path.rename(path.with_name(path.name.replace("r73", "r75").replace("r74", "r76")))
+        for n, tree in ((75, self.a), (76, self.b)):
+            js(self.w / f"wave35/r{n}-candidate.json", {"base_commit": self.base, "candidate_tree": tree})
+            js(self.w / f"wave35/r{n}-fixture-resource-preflight.json", {"round": n})
+        text = json.dumps(self.receipt).replace("r73", "r75").replace("r74", "r76").replace('"round": 73', '"round": 75').replace('"round": 74', '"round": 76')
+        self.receipt = json.loads(text)
+        self.receipt.update(interval_start=75, terminal_round=76)
+        self.contract.update(checkpoint_id="wave35-wip-16", interval_start=75, terminal_round=76)
+        self.contract["catalog"].append(pair)
+        self.manifest_ref = ref(self.w, "wave35/r76-candidate.json", "W")
+        self.seal_contract(); self.seal()
+        second = self.plan()
+        self.assertEqual(second["interval"], [75, 76])
+        self.assertTrue(any(row["action"] == "reference-existing" and "wave35-wip-15/" in row["path"] for row in second["objects"].values()))
+        self.assertEqual(second, self.plan())
+        plan16 = js(self.w / "plan16.json", second)
+        d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, plan16, self.w / "report16.json")
+        for sha, row in second["objects"].items():
+            self.assertEqual(d.digest(self.r / row["path"]), sha)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,5 +1,17 @@
 # BAC implementation status
 
+## 2026-11-13 — bounded replay repair A qualified at R81
+
+Replay repair A now revalidates owned flat/PER mutable validation DTOs against the current destination before issuing authority. Shared prepared handles contain only identity; revision, token and material stay with the issuer. Typed guards preserve required lineage and expose `PreparedReplay` results. Independent SPEC/QUALITY approval covers this finite CPU slice.
+
+At candidate `4bcb26ec56bc2664949baab7d6b14e3c1da76b01`, root passed 53 ordinary cases plus 1 isolated poison case. Independent execution passed the same 54 controls; repeated runs are not 108 unique cases. Source/process and actual-child custody were verified. R81 global Ruff, owned Black, owned-four mypy and all-three public prepared-result assertions pass. Defaults remains 601 against 600. R79 global mypy's 15 errors (6 oracle/9 POP) and recurrent Black failures remain prior source-bound evidence, not R81 reruns.
+
+Required work remains: recurrent mutable-DTO assessment under original B1, real scratch-stream classification/state proof, recurrent publication controls and default/style fixes; additive CUDA capability/lifecycle design and hardware qualification; caller/native integration; broader suites and final fresh reviews. These gates remain open; accounting stays 28 qualified, 38 remaining, 66 total.
+
+WIP14 remote `678513c7` is verified. Its CI has Config PASS, Lint FAIL with 6 oracle errors, and Tests FAIL with cause still unknown. [WIP15 evidence](evidence/wave35-wip-15.json) records this bounded candidate; its remote identity and CI are checked separately after publication. The [current replay contract](CURRENT-REPLAY-CUSTODY-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md) distinguish component qualification from remaining acceptance gates.
+
+The dated entries below retain earlier source-specific assessments; their gate and publication statements are historical.
+
 ## 2026-11-13 — managed BANK restoration and atomic owner capture qualified at R72
 
 The curiosity BANK now enters process RNG custody before its own lock and passes authentic lineage through private and shared operations. Native state and gradients are captured together from the same owned backend. Restore reconstructs saved native configuration offside, retains every required owner through publication, and validates SOURCE archives under TARGET initialization custody. Installation checks final currency before assigning the prepared state; uncertain completion propagates and poisons/quarantines the operation. The [BANK contract](CURRENT-CURIOSITY-BANK-CONTRACT.md), [checkpoint contract](CURRENT-CURIOSITY-CHECKPOINT-CONTRACT.md) and [RNG core contract](CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) describe the implemented interfaces and limits.

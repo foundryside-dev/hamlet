@@ -1,0 +1,34 @@
+# R0 replay poison boundary — finite contract reconciliation
+
+2026-11-13. Prose-only assessment against the accepted current implementation handoff, public core contract, Stage A brief and the supplied `T18e-R0-DOMAIN-STATUS-LOCK-FACT.md`. No live changing source was read, no runtime was executed, and no source was edited. The five-body review budget is unchanged. The status-lock fact is attributed to its source-qualified owner; this reviewer did not inspect the domain implementation.
+
+**Ruling: the proposed distinction is acceptable, with the conditions below.** Accepted R0 does not require an atomic common-poison fence around literally every managed replay mutation. It requires actual common admission for supported ambient-consuming regions, independent same-owner exclusion/freshness for RNG-free work, and refusal/quarantine at poisoned admission or uncertain publication boundaries. The handoff explicitly states: “RNG-free classification exempts only that exact region from global admission, not same-owner mutation discipline.” A blanket global gate on proven owner-local RNG-free leaves would strengthen that contract; it is not necessary to preserve it.
+
+The core contract's no-draw/snapshot currency statements describe operations admitted to its domain and the qualified backend lifecycle APIs. They do not imply that every replay-local read or write must join the domain. An owner-only mutation must still invalidate that replay owner's preparations through its own revision. An unrelated owner's truly local RNG-free mutation need not invalidate every other owner's domain token.
+
+## Required boundary
+
+| Region | Required protection and poison behavior |
+|---|---|
+| Direct/qualified sampling, including the selected conservative whole-sample local-generator branches | Actual common operation with required explicit lineage, before owner exclusion; common poison refuses entry. Preserve the selected ambient/local algorithms and local transport. Local-generator sampling is not an RNG-free leaf. |
+| Issuing/materializing an authenticated prepared restore, validating its current authority, install/load/publication, and any nested route reaching these operations | Actual domain custody before owner exclusion; current domain and owner evidence, issuer and one-use checks. Common poison refuses admission/publication. No owner-only alternate install or restore path. |
+| Genuine RNG-free owner-local data reads, storage/configuration/priority/tick/clear work, or plain serialization, where actual source proves they cannot enter another owner/domain or a consuming callback | Owner exclusion, local health and appropriate revision discipline suffice. No status query or global gate is required. These APIs make no atomic common-poison-fenced admission claim. Names alone do not establish this classification. |
+| Locally quarantined owner after uncertain partial publication | Remains quarantined independently of common-domain state. Ordinary local mutation, clear, serialization or reconfiguration cannot reset health, validate uncertain state, or provide an alternate restoration path. Diagnostic inspection may report failure only under an explicit diagnostic contract; it cannot represent a healthy checkpoint. |
+
+“Cannot enter another owner/domain” applies to the full effective call chain while the leaf owner lock is held, including helpers and supported callbacks. Calling one's own already-guarded nonconsuming helper is acceptable if the guard is reentrant and preserves local health/revision rules. Arbitrary callback or extension dispatch is not automatically RNG-free because a surrounding method is named storage or validation. Registration and participant/device inventory changes remain core operations under their existing idle-custody rule.
+
+For pure serialization the returned data is local transport, not proof of common-domain health, a current publication capability, or permission to resume poisoned process work. Likewise, a local readiness result is an eligibility observation, not authorization to sample. The next consuming or publication boundary must still perform actual domain admission and refuse poison. If a purported export issues prepared authority or certifies a joint healthy checkpoint, it belongs to the guarded publication/preparation surface instead.
+
+## Status is not admission
+
+The supplied fact establishes that `status()` acquires the same blocking domain RLock and may drain retirement records. Calling it under a replay owner lock introduces the forbidden owner-to-domain order. Calling it before the owner lock and then releasing it does not fence later work against poison. Neither placement supplies an atomic fence, and a cached flag is not authority. A leaf that actually needs a common fence must use the existing operation boundary, acquiring domain before owner; a genuinely exempt leaf should not pretend a diagnostic status read supplies one.
+
+Removing such a status check from a qualified leaf therefore does not weaken actual admission or currentness. It removes a misleading check and potential inversion. No new lock-free poison API, global decorator, scheduler or recovery framework is needed.
+
+## Consequences and retained limits
+
+After common poison, a locally healthy owner may still perform the explicitly classified owner-only diagnostic/ordinary data work, including mutation protected by its own revision. This does **not** heal the terminal process domain or allow sampling, prepared issuance/install, publication or training continuation. No leaf may clear common poison, erase local quarantine, consume or bless a stale capability, or publish partially installed state as healthy. Real post-poison application continuation remains refused at all consuming/publication boundaries.
+
+The replay readiness prose's earlier general phrase “refuses work after domain poison” should be made precise as refusal at replay domain-admitted sampling and lifecycle/publication boundaries, plus independent refusal of locally quarantined owner work. It should not be used to introduce a literal all-local-mutation global fence contrary to the accepted exemption. Conversely, no producer may retain an unqualified claim that **all** its methods atomically refuse common poison while taking only an owner lock.
+
+There is no invariant waiver here: same-owner race prevention, conservative mutation freshness, authentic nested lineage, domain-before-owner ordering, terminal common poison, and uncertain-publication quarantine all remain mandatory. Actual code must still prove the leaf classification and enforce the boundary; this prose does not approve the author's changing implementation. Qualified isolated-child poison testing remains owed, including refusal of actual sample/publication routes and nonhealing by any supported local clear/data operation. No parent poisoning or new helper source is authorized. Programme accounting remains28/38/66.

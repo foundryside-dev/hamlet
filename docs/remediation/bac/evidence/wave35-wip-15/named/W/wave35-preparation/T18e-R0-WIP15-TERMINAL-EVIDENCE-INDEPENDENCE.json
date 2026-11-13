@@ -1,0 +1,58 @@
+{
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "producer": "root + bac_astra_replay_child_verifier",
+  "reviewer": "bac_astra_replay_fix_a_review; gpt-6-astra medium",
+  "independent": true,
+  "checkpoint_id": "wave35-wip-15",
+  "interval": [73, 81],
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip15-r81-qualification-subject-v2.json",
+    "sha256": "65c17baba878a0a3efda8d70719b8f2a485d93053c11a4dc2847611225c0eefa"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip15-r81-terminal-review-input-v2.json",
+    "sha256": "9d696383cf8a7935ee81d392c72d53be45c88139fcf4b2764aed246432c092ff"
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/r81-checkpoint-contract.json",
+    "sha256": "5fd9322ad4e56a4a0193c6e13214e02f8e1c52a5ec68cbd2369865ceaaae57b8"
+  },
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r81-candidate.json",
+    "sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e"
+  },
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP15-TERMINAL-EVIDENCE-REVIEW.md",
+    "sha256": "bed8f8bfb863b5ddb17551949cbfc14bcc07ccfc6070f853008dd82ff76f12b6"
+  },
+  "independence_evidence": {
+    "terminal_input_produced_by_reviewer": false,
+    "producer_and_reviewer_distinct": true,
+    "prior_relationship": "Reviewer previously performed bounded source review and independently executed R81 53 ordinary plus one poison control; prior seals were not automatically adopted as terminal approval.",
+    "separate_review_work": "Independently checked frozen subject and contract, 68 check entries, actual spec/result/log metadata, 94 qualification top entries, five raw child linkages, historical provenance, overlap and open gates; checked v2 exact reference bytes, nine patch hashes and publication prose.",
+    "model_identity_basis": "Explicit orchestration label; no more precise runtime model-version claim.",
+    "new_application_or_selector_execution": false,
+    "new_source_body_reads": false,
+    "delegation": false
+  },
+  "disposition": "APPROVED_FOR_FINITE_CHECKPOINT_EVIDENCE_READINESS",
+  "material_findings": [],
+  "scope": "R73-R81 bounded replay repair A evidence and publication prose only; 54 unique terminal controls, repeated by root and independent reviewer.",
+  "package_accounting": {"qualified": 28, "remaining": 38, "total": 66},
+  "remaining": [
+    "Recurrent mutable DTO B1 assessment, B3 scratch/state proof, recurrent B4 and default/style repair",
+    "Separate B6 CUDA capability/lifecycle design and real hardware qualification",
+    "Actual caller/BANK/runtime/ENV/native joint integration and broader programme acceptance",
+    "Root final receipt equivalence, actual selection/assembly/publication and exact remote/CI verification"
+  ],
+  "review_date": "2026-11-13",
+  "absolute_review_timestamp": null,
+  "timestamp_note": "No precise wall-clock timestamp asserted; unavailable original execution UTC fields remain unavailable."
+}

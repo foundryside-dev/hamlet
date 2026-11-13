@@ -1,0 +1,210 @@
+{
+  "scope": "R80 productionround2 generic syntax prerequisites only",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+  "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+  "collection": 54,
+  "types": "owned4 and all3 public PreparedReplay assert_type PASS",
+  "static": "BlackownedPASS; UP047removed, Ruff11UP049FAIL; defaults601requiredrecurrent",
+  "checks": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection-spec.json",
+      "spec_sha256": "4ed8372e76e5e53ded993dee912778c8d2117b35dd64144e1db59445cf0c931d",
+      "results": [
+        {
+          "name": "collection",
+          "exit_code": 0,
+          "seconds": 4.538585662841797,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection.log",
+          "sha256": "8cd79675fa2938d3ec5c6f16afe5657fc7f3dcb95868192ef68231b5677e7bc7",
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection/identity-controller.json": "9456e9633a57364a24c1f10ecbc2d525ebd7b96dc5d5248de31eea3f68562eb5",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection-custody.json": "99022260c081c4c949bcdb6df537cdb8bdcf02b63ea8ff05f13b9be0cd4e6d89",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection-result.json": "0b09380707262ea4032ff5c50a207b648abc5deb61ce926c67ae49d452cba175",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-collection/collection.log": "8cd79675fa2938d3ec5c6f16afe5657fc7f3dcb95868192ef68231b5677e7bc7"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static-spec.json",
+      "spec_sha256": "7fcf92e8c052d1373212583f9ff3a81cb562b3a0fe3eaf13a1b277b74bb3f334",
+      "results": [
+        {
+          "name": "black-owned",
+          "exit_code": 0,
+          "seconds": 1.5610132217407227,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--workers",
+            "1"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/black-owned.log",
+          "sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "no-defaults",
+          "exit_code": 1,
+          "seconds": 0.8785643577575684,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/no-defaults.log",
+          "sha256": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "ruff-global",
+          "exit_code": 1,
+          "seconds": 0.15138936042785645,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "."
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/ruff-global.log",
+          "sha256": "99566d6da8b000f7e86b620b85baa954e1a02cf0ceed2e71fdf2f52e205dc99e",
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/black-owned-result.json": "a67ad121626f9bd3e8415887a912fb993597c48c57b941084e47a3c774a5a302",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/black-owned.log": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/no-defaults-result.json": "0dd18d5239bb46629c318d09eb537b81f90cf4dd6c0cebf5813c50eef35204ed",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/no-defaults.log": "bd7169859432f6c9e1bc6516704fded9f05e2e606328c05f954acaf15da575d7",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/ruff-global-result.json": "79f4fcdd2db9e2e81070daca77442e1d44aed035dcc84af1ca433af3740ea16c",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/ruff-global.log": "99566d6da8b000f7e86b620b85baa954e1a02cf0ceed2e71fdf2f52e205dc99e",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-static/static-custody.json": "df20bcf68eb3fa4f52b74d70cec56d43b42b48afe3d2c2064c8ca9bfb83618a2"
+      }
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types-spec.json",
+      "spec_sha256": "8c9580af5ac4209abf360308635f6b9fb730c3c7352501148e99666a3c57c279",
+      "results": [
+        {
+          "name": "owned-mypy",
+          "exit_code": 0,
+          "seconds": 2.465806245803833,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "src/townlet/training/replay_contract.py",
+            "src/townlet/training/replay_buffer.py",
+            "src/townlet/training/prioritized_replay_buffer.py",
+            "src/townlet/training/sequential_replay_buffer.py",
+            "--follow-imports=silent"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/owned-mypy.log",
+          "sha256": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "public-types",
+          "exit_code": 0,
+          "seconds": 1.4396026134490967,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "--follow-imports=silent",
+            "-c",
+            "from typing import Any, assert_type\nfrom townlet.training.replay_contract import PreparedReplay\nfrom townlet.training.replay_buffer import ReplayBuffer\nfrom townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer\nfrom townlet.training.sequential_replay_buffer import SequentialReplayBuffer\n\ndef check_prepared_result(flat: ReplayBuffer, per: PrioritizedReplayBuffer, seq: SequentialReplayBuffer, data: dict[str, Any]) -> None:\n    assert_type(flat.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n    assert_type(per.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n    assert_type(seq.prepare_serialized(data, expected_obs_dim=None, lineage=None), PreparedReplay)\n"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/public-types.log",
+          "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+          "candidate_tree": "2b9ae797423157a2e743ab54aadcaa9f2d31c00b",
+          "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+          "manifest_sha256": "aaf31706a22667c9ec8f9c288f355ffdb389b0ab62394c461da9143607b3602e",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ],
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/owned-mypy-result.json": "11778038b3c84f3de895c6fd66826da7d387a00932cdb008afd7b8cdf97d4dfb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/owned-mypy.log": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/public-types-result.json": "305fb2eb4a990d07d580374398d4cd5946367f3d5e081d408cff5811d3504240",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/public-types.log": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r80-types/static-custody.json": "07332c1243a2ddec84b3daad7947af14c7248c1e1cde5fafe4e10122372da3fa"
+      }
+    }
+  ],
+  "unrun": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-replay-current-spec.json",
+      "sha256": "f8ec1680c8231cd3fd6f469f37d9a6502111d9eec9eac1f9831ffe446bbb6167",
+      "status": "UNRUN",
+      "reason": "Ruff prerequisite newUP049; no R80 behavioral claim, repair before qualified repetition"
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-replay-poison-spec.json",
+      "sha256": "8f537b5a366d9d016c1aacbdf81d44dce256a6b2ae51d9959ac03a99bffb6b9c",
+      "status": "UNRUN",
+      "reason": "Ruff prerequisite newUP049; no R80 behavioral claim, repair before qualified repetition"
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-independent-replay-current-spec.json",
+      "sha256": "ecfa14bed0a28accec1d0e531024d0694532adbb9881158edf001df3b0a80c15",
+      "status": "UNRUN",
+      "reason": "Ruff prerequisite newUP049; no R80 behavioral claim, repair before qualified repetition"
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r80-independent-replay-poison-spec.json",
+      "sha256": "ae5528cc5e9467947185d737da6ca53253e2cb53ba9e68757f95378440aba821",
+      "status": "UNRUN",
+      "reason": "Ruff prerequisite newUP049; no R80 behavioral claim, repair before qualified repetition"
+    }
+  ],
+  "custody": "All executed815/573/13/14MAIN1 verified; no runtime/childreceipt exists forR80",
+  "clocks": "Producer actualelapsed only, absoluteUTC timestamps absent notinferred",
+  "review": "wave35-preparation/T18e-R0-REPLAY-FIX-A-PRODUCTION2-REVIEW.md",
+  "review_sha256": "79f839417078a95a0fc8337b7ede93bf9862ef5ae11f2a92fb0b55440dd82946",
+  "next": "Originalauthor narrowround3 names fix with targetedRuff/Blackdevelopmentcheck authorized; final rootqualifiedchecks and independent actualexecution stillowed"
+}

@@ -1,0 +1,66 @@
+--- before/test_checkpoint_contract.py
++++ after/test_checkpoint_contract.py
+@@ -412,6 +412,38 @@
+         with self.assertRaisesRegex(ValueError, "plan inputs"):
+             d.assemble(self.r, self.w, self.q, self.contract_path, self.chain, p, self.w / "report.json")
+ 
++    def test_unrun_rejects_observed_execution_facts(self):
++        attempt = self.receipt["attempt_index"][0]["attempts"][0]
++        for field, value in (("ended_at", "2026-11-13T00:00:00Z"),
++                             ("counts", {"passed": 99}),
++                             ("counts", {}), ("duration_seconds", 1.0),
++                             ("duration_seconds", 0)):
++            with self.subTest(field=field, value=value):
++                attempt.update(ended_at=None, counts=None, duration_seconds=None)
++                attempt[field] = value
++                self.seal()
++                self.fails("unrun cannot claim execution")
++                attempt[field] = None
++        attempt.update(ended_at=None, counts=None, duration_seconds=None,
++                       custody_unavailable_reason="not executed; no observed timing or counts")
++        self.seal()
++        self.assertEqual(self.plan()["status"], "READY FOR ROOT PUBLICATION CHECKS")
++
++    def test_child_witness_attempt_identity_matches_terminal(self):
++        attempt = self.receipt["attempt_index"][1]["attempts"][1]
++        child = self.receipt["attempt_index"][1]["expected_children"][0]
++        path = "wave35-r74-passed/child.json"
++        for attempt_id in ("older-attempt", "pass2"):
++            js(self.q / path, {"candidate_tree": self.b, "attempt_id": attempt_id,
++                               "child_pid": 123})
++            child["witness"] = ref(self.q, path, "Q")
++            attempt["descendants"] = d.descendants(self.q, "wave35-r74-passed")
++            self.seal()
++            if attempt_id == "older-attempt":
++                self.fails("child witness attempt mismatch")
++            else:
++                self.assertEqual(self.plan()["status"], "READY FOR ROOT PUBLICATION CHECKS")
++
+     def test_forged_independence_and_wrong_terminal_candidate(self):
+         js(self.w / "reviews/separation.json", {"reviewer": "someone-else", "producer": "producer"})
+         self.receipt["reviews"][0]["independence_evidence"] = ref(self.w, "reviews/separation.json", "W")
+--- before/bac_checkpoint_contract.py
++++ after/bac_checkpoint_contract.py
+@@ -326,7 +326,9 @@
+             observed = descendants(roots["Q"], name)
+             need(a.get("descendants") == observed, f"attempt descendant set changed: {name}")
+             if a["status"] == "UNRUN":
+-                need(a.get("unrun_reason") and a.get("exit_code") is None and a.get("started_at") is None, "unrun cannot claim execution")
++                need(a.get("unrun_reason") and all(a.get(field) is None for field in
++                     ("exit_code", "started_at", "ended_at", "counts", "duration_seconds")),
++                     "unrun cannot claim execution")
+             else:
+                 missing = any(a.get(field) is None for field in ("command", "started_at", "ended_at", "exit_code", "counts"))
+                 need(not missing or a.get("custody_unavailable_reason"), "unavailable execution fields need explicit reason")
+@@ -388,7 +390,10 @@
+                 else:
+                     need(child.get("candidate_tree") == expected_tree, "child source mismatch")
+                 if witness.suffix == ".json":
+-                    need(read_json(witness).get("candidate_tree") == child["candidate_tree"], "child witness source mismatch")
++                    witness_data = read_json(witness)
++                    need(witness_data.get("candidate_tree") == child["candidate_tree"], "child witness source mismatch")
++                    if "attempt_id" in witness_data:
++                        need(witness_data["attempt_id"] == child["attempt_id"], "child witness attempt mismatch")
+             else:
+                 need(child.get("reason") and not child.get("witness"), "unrun child cannot satisfy witness")
+         if check.get("qualifying"):

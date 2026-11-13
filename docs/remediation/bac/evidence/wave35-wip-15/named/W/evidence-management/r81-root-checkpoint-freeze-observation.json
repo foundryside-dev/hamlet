@@ -1,0 +1,28 @@
+{
+  "schema": "bac-root-candidate-freeze-observation-v1",
+  "candidate_tree": "4bcb26ec56bc2664949baab7d6b14e3c1da76b01",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "manifest_sha256": "f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e",
+  "scope": "Current file-byte recheck only; no new runtime test execution or new qualification claim",
+  "verified": {
+    "source_files": {
+      "count": 815,
+      "mismatches": []
+    },
+    "configs": {
+      "count": 573,
+      "mismatches": []
+    },
+    "artifacts": {
+      "count": 13,
+      "mismatches": []
+    }
+  },
+  "execution_subtrees": {
+    "src": "f662a49b70b042e8894a23428e854be802a3b582",
+    "tests": "01c96e5f28b51a5d74d456e4aa6cfeb6c74be075",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  }
+}

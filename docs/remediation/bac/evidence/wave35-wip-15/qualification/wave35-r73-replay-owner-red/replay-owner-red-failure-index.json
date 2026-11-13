@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "678513c7540a61114d59a17d1b1e0eb8a06ce0a2",
+  "candidate_tree": "93e04eee6a305ede45ad2b3acc5181942f8e98cc",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where wait = <threading.Event at 0x7feaed7bbce0: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_same_owner_clear_waits_until_real_sample_finishes",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

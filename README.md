@@ -379,6 +379,8 @@ and vector-tick beta horizon. [BAC status](docs/remediation/bac/STATUS.md) recor
 qualification and remaining native/runtime/learning requirements. These bounded notes do not
 refresh the broader dated source/CI review above.
 
+BAC remediation remains in progress: 28 qualified, 38 remaining, 66 total. R81 replay repair A fixes flat/PER mutable-DTO authority, shared prepared-handle ownership and typed lineage/results. Root passed 53 ordinary cases plus 1 isolated poison case; independent execution passed the same 54 controls. Approval is limited to that CPU slice. Recurrent, CUDA, caller and global acceptance gates remain open. See the [current replay contract](docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md) and [BAC remediation status](docs/remediation/bac/STATUS.md) for exact evidence, retained WIP14 CI failures and required follow-up.
+
 T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
 row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each
 row's descriptor and live payload through Linear → ReLU → Linear with an explicit positive

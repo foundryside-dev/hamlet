@@ -1,0 +1,61 @@
+diff --git a/src/townlet/training/replay_contract.py b/src/townlet/training/replay_contract.py
+index 72602db3..c8c71b00 100644
+--- a/src/townlet/training/replay_contract.py
++++ b/src/townlet/training/replay_contract.py
+@@ -12,7 +12,7 @@ from contextlib import contextmanager
+ from dataclasses import dataclass, fields, replace
+ from functools import wraps
+ from threading import RLock
+-from typing import Concatenate, Literal, NoReturn, ParamSpec, TypeVar
++from typing import Concatenate, Literal, NoReturn
+ from weakref import WeakKeyDictionary
+ 
+ import numpy as np
+@@ -116,11 +116,6 @@ class ReplayCustody:
+         self._replay_revision += 1
+ 
+ 
+-_Owner = TypeVar("_Owner", bound=ReplayCustody)
+-_Arguments = ParamSpec("_Arguments")
+-_Result = TypeVar("_Result")
+-
+-
+ def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+     try:
+         lineage = arguments["lineage"]
+@@ -131,7 +126,7 @@ def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+     return lineage
+ 
+ 
+-def replay_read(
++def replay_read[_Owner: ReplayCustody, _Result, **_Arguments](
+     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+ ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+     @wraps(method)
+@@ -142,7 +137,7 @@ def replay_read(
+     return guarded
+ 
+ 
+-def replay_mutation(
++def replay_mutation[_Owner: ReplayCustody, _Result, **_Arguments](
+     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+ ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+     @wraps(method)
+@@ -153,7 +148,7 @@ def replay_mutation(
+     return guarded
+ 
+ 
+-def replay_sample(
++def replay_sample[_Owner: ReplayCustody, _Result, **_Arguments](
+     method: Callable[Concatenate[_Owner, _Arguments], _Result],
+ ) -> Callable[Concatenate[_Owner, _Arguments], _Result]:
+     @wraps(method)
+@@ -165,7 +160,7 @@ def replay_sample(
+     return guarded
+ 
+ 
+-def replay_prepare(
++def replay_prepare[_Owner: ReplayCustody, **_Arguments](
+     method: Callable[Concatenate[_Owner, _Arguments], object],
+ ) -> Callable[Concatenate[_Owner, _Arguments], PreparedReplay]:
+     @wraps(method)

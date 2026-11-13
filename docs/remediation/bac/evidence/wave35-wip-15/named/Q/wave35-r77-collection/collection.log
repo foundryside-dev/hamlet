@@ -1,0 +1,70 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 54 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_replay_rng_custody.py>
+            <Function test_healthy_flat_recorded_rows_and_both_sample_apis>
+            <Function test_healthy_per_recorded_rows_and_both_sample_apis[global]>
+            <Function test_healthy_per_recorded_rows_and_both_sample_apis[owned-generator]>
+            <Function test_healthy_recurrent_direct_episode_and_sample>
+            <Function test_healthy_per_live_active_prefix_matches_serialized_rows>
+            <Function test_healthy_recurrent_qualified_readiness_and_sample[uniform]>
+            <Function test_healthy_recurrent_qualified_readiness_and_sample[owned-generator-priority]>
+            <Function test_direct_ambient_sample_waits_for_registered_peer[flat]>
+            <Function test_direct_ambient_sample_waits_for_registered_peer[per]>
+            <Function test_direct_ambient_sample_waits_for_registered_peer[recurrent]>
+            <Function test_explicit_lineage_refuses_unrelated_reentry_and_allows_authentic_nesting>
+            <Function test_same_owner_clear_waits_until_real_sample_finishes>
+            <Function test_flat_prepared_restore_is_stale_after_same_owner_clear>
+            <Function test_flat_prepared_restore_is_one_use>
+            <Function test_per_prepared_restore_is_bound_to_issuing_owner>
+            <Function test_flat_prepared_restore_refuses_intervening_peer_operation>
+            <Function test_validated_replay_cannot_bless_stale_destination_width[flat]>
+            <Function test_validated_replay_cannot_bless_stale_destination_width[per]>
+            <Function test_mutated_validation_material_cannot_gain_prepared_authority[flat-nonfinite]>
+            <Function test_mutated_validation_material_cannot_gain_prepared_authority[flat-illegal-successor]>
+            <Function test_mutated_validation_material_cannot_gain_prepared_authority[per-nonfinite]>
+            <Function test_mutated_validation_material_cannot_gain_prepared_authority[per-illegal-successor]>
+            <Function test_mutated_validation_material_cannot_gain_prepared_authority[per-priorities]>
+            <Function test_mutated_validation_material_cannot_gain_prepared_authority[per-ids]>
+            <Function test_prepared_replay_has_no_public_material_constructor>
+            <Function test_prepared_replay_has_no_writable_payload_storage>
+            <Function test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[fabricated-flat]>
+            <Function test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[fabricated-per]>
+            <Function test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[copied-flat]>
+            <Function test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[copied-per]>
+            <Function test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-flat]>
+            <Function test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-per]>
+            <Function test_same_held_outer_lineage_prepares_and_installs_replay[flat]>
+            <Function test_same_held_outer_lineage_prepares_and_installs_replay[per]>
+            <Function test_held_outer_preparation_refuses_intervening_work[sibling-sample-flat]>
+            <Function test_held_outer_preparation_refuses_intervening_work[sibling-sample-per]>
+            <Function test_held_outer_preparation_refuses_intervening_work[owner-mutation-flat]>
+            <Function test_held_outer_preparation_refuses_intervening_work[owner-mutation-per]>
+            <Function test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[flat]>
+            <Function test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[per]>
+            <Function test_replay_staging_fault_preserves_full_live_state_and_healthy_use[tensor-copy-flat]>
+            <Function test_replay_staging_fault_preserves_full_live_state_and_healthy_use[tensor-copy-per]>
+            <Function test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-flat]>
+            <Function test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-per]>
+            <Function test_per_generator_staging_fault_preserves_full_live_state_and_healthy_use>
+            <Function test_partial_replay_publication_quarantines_sample_prepare_install_and_clear[flat]>
+            <Function test_partial_replay_publication_quarantines_sample_prepare_install_and_clear[per]>
+            <Function test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[flat]>
+            <Function test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[per]>
+            <Function test_owned_per_sampling_advances_only_its_transport_generator>
+            <Function test_recurrent_priority_sampling_advances_only_its_transport_generator>
+            <Function test_direct_configured_per_uses_global_numpy_not_its_owned_generator>
+            <Function test_global_sample_primitives_advance_their_selected_ambient_stream>
+            <Function test_isolated_replay_poison_refuses_all_direct_samplers>
+
+========================= 54 tests collected in 0.16s ==========================

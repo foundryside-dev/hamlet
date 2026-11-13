@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-per]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "kind = 'per', attack = 'reinitialized'\n\n    @pytest.mark.parametrize(\"kind\", [\"flat\", \"per\"])\n    @pytest.mark.parametrize(\"attack\", [\"fabricated\", \"copied\", \"reinitialized\"])\n    def test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once(kind: str, attack: str) -> None:\n        owner = _repair_owner(kind)\n        candidate = owner.prepare_serialized(owner.serialize(), expected_obs_dim=1, lineage=None)\n        before = _live_replay_state(owner)\n        if attack == \"reinitialized\":\n>           with pytest.raises(TypeError):\n                 ^^^^^^^^^^^^^^^^^^^^^^^^\nE           Failed: DID NOT RAISE <class 'TypeError'>\n\ntests/test_townlet/regressions/bac/test_replay_rng_custody.py:641: Failed",
+  "candidate_tree": "275c9adc2c9f8bd5f1220215a3bbcbc8dbb6d7bd"
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "bac-historical-report-prefix-recovery-v1",
+  "supersedes": null,
+  "adds_to": "historical-report-prefix-recovery.json",
+  "source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-REPORT.md",
+  "source_sha256": "db992558e9744e16063df86f31400bdda33ffb29a90cd82c7d1011f10cff3232",
+  "expected_sha256": "67da28dc176142b6028154bd24c2f52ed30f40cd5a25caa0582a4b50fac4bfa6",
+  "review_reference": "wave35-preparation/T18e-R0-REPLAY-FIX-A-TESTS-REVIEW.md",
+  "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/historical-report-prefixes/67da28dc176142b6028154bd24c2f52ed30f40cd5a25caa0582a4b50fac4bfa6.md",
+  "bytes": 14805,
+  "method": "Exact SHA256-matching literal newline-ended prefix; no reconstruction or original-time claim"
+}

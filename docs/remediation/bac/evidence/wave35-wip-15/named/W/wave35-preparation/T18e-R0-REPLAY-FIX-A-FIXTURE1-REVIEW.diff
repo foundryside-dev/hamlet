@@ -1,0 +1,48 @@
+diff --git a/tests/test_townlet/regressions/bac/test_replay_rng_custody.py b/tests/test_townlet/regressions/bac/test_replay_rng_custody.py
+index 93275b80..0d55f00e 100644
+--- a/tests/test_townlet/regressions/bac/test_replay_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_replay_rng_custody.py
+@@ -735,6 +735,21 @@ def _publication_owner(kind: str) -> _ObservedFlatReplay | _ObservedPrioritizedR
+ 
+ 
+ def _install_real_historical_archive(owner: ReplayBuffer | PrioritizedReplayBuffer) -> None:
++    observations, actions, rewards, successors, dones, masks = _flat_rows()
++    owner.clear()
++    owner.push_recorded(
++        observations,
++        actions,
++        RewardTensor(
++            total=rewards.total,
++            extrinsic=rewards.total,
++            intrinsic=torch.zeros_like(rewards.total),
++            shaping=torch.zeros_like(rewards.total),
++        ),
++        successors,
++        dones,
++        masks,
++    )
+     saved = owner.serialize()
+     fields = (
+         "replay_kind",
+@@ -891,8 +906,8 @@ def test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate
+     material = owner._retained_material
+     incoming["observations"].fill_(900.0)
+     if isinstance(owner, PrioritizedReplayBuffer):
+-        incoming["priorities"].fill_(70.0)
+-        incoming["unit_ids"].fill_(999)
++        incoming["priorities"].fill(70.0)
++        incoming["unit_ids"].fill(999)
+     owner.load_prepared(candidate, lineage=None)
+     _assert_same_transport(expected, owner.serialize())
+     installed = _live_replay_state(owner)
+@@ -900,8 +915,8 @@ def test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate
+     material.next_observations.fill_(700.0)
+     material.actions.fill_(0)
+     if isinstance(owner, PrioritizedReplayBuffer):
+-        material.priorities.fill_(60.0)
+-        material.unit_ids.fill_(888)
++        material.priorities.fill(60.0)
++        material.unit_ids.fill(888)
+         material.sampler.rng.random()
+     _assert_same_transport(installed, _live_replay_state(owner))
+ 

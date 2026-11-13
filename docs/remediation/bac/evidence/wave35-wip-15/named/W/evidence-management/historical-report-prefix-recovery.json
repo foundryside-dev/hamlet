@@ -1,0 +1,44 @@
+{
+  "schema": "bac-historical-report-prefix-recovery-v1",
+  "source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-REPORT.md",
+  "source_sha256": "db992558e9744e16063df86f31400bdda33ffb29a90cd82c7d1011f10cff3232",
+  "method": "Extract literal newline-ending prefixes of current append-only report; retain only independently review-recorded exact SHA256 matches. No prose reconstruction, timestamp inference or claim these paths existed at original execution time. Original report and reviews unchanged.",
+  "results": [
+    {
+      "expected_sha256": "841349f2b792033d70f491e6a27bf36961311caa842a5adedad02bf59365e282",
+      "review_references": [
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-PRODUCTION2-REVIEW.md"
+      ],
+      "recovery": "EXACT SHA256-MATCHING PREFIX",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/historical-report-prefixes/841349f2b792033d70f491e6a27bf36961311caa842a5adedad02bf59365e282.md",
+      "bytes": 41928
+    },
+    {
+      "expected_sha256": "d7612ddb52b02b42a8ac8edaee22175db8cdf99910ce33694b354b38e82eadde",
+      "review_references": [
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-FIXTURE1-REVIEW.md"
+      ],
+      "recovery": "EXACT SHA256-MATCHING PREFIX",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/historical-report-prefixes/d7612ddb52b02b42a8ac8edaee22175db8cdf99910ce33694b354b38e82eadde.md",
+      "bytes": 22338
+    },
+    {
+      "expected_sha256": "80ff7071a1dd3c3c60dba2ce4c07ab10594f1df95c6b88546b7a055a5df65b0b",
+      "review_references": [
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-PRODUCTION3-REVIEW.md"
+      ],
+      "recovery": "EXACT SHA256-MATCHING PREFIX",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/historical-report-prefixes/80ff7071a1dd3c3c60dba2ce4c07ab10594f1df95c6b88546b7a055a5df65b0b.md",
+      "bytes": 50158
+    },
+    {
+      "expected_sha256": "c4cdf49647b050101d596d1313ce7f1bdc0b896ae045467a68c279e0968c7422",
+      "review_references": [
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-A-PRODUCTION1-REVIEW.md"
+      ],
+      "recovery": "EXACT SHA256-MATCHING PREFIX",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/historical-report-prefixes/c4cdf49647b050101d596d1313ce7f1bdc0b896ae045467a68c279e0968c7422.md",
+      "bytes": 31546
+    }
+  ]
+}

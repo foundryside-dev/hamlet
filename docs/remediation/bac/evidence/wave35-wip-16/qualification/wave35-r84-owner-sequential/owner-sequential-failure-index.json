@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_tree": "aa583c282043c445c2286b0b93df244cad9149c5",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: Missing required keyword-only argument: 'lineage'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/unit/training/test_sequential_replay_buffer.py::TestSequentialReplayBuffer::test_sample_sequences_masks_post_terminal",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "producer": "root + bac_astra_replay_child_verifier",
+  "reviewer": "bac_astra_replay_fix_a_review; gpt-6-astra medium",
+  "independent": true,
+  "checkpoint_id": "wave35-wip-16",
+  "interval": [82, 85],
+  "reviewed_subject": {
+    "subject": {"root": "W", "path": "evidence-management/wip16-r85-qualification-subject-v1.json", "sha256": "b348254754624c4a9782c89072d3daebef016b191b5cc257db42499a160d2c0d"},
+    "input": {"root": "W", "path": "evidence-management/wip16-r85-terminal-review-input-v1.json", "sha256": "23b035938c7db22766ad5fbe357ccc90cf947035252366b9ab1c5accb09fa512"},
+    "contract": {"root": "W", "path": "wave35/r85-checkpoint-contract.json", "sha256": "ac4e1abaef775cdf7b2b9e0d97dafef97a7c918a96178bd39fee56ef38b4e6f6"},
+    "terminal_manifest": {"root": "W", "path": "wave35/r85-candidate.json", "sha256": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246"}
+  },
+  "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "review": {"root": "W", "path": "wave35-preparation/T18e-R0-WIP16-TERMINAL-EVIDENCE-REVIEW.md", "sha256": "4fec8c8f6eeb78ddf84a01f9f47f481ff1898928e682e8e4b8d85c96ac0991e5"},
+  "independence_evidence": {
+    "producer_and_reviewer_distinct": true,
+    "terminal_input_produced_by_reviewer": false,
+    "recurrent_or_owner_repair_produced_by_reviewer": false,
+    "work": "Fresh metadata/prose comparison: 216 explicit-root references plus rootless candidate/descendant references, observed inventory, 35 specs, 30 actual results/logs, six raw child linkages, helper relationships and document/archive closure.",
+    "prior_relationship": "Earlier bounded A source/execution and WIP15 evidence reviewer; those seals were not treated as WIP16 approval.",
+    "new_source_body_reads": false,
+    "new_application_or_qualification_tool_execution": false,
+    "delegation": false,
+    "model_identity_basis": "Orchestration label, not an independently exposed runtime version."
+  },
+  "disposition": "NOT_READY_REQUIRES_CORRECTED_SUBJECT",
+  "material_findings": [{"id": "W16-E1", "description": "All seven top-level dependencies omit required role metadata; preserve v1 and freeze/review corrected input before final sealing."}],
+  "scope": "Finite R82-R85 checkpoint evidence readiness only; no whole BAC, CUDA, publication or CI acceptance.",
+  "package_accounting": {"qualified": 28, "remaining": 38, "total": 66},
+  "review_date": "2026-11-13",
+  "absolute_review_timestamp": null
+}

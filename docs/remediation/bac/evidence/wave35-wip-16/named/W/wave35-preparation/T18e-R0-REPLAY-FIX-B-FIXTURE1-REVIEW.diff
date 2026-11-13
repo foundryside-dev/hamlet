@@ -1,0 +1,101 @@
+diff --git a/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py b/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py
+index aa0ab5ec..9ad3b66e 100644
+--- a/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py
++++ b/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py
+@@ -254,6 +254,39 @@ def test_recurrent_valid_dto_preserves_selected_restore_capability(profile: str)
+             assert owner.sample_batch(_request(_SUCCESSIVE), lineage=None).observations.shape == (1, 2, 1)
+ 
+ 
++def test_recurrent_captured6_dto_adapts_to_prioritized_destination() -> None:
++    """Reconstruction must retain real captured6 active rows and priority custody."""
++    source, owner = _owner("uniform"), _owner("priority")
++    owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    before = owner.serialize()["priority_state"]
++    incoming = _incoming(source)
++    assert incoming["format_version"] == 6 and "priority_state" not in incoming
++    validated = owner.validate_serialized(incoming, expected_obs_dim=1)
++    candidate = owner.materialize_validated(validated, lineage=None)
++    owner.load_prepared(candidate, lineage=None)
++    installed = owner.serialize()
++    assert installed["format_version"] == 7
++    for name, value in incoming.items():
++        if name != "format_version":
++            _same(value, installed[name])
++    priority = installed["priority_state"]
++    assert priority["initialization"] == {
++        "kind": "captured6_active_adapter",
++        "source_replay_kind": "sequential",
++        "source_format_version": 6,
++    }
++    for name in ("alpha", "beta_initial", "beta", "beta_annealing", "beta_vector_tick_horizon", "current_vector_tick", "origin", "rng"):
++        _same(before[name], priority[name])
++    assert priority["max_priority"] == 1.0 and priority["domains"] == []
++    ambient = _ambient()
++    sampled = owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    assert sampled.observations.tolist() in ([[[41.0], [42.0]]], [[[42.0], [43.0]]])
++    assert sampled.legality_recorded.tolist() == [[True, True]]
++    assert sampled.sampling.population_size == 2
++    assert pickle.dumps(owner.serialize()["priority_state"]["rng"]) != pickle.dumps(priority["rng"])
++    _same(ambient, _ambient())
++
++
+ @pytest.mark.parametrize("profile", ["uniform", "priority"])
+ def test_recurrent_same_outer_lineage_can_prepare_and_install(profile: str) -> None:
+     owner = _owner(profile)
+@@ -404,7 +437,10 @@ def test_recurrent_install_owns_input_and_retained_candidate_material(profile: s
+     material.episodes[0]["observations"].fill_(800.0)
+     material.episodes[0]["transition_ids"].fill_(-1)
+     material.episodes[0]["start_offset"] = -1
+-    material.replay_options.sequence_objective = "anchor_transition"
++    assert material.replay_options is not owner.replay_options
++    with pytest.raises(ValueError, match="frozen"):
++        material.replay_options.sequence_objective = "anchor_transition"
++    _same(material.replay_options.model_dump(), installed["options"])
+     if material.priority is not None:
+         material.priority.rng.random()
+         material.priority.initialization["kind"] = "changed"
+@@ -414,14 +450,41 @@ def test_recurrent_install_owns_input_and_retained_candidate_material(profile: s
+ 
+ 
+ def _scratch_work(owner: _ObservedReplay, batch: Any, work: str) -> None:
++    before = owner.serialize()
+     if work == "priority-update":
++        selected = int(batch.unit_ids[0])
++        recorded = before["priority_state"]["domains"][0]
++        selected_slot = recorded["unit_ids"].tolist().index(selected)
++        assert float(recorded["priorities"][selected_slot]) != 7.0 + 1e-6
+         owner.update_priorities(batch.unit_ids, torch.full((1, 2), 7.0), loss_mask=batch.loss_mask)
+-        assert owner.serialize()["priority_state"]["max_priority"] == 7.0 + 1e-6
++        after = owner.serialize()
++        updated = after["priority_state"]["domains"][0]
++        expected = recorded["priorities"].clone()
++        expected[selected_slot] = 7.0 + 1e-6
++        _same(updated["priorities"], expected)
++        _same(updated["unit_ids"], recorded["unit_ids"])
++        _same(updated["window_keys"], recorded["window_keys"])
++        _same(after["episodes"], before["episodes"])
++        assert after["priority_state"]["max_priority"] == 7.0 + 1e-6
+     else:
+         assert work == "store-refresh"
+-        before = owner.num_transitions
+         _store(owner, width=1, offset=20.0)
+-        assert owner.num_transitions == before + 3
++        after = owner.serialize()
++        assert owner.num_transitions == before["num_transitions"] + 3
++        _same(after["episodes"][:-1], before["episodes"])
++        appended = after["episodes"][-1]
++        assert appended["observations"].tolist() == [[21.0], [22.0], [23.0]]
++        assert appended["next_observations"].tolist() == [[22.0], [23.0], [24.0]]
++        assert appended["rewards"].tolist() == [21.0, 22.0, 23.0]
++        assert appended["actions"].tolist() == [0, 1, 0]
++        assert appended["dones"].tolist() == [False, False, True]
++        assert appended["next_action_masks"].tolist() == [[True, True], [True, True], [True, True]]
++        assert appended["legality_recorded"].tolist() == [True, True, True]
++        assert appended["episode_id"] == 1 and appended["transition_ids"].tolist() == [3, 4, 5]
++        domain = after["priority_state"]["domains"][0]
++        assert domain["sequence_length"] == 2
++        assert domain["window_keys"].tolist() == [[0, 0, 1], [0, 1, 2], [1, 3, 4], [1, 4, 5]]
++        assert domain["unit_ids"].tolist() == [0, 1, 2, 3]
+ 
+ 
+ def _observe_scratch(owner: _ObservedReplay, batch: Any, work: str) -> None:

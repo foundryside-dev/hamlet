@@ -1,0 +1,65 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_tree": "690c51f8a89653b9bdcf4b52c002b3fe73c7f27c",
+  "unique_node_phase_failures": 12,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 12,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[successor-priority]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_priority_dto_provenance_cannot_gain_authority",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[transition-id-uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[fragment-offset-priority]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[extra-row-key-uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_inspection_dto_cannot_gain_authority",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[extra-row-key-priority]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[successor-uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[fragment-offset-uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[transition-id-priority]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[nonfinite-uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[nonfinite-priority]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

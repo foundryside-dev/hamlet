@@ -1,0 +1,25 @@
+{
+  "name": "owner-first",
+  "exit_code": 0,
+  "seconds": 3.9820597171783447,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/unit/training/test_sequential_replay_buffer.py::TestSequentialReplayBuffer::test_sample_sequences_masks_post_terminal",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-first/owner-first.log",
+  "sha256": "49c2b01edd0a049475ebf7c2bbe8550b0ce3ee842fec056aabd9596e4b1e4388",
+  "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "manifest_sha256": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

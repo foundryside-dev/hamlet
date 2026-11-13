@@ -1,0 +1,122 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 54 items / 21 deselected / 33 selected
+
+tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py . [  3%]
+..........FF....................                                         [100%]
+
+=================================== FAILURES ===================================
+__ test_recurrent_install_owns_input_and_retained_candidate_material[uniform] __
+
+profile = 'uniform'
+
+    @pytest.mark.parametrize("profile", ["uniform", "priority"])
+    def test_recurrent_install_owns_input_and_retained_candidate_material(profile: str) -> None:
+        owner = _owner(profile)
+        if profile == "priority":
+            owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
+        incoming = _incoming(owner)
+        expected = copy.deepcopy(incoming)
+        candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
+        material = owner._retained_material
+        incoming["episodes"][0]["observations"].fill_(900.0)
+        incoming["replay_options"]["sequence_objective"] = "anchor_transition"
+        owner.load_prepared(candidate, lineage=None)
+        _same(expected, owner.serialize())
+        installed = _live(owner)
+        material.episodes[0]["observations"].fill_(800.0)
+        material.episodes[0]["transition_ids"].fill_(-1)
+        material.episodes[0]["start_offset"] = -1
+>       material.replay_options.sequence_objective = "anchor_transition"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py:407: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/pydantic/main.py:1048: in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/pydantic/main.py:1084: in _setattr_handler
+    _check_frozen(cls, name, value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+model_cls = <class 'townlet.config.bac_options.ReplayOptions'>
+name = 'sequence_objective', value = 'anchor_transition'
+
+    def _check_frozen(model_cls: type[BaseModel], name: str, value: Any) -> None:
+        if model_cls.model_config.get('frozen'):
+            error_type = 'frozen_instance'
+        elif getattr(model_cls.__pydantic_fields__.get(name), 'frozen', False):
+            error_type = 'frozen_field'
+        else:
+            return
+    
+>       raise ValidationError.from_exception_data(
+            model_cls.__name__, [{'type': error_type, 'loc': (name,), 'input': value}]
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplayOptions
+E       sequence_objective
+E         Instance is frozen [type=frozen_instance, input_value='anchor_transition', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/frozen_instance
+
+.venv/lib/python3.13/site-packages/pydantic/main.py:90: ValidationError
+_ test_recurrent_install_owns_input_and_retained_candidate_material[priority] __
+
+profile = 'priority'
+
+    @pytest.mark.parametrize("profile", ["uniform", "priority"])
+    def test_recurrent_install_owns_input_and_retained_candidate_material(profile: str) -> None:
+        owner = _owner(profile)
+        if profile == "priority":
+            owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
+        incoming = _incoming(owner)
+        expected = copy.deepcopy(incoming)
+        candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
+        material = owner._retained_material
+        incoming["episodes"][0]["observations"].fill_(900.0)
+        incoming["replay_options"]["sequence_objective"] = "anchor_transition"
+        owner.load_prepared(candidate, lineage=None)
+        _same(expected, owner.serialize())
+        installed = _live(owner)
+        material.episodes[0]["observations"].fill_(800.0)
+        material.episodes[0]["transition_ids"].fill_(-1)
+        material.episodes[0]["start_offset"] = -1
+>       material.replay_options.sequence_objective = "anchor_transition"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py:407: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/pydantic/main.py:1048: in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/pydantic/main.py:1084: in _setattr_handler
+    _check_frozen(cls, name, value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+model_cls = <class 'townlet.config.bac_options.ReplayOptions'>
+name = 'sequence_objective', value = 'anchor_transition'
+
+    def _check_frozen(model_cls: type[BaseModel], name: str, value: Any) -> None:
+        if model_cls.model_config.get('frozen'):
+            error_type = 'frozen_instance'
+        elif getattr(model_cls.__pydantic_fields__.get(name), 'frozen', False):
+            error_type = 'frozen_field'
+        else:
+            return
+    
+>       raise ValidationError.from_exception_data(
+            model_cls.__name__, [{'type': error_type, 'loc': (name,), 'input': value}]
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplayOptions
+E       sequence_objective
+E         Instance is frozen [type=frozen_instance, input_value='anchor_transition', input_type=str]
+E           For further information visit https://errors.pydantic.dev/2.13/v/frozen_instance
+
+.venv/lib/python3.13/site-packages/pydantic/main.py:90: ValidationError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_install_owns_input_and_retained_candidate_material[uniform]
+FAILED tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_install_owns_input_and_retained_candidate_material[priority]
+================= 2 failed, 31 passed, 21 deselected in 0.51s ==================

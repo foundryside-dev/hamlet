@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_inspection_dto_cannot_gain_authority",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_recurrent_mutated_inspection_dto_cannot_gain_authority() -> None:\n        \"\"\"B1 intended RED: inspection's mutable active transport must stay valid.\"\"\"\n        owner = _owner(\"inspection\")\n        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)\n        validated.episodes[0][\"observations\"][0] = float(\"nan\")\n        before = _live(owner)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py:222: Failed",
+  "candidate_tree": "690c51f8a89653b9bdcf4b52c002b3fe73c7f27c"
+}

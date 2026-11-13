@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_priority_dto_provenance_cannot_gain_authority",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_recurrent_mutated_priority_dto_provenance_cannot_gain_authority() -> None:\n        \"\"\"B1 intended RED: nested mutable priority metadata needs full revalidation.\"\"\"\n        owner = _owner(\"priority\")\n        owner.sample_batch(_request(_SUCCESSIVE), lineage=None)\n        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)\n        assert validated.priority is not None\n        validated.priority.initialization[\"kind\"] = \"unrecorded-provenance\"\n        before = _live(owner)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py:211: Failed",
+  "candidate_tree": "690c51f8a89653b9bdcf4b52c002b3fe73c7f27c"
+}

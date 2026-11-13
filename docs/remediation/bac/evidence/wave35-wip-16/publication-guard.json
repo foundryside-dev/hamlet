@@ -1,0 +1,32 @@
+{
+  "schema": "bac-publication-source-guard-v1",
+  "execution_candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_manifest_sha256": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4db5626a407ddfccd29ce2fde2d9a8f147f02070",
+    "tests": "738f692968a8f277590b08821a70d97bb728f904"
+  },
+  "source_guards_checked": 816,
+  "config_guards_checked": 573,
+  "protected_artifacts_checked": 13,
+  "document_exceptions": [
+    {
+      "path": "docs/remediation/bac/STATUS.md",
+      "executed_sha256": "7dba8e1d95f734ab9dfa3ad53e8646cc661c86f44eefca1687f558b5f52f00eb",
+      "approved_publication_sha256": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c"
+    }
+  ],
+  "document_exception_reviews": [
+    "4a133586109229976d16e07e5309cb20a1025ab457207aa5ba4c76723efa2411",
+    "07d3be30700475f651e87e346e314bdd1b84181d61e17007ff6696ebe0543d75"
+  ],
+  "registry_entries": 14,
+  "available_checkouts": 1,
+  "registry_unchanged_before_commit": true,
+  "assembled_objects_rehashed": 234,
+  "scope": "Exactbyte and registry verification after assembly; finalstagedexecution subtrees rechecked separately beforecommit; no runtime rerun"
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "producer": "root + bac_astra_replay_child_verifier",
+  "reviewer": "bac_astra_replay_fix_a_review; gpt-6-astra medium",
+  "independent": true,
+  "checkpoint_id": "wave35-wip-16",
+  "interval": [
+    82,
+    85
+  ],
+  "reviewed_subject": {
+    "subject": {
+      "root": "W",
+      "path": "evidence-management/wip16-r85-qualification-subject-v2.json",
+      "sha256": "bd78784e51e1eea9ce9e2a621f376d96884a4bda8630c2220de4156d26fda20e"
+    },
+    "input": {
+      "root": "W",
+      "path": "evidence-management/wip16-r85-terminal-review-input-v2.json",
+      "sha256": "184d37936d6be46f056bf7a09ca86dd60fe8fe922f63aacadd5882c79e6d1cee",
+      "bytes": 287533
+    },
+    "contract": {
+      "root": "W",
+      "path": "wave35/r85-checkpoint-contract.json",
+      "sha256": "ac4e1abaef775cdf7b2b9e0d97dafef97a7c918a96178bd39fee56ef38b4e6f6"
+    },
+    "terminal_manifest": {
+      "root": "W",
+      "path": "wave35/r85-candidate.json",
+      "sha256": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246"
+    },
+    "v1_review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP16-TERMINAL-EVIDENCE-REVIEW.md",
+      "sha256": "4fec8c8f6eeb78ddf84a01f9f47f481ff1898928e682e8e4b8d85c96ac0991e5"
+    },
+    "v1_attestation": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP16-TERMINAL-EVIDENCE-INDEPENDENCE.json",
+      "sha256": "dc7e0cfe8d9a56ed5a0a76b226b33cf422927a3e6c6462c59c4031190878b439"
+    },
+    "fix_report": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP16-METADATA-FIX1-REPORT.md",
+      "sha256": "f5e10159a4f622f52847c5154fd674c8070e7c9aa991dd8b6c06fc8821221550"
+    },
+    "preassembly_proof": {
+      "root": "W",
+      "path": "evidence-management/wip16-preassembly-source-equivalence.json",
+      "sha256": "f4a9368d26922db1811a5a20c83b2a9e7f9382fb798bacc8a2ffa13e3ed4b31f"
+    }
+  },
+  "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP16-TERMINAL-FIX1-REVIEW.md",
+    "sha256": "a46b4376f233900b2cbe40efd30b70d412766874b797addd2c8b45377bb5b3dc"
+  },
+  "independence_evidence": {
+    "producer_and_reviewer_distinct": true,
+    "terminal_input_produced_by_reviewer": false,
+    "recurrent_or_owner_repair_produced_by_reviewer": false,
+    "work": "Scoped v1/v2 input and subject deep comparison, exact fix/proof hashes, and root preassembly metadata consistency. All unchanged evidence checks retained in independently sealed v1 review; correction, subject and proof produced by others.",
+    "prior_relationship": "Earlier bounded A source/execution and WIP15 evidence reviewer; those seals were not treated as WIP16 approval.",
+    "new_source_body_reads": false,
+    "new_application_or_qualification_tool_execution": false,
+    "delegation": false,
+    "model_identity_basis": "Orchestration label, not an independently exposed runtime version.",
+    "correction_produced_by_reviewer": false
+  },
+  "disposition": "APPROVED_FOR_FINITE_CHECKPOINT_EVIDENCE_READINESS",
+  "material_findings": [],
+  "scope": "Finite R82-R85 terminal evidence readiness after role-only fix. Root preassembly proof reviewed as recorded evidence, not independent index inspection. No final-selector, assembly, publication, whole BAC, CUDA or CI pass claimed.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "review_date": "2026-11-13",
+  "absolute_review_timestamp": null,
+  "role": "terminal",
+  "resolved_findings": [
+    {
+      "id": "W16-E1",
+      "resolution": "Seven truthful nonempty dependency roles added; deleting only these fields gives exact v1 deep equality."
+    }
+  ]
+}

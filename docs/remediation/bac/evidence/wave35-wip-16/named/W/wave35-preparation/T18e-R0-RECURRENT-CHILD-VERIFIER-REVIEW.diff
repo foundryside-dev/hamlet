@@ -1,0 +1,670 @@
+--- /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py@before
++++ /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py@after
+@@ -12,12 +12,52 @@
+ MESSAGE = "replay poison fail closed"
+ HARNESS_SHA256 = "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+ REPLAY_ARGS = (
+-    "-m", "pytest",
++    "-m",
++    "pytest",
+     "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+-    "--no-cov", "-p", "no:cacheprovider", "-p", "no:benchmark", "-p", "bac_source_identity", "-q",
++    "--no-cov",
++    "-p",
++    "no:cacheprovider",
++    "-p",
++    "no:benchmark",
++    "-p",
++    "bac_source_identity",
++    "-q",
+ )
+ BOOTSTRAP_MODULES = ("world_curiosity_state", "rng_custody", "rnd")
+ REPLAY_MODULES = ("replay_buffer", "prioritized_replay_buffer", "sequential_replay_buffer", "replay_contract")
++ROLE_CONFIGS = {
++    "replay-poison": {
++        "role": ROLE,
++        "message": MESSAGE,
++        "args": REPLAY_ARGS,
++        "imports": {"townlet.training." + n: "src/townlet/training/" + n + ".py" for n in REPLAY_MODULES},
++    },
++    "recurrent-replay-poison": {
++        "role": "recurrent_replay_poison",
++        "message": "recurrent replay scratch poison fail closed",
++        "args": (
++            "-m",
++            "pytest",
++            "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
++            "--no-cov",
++            "-p",
++            "no:cacheprovider",
++            "-p",
++            "no:benchmark",
++            "-p",
++            "bac_source_identity",
++            "-q",
++        ),
++        "imports": {
++            "townlet.training.sequential_replay_buffer": "src/townlet/training/sequential_replay_buffer.py",
++            "townlet.training.replay_contract": "src/townlet/training/replay_contract.py",
++            "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
++            "test_recurrent_replay_rng_custody": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py",
++            "test_replay_rng_custody": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
++        },
++    },
++}
+ IDENTITY_FIELDS = {"sha", "candidate_tree", "module", "worker", "torch", "threads"}
+ CHILD_FIELDS = IDENTITY_FIELDS | {"pid", "ppid", "manifest_sha256", "debug", "interop_threads", "imports", "replay_imports"}
+ OBSERVATION_FIELDS = {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256", "parent_pid"}
+@@ -52,7 +92,7 @@
+             require(tree == manifest["candidate_tree"], "index tree mismatch")
+         finally:
+             fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+-    require(subprocess.run(["git", "diff", "--quiet"], cwd=root).returncode == 0, "unstaged changes")
++    require(subprocess.run(["git", "diff", "--quiet"], cwd=root, check=False).returncode == 0, "unstaged changes")
+     registry = subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=root, text=True)
+     require(registry == manifest["worktree_registry"], "worktree registry mismatch")
+ 
+@@ -71,16 +111,27 @@
+ 
+ def check_bindings(spec, job, result, root, manifest, manifest_hash):
+     require(set(spec) == {"root", "manifest", "output", "workers", "jobs"}, "spec schema mismatch")
+-    require(set(job) == {"name", "args"} and job["name"] == "replay-poison", "job schema/name mismatch")
++    require(set(job) == {"name", "args"} and job["name"] in ROLE_CONFIGS, "job schema/name mismatch")
+     require(type(spec["workers"]) is int and spec["workers"] == 1, "CPU harness concurrency mismatch")
+-    fields = {"name", "exit_code", "seconds", "command", "log", "sha256", "candidate_tree", "base_commit", "manifest_sha256", "harness_sha256"}
++    fields = {
++        "name",
++        "exit_code",
++        "seconds",
++        "command",
++        "log",
++        "sha256",
++        "candidate_tree",
++        "base_commit",
++        "manifest_sha256",
++        "harness_sha256",
++    }
+     require(set(result) == fields, "result schema mismatch")
+     require(type(result["exit_code"]) is int and result["exit_code"] == 0, "parent job failed")
+     seconds = result["seconds"]
+     require(type(seconds) in (int, float) and math.isfinite(seconds) and seconds > 0, "parent elapsed seconds must be finite and positive")
+     require(result["name"] == job["name"], "result name mismatch")
+     require(type(job["args"]) is list and all(type(arg) is str for arg in job["args"]), "invalid command args")
+-    require(job["args"] == list(REPLAY_ARGS), "sealed replay command mismatch")
++    require(job["args"] == list(ROLE_CONFIGS[job["name"]]["args"]), "sealed replay command mismatch")
+     require(result["command"] == [str(root / ".venv/bin/python"), *job["args"]], "result command mismatch")
+     require(result["harness_sha256"] == HARNESS_SHA256, "harness mismatch")
+     require(result["manifest_sha256"] == manifest_hash, "result manifest mismatch")
+@@ -97,17 +148,20 @@
+     job = spec["jobs"][job_index]
+     name = job["name"]
+     require(type(name) is str and name not in ("", ".", "..") and Path(name).name == name, "invalid job name")
++    require(name in ROLE_CONFIGS, "unauthorized replay job")
++    config = ROLE_CONFIGS[name]
++    role, message = config["role"], config["message"]
+     root = Path(spec["root"]).resolve()
+     manifest, manifest_hash = read_json(spec["manifest"])
+     output = Path(spec["output"])
+     job_dir = output / name
+-    destination = job_dir / f"replay-spawn-custody-{ROLE}.json"
++    destination = job_dir / f"replay-spawn-custody-{role}.json"
+     require(not destination.exists(), "custody destination already exists")
+     result, result_hash = read_json(output / (name + "-result.json"))
+     check_bindings(spec, job, result, root, manifest, manifest_hash)
+     controller, controller_hash = read_json(job_dir / "identity-controller.json")
+-    child, child_hash = read_json(job_dir / f"spawn-identity-{ROLE}.json")
+-    observed, observed_hash = read_json(job_dir / f"spawn-observation-{ROLE}.json")
++    child, child_hash = read_json(job_dir / f"spawn-identity-{role}.json")
++    observed, observed_hash = read_json(job_dir / f"spawn-observation-{role}.json")
+     require(set(controller) == IDENTITY_FIELDS, "controller schema mismatch")
+     require(set(child) == CHILD_FIELDS, "child schema mismatch")
+     require(set(observed) == OBSERVATION_FIELDS, "observation schema mismatch")
+@@ -116,9 +170,9 @@
+     require(observed["process_pid"] == observed["queued_pid"] == child["pid"], "child/Process/queue PID mismatch")
+     require(child["ppid"] == observed["parent_pid"] != child["pid"], "parent/PPID mismatch")
+     require(type(observed["exitcode"]) is int and observed["exitcode"] == 0, "child failed")
+-    require(observed["qualified"] is True and observed["message"] == MESSAGE, "qualified success message mismatch")
++    require(observed["qualified"] is True and observed["message"] == message, "qualified success message mismatch")
+     require(observed["manifest_sha256"] == child["manifest_sha256"] == manifest_hash, "child manifest mismatch")
+-    require(child["worker"] == ROLE and controller["worker"] == "controller", "role mismatch")
++    require(child["worker"] == role and controller["worker"] == "controller", "role mismatch")
+     for identity in (controller, child):
+         require(identity["sha"] == manifest["base_commit"], "identity commit mismatch")
+         require(identity["candidate_tree"] == manifest["candidate_tree"], "identity tree mismatch")
+@@ -127,8 +181,11 @@
+     require(child["torch"] == controller["torch"], "Torch version mismatch")
+     require(child["debug"] is True, "debug disabled")
+     require(type(child["interop_threads"]) is int and child["interop_threads"] == 5, "interop profile mismatch")
+-    require(child["imports"] == {n: str(root / "src/townlet/exploration" / (n + ".py")) for n in BOOTSTRAP_MODULES}, "bootstrap imports mismatch")
+-    replay_imports = {"townlet.training." + n: str(root / "src/townlet/training" / (n + ".py")) for n in REPLAY_MODULES}
++    require(
++        child["imports"] == {n: str(root / "src/townlet/exploration" / (n + ".py")) for n in BOOTSTRAP_MODULES},
++        "bootstrap imports mismatch",
++    )
++    replay_imports = {module: str(root / relative) for module, relative in config["imports"].items()}
+     require(child["replay_imports"] == replay_imports, "replay imports mismatch")
+     for path in [root / "src/townlet/__init__.py", *map(Path, child["imports"].values()), *map(Path, replay_imports.values())]:
+         require(str(path.relative_to(root)) in manifest["source_files"], "import absent from source manifest")
+@@ -136,14 +193,30 @@
+     check_repository(root, manifest)
+     receipt = {
+         "status": "REPLAY SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+-        "job": name, "case": ROLE, "expected_message": MESSAGE, "parent_job_exit_code": result["exit_code"],
+-        "base_commit": manifest["base_commit"], "candidate_tree": manifest["candidate_tree"],
+-        "manifest_sha256": manifest_hash, "spec_sha256": spec_hash, "result_sha256": result_hash,
+-        "controller_sha256": controller_hash, "child_receipt_sha256": child_hash,
+-        "parent_observation_sha256": observed_hash, "verifier_sha256": digest(Path(__file__).read_bytes()),
+-        "harness_sha256": HARNESS_SHA256, "child_pid": child["pid"], "parent_pid": observed["parent_pid"],
+-        "child_ppid": child["ppid"], "torch": child["torch"], "threads": 1, "interop_threads": 5, "debug": True,
+-        "source_guards": len(manifest["source_files"]), "configs": len(manifest["configs"]), "artifacts": len(manifest["artifacts"]),
++        "job": name,
++        "case": role,
++        "expected_message": message,
++        "parent_job_exit_code": result["exit_code"],
++        "base_commit": manifest["base_commit"],
++        "candidate_tree": manifest["candidate_tree"],
++        "manifest_sha256": manifest_hash,
++        "spec_sha256": spec_hash,
++        "result_sha256": result_hash,
++        "controller_sha256": controller_hash,
++        "child_receipt_sha256": child_hash,
++        "parent_observation_sha256": observed_hash,
++        "verifier_sha256": digest(Path(__file__).read_bytes()),
++        "harness_sha256": HARNESS_SHA256,
++        "child_pid": child["pid"],
++        "parent_pid": observed["parent_pid"],
++        "child_ppid": child["ppid"],
++        "torch": child["torch"],
++        "threads": 1,
++        "interop_threads": 5,
++        "debug": True,
++        "source_guards": len(manifest["source_files"]),
++        "configs": len(manifest["configs"]),
++        "artifacts": len(manifest["artifacts"]),
+         "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+         "scope": "This CPU replay poison consumer child only; no restoration-failure, CUDA, other-process or whole-package qualification.",
+     }
+--- /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py@before
++++ /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py@after
+@@ -8,91 +8,132 @@
+ from types import SimpleNamespace
+ from unittest.mock import patch
+ 
+-VERIFIER = Path('/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py')
+-spec = importlib.util.spec_from_file_location('replay_verifier_under_test', VERIFIER)
++VERIFIER = Path("/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py")
++spec = importlib.util.spec_from_file_location("replay_verifier_under_test", VERIFIER)
+ verifier = importlib.util.module_from_spec(spec)
+ spec.loader.exec_module(verifier)
+ 
+ 
+ class ReplayVerifierTests(unittest.TestCase):
++    job_name = "replay-poison"
++    role = "replay_poison"
++    message = "replay poison fail closed"
++    args = verifier.REPLAY_ARGS
++    module_paths = {"townlet.training." + n: "src/townlet/training/" + n + ".py" for n in verifier.REPLAY_MODULES}
++
+     def setUp(self):
+-        self.temporary = tempfile.TemporaryDirectory(prefix='replay-verifier-data-')
++        self.temporary = tempfile.TemporaryDirectory(prefix="replay-verifier-data-")
+         self.addCleanup(self.temporary.cleanup)
+         self.base = Path(self.temporary.name)
+-        self.root = self.base / 'synthetic-data-root'
+-        (self.root / '.superpowers').mkdir(parents=True)
+-        self.output = self.base / 'evidence'
+-        self.job_dir = self.output / 'replay-poison'
++        self.root = self.base / "synthetic-data-root"
++        (self.root / ".superpowers").mkdir(parents=True)
++        self.output = self.base / "evidence"
++        self.job_dir = self.output / self.job_name
+         self.job_dir.mkdir(parents=True)
+         self.paths = {
+-            'manifest': self.base / 'manifest.json', 'spec': self.base / 'spec.json',
+-            'result': self.output / 'replay-poison-result.json',
+-            'controller': self.job_dir / 'identity-controller.json',
+-            'child': self.job_dir / 'spawn-identity-replay_poison.json',
+-            'observed': self.job_dir / 'spawn-observation-replay_poison.json',
+-        }
+-        imports = {n: str(self.root / 'src/townlet/exploration' / (n + '.py')) for n in verifier.BOOTSTRAP_MODULES}
+-        replay = {'townlet.training.' + n: str(self.root / 'src/townlet/training' / (n + '.py')) for n in verifier.REPLAY_MODULES}
++            "manifest": self.base / "manifest.json",
++            "spec": self.base / "spec.json",
++            "result": self.output / (self.job_name + "-result.json"),
++            "controller": self.job_dir / "identity-controller.json",
++            "child": self.job_dir / ("spawn-identity-" + self.role + ".json"),
++            "observed": self.job_dir / ("spawn-observation-" + self.role + ".json"),
++        }
++        imports = {n: str(self.root / "src/townlet/exploration" / (n + ".py")) for n in verifier.BOOTSTRAP_MODULES}
++        replay = {n: str(self.root / path) for n, path in self.module_paths.items()}
+         source_files = {}
+-        for item in [str(self.root / 'src/townlet/__init__.py'), *imports.values(), *replay.values()]:
++        for item in [str(self.root / "src/townlet/__init__.py"), *imports.values(), *replay.values()]:
+             path = Path(item)
+             path.parent.mkdir(parents=True, exist_ok=True)
+-            path.write_bytes(b'SYNTHETIC DATA; NEVER IMPORT OR EXECUTE\n')
++            path.write_bytes(b"SYNTHETIC DATA; NEVER IMPORT OR EXECUTE\n")
+             source_files[str(path.relative_to(self.root))] = verifier.digest(path.read_bytes())
+-        for name in ('config-data', 'artifact-data'):
+-            (self.root / name).write_bytes(b'synthetic fixture data')
++        for name in ("config-data", "artifact-data"):
++            (self.root / name).write_bytes(b"synthetic fixture data")
+         self.manifest = {
+-            'base_commit': 'a' * 40, 'candidate_tree': 'b' * 40, 'worktree_registry': 'synthetic registry\n',
+-            'source_files': source_files,
+-            'configs': {'config-data': verifier.digest(b'synthetic fixture data')},
+-            'artifacts': {'artifact-data': verifier.digest(b'synthetic fixture data')},
+-        }
+-        self.write('manifest', self.manifest)
+-        manifest_hash = verifier.digest(self.paths['manifest'].read_bytes())
++            "base_commit": "a" * 40,
++            "candidate_tree": "b" * 40,
++            "worktree_registry": "synthetic registry\n",
++            "source_files": source_files,
++            "configs": {"config-data": verifier.digest(b"synthetic fixture data")},
++            "artifacts": {"artifact-data": verifier.digest(b"synthetic fixture data")},
++        }
++        self.write("manifest", self.manifest)
++        manifest_hash = verifier.digest(self.paths["manifest"].read_bytes())
+         self.spec_data = {
+-            'root': str(self.root), 'manifest': str(self.paths['manifest']), 'output': str(self.output), 'workers': 1,
+-            'jobs': [{'name': 'replay-poison', 'args': list(verifier.REPLAY_ARGS)}],
+-        }
+-        self.write('spec', self.spec_data)
+-        log = self.output / 'replay-poison.log'
+-        log.write_bytes(b'synthetic success log\n')
++            "root": str(self.root),
++            "manifest": str(self.paths["manifest"]),
++            "output": str(self.output),
++            "workers": 1,
++            "jobs": [{"name": self.job_name, "args": list(self.args)}],
++        }
++        self.write("spec", self.spec_data)
++        log = self.output / (self.job_name + ".log")
++        log.write_bytes(b"synthetic success log\n")
+         self.result = {
+-            'name': 'replay-poison', 'exit_code': 0, 'seconds': 1.0,
+-            'command': [str(self.root / '.venv/bin/python'), *self.spec_data['jobs'][0]['args']],
+-            'log': str(log), 'sha256': verifier.digest(log.read_bytes()),
+-            'base_commit': self.manifest['base_commit'], 'candidate_tree': self.manifest['candidate_tree'],
+-            'manifest_sha256': manifest_hash, 'harness_sha256': verifier.HARNESS_SHA256,
+-        }
+-        self.write('result', self.result)
++            "name": self.job_name,
++            "exit_code": 0,
++            "seconds": 1.0,
++            "command": [str(self.root / ".venv/bin/python"), *self.spec_data["jobs"][0]["args"]],
++            "log": str(log),
++            "sha256": verifier.digest(log.read_bytes()),
++            "base_commit": self.manifest["base_commit"],
++            "candidate_tree": self.manifest["candidate_tree"],
++            "manifest_sha256": manifest_hash,
++            "harness_sha256": verifier.HARNESS_SHA256,
++        }
++        self.write("result", self.result)
+         self.controller = {
+-            'sha': self.manifest['base_commit'], 'candidate_tree': self.manifest['candidate_tree'],
+-            'module': str(self.root / 'src/townlet/__init__.py'), 'worker': 'controller', 'torch': 'synthetic-version', 'threads': 1,
+-        }
+-        self.write('controller', self.controller)
++            "sha": self.manifest["base_commit"],
++            "candidate_tree": self.manifest["candidate_tree"],
++            "module": str(self.root / "src/townlet/__init__.py"),
++            "worker": "controller",
++            "torch": "synthetic-version",
++            "threads": 1,
++        }
++        self.write("controller", self.controller)
+         self.child = {
+-            **self.controller, 'worker': 'replay_poison', 'pid': 102, 'ppid': 101, 'manifest_sha256': manifest_hash,
+-            'debug': True, 'interop_threads': 5, 'imports': imports, 'replay_imports': replay,
+-        }
+-        self.write('child', self.child)
++            **self.controller,
++            "worker": self.role,
++            "pid": 102,
++            "ppid": 101,
++            "manifest_sha256": manifest_hash,
++            "debug": True,
++            "interop_threads": 5,
++            "imports": imports,
++            "replay_imports": replay,
++        }
++        self.write("child", self.child)
+         self.observed = {
+-            'process_pid': 102, 'queued_pid': 102, 'parent_pid': 101, 'exitcode': 0,
+-            'qualified': True, 'message': verifier.MESSAGE, 'manifest_sha256': manifest_hash,
+-        }
+-        self.write('observed', self.observed)
+-        self.git_values = {'HEAD': self.manifest['base_commit'], 'tree': self.manifest['candidate_tree'], 'registry': self.manifest['worktree_registry']}
+-        self.start_patch('subprocess.check_output', side_effect=self.metadata)
+-        self.start_patch('subprocess.run', return_value=SimpleNamespace(returncode=0))
+-        self.start_patch('fcntl.flock', return_value=None)
++            "process_pid": 102,
++            "queued_pid": 102,
++            "parent_pid": 101,
++            "exitcode": 0,
++            "qualified": True,
++            "message": self.message,
++            "manifest_sha256": manifest_hash,
++        }
++        self.write("observed", self.observed)
++        self.git_values = {
++            "HEAD": self.manifest["base_commit"],
++            "tree": self.manifest["candidate_tree"],
++            "registry": self.manifest["worktree_registry"],
++        }
++        self.start_patch("subprocess.check_output", side_effect=self.metadata)
++        self.start_patch("subprocess.run", return_value=SimpleNamespace(returncode=0))
++        self.start_patch("fcntl.flock", return_value=None)
+ 
+     def start_patch(self, name, **kwargs):
+-        mocker = patch.object(verifier.subprocess if name.startswith('subprocess') else verifier.fcntl, name.split('.')[1], **kwargs)
++        mocker = patch.object(verifier.subprocess if name.startswith("subprocess") else verifier.fcntl, name.split(".")[1], **kwargs)
+         result = mocker.start()
+         self.addCleanup(mocker.stop)
+         return result
+ 
+     def metadata(self, args, **kwargs):
+-        self.assertEqual(kwargs['cwd'], self.root)
+-        commands = {('git', 'rev-parse', 'HEAD'): 'HEAD', ('git', 'write-tree'): 'tree', ('git', 'worktree', 'list', '--porcelain'): 'registry'}
++        self.assertEqual(kwargs["cwd"], self.root)
++        commands = {
++            ("git", "rev-parse", "HEAD"): "HEAD",
++            ("git", "write-tree"): "tree",
++            ("git", "worktree", "list", "--porcelain"): "registry",
++        }
+         self.assertIn(tuple(args), commands)
+         return self.git_values[commands[tuple(args)]]
+ 
+@@ -100,20 +141,22 @@
+         self.paths[name].write_text(json.dumps(value))
+ 
+     def invoke(self):
+-        return verifier.verify(self.paths['spec'])
++        return verifier.verify(self.paths["spec"])
+ 
+     def refuse(self):
+         with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+             self.invoke()
+-        self.assertFalse((self.job_dir / 'replay-spawn-custody-replay_poison.json').exists())
++        self.assertFalse((self.job_dir / ("replay-spawn-custody-" + self.role + ".json")).exists())
+ 
+     def test_positive_and_exclusive_destination(self):
+         receipt = self.invoke()
+-        self.assertEqual(receipt['child_pid'], 102)
+-        self.assertEqual(receipt['parent_pid'], receipt['child_ppid'])
+-        self.assertEqual(receipt['spec_sha256'], verifier.digest(self.paths['spec'].read_bytes()))
+-        self.assertEqual(receipt['verifier_sha256'], verifier.digest(VERIFIER.read_bytes()))
+-        destination = self.job_dir / 'replay-spawn-custody-replay_poison.json'
++        self.assertEqual(receipt["case"], self.role)
++        self.assertEqual(receipt["expected_message"], self.message)
++        self.assertEqual(receipt["child_pid"], 102)
++        self.assertEqual(receipt["parent_pid"], receipt["child_ppid"])
++        self.assertEqual(receipt["spec_sha256"], verifier.digest(self.paths["spec"].read_bytes()))
++        self.assertEqual(receipt["verifier_sha256"], verifier.digest(VERIFIER.read_bytes()))
++        destination = self.job_dir / ("replay-spawn-custody-" + self.role + ".json")
+         original = destination.read_bytes()
+         with self.assertRaises(ValueError):
+             self.invoke()
+@@ -121,13 +164,23 @@
+ 
+     def test_identity_and_observation_controls(self):
+         controls = [
+-            ('child', 'worker', 'bank_install_poison_completion'), ('observed', 'message', 'other success'),
+-            ('child', 'pid', 103), ('observed', 'process_pid', 103), ('observed', 'queued_pid', 103),
+-            ('child', 'ppid', 100), ('observed', 'parent_pid', 100), ('child', 'pid', True),
+-            ('observed', 'process_pid', 102.0), ('observed', 'parent_pid', 0),
+-            ('observed', 'exitcode', 1), ('observed', 'qualified', False), ('child', 'debug', False),
+-            ('child', 'interop_threads', 1), ('controller', 'threads', True),
+-            ('child', 'manifest_sha256', 'wrong'), ('child', 'candidate_tree', 'wrong'),
++            ("child", "worker", "bank_install_poison_completion"),
++            ("observed", "message", "other success"),
++            ("child", "pid", 103),
++            ("observed", "process_pid", 103),
++            ("observed", "queued_pid", 103),
++            ("child", "ppid", 100),
++            ("observed", "parent_pid", 100),
++            ("child", "pid", True),
++            ("observed", "process_pid", 102.0),
++            ("observed", "parent_pid", 0),
++            ("observed", "exitcode", 1),
++            ("observed", "qualified", False),
++            ("child", "debug", False),
++            ("child", "interop_threads", 1),
++            ("controller", "threads", True),
++            ("child", "manifest_sha256", "wrong"),
++            ("child", "candidate_tree", "wrong"),
+         ]
+         for record, field, bad in controls:
+             with self.subTest(record=record, field=field, bad=bad):
+@@ -140,102 +193,190 @@
+                 self.write(record, data)
+ 
+     def test_import_maps(self):
+-        for field in ('imports', 'replay_imports'):
++        for field in ("imports", "replay_imports"):
+             original = self.child[field].copy()
+-            for mode in ('missing', 'wrong', 'extra'):
++            for mode in ("missing", "wrong", "extra"):
+                 with self.subTest(field=field, mode=mode):
+                     changed = original.copy()
+                     key = next(iter(changed))
+-                    if mode == 'missing':
++                    if mode == "missing":
+                         del changed[key]
+-                    elif mode == 'wrong':
+-                        changed[key] += '.wrong'
++                    elif mode == "wrong":
++                        changed[key] += ".wrong"
+                     else:
+-                        changed['unexpected'] = 'unexpected'
++                        changed["unexpected"] = "unexpected"
+                     self.child[field] = changed
+-                    self.write('child', self.child)
++                    self.write("child", self.child)
+                     self.refuse()
+             self.child[field] = original
+-            self.write('child', self.child)
++            self.write("child", self.child)
+ 
+     def test_parent_result_controls(self):
+-        for field, value in [('exit_code', 1), ('exit_code', False), ('harness_sha256', 'wrong'), ('manifest_sha256', 'wrong'),
+-                             ('candidate_tree', 'wrong'), ('base_commit', 'wrong'), ('command', ['unrelated']), ('sha256', 'wrong')]:
++        for field, value in [
++            ("exit_code", 1),
++            ("exit_code", False),
++            ("harness_sha256", "wrong"),
++            ("manifest_sha256", "wrong"),
++            ("candidate_tree", "wrong"),
++            ("base_commit", "wrong"),
++            ("command", ["unrelated"]),
++            ("sha256", "wrong"),
++        ]:
+             with self.subTest(field=field, value=value):
+                 original = self.result[field]
+                 self.result[field] = value
+-                self.write('result', self.result)
++                self.write("result", self.result)
+                 self.refuse()
+                 self.result[field] = original
+-                self.write('result', self.result)
++                self.write("result", self.result)
+ 
+     def test_partial_and_unknown_schemas(self):
+-        for record in ('spec', 'result', 'controller', 'child', 'observed'):
++        for record in ("spec", "result", "controller", "child", "observed"):
+             original = json.loads(self.paths[record].read_text())
+-            for mode in ('missing', 'extra'):
++            for mode in ("missing", "extra"):
+                 with self.subTest(record=record, mode=mode):
+                     changed = original.copy()
+-                    if mode == 'missing':
++                    if mode == "missing":
+                         del changed[next(iter(changed))]
+                     else:
+-                        changed['unknown'] = 1
++                        changed["unknown"] = 1
+                     self.write(record, changed)
+                     self.refuse()
+             self.write(record, original)
+ 
+     def test_invalid_parent_elapsed_seconds(self):
+-        for seconds in (None, 0, -1, False, True, "1.0", float('nan'), float('inf'), float('-inf')):
++        for seconds in (None, 0, -1, False, True, "1.0", float("nan"), float("inf"), float("-inf")):
+             with self.subTest(seconds=seconds):
+-                self.result['seconds'] = seconds
+-                self.write('result', self.result)
++                self.result["seconds"] = seconds
++                self.write("result", self.result)
+                 self.refuse()
+ 
+     def test_missing_child_and_observation(self):
+-        for record in ('child', 'observed'):
++        for record in ("child", "observed"):
+             with self.subTest(record=record):
+-                saved = self.paths[record].with_suffix('.saved')
++                saved = self.paths[record].with_suffix(".saved")
+                 self.paths[record].rename(saved)
+                 self.refuse()
+                 saved.rename(self.paths[record])
+ 
+     def test_source_config_artifact_mismatch(self):
+-        for category in ('source_files', 'configs', 'artifacts'):
++        for category in ("source_files", "configs", "artifacts"):
+             path = self.root / next(iter(self.manifest[category]))
+             original = path.read_bytes()
+-            path.write_bytes(b'changed synthetic data')
++            path.write_bytes(b"changed synthetic data")
+             self.refuse()
+             path.write_bytes(original)
+ 
+     def test_repository_metadata_mismatch(self):
+         for key in self.git_values:
+             original = self.git_values[key]
+-            self.git_values[key] = 'wrong'
++            self.git_values[key] = "wrong"
+             self.refuse()
+             self.git_values[key] = original
+ 
+     def test_manifest_mutation(self):
+-        self.manifest['candidate_tree'] = 'changed'
+-        self.write('manifest', self.manifest)
++        self.manifest["candidate_tree"] = "changed"
++        self.write("manifest", self.manifest)
+         self.refuse()
+ 
+     def test_negative_job_index(self):
+         with self.assertRaises(ValueError):
+-            verifier.verify(self.paths['spec'], -1)
++            verifier.verify(self.paths["spec"], -1)
+ 
+     def test_coherently_changed_command_refused(self):
+-        self.spec_data['jobs'][0]['args'] = ['-m', 'pytest', 'unrelated']
+-        self.result['command'] = [str(self.root / '.venv/bin/python'), '-m', 'pytest', 'unrelated']
+-        self.write('spec', self.spec_data)
+-        self.write('result', self.result)
++        self.spec_data["jobs"][0]["args"] = ["-m", "pytest", "unrelated"]
++        self.result["command"] = [str(self.root / ".venv/bin/python"), "-m", "pytest", "unrelated"]
++        self.write("spec", self.spec_data)
++        self.write("result", self.result)
+         self.refuse()
+ 
+     def test_parent_child_same_pid_refused(self):
+-        self.child['ppid'] = self.child['pid']
+-        self.observed['parent_pid'] = self.child['pid']
+-        self.write('child', self.child)
+-        self.write('observed', self.observed)
+-        self.refuse()
+-
+-
+-if __name__ == '__main__':
++        self.child["ppid"] = self.child["pid"]
++        self.observed["parent_pid"] = self.child["pid"]
++        self.write("child", self.child)
++        self.write("observed", self.observed)
++        self.refuse()
++
++    def test_wrong_cpu_harness_profile(self):
++        for workers in (True, 0, 2):
++            self.spec_data["workers"] = workers
++            self.write("spec", self.spec_data)
++            self.refuse()
++
++    def test_other_role_cannot_substitute(self):
++        other = "recurrent_replay_poison" if self.role == "replay_poison" else "replay_poison"
++        self.child["worker"] = other
++        self.write("child", self.child)
++        self.refuse()
++
++    def test_other_node_cannot_substitute(self):
++        other_args = RecurrentReplayVerifierTests.args if self.role == "replay_poison" else ReplayVerifierTests.args
++        self.spec_data["jobs"][0]["args"] = list(other_args)
++        self.result["command"] = [str(self.root / ".venv/bin/python"), *other_args]
++        self.write("spec", self.spec_data)
++        self.write("result", self.result)
++        self.refuse()
++
++
++class RecurrentReplayVerifierTests(ReplayVerifierTests):
++    job_name = "recurrent-replay-poison"
++    role = "recurrent_replay_poison"
++    message = "recurrent replay scratch poison fail closed"
++    args = (
++        "-m",
++        "pytest",
++        "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
++        "--no-cov",
++        "-p",
++        "no:cacheprovider",
++        "-p",
++        "no:benchmark",
++        "-p",
++        "bac_source_identity",
++        "-q",
++    )
++    module_paths = {
++        "townlet.training.sequential_replay_buffer": "src/townlet/training/sequential_replay_buffer.py",
++        "townlet.training.replay_contract": "src/townlet/training/replay_contract.py",
++        "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
++        "test_recurrent_replay_rng_custody": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py",
++        "test_replay_rng_custody": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
++    }
++
++    def test_current_role_cannot_substitute(self):
++        for record, field, value in (
++            ("child", "worker", "replay_poison"),
++            ("observed", "message", "replay poison fail closed"),
++            (
++                "child",
++                "replay_imports",
++                {"townlet.training." + n: str(self.root / "src/townlet/training" / (n + ".py")) for n in verifier.REPLAY_MODULES},
++            ),
++        ):
++            data = getattr(self, record)
++            original = data[field]
++            data[field] = value
++            self.write(record, data)
++            self.refuse()
++            data[field] = original
++            self.write(record, data)
++
++    def test_old_node_cannot_substitute(self):
++        self.spec_data["jobs"][0]["args"] = list(verifier.REPLAY_ARGS)
++        self.result["command"] = [str(self.root / ".venv/bin/python"), *verifier.REPLAY_ARGS]
++        self.write("spec", self.spec_data)
++        self.write("result", self.result)
++        self.refuse()
++
++    def test_unknown_job_refused(self):
++        self.spec_data["jobs"][0]["name"] = "unapproved-poison"
++        self.write("spec", self.spec_data)
++        self.refuse()
++
++    def test_new_test_source_hash_checked(self):
++        (self.root / self.module_paths["test_recurrent_replay_rng_custody"]).write_bytes(b"changed synthetic data")
++        self.refuse()
++
++
++if __name__ == "__main__":
+     unittest.main()

@@ -1,4 +1,6 @@
-# Replay Fix-A current API — source-qualified R81 handoff
+# Shared and flat/PER replay custody — R81 source contract, R84 status
+
+Current recurrent behavior and R84 CPU component evidence are documented in the [recurrent replay custody contract](CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md). The shared and flat/PER interfaces below retain their R81 source basis. R84 supersedes this document's historical pending recurrent-B/defaults/style work; CUDA, owner/caller integration and programme gates remain open. See [BAC status](STATUS.md) for current gate outcomes.
 
 2026-11-13. This capsule records the bounded fixed shared-contract/flat/PER producer at R81 tree `4bcb26ec56bc2664949baab7d6b14e3c1da76b01`, base `678513c7540a61114d59a17d1b1e0eb8a06ce0a2`, manifest SHA256 `f16cff139bc7caeb8e4dab7adf995ad5f52f16ca7b058c710bc41f428b8fa80e`. It supplements the historical Stage B capsule, which is preserved unchanged. It is not whole-replay, CUDA or programme acceptance.
 
@@ -50,7 +52,9 @@ Flat retains selected-device Torch randperm. PER direct sampling retains its glo
 
 CPU registration uses empty device inventory without CUDA queries. A makes no CUDA semantics change. The current shared source still rejects unindexed CUDA and requires initialized indexed enrollment at construction: this is the retained B6 capability/lifecycle defect, not an approved replacement contract. Ordinary lazy/unindexed CUDA support and owner-lock versus asynchronous device-completion lifetime require their separate design/implementation/hardware packet. R81 CPU evidence does not discharge them.
 
-## Recurrent supplier boundary and remaining handoff
+## Historical R81 recurrent supplier boundary and handoff
+
+This section records what remained at R81/WIP15. Its “next slice B” work list is historical and is superseded by the [R84 recurrent contract](CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md). Keep the original R81 source/review/results below as evidence for that checkpoint; they are not current pending-B claims.
 
 No recurrent implementation body was read in A. Its exact public signatures were supplied by the original bounded source owner: `prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None) -> object` internally under `@replay_prepare`, and `load_prepared(self, candidate: object, *, lineage: RNGOperation | None) -> None`. Both keywords are required. The shared decorator's public transformation yields `PreparedReplay`; root R81 static assertions independently verify that result for flat/PER/recurrent, and retained recurrent runtime controls pass. These are supplier/static/runtime interface facts, not an A inspection of recurrent internals.
 

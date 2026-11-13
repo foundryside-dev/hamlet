@@ -379,7 +379,7 @@ and vector-tick beta horizon. [BAC status](docs/remediation/bac/STATUS.md) recor
 qualification and remaining native/runtime/learning requirements. These bounded notes do not
 refresh the broader dated source/CI review above.
 
-BAC remediation remains in progress: 28 qualified, 38 remaining, 66 total. R81 replay repair A fixes flat/PER mutable-DTO authority, shared prepared-handle ownership and typed lineage/results. Root passed 53 ordinary cases plus 1 isolated poison case; independent execution passed the same 54 controls. Approval is limited to that CPU slice. Recurrent, CUDA, caller and global acceptance gates remain open. See the [current replay contract](docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md) and [BAC remediation status](docs/remediation/bac/STATUS.md) for exact evidence, retained WIP14 CI failures and required follow-up.
+BAC remediation remains in progress: 28 qualified, 38 remaining, 66 total. The bounded CPU replay repair now rejects malformed mutable payloads before issuing installation authority. At R85, all 109 replay regression cases and 49 sequential owner cases passed; independent execution repeated the same 49 owner cases. CUDA, remaining caller integration and programme gates remain open. See the [shared and flat/PER replay contract](docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md), [recurrent replay contract](docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md) and [BAC status](docs/remediation/bac/STATUS.md).
 
 T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
 row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each

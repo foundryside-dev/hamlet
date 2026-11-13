@@ -1,0 +1,1592 @@
+{
+  "status": "DRAFT FACTUAL RECONCILIATION",
+  "counts": {
+    "top_entries": 57,
+    "checks": 35,
+    "completed_commands": 30,
+    "passed_commands": 27,
+    "failed_commands": 3,
+    "unrun_specs": 5,
+    "child_witnesses": 6,
+    "files": 176
+  },
+  "receipt_file_references": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-collection/collection.log",
+      "expected": "0d87a8ac0035f0b803138f6a43a67a2836d57cc8306dcb0e7328f7dc0643b8fb",
+      "actual": "0d87a8ac0035f0b803138f6a43a67a2836d57cc8306dcb0e7328f7dc0643b8fb",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-collection/static-custody.json",
+      "expected": "5b9bdf75c646a9e4f6a78fac51c4127bdd03fc3258b95f819e498564e1dadc01",
+      "actual": "5b9bdf75c646a9e4f6a78fac51c4127bdd03fc3258b95f819e498564e1dadc01",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-collection/collection-result.json",
+      "expected": "57577a32ff0586de01ec8e79a7fbfdf9644929dde4da4d10f51b451e3e3bfe67",
+      "actual": "57577a32ff0586de01ec8e79a7fbfdf9644929dde4da4d10f51b451e3e3bfe67",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-collection/collection/identity-controller.json",
+      "expected": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "actual": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-fixture-controls/recurrent-fixture-controls-custody.json",
+      "expected": "6177020118cc230bfdb2c73af1553c1537279a70bb52dabfeec9b9e202e49052",
+      "actual": "6177020118cc230bfdb2c73af1553c1537279a70bb52dabfeec9b9e202e49052",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-fixture-controls/recurrent-fixture-controls.log",
+      "expected": "e4ee4951f8a8231faf0691ff65c13ce7f54591ea0366a5889fe05f9cf641e919",
+      "actual": "e4ee4951f8a8231faf0691ff65c13ce7f54591ea0366a5889fe05f9cf641e919",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-fixture-controls/recurrent-fixture-controls-result.json",
+      "expected": "300a56045156897366c7bbe69c45ab5e5181b0a9784cab968049c0f235af8246",
+      "actual": "300a56045156897366c7bbe69c45ab5e5181b0a9784cab968049c0f235af8246",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-fixture-controls/recurrent-fixture-controls/identity-controller.json",
+      "expected": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "actual": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls-result.json",
+      "expected": "1ab1485a386a7718eab2c021606993d2a2f8d5ddb784c6c67715acfbe5f133ac",
+      "actual": "1ab1485a386a7718eab2c021606993d2a2f8d5ddb784c6c67715acfbe5f133ac",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls-failure-index.json",
+      "expected": "b5e8feaa0a0b8bf36021aa3df3ca55e4bd9557f1b51ad5d85f282893ce22e01c",
+      "actual": "b5e8feaa0a0b8bf36021aa3df3ca55e4bd9557f1b51ad5d85f282893ce22e01c",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls-negative-custody.json",
+      "expected": "da7cd22874a1852a1ee94c67f3df2fc55145333d5711180bcf1d0c69aefe8c19",
+      "actual": "da7cd22874a1852a1ee94c67f3df2fc55145333d5711180bcf1d0c69aefe8c19",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls.log",
+      "expected": "7b7b13ea90f0a6c472b36819c67a6fe8c06fab20c50db25b47570a5efab9a1c8",
+      "actual": "7b7b13ea90f0a6c472b36819c67a6fe8c06fab20c50db25b47570a5efab9a1c8",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls/identity-controller.json",
+      "expected": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "actual": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls/failure-controller-f5f2a321e27375f3.json",
+      "expected": "c55a7f05ac725eb426f2f969521455ab2721d8cdc3c3efaed3f5392a2a83418f",
+      "actual": "c55a7f05ac725eb426f2f969521455ab2721d8cdc3c3efaed3f5392a2a83418f",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-controls/recurrent-controls/failure-controller-5da3bb96dca477ba.json",
+      "expected": "a8d5eb898c9e18ea7706d2e55a2d8df34fdbb56676cff61ca462119e068368c3",
+      "actual": "a8d5eb898c9e18ea7706d2e55a2d8df34fdbb56676cff61ca462119e068368c3",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red-result.json",
+      "expected": "88ad9fc0e91e89631aeec736160b132b8c2f4226442d0b315dfa2bfa1bc605fc",
+      "actual": "88ad9fc0e91e89631aeec736160b132b8c2f4226442d0b315dfa2bfa1bc605fc",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red-negative-custody.json",
+      "expected": "7087cb4e62d6c221da8777c5a5d9a4c41f952affd1ad64803f9269448ed5f67f",
+      "actual": "7087cb4e62d6c221da8777c5a5d9a4c41f952affd1ad64803f9269448ed5f67f",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red.log",
+      "expected": "aabdb4cc74b553e6252426b2e89e08077991786409785e9be63cac49b0a50f92",
+      "actual": "aabdb4cc74b553e6252426b2e89e08077991786409785e9be63cac49b0a50f92",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red-failure-index.json",
+      "expected": "262c42de81a4d11abaa7f042a3a29def2f36d98dcaa68e6de4271311fe171524",
+      "actual": "262c42de81a4d11abaa7f042a3a29def2f36d98dcaa68e6de4271311fe171524",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-873a74ad2c7bd424.json",
+      "expected": "f0ee63930c17f1a154758d15a49875f711a95f50f7089550676627a2f9aa9806",
+      "actual": "f0ee63930c17f1a154758d15a49875f711a95f50f7089550676627a2f9aa9806",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/identity-controller.json",
+      "expected": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "actual": "36b0425c9101d1058bf53cc63b723bdf3c0baa287c0311f242d454581aa3a23e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-b94f22358cedd8c1.json",
+      "expected": "98f0b9f615eaf0c1e3164337eab9f77fe0964ce00306df8127068e94e7330725",
+      "actual": "98f0b9f615eaf0c1e3164337eab9f77fe0964ce00306df8127068e94e7330725",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-860725c5671a39a6.json",
+      "expected": "3fbef75354f3a9d07271bff2440522aefbb1ec79b5bbd89ecc210abb97b6f549",
+      "actual": "3fbef75354f3a9d07271bff2440522aefbb1ec79b5bbd89ecc210abb97b6f549",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-95a749da71ed6482.json",
+      "expected": "ed474934f33876ba80faa9ba75082fd278b3dee159561a32283d2623296060c1",
+      "actual": "ed474934f33876ba80faa9ba75082fd278b3dee159561a32283d2623296060c1",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-a5df8b2a972a1715.json",
+      "expected": "38308b410530144736685833cffa924289ebc75253bbf14b2743ec3fbea7e314",
+      "actual": "38308b410530144736685833cffa924289ebc75253bbf14b2743ec3fbea7e314",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-40a011fd323ec24f.json",
+      "expected": "4a295691d9192a6f1ad40eb62a2cf5c411db6389c13e26c75e3fd670eed63d67",
+      "actual": "4a295691d9192a6f1ad40eb62a2cf5c411db6389c13e26c75e3fd670eed63d67",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-4a7ca690f7ca8f1b.json",
+      "expected": "10e5a883181e9dac469c16bae684ea3f10395377ecafd2ea9c4f234525b282b5",
+      "actual": "10e5a883181e9dac469c16bae684ea3f10395377ecafd2ea9c4f234525b282b5",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-e0d3feab1d5375aa.json",
+      "expected": "35ca4e5114fe8995531627bc2b4f5a296c5ca5adfe1335f54df1fca43401cde8",
+      "actual": "35ca4e5114fe8995531627bc2b4f5a296c5ca5adfe1335f54df1fca43401cde8",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-14948ac1c8e434b9.json",
+      "expected": "0d88ba2684b9b204b2cc96fd25d563df7292d02d5c4ee92e897bc1fd9eb7a254",
+      "actual": "0d88ba2684b9b204b2cc96fd25d563df7292d02d5c4ee92e897bc1fd9eb7a254",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-b01c5efc81486e9a.json",
+      "expected": "ed05d19016188bb255ac79307d72878deccbc266da5339822b7e62caa5303ecd",
+      "actual": "ed05d19016188bb255ac79307d72878deccbc266da5339822b7e62caa5303ecd",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-b4c343cb35b00d32.json",
+      "expected": "5998b24f570cc209b19516607ddb102a07003b7cbf27bc55d179147946253d0f",
+      "actual": "5998b24f570cc209b19516607ddb102a07003b7cbf27bc55d179147946253d0f",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r82-recurrent-dto-red/recurrent-dto-red/failure-controller-8e326d05528f1acb.json",
+      "expected": "e250635479a164d324f8b5878638576bea642fc2cff53f65dd87853ed7671c32",
+      "actual": "e250635479a164d324f8b5878638576bea642fc2cff53f65dd87853ed7671c32",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection/identity-controller.json",
+      "expected": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+      "actual": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection-result.json",
+      "expected": "aeb62e4f26f62e60e4b202e3aa81bde71933f66a99c60c01ca8af8bf461549f2",
+      "actual": "aeb62e4f26f62e60e4b202e3aa81bde71933f66a99c60c01ca8af8bf461549f2",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection.log",
+      "expected": "20805b898a2685137e93831fd97d0bc03496b1ea9f21b49b3049af6b4e298b15",
+      "actual": "20805b898a2685137e93831fd97d0bc03496b1ea9f21b49b3049af6b4e298b15",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/static-custody.json",
+      "expected": "1ad0877c1e58f791354b7d53793a72aec4a2bede5c98283ebf164a388ec56624",
+      "actual": "1ad0877c1e58f791354b7d53793a72aec4a2bede5c98283ebf164a388ec56624",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix/identity-controller.json",
+      "expected": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+      "actual": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix-custody.json",
+      "expected": "9636310a6982a08b598a3c19509ff09419887659e9f9005260df0358ac14b558",
+      "actual": "9636310a6982a08b598a3c19509ff09419887659e9f9005260df0358ac14b558",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix-result.json",
+      "expected": "67f89e53a24d0b60d9eb1f14939f2b52edfe652daf572b5aafbd2e6f9ace1dc3",
+      "actual": "67f89e53a24d0b60d9eb1f14939f2b52edfe652daf572b5aafbd2e6f9ace1dc3",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix.log",
+      "expected": "57bc7c135453794a15ab9b5e503f0ac7e822981a45ac50cd761017060bf8ffb8",
+      "actual": "57bc7c135453794a15ab9b5e503f0ac7e822981a45ac50cd761017060bf8ffb8",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/identity-controller.json",
+      "expected": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+      "actual": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+      "expected": "306642c7134f045a208c97b340110c30a4e8f2de484966fee87ef9ac2e99fe72",
+      "actual": "306642c7134f045a208c97b340110c30a4e8f2de484966fee87ef9ac2e99fe72",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/spawn-identity-recurrent_replay_poison.json",
+      "expected": "091bfe6f615058671642cea9e00e6a2be5cc672feff29249caee5be9ec379514",
+      "actual": "091bfe6f615058671642cea9e00e6a2be5cc672feff29249caee5be9ec379514",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/spawn-observation-recurrent_replay_poison.json",
+      "expected": "768218731565922c8a1de0f4f1ac6f2299e4011d3d4f19856f5751ffcb197869",
+      "actual": "768218731565922c8a1de0f4f1ac6f2299e4011d3d4f19856f5751ffcb197869",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison-custody.json",
+      "expected": "fedcbf79542c9b369ae3b45ca1605beedf7bb1ff961ef85b14ba0e2c6233a0f8",
+      "actual": "fedcbf79542c9b369ae3b45ca1605beedf7bb1ff961ef85b14ba0e2c6233a0f8",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison-result.json",
+      "expected": "a5c6371cb341456d4365efa836af08235051c9f9987ec29e8ae305142cb0e8a5",
+      "actual": "a5c6371cb341456d4365efa836af08235051c9f9987ec29e8ae305142cb0e8a5",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison.log",
+      "expected": "f5da4eceee340ca2a8735419b199db2fae46868654f56647ae1fdb05f1efcdc6",
+      "actual": "f5da4eceee340ca2a8735419b199db2fae46868654f56647ae1fdb05f1efcdc6",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-collection/collection/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-collection/collection-result.json",
+      "expected": "0886c6f1fc7b817078cf67152fb391e0f648e872f9083f8f2ed3e67d4d39b217",
+      "actual": "0886c6f1fc7b817078cf67152fb391e0f648e872f9083f8f2ed3e67d4d39b217",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-collection/collection.log",
+      "expected": "89f00c66b67a28388f47de9df2970f740444e62269a9ab4bc37c79863cb8babd",
+      "actual": "89f00c66b67a28388f47de9df2970f740444e62269a9ab4bc37c79863cb8babd",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-collection/static-custody.json",
+      "expected": "7685816ae066414d10a65a251c12c8f42b36c42522473cd780b3fb839c2f9b9b",
+      "actual": "7685816ae066414d10a65a251c12c8f42b36c42522473cd780b3fb839c2f9b9b",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/black-global-result.json",
+      "expected": "27970dd8ee766570067fde2b7c024dbde8a20dba38817f39b2297fe29b60fd27",
+      "actual": "27970dd8ee766570067fde2b7c024dbde8a20dba38817f39b2297fe29b60fd27",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/black-global.log",
+      "expected": "3f4e21d04b8b6fee1d194554b1f9c59e63fe8e242ce6c6e5d0ab64f5134202c4",
+      "actual": "3f4e21d04b8b6fee1d194554b1f9c59e63fe8e242ce6c6e5d0ab64f5134202c4",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/no-defaults-result.json",
+      "expected": "36b1170ecda64a2e57347f2223aabdb41edf79a33dd976893db51ac787563d57",
+      "actual": "36b1170ecda64a2e57347f2223aabdb41edf79a33dd976893db51ac787563d57",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/no-defaults.log",
+      "expected": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+      "actual": "28926e5402ec687be09d6dad9b3f98c895d14b2fc3085e6958b554e275a683f0",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/ruff-global-result.json",
+      "expected": "c9e8751af35646bb048f1ae59e40bc4fd95c074646bdb48a5af0e5ce3a5b2924",
+      "actual": "c9e8751af35646bb048f1ae59e40bc4fd95c074646bdb48a5af0e5ce3a5b2924",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/ruff-global.log",
+      "expected": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "actual": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-static/static-custody.json",
+      "expected": "bf32cf7312084b6363172d5b82af7aa95faebb4405ed6b0c2b4b6fac586e4bb6",
+      "actual": "bf32cf7312084b6363172d5b82af7aa95faebb4405ed6b0c2b4b6fac586e4bb6",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-types/owned-mypy-result.json",
+      "expected": "a1c5a819c45bce331f9089b7e97546391b371018e240cfb3dd9c57ab6fb64b58",
+      "actual": "a1c5a819c45bce331f9089b7e97546391b371018e240cfb3dd9c57ab6fb64b58",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-types/owned-mypy.log",
+      "expected": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "actual": "71144743c83babea384888a735db0c4daba3d4d7b7942b6839984bd5c21b52bb",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-types/public-types-result.json",
+      "expected": "577baabca7a3f9692a04e5b0711dfda91b3ca0b9389662b5424999c6a7e69a55",
+      "actual": "577baabca7a3f9692a04e5b0711dfda91b3ca0b9389662b5424999c6a7e69a55",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-types/public-types.log",
+      "expected": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "actual": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-types/static-custody.json",
+      "expected": "ff45e458b2849aafd8c0787e2a1e7033dabc17645050f6d878a6f3983e6e96f2",
+      "actual": "ff45e458b2849aafd8c0787e2a1e7033dabc17645050f6d878a6f3983e6e96f2",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-current/replay-current/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-current/replay-current-custody.json",
+      "expected": "82091709dd053bc0f3ac890778638169f4af6ceea255cd5972486ad40f4082ed",
+      "actual": "82091709dd053bc0f3ac890778638169f4af6ceea255cd5972486ad40f4082ed",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-current/replay-current-result.json",
+      "expected": "48ba9691fd86a3503abf0485a3c4af857f6b59f0bfc50f4523f61e1244b329cb",
+      "actual": "48ba9691fd86a3503abf0485a3c4af857f6b59f0bfc50f4523f61e1244b329cb",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-current/replay-current.log",
+      "expected": "312d82a714082b8e1d639735899a31d5e23da69aae15fa61a9931a945ea66503",
+      "actual": "312d82a714082b8e1d639735899a31d5e23da69aae15fa61a9931a945ea66503",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-current/recurrent-current/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-current/recurrent-current-custody.json",
+      "expected": "1f6c0662f68e7f4e7780960d575efca340eda509542ec98f4cd1ace7343e8155",
+      "actual": "1f6c0662f68e7f4e7780960d575efca340eda509542ec98f4cd1ace7343e8155",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-current/recurrent-current-result.json",
+      "expected": "4e9b4247aa0c34530474cdb90f19d05313e31962f25f3827af7a60437a93e845",
+      "actual": "4e9b4247aa0c34530474cdb90f19d05313e31962f25f3827af7a60437a93e845",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-current/recurrent-current.log",
+      "expected": "444b79a1ae19560c388aab40b144ad03a1002d9041b0518454fa09dc3e1974ce",
+      "actual": "444b79a1ae19560c388aab40b144ad03a1002d9041b0518454fa09dc3e1974ce",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-owner-sequential/owner-sequential/failure-controller-64376bb06254810e.json",
+      "expected": "c13e70259bb5717ba268a70e6488f98b399c9c0ae4a79a513f360bd43a1906e5",
+      "actual": "c13e70259bb5717ba268a70e6488f98b399c9c0ae4a79a513f360bd43a1906e5",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-owner-sequential/owner-sequential/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-owner-sequential/owner-sequential-failure-index.json",
+      "expected": "3f25c75bad93873704bafb3581561068acd5c44b201b47ebb1c6ef9a8ec3a944",
+      "actual": "3f25c75bad93873704bafb3581561068acd5c44b201b47ebb1c6ef9a8ec3a944",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-owner-sequential/owner-sequential-negative-custody.json",
+      "expected": "48fd4d3346aa80fdd3974416ef77c56e1a1977e9e9db5036fe0cf1bb924327cb",
+      "actual": "48fd4d3346aa80fdd3974416ef77c56e1a1977e9e9db5036fe0cf1bb924327cb",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-owner-sequential/owner-sequential-result.json",
+      "expected": "b338a9037cf98d2ce3afdf70edecc21e17e303916c85fb1e58a145d0122d93b0",
+      "actual": "b338a9037cf98d2ce3afdf70edecc21e17e303916c85fb1e58a145d0122d93b0",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-owner-sequential/owner-sequential.log",
+      "expected": "18558da8ca4cebab12e3428d633abe0245230b1ef926b180258b022b9c475b02",
+      "actual": "18558da8ca4cebab12e3428d633abe0245230b1ef926b180258b022b9c475b02",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "e0682d526d4c79f59fc542a7860c4e15f999c24a4bc66401e25f9a0763f51a6d",
+      "actual": "e0682d526d4c79f59fc542a7860c4e15f999c24a4bc66401e25f9a0763f51a6d",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "471f1105332dfe84bc6f95815229a3e8148fcc52b33e26ea3066b622918f9940",
+      "actual": "471f1105332dfe84bc6f95815229a3e8148fcc52b33e26ea3066b622918f9940",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "cad224351d7d539ae76abc734b412455b79745875800e1ab04ac08266f00a221",
+      "actual": "cad224351d7d539ae76abc734b412455b79745875800e1ab04ac08266f00a221",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison-custody.json",
+      "expected": "b7f448933b413aa75fe6cfacfc1702f87c0fd5e3b08ee56c40349eff7e0bd204",
+      "actual": "b7f448933b413aa75fe6cfacfc1702f87c0fd5e3b08ee56c40349eff7e0bd204",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison-result.json",
+      "expected": "bc7fb0ee9c8941cb2fb2a26169b104b95f0101486eb33f6b48aede9f87636652",
+      "actual": "bc7fb0ee9c8941cb2fb2a26169b104b95f0101486eb33f6b48aede9f87636652",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-replay-poison/replay-poison.log",
+      "expected": "703b291c8a7fa06dfb345b55eb12afea32d5081763f5f6e3d507a40588d98dc6",
+      "actual": "703b291c8a7fa06dfb345b55eb12afea32d5081763f5f6e3d507a40588d98dc6",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+      "expected": "dcaa2ff4f1aa534da05bfa4e593d1d95426381652fb77e40a29d357d44e6e88d",
+      "actual": "dcaa2ff4f1aa534da05bfa4e593d1d95426381652fb77e40a29d357d44e6e88d",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison/spawn-identity-recurrent_replay_poison.json",
+      "expected": "f1258a8b91294fb2b36e1ab8106c0a24f993fcacae7c4278ae8ec737eebbaae3",
+      "actual": "f1258a8b91294fb2b36e1ab8106c0a24f993fcacae7c4278ae8ec737eebbaae3",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison/spawn-observation-recurrent_replay_poison.json",
+      "expected": "6f7caf71648aa89a7f1f045f8c29ac6d98814bf7d66ea598edbbce754049bdf9",
+      "actual": "6f7caf71648aa89a7f1f045f8c29ac6d98814bf7d66ea598edbbce754049bdf9",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison-custody.json",
+      "expected": "c03c70fa3f95f7aaf68fa62f6e663ba9f1d176f4c427d17c95e655de2d6dde7d",
+      "actual": "c03c70fa3f95f7aaf68fa62f6e663ba9f1d176f4c427d17c95e655de2d6dde7d",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison-result.json",
+      "expected": "1c212ae8947ff866877d7434e22d29a76416260abde3b4db2910ae95ccc69455",
+      "actual": "1c212ae8947ff866877d7434e22d29a76416260abde3b4db2910ae95ccc69455",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-recurrent-replay-poison/recurrent-replay-poison.log",
+      "expected": "5b3b1d02308e088b9d6c04af0b1ddff1647f109476ebd56ffbd5fabef6cc2fe1",
+      "actual": "5b3b1d02308e088b9d6c04af0b1ddff1647f109476ebd56ffbd5fabef6cc2fe1",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-current/recurrent-current/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-current/recurrent-current-custody.json",
+      "expected": "421237e0141317d4da23bf9344e380686d40cfb986e895c7f3c0c2a8572b1f57",
+      "actual": "421237e0141317d4da23bf9344e380686d40cfb986e895c7f3c0c2a8572b1f57",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-current/recurrent-current-result.json",
+      "expected": "04dd35965e5b3e60254b46a7e484f8251553eb097b7a07152a2ea6af2094b5bb",
+      "actual": "04dd35965e5b3e60254b46a7e484f8251553eb097b7a07152a2ea6af2094b5bb",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-current/recurrent-current.log",
+      "expected": "d8ae4e915ec190ec7b94a4e9c3fd693bdf8dcd8c20f8312c70a57ec12367fe06",
+      "actual": "d8ae4e915ec190ec7b94a4e9c3fd693bdf8dcd8c20f8312c70a57ec12367fe06",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison/identity-controller.json",
+      "expected": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "actual": "ed884b0c8fcd6f1ba7c06726a1209861b6ef2aad3a1deb69c779e5dab228ed95",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+      "expected": "18f31aa7dc873f9fdb70475c6249c940a36952c6e08b4e3be83b205d8a6ade04",
+      "actual": "18f31aa7dc873f9fdb70475c6249c940a36952c6e08b4e3be83b205d8a6ade04",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison/spawn-identity-recurrent_replay_poison.json",
+      "expected": "9a27c0d4674cc6e3332c746ac4237cc7209ac6b5a3356219b270900185216a75",
+      "actual": "9a27c0d4674cc6e3332c746ac4237cc7209ac6b5a3356219b270900185216a75",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison/spawn-observation-recurrent_replay_poison.json",
+      "expected": "6997adc33dc8b67d698333eaf1dd9f0ad3de104fbb985e1a4859e00a5cec7ae4",
+      "actual": "6997adc33dc8b67d698333eaf1dd9f0ad3de104fbb985e1a4859e00a5cec7ae4",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison-custody.json",
+      "expected": "483de22cd39f3ac477efaa19bbc62e77becb0fe83fb778331232e80414aa7603",
+      "actual": "483de22cd39f3ac477efaa19bbc62e77becb0fe83fb778331232e80414aa7603",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison-result.json",
+      "expected": "9cf2fb1a43ce8ac66e372352fb9e4331c886a602a5c2ac7a53b5b8630cde165b",
+      "actual": "9cf2fb1a43ce8ac66e372352fb9e4331c886a602a5c2ac7a53b5b8630cde165b",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison.log",
+      "expected": "8348f636ad3fdae8bc303655986301ac196d9a0a95ccf33e1f775c2c8ba86d38",
+      "actual": "8348f636ad3fdae8bc303655986301ac196d9a0a95ccf33e1f775c2c8ba86d38",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-collection/collection/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-collection/collection-result.json",
+      "expected": "c42e204b41d8c9474e55dc77746e0dc7e2a28bfd76119080a97e563dd193eefa",
+      "actual": "c42e204b41d8c9474e55dc77746e0dc7e2a28bfd76119080a97e563dd193eefa",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-collection/collection.log",
+      "expected": "572d0348a22d3feb2e2b0e19a2da0ec7f7f65f17c5f20b74df4cab19a97234e1",
+      "actual": "572d0348a22d3feb2e2b0e19a2da0ec7f7f65f17c5f20b74df4cab19a97234e1",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-collection/static-custody.json",
+      "expected": "a4e2707e4789e7b21bda45d419fbef984a5489b76a5e3dcc2335c29088cd78e7",
+      "actual": "a4e2707e4789e7b21bda45d419fbef984a5489b76a5e3dcc2335c29088cd78e7",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-static/black-owned-result.json",
+      "expected": "2cd73e6262c96c71d266aa0afd958faf36a8dfad113a4de0dd11b93c4b28d7e8",
+      "actual": "2cd73e6262c96c71d266aa0afd958faf36a8dfad113a4de0dd11b93c4b28d7e8",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-static/black-owned.log",
+      "expected": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "actual": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-static/ruff-owned-result.json",
+      "expected": "803fba0d11f74185043f32d4651e5db82b836e27c89072ff70aed6c73e0bb3f3",
+      "actual": "803fba0d11f74185043f32d4651e5db82b836e27c89072ff70aed6c73e0bb3f3",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-static/ruff-owned.log",
+      "expected": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "actual": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-static/static-custody.json",
+      "expected": "ac1153d1caf63895d1d905c867589c118b509e77cce3dc2c7da31ab2e11a20a3",
+      "actual": "ac1153d1caf63895d1d905c867589c118b509e77cce3dc2c7da31ab2e11a20a3",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-first/owner-first/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-first/owner-first-custody.json",
+      "expected": "1108d2461cde86cf0758f6c6cd79d51e772c1fc9a53df0764ea0c224d5891f06",
+      "actual": "1108d2461cde86cf0758f6c6cd79d51e772c1fc9a53df0764ea0c224d5891f06",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-first/owner-first-result.json",
+      "expected": "7dea0d5282209c1d47994ea1b0ebe8f961243aae5a7149ee2f54b2c5caeaa2a2",
+      "actual": "7dea0d5282209c1d47994ea1b0ebe8f961243aae5a7149ee2f54b2c5caeaa2a2",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-first/owner-first.log",
+      "expected": "49c2b01edd0a049475ebf7c2bbe8550b0ce3ee842fec056aabd9596e4b1e4388",
+      "actual": "49c2b01edd0a049475ebf7c2bbe8550b0ce3ee842fec056aabd9596e4b1e4388",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-current/replay-current/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-current/replay-current-custody.json",
+      "expected": "7538aee6cd6be634d391d5c7ea65816bed19c68e9a1dbcf258d54176e5f2cc25",
+      "actual": "7538aee6cd6be634d391d5c7ea65816bed19c68e9a1dbcf258d54176e5f2cc25",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-current/replay-current-result.json",
+      "expected": "edca43208da36e2656dbb21760a106c13f6e472a68f08c2c4ce7523aa618997d",
+      "actual": "edca43208da36e2656dbb21760a106c13f6e472a68f08c2c4ce7523aa618997d",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-current/replay-current.log",
+      "expected": "58fc54f169dad6f4e412a15e2bd8ea0e288697c08dae5c0600f2946c3c2efc9d",
+      "actual": "58fc54f169dad6f4e412a15e2bd8ea0e288697c08dae5c0600f2946c3c2efc9d",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-current/recurrent-current/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-current/recurrent-current-custody.json",
+      "expected": "62f41a1b91f12736b093f3968550104e5a82cd0a76c7b16de42ad811e2732b5f",
+      "actual": "62f41a1b91f12736b093f3968550104e5a82cd0a76c7b16de42ad811e2732b5f",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-current/recurrent-current-result.json",
+      "expected": "8b1634fce765f51816120ec65550a8c1c7485f5bd4a7ccd82ffa5604a0887d4b",
+      "actual": "8b1634fce765f51816120ec65550a8c1c7485f5bd4a7ccd82ffa5604a0887d4b",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-current/recurrent-current.log",
+      "expected": "918dad3207eec5f1b82373a0b242d7e87d007e4019c5fcf31fb496085b72adff",
+      "actual": "918dad3207eec5f1b82373a0b242d7e87d007e4019c5fcf31fb496085b72adff",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-sequential/owner-sequential/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-sequential/owner-sequential-custody.json",
+      "expected": "42d672efd1885baa4a5aa7ac91a2ec235d765e241022fa6098c68deadcf92782",
+      "actual": "42d672efd1885baa4a5aa7ac91a2ec235d765e241022fa6098c68deadcf92782",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-sequential/owner-sequential-result.json",
+      "expected": "441a4913d7e56274f4199b64dc11e7e0a86a81d6caaafdfc19673ea64abd55ec",
+      "actual": "441a4913d7e56274f4199b64dc11e7e0a86a81d6caaafdfc19673ea64abd55ec",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-owner-sequential/owner-sequential.log",
+      "expected": "1d3618ef93af3e4b6b87bbd7526d2de6d98d8bec24a4ac159e806ff893f2d47e",
+      "actual": "1d3618ef93af3e4b6b87bbd7526d2de6d98d8bec24a4ac159e806ff893f2d47e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+      "expected": "abdf5d3d78e6087ca08b533f59bca4a3b75bdac4d664dd7761ccec1565009ddf",
+      "actual": "abdf5d3d78e6087ca08b533f59bca4a3b75bdac4d664dd7761ccec1565009ddf",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "expected": "e8004877633ba2c7d879487e62d67ffbc785f0bab51a6bdcafe65cb3f8b69a6e",
+      "actual": "e8004877633ba2c7d879487e62d67ffbc785f0bab51a6bdcafe65cb3f8b69a6e",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "expected": "568c220c489f23777bcf0c4e21ef0aecdcde7da6294a254636f3edfd963cd458",
+      "actual": "568c220c489f23777bcf0c4e21ef0aecdcde7da6294a254636f3edfd963cd458",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison-custody.json",
+      "expected": "f5964e58f8142b0e3dccd75b13d82d8cf88c0bc563d28a51e7a16c633a0acc33",
+      "actual": "f5964e58f8142b0e3dccd75b13d82d8cf88c0bc563d28a51e7a16c633a0acc33",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison-result.json",
+      "expected": "c7001895188a0da4825bb19b53326eec67f06d4e7f6888e497bd9331ed9ba7cc",
+      "actual": "c7001895188a0da4825bb19b53326eec67f06d4e7f6888e497bd9331ed9ba7cc",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-replay-poison/replay-poison.log",
+      "expected": "245409630644a53fab62847ef261699042d742496ff4913dae44908ebd8ba395",
+      "actual": "245409630644a53fab62847ef261699042d742496ff4913dae44908ebd8ba395",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+      "expected": "6fae0baf5fbd1f7064809815ae3e579e4f0f432291e86e3060c0de8894e97841",
+      "actual": "6fae0baf5fbd1f7064809815ae3e579e4f0f432291e86e3060c0de8894e97841",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison/spawn-identity-recurrent_replay_poison.json",
+      "expected": "86c15b5258935db4855f99f9d38f5beac484a597f7746934e46802813b22bf3b",
+      "actual": "86c15b5258935db4855f99f9d38f5beac484a597f7746934e46802813b22bf3b",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison/spawn-observation-recurrent_replay_poison.json",
+      "expected": "ae41ef995baabf8a64060d429777f9da62f656b48695e8dc39973d996ef0656c",
+      "actual": "ae41ef995baabf8a64060d429777f9da62f656b48695e8dc39973d996ef0656c",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison-custody.json",
+      "expected": "2915ea407e7477a27fddcce4388ebbf3e732298911d5f3af77f9efe94ea485f1",
+      "actual": "2915ea407e7477a27fddcce4388ebbf3e732298911d5f3af77f9efe94ea485f1",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison-result.json",
+      "expected": "9c629c4b5e7d411553b46ef765ab5177567e0e7c6db6ffe0926a672b3f5d14c0",
+      "actual": "9c629c4b5e7d411553b46ef765ab5177567e0e7c6db6ffe0926a672b3f5d14c0",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-recurrent-replay-poison/recurrent-replay-poison.log",
+      "expected": "d4479bff4099f3ee4dcba8d4f7d9fe7ac3511d0c2897c8a963bd8d9d1c91003a",
+      "actual": "d4479bff4099f3ee4dcba8d4f7d9fe7ac3511d0c2897c8a963bd8d9d1c91003a",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-independent-owner-sequential/owner-sequential/identity-controller.json",
+      "expected": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "actual": "94fb1c0eecf47e846ac25394fa4f2df259bcdb5eb6ff134832b6d35f277d0297",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-independent-owner-sequential/owner-sequential-custody.json",
+      "expected": "7a3c2b9d2f52c8f0592370326885f7e97d275a9fa2e90c564b40ce17a43f893b",
+      "actual": "7a3c2b9d2f52c8f0592370326885f7e97d275a9fa2e90c564b40ce17a43f893b",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-independent-owner-sequential/owner-sequential-result.json",
+      "expected": "d58aa2ccd1c5c297761e7840f26a6f090f01776ced9de4a5c996d7cd69fee254",
+      "actual": "d58aa2ccd1c5c297761e7840f26a6f090f01776ced9de4a5c996d7cd69fee254",
+      "matches": true
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r85-independent-owner-sequential/owner-sequential.log",
+      "expected": "e0448535e2dab830bb0d0b2a13c01c541b7b4298894f73248d6e36206289d560",
+      "actual": "e0448535e2dab830bb0d0b2a13c01c541b7b4298894f73248d6e36206289d560",
+      "matches": true
+    }
+  ],
+  "result_bindings": [
+    {
+      "check": "wave35-r82-collection--collection",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r82-collection-spec.json",
+        "sha256": "c16bdf48313695031a02631ed4307015a29650a28534f416ee44ca43ccfb0f59",
+        "bytes": 628
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r82-collection/collection-result.json",
+        "sha256": "57577a32ff0586de01ec8e79a7fbfdf9644929dde4da4d10f51b451e3e3bfe67",
+        "bytes": 868
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r82-recurrent-controls--recurrent-controls",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r82-recurrent-controls-spec.json",
+        "sha256": "7662eede98cd540d4bf2de95315d497f5644076b21ce0f2b85e3a699a684c7d9",
+        "bytes": 748
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r82-recurrent-controls/recurrent-controls-result.json",
+        "sha256": "1ab1485a386a7718eab2c021606993d2a2f8d5ddb784c6c67715acfbe5f133ac",
+        "bytes": 992
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r82-recurrent-dto-red--recurrent-dto-red",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r82-recurrent-dto-red-spec.json",
+        "sha256": "41b59de180613fe19e325c5319331e78b6e3f8b1c66629eb9a150b8f439d1e67",
+        "bytes": 649
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r82-recurrent-dto-red/recurrent-dto-red-result.json",
+        "sha256": "88ad9fc0e91e89631aeec736160b132b8c2f4226442d0b315dfa2bfa1bc605fc",
+        "bytes": 892
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r82-recurrent-fixture-controls--recurrent-fixture-controls",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r82-recurrent-fixture-controls-spec.json",
+        "sha256": "493ea5d506dc305480436b95a1dc20d0ab0439f388ba57d757dbabe3673d567d",
+        "bytes": 731
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r82-recurrent-fixture-controls/recurrent-fixture-controls-result.json",
+        "sha256": "300a56045156897366c7bbe69c45ab5e5181b0a9784cab968049c0f235af8246",
+        "bytes": 980
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r83-collection--collection",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r83-collection-spec.json",
+        "sha256": "f5cbbd1f360eb398df8e96739c109a8256c4018b4ee2849d93aa265679443c23",
+        "bytes": 628
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r83-collection/collection-result.json",
+        "sha256": "aeb62e4f26f62e60e4b202e3aa81bde71933f66a99c60c01ca8af8bf461549f2",
+        "bytes": 869
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r83-recurrent-fixture-fix--recurrent-fixture-fix",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r83-recurrent-fixture-fix-spec.json",
+        "sha256": "19aa0b54dc255ee2de8c5752a62cb43943e5eaddbec56440712f0eee67cca99f",
+        "bytes": 715
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix-result.json",
+        "sha256": "67f89e53a24d0b60d9eb1f14939f2b52edfe652daf572b5aafbd2e6f9ace1dc3",
+        "bytes": 959
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r83-recurrent-replay-poison--recurrent-replay-poison",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r83-recurrent-replay-poison-spec.json",
+        "sha256": "db8bc37049c3da57d19467576f9893bf0deebb1f212499fa370f9f1cb8795218",
+        "bytes": 692
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r83-recurrent-replay-poison/recurrent-replay-poison-result.json",
+        "sha256": "a5c6371cb341456d4365efa836af08235051c9f9987ec29e8ae305142cb0e8a5",
+        "bytes": 949
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-collection--collection",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-collection-spec.json",
+        "sha256": "473014942305f2fc699186e6b861388ed172301aec239b9b5e6f8b81b7dfdb60",
+        "bytes": 778
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-collection/collection-result.json",
+        "sha256": "0886c6f1fc7b817078cf67152fb391e0f648e872f9083f8f2ed3e67d4d39b217",
+        "bytes": 1011
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-independent-recurrent-current--recurrent-current",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-independent-recurrent-current-spec.json",
+        "sha256": "31925df7b5980ae61aa0ad05910007a52d07756cdead23f1ddf1e6a3b8e5b62a",
+        "bytes": 797
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-independent-recurrent-current/recurrent-current-result.json",
+        "sha256": "04dd35965e5b3e60254b46a7e484f8251553eb097b7a07152a2ea6af2094b5bb",
+        "bytes": 1040
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-independent-recurrent-replay-poison--recurrent-replay-poison",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-independent-recurrent-replay-poison-spec.json",
+        "sha256": "4bf512637062412c72a18dc46b3d58b41a4b6795d797229a86f9bd4dac1b21bf",
+        "bytes": 704
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison-result.json",
+        "sha256": "9cf2fb1a43ce8ac66e372352fb9e4331c886a602a5c2ac7a53b5b8630cde165b",
+        "bytes": 961
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-owner-sequential--owner-sequential",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-owner-sequential-spec.json",
+        "sha256": "84ce5424c08c4258101a188a3e2e53a500601916a9c651bce07f0c776d8a131f",
+        "bytes": 622
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-owner-sequential/owner-sequential-result.json",
+        "sha256": "b338a9037cf98d2ce3afdf70edecc21e17e303916c85fb1e58a145d0122d93b0",
+        "bytes": 869
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-recurrent-current--recurrent-current",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-recurrent-current-spec.json",
+        "sha256": "6d8d10005de1d6640ab39c2f74ad3ccdf3de936473cbd8ed1c97a62eb31102ec",
+        "bytes": 785
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-recurrent-current/recurrent-current-result.json",
+        "sha256": "4e9b4247aa0c34530474cdb90f19d05313e31962f25f3827af7a60437a93e845",
+        "bytes": 1029
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-recurrent-replay-poison--recurrent-replay-poison",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-recurrent-replay-poison-spec.json",
+        "sha256": "96e3964916e47d0b30b156cee3e395bfa0db93949c13d5955a9efada425bf717",
+        "bytes": 692
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-recurrent-replay-poison/recurrent-replay-poison-result.json",
+        "sha256": "1c212ae8947ff866877d7434e22d29a76416260abde3b4db2910ae95ccc69455",
+        "bytes": 949
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-replay-current--replay-current",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-replay-current-spec.json",
+        "sha256": "acc3f36298bc7ef258cc32475965cc5b40cd3c916de062a65ee72f2e5e20c906",
+        "bytes": 752
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-replay-current/replay-current-result.json",
+        "sha256": "48ba9691fd86a3503abf0485a3c4af857f6b59f0bfc50f4523f61e1244b329cb",
+        "bytes": 993
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-replay-poison--replay-poison",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-replay-poison-spec.json",
+        "sha256": "3bf21249b6dfc9f535ff6a23651ca2dff6f57e3042061dd10c887f0ce859904c",
+        "bytes": 655
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-replay-poison/replay-poison-result.json",
+        "sha256": "bc7fb0ee9c8941cb2fb2a26169b104b95f0101486eb33f6b48aede9f87636652",
+        "bytes": 902
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-static--black-global",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-static-spec.json",
+        "sha256": "94cba5a90dc855a3d09c682b7a83a3b9da2ce497aa8b70e12505222624b4a0a0",
+        "bytes": 841
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-static/black-global-result.json",
+        "sha256": "27970dd8ee766570067fde2b7c024dbde8a20dba38817f39b2297fe29b60fd27",
+        "bytes": 719
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-static--no-defaults",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-static-spec.json",
+        "sha256": "94cba5a90dc855a3d09c682b7a83a3b9da2ce497aa8b70e12505222624b4a0a0",
+        "bytes": 841
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-static/no-defaults-result.json",
+        "sha256": "36b1170ecda64a2e57347f2223aabdb41edf79a33dd976893db51ac787563d57",
+        "bytes": 777
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-static--ruff-global",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-static-spec.json",
+        "sha256": "94cba5a90dc855a3d09c682b7a83a3b9da2ce497aa8b70e12505222624b4a0a0",
+        "bytes": 841
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-static/ruff-global-result.json",
+        "sha256": "c9e8751af35646bb048f1ae59e40bc4fd95c074646bdb48a5af0e5ce3a5b2924",
+        "bytes": 660
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-types--owned-mypy",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-types-spec.json",
+        "sha256": "021b5241d386b89d14dbabcfd386dd4a8a897990cccd63f1c4985efe01d25e40",
+        "bytes": 1519
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-types/owned-mypy-result.json",
+        "sha256": "a1c5a819c45bce331f9089b7e97546391b371018e240cfb3dd9c57ab6fb64b58",
+        "bytes": 869
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r84-types--public-types",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r84-types-spec.json",
+        "sha256": "021b5241d386b89d14dbabcfd386dd4a8a897990cccd63f1c4985efe01d25e40",
+        "bytes": 1519
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r84-types/public-types-result.json",
+        "sha256": "577baabca7a3f9692a04e5b0711dfda91b3ca0b9389662b5424999c6a7e69a55",
+        "bytes": 1440
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-collection--collection",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-collection-spec.json",
+        "sha256": "bfa0bac939381d1d23dbc17596b93c18bcc1dc9cc106888517f43aab7e89d3e9",
+        "bytes": 778
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-collection/collection-result.json",
+        "sha256": "c42e204b41d8c9474e55dc77746e0dc7e2a28bfd76119080a97e563dd193eefa",
+        "bytes": 1010
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-independent-owner-sequential--owner-sequential",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-independent-owner-sequential-spec.json",
+        "sha256": "afbd69931444fac190966ffff0263c12aaad60e7cf903930c5b06ced07edc7e3",
+        "bytes": 620
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-independent-owner-sequential/owner-sequential-result.json",
+        "sha256": "d58aa2ccd1c5c297761e7840f26a6f090f01776ced9de4a5c996d7cd69fee254",
+        "bytes": 870
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-owner-first--owner-first",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-owner-first-spec.json",
+        "sha256": "5cceb82bda5c03189386d75b8a7f96c4d00fb354d170d9d3b4ae0e80b880dc18",
+        "bytes": 669
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-owner-first/owner-first-result.json",
+        "sha256": "7dea0d5282209c1d47994ea1b0ebe8f961243aae5a7149ee2f54b2c5caeaa2a2",
+        "bytes": 915
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-owner-sequential--owner-sequential",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-owner-sequential-spec.json",
+        "sha256": "78f373b325ec648250772a297dc6fe95a57c4f1721116f11bce2ae025f307d96",
+        "bytes": 608
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-owner-sequential/owner-sequential-result.json",
+        "sha256": "441a4913d7e56274f4199b64dc11e7e0a86a81d6caaafdfc19673ea64abd55ec",
+        "bytes": 858
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-recurrent-current--recurrent-current",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-recurrent-current-spec.json",
+        "sha256": "df0f0efcc3cbe050a444ca9e8f1eae0b7b57b152e7030f5f288345470d704636",
+        "bytes": 785
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-recurrent-current/recurrent-current-result.json",
+        "sha256": "8b1634fce765f51816120ec65550a8c1c7485f5bd4a7ccd82ffa5604a0887d4b",
+        "bytes": 1028
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-recurrent-replay-poison--recurrent-replay-poison",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-recurrent-replay-poison-spec.json",
+        "sha256": "e9ca0145c8c876c6275f294e1c8d15a7037d3175fc7c8a1d4005514bf09eb901",
+        "bytes": 692
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-recurrent-replay-poison/recurrent-replay-poison-result.json",
+        "sha256": "9c629c4b5e7d411553b46ef765ab5177567e0e7c6db6ffe0926a672b3f5d14c0",
+        "bytes": 949
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-replay-current--replay-current",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-replay-current-spec.json",
+        "sha256": "ba2a92e02aa0a0bd1eda4625cfc5a882b768c6838e150fb8c845fd573d58d1ff",
+        "bytes": 752
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-replay-current/replay-current-result.json",
+        "sha256": "edca43208da36e2656dbb21760a106c13f6e472a68f08c2c4ce7523aa618997d",
+        "bytes": 993
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-replay-poison--replay-poison",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-replay-poison-spec.json",
+        "sha256": "3c7e42c2212bdd0f4f91760d4688090a04d3e31840ce2412e60a51319b176e25",
+        "bytes": 655
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-replay-poison/replay-poison-result.json",
+        "sha256": "c7001895188a0da4825bb19b53326eec67f06d4e7f6888e497bd9331ed9ba7cc",
+        "bytes": 902
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-static--black-owned",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-static-spec.json",
+        "sha256": "5ced4d808dcdedded3dd5f44e66e864e2f9ce4263adf632873ddad8cc99d49e2",
+        "bytes": 674
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-static/black-owned-result.json",
+        "sha256": "2cd73e6262c96c71d266aa0afd958faf36a8dfad113a4de0dd11b93c4b28d7e8",
+        "bytes": 753
+      },
+      "command_and_log_and_candidate_match": true
+    },
+    {
+      "check": "wave35-r85-static--ruff-owned",
+      "spec": {
+        "root": "Q",
+        "path": "wave35-r85-static-spec.json",
+        "sha256": "5ced4d808dcdedded3dd5f44e66e864e2f9ce4263adf632873ddad8cc99d49e2",
+        "bytes": 674
+      },
+      "result": {
+        "root": "Q",
+        "path": "wave35-r85-static/ruff-owned-result.json",
+        "sha256": "803fba0d11f74185043f32d4651e5db82b836e27c89072ff70aed6c73e0bb3f3",
+        "bytes": 722
+      },
+      "command_and_log_and_candidate_match": true
+    }
+  ],
+  "child_bindings": [
+    {
+      "check": "wave35-r83-recurrent-replay-poison--recurrent-replay-poison",
+      "id": "recurrent_replay_poison",
+      "status": "EXECUTED",
+      "attempt_id": "wave35-r83-recurrent-replay-poison--recurrent-replay-poison",
+      "candidate_tree": "129e097964f7d272a09d6065751fddfb25e80df6",
+      "witness": {
+        "root": "Q",
+        "path": "wave35-r83-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+        "sha256": "306642c7134f045a208c97b340110c30a4e8f2de484966fee87ef9ac2e99fe72",
+        "bytes": 1564
+      },
+      "recorded_binding": {
+        "job": "recurrent-replay-poison",
+        "spec_sha256": "db8bc37049c3da57d19467576f9893bf0deebb1f212499fa370f9f1cb8795218",
+        "result_sha256": "a5c6371cb341456d4365efa836af08235051c9f9987ec29e8ae305142cb0e8a5",
+        "child_pid": 60791,
+        "parent_pid": 60759,
+        "child_ppid": 60759
+      },
+      "witness_attempt_id_unavailable_reason": "Actual child JSON has no literal attempt_id; local declaration maps exact recorded spec/result/job/PID/source linkage. No absent witness field invented."
+    },
+    {
+      "check": "wave35-r84-independent-recurrent-replay-poison--recurrent-replay-poison",
+      "id": "recurrent_replay_poison",
+      "status": "EXECUTED",
+      "attempt_id": "wave35-r84-independent-recurrent-replay-poison--recurrent-replay-poison",
+      "candidate_tree": "aa583c282043c445c2286b0b93df244cad9149c5",
+      "witness": {
+        "root": "Q",
+        "path": "wave35-r84-independent-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+        "sha256": "18f31aa7dc873f9fdb70475c6249c940a36952c6e08b4e3be83b205d8a6ade04",
+        "bytes": 1564
+      },
+      "recorded_binding": {
+        "job": "recurrent-replay-poison",
+        "spec_sha256": "4bf512637062412c72a18dc46b3d58b41a4b6795d797229a86f9bd4dac1b21bf",
+        "result_sha256": "9cf2fb1a43ce8ac66e372352fb9e4331c886a602a5c2ac7a53b5b8630cde165b",
+        "child_pid": 66590,
+        "parent_pid": 66511,
+        "child_ppid": 66511
+      },
+      "witness_attempt_id_unavailable_reason": "Actual child JSON has no literal attempt_id; local declaration maps exact recorded spec/result/job/PID/source linkage. No absent witness field invented."
+    },
+    {
+      "check": "wave35-r84-recurrent-replay-poison--recurrent-replay-poison",
+      "id": "recurrent_replay_poison",
+      "status": "EXECUTED",
+      "attempt_id": "wave35-r84-recurrent-replay-poison--recurrent-replay-poison",
+      "candidate_tree": "aa583c282043c445c2286b0b93df244cad9149c5",
+      "witness": {
+        "root": "Q",
+        "path": "wave35-r84-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+        "sha256": "dcaa2ff4f1aa534da05bfa4e593d1d95426381652fb77e40a29d357d44e6e88d",
+        "bytes": 1564
+      },
+      "recorded_binding": {
+        "job": "recurrent-replay-poison",
+        "spec_sha256": "96e3964916e47d0b30b156cee3e395bfa0db93949c13d5955a9efada425bf717",
+        "result_sha256": "1c212ae8947ff866877d7434e22d29a76416260abde3b4db2910ae95ccc69455",
+        "child_pid": 65662,
+        "parent_pid": 65605,
+        "child_ppid": 65605
+      },
+      "witness_attempt_id_unavailable_reason": "Actual child JSON has no literal attempt_id; local declaration maps exact recorded spec/result/job/PID/source linkage. No absent witness field invented."
+    },
+    {
+      "check": "wave35-r84-replay-poison--replay-poison",
+      "id": "replay_poison",
+      "status": "EXECUTED",
+      "attempt_id": "wave35-r84-replay-poison--replay-poison",
+      "candidate_tree": "aa583c282043c445c2286b0b93df244cad9149c5",
+      "witness": {
+        "root": "Q",
+        "path": "wave35-r84-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+        "sha256": "e0682d526d4c79f59fc542a7860c4e15f999c24a4bc66401e25f9a0763f51a6d",
+        "bytes": 1526
+      },
+      "recorded_binding": {
+        "job": "replay-poison",
+        "spec_sha256": "3bf21249b6dfc9f535ff6a23651ca2dff6f57e3042061dd10c887f0ce859904c",
+        "result_sha256": "bc7fb0ee9c8941cb2fb2a26169b104b95f0101486eb33f6b48aede9f87636652",
+        "child_pid": 65637,
+        "parent_pid": 65603,
+        "child_ppid": 65603
+      },
+      "witness_attempt_id_unavailable_reason": "Actual child JSON has no literal attempt_id; local declaration maps exact recorded spec/result/job/PID/source linkage. No absent witness field invented."
+    },
+    {
+      "check": "wave35-r85-recurrent-replay-poison--recurrent-replay-poison",
+      "id": "recurrent_replay_poison",
+      "status": "EXECUTED",
+      "attempt_id": "wave35-r85-recurrent-replay-poison--recurrent-replay-poison",
+      "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+      "witness": {
+        "root": "Q",
+        "path": "wave35-r85-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json",
+        "sha256": "6fae0baf5fbd1f7064809815ae3e579e4f0f432291e86e3060c0de8894e97841",
+        "bytes": 1564
+      },
+      "recorded_binding": {
+        "job": "recurrent-replay-poison",
+        "spec_sha256": "e9ca0145c8c876c6275f294e1c8d15a7037d3175fc7c8a1d4005514bf09eb901",
+        "result_sha256": "9c629c4b5e7d411553b46ef765ab5177567e0e7c6db6ffe0926a672b3f5d14c0",
+        "child_pid": 69160,
+        "parent_pid": 69045,
+        "child_ppid": 69045
+      },
+      "witness_attempt_id_unavailable_reason": "Actual child JSON has no literal attempt_id; local declaration maps exact recorded spec/result/job/PID/source linkage. No absent witness field invented."
+    },
+    {
+      "check": "wave35-r85-replay-poison--replay-poison",
+      "id": "replay_poison",
+      "status": "EXECUTED",
+      "attempt_id": "wave35-r85-replay-poison--replay-poison",
+      "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+      "witness": {
+        "root": "Q",
+        "path": "wave35-r85-replay-poison/replay-poison/replay-spawn-custody-replay_poison.json",
+        "sha256": "abdf5d3d78e6087ca08b533f59bca4a3b75bdac4d664dd7761ccec1565009ddf",
+        "bytes": 1526
+      },
+      "recorded_binding": {
+        "job": "replay-poison",
+        "spec_sha256": "3c7e42c2212bdd0f4f91760d4688090a04d3e31840ce2412e60a51319b176e25",
+        "result_sha256": "c7001895188a0da4825bb19b53326eec67f06d4e7f6888e497bd9331ed9ba7cc",
+        "child_pid": 69171,
+        "parent_pid": 69023,
+        "child_ppid": 69023
+      },
+      "witness_attempt_id_unavailable_reason": "Actual child JSON has no literal attempt_id; local declaration maps exact recorded spec/result/job/PID/source linkage. No absent witness field invented."
+    }
+  ],
+  "report_line_hash_scan": [
+    {
+      "review": "wave35-preparation/T18e-R0-REPLAY-FIX-B-FIXTURE1-REVIEW.md",
+      "line": "Measured the five admitted whole bodies before inspecting the changed regions: sequential1884, shared contract374, RNG domain371, retained test1098, new recurrent test640; total4367. All four retained hashes match the initial review. New test SHA256 `1044513adaab42b3d6caef624cd4b3e6d70298ed3096f5dfe3dd4de0f32ad5b0`; scoped diff SHA256 `870f2469b2dedc18825cfb92c0b1fe5e7fe8376c0c565b45fecd68ecd9cc900b`. The existing five-body packet and projected4921/hard5000 bounds remain intact. Prior complete source reads supply unchanged context; this pass inspected only the three changed regions and appended author report.",
+      "hash": "1044513adaab42b3d6caef624cd4b3e6d70298ed3096f5dfe3dd4de0f32ad5b0",
+      "retained_matching_paths": []
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-REPLAY-FIX-B-FIXTURE1-REVIEW.md",
+      "line": "Measured the five admitted whole bodies before inspecting the changed regions: sequential1884, shared contract374, RNG domain371, retained test1098, new recurrent test640; total4367. All four retained hashes match the initial review. New test SHA256 `1044513adaab42b3d6caef624cd4b3e6d70298ed3096f5dfe3dd4de0f32ad5b0`; scoped diff SHA256 `870f2469b2dedc18825cfb92c0b1fe5e7fe8376c0c565b45fecd68ecd9cc900b`. The existing five-body packet and projected4921/hard5000 bounds remain intact. Prior complete source reads supply unchanged context; this pass inspected only the three changed regions and appended author report.",
+      "hash": "870f2469b2dedc18825cfb92c0b1fe5e7fe8376c0c565b45fecd68ecd9cc900b",
+      "retained_matching_paths": [
+        "wave35-preparation/T18e-R0-REPLAY-FIX-B-FIXTURE1-REVIEW.diff"
+      ]
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-REPLAY-FIX-B-PRODUCTION1-REVIEW.md",
+      "line": "Pytest reported0.81s and3.31s respectively; harness elapsed includes process startup. Both harness results bind the exact R84 tree/base/manifest above and harness SHA256 `180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791`. Specs/results/logs remain in their named directories under `/workspace/bac-review-2026-11-01/qualification`. This reviewer did not invoke external verifiers or index operations; root performs the sequential post-run custody checks.",
+      "hash": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "retained_matching_paths": []
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-REPLAY-OWNER-CALLER-INDEPENDENT-REVIEW.md",
+      "line": "Root-supplied R85 tree `e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a`, manifest `9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246`, base `29d0204a`. I did not independently inspect Git or reconstruct that tree. Read repository AGENTS.md and the OWNER-CALLER BRIEF, PREFLIGHT, GRANT and REPORT, then reviewed the supplied REVIEW.diff against the current owner source and admitted production contracts.",
+      "hash": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246",
+      "retained_matching_paths": [
+        "wave35/r85-candidate.json"
+      ]
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-REPLAY-OWNER-CALLER-INDEPENDENT-REVIEW.md",
+      "line": "- Supplied REPORT: `487c800db33f0bc0f68236448dd7f9b9da35ce3e2d5d5ae9817fdd575be996a7`.",
+      "hash": "487c800db33f0bc0f68236448dd7f9b9da35ce3e2d5d5ae9817fdd575be996a7",
+      "retained_matching_paths": [
+        "wave35-preparation/T18e-R0-REPLAY-OWNER-CALLER-REPORT.md"
+      ]
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-RECURRENT-CHILD-VERIFIER-INDEPENDENT-REVIEW.md",
+      "line": "The producer was explicitly selected as `gpt-6-astra` medium; the root orchestrator explicitly selected this independent verifier as `gpt-6-sol` medium. Those are orchestration selections, not independently exposed runtime version identifiers. I reviewed the public `T18e-R0-REPLAY-FIX-B-CHILD-API.md` (SHA-256 `a5e327d4ca409f6c7c29e6ddf825f7201a053e3ed3b2c4d92cc95ba3c288c89e`), the author report (SHA-256 `384aa96310c7b9be7b323c590710b2b86258f939f06ecb422362f443a2ecd9f9`), and its scoped diff (SHA-256 `01bf31dabb3b9ef7dee4348a8533fc0821796ec3d708fd7a33fa9bc8fd7a5169`). `AGENTS.md` was read in the preceding bounded task. The only additional complete source bodies read in this review were the verifier and its synthetic tests; the previously retained checkpoint selector and tests were not rereviewed. No application or supplier body was read.",
+      "hash": "a5e327d4ca409f6c7c29e6ddf825f7201a053e3ed3b2c4d92cc95ba3c288c89e",
+      "retained_matching_paths": [
+        "wave35-preparation/T18e-R0-REPLAY-FIX-B-CHILD-API-V0-SNAPSHOT.md"
+      ]
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-RECURRENT-CHILD-VERIFIER-INDEPENDENT-REVIEW.md",
+      "line": "The producer was explicitly selected as `gpt-6-astra` medium; the root orchestrator explicitly selected this independent verifier as `gpt-6-sol` medium. Those are orchestration selections, not independently exposed runtime version identifiers. I reviewed the public `T18e-R0-REPLAY-FIX-B-CHILD-API.md` (SHA-256 `a5e327d4ca409f6c7c29e6ddf825f7201a053e3ed3b2c4d92cc95ba3c288c89e`), the author report (SHA-256 `384aa96310c7b9be7b323c590710b2b86258f939f06ecb422362f443a2ecd9f9`), and its scoped diff (SHA-256 `01bf31dabb3b9ef7dee4348a8533fc0821796ec3d708fd7a33fa9bc8fd7a5169`). `AGENTS.md` was read in the preceding bounded task. The only additional complete source bodies read in this review were the verifier and its synthetic tests; the previously retained checkpoint selector and tests were not rereviewed. No application or supplier body was read.",
+      "hash": "384aa96310c7b9be7b323c590710b2b86258f939f06ecb422362f443a2ecd9f9",
+      "retained_matching_paths": [
+        "wave35-preparation/T18e-R0-RECURRENT-CHILD-VERIFIER-REPORT.md"
+      ]
+    },
+    {
+      "review": "wave35-preparation/T18e-R0-RECURRENT-CHILD-VERIFIER-INDEPENDENT-REVIEW.md",
+      "line": "The producer was explicitly selected as `gpt-6-astra` medium; the root orchestrator explicitly selected this independent verifier as `gpt-6-sol` medium. Those are orchestration selections, not independently exposed runtime version identifiers. I reviewed the public `T18e-R0-REPLAY-FIX-B-CHILD-API.md` (SHA-256 `a5e327d4ca409f6c7c29e6ddf825f7201a053e3ed3b2c4d92cc95ba3c288c89e`), the author report (SHA-256 `384aa96310c7b9be7b323c590710b2b86258f939f06ecb422362f443a2ecd9f9`), and its scoped diff (SHA-256 `01bf31dabb3b9ef7dee4348a8533fc0821796ec3d708fd7a33fa9bc8fd7a5169`). `AGENTS.md` was read in the preceding bounded task. The only additional complete source bodies read in this review were the verifier and its synthetic tests; the previously retained checkpoint selector and tests were not rereviewed. No application or supplier body was read.",
+      "hash": "01bf31dabb3b9ef7dee4348a8533fc0821796ec3d708fd7a33fa9bc8fd7a5169",
+      "retained_matching_paths": [
+        "wave35-preparation/T18e-R0-RECURRENT-CHILD-VERIFIER-REVIEW.diff"
+      ]
+    }
+  ],
+  "limitations": [
+    "Receipt-bound file/spec hashes and raw result/log/manifest/child bindings reconciled as metadata only; no runtime/selector execution.",
+    "Generic verifier runtime selfhash absent; root must retain exact invocation/version provenance.",
+    "Final docs/source-delta closure pending; no fabricated terminal approval."
+  ],
+  "ordering_supplier": {
+    "root": "W",
+    "path": "evidence-management/wip16-r82-r85-descendant-inventory.json",
+    "sha256": "1ed073a78bf08272e861e217e75af94147c9b86e5c79d1d00b2a1f74bcac4e29",
+    "bytes": 50850
+  },
+  "contract": {
+    "root": "W",
+    "path": "evidence-management/wip16-draft/contract.json",
+    "sha256": "ac4e1abaef775cdf7b2b9e0d97dafef97a7c918a96178bd39fee56ef38b4e6f6",
+    "bytes": 3630
+  },
+  "terminal_input": {
+    "root": "W",
+    "path": "evidence-management/wip16-draft/terminal-input.json",
+    "sha256": "45f8f58feb8b0d41948416fc20e0bea37d16ee56a0bfd4a7d8c08aa794050dec",
+    "bytes": 280665
+  },
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip16-draft/qualification-subject.json",
+    "sha256": "eea42d756b1acfd8f0a65ee7d53b73df15d2aebcdb1964f6faf84fea54607444",
+    "bytes": 2053
+  }
+}

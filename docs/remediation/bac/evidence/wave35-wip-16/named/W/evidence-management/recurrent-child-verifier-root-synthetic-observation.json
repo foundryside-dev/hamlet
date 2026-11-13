@@ -1,0 +1,18 @@
+{
+  "schema": "bac-root-synthetic-observation-v1",
+  "scope": "Recurrent child verifier synthetic only, no application or genuine child execution",
+  "command": [
+    "python",
+    "-B",
+    "-m",
+    "unittest",
+    "test_replay_spawn_verifier.py"
+  ],
+  "exit_code": 0,
+  "tests": 36,
+  "reported_seconds": 0.148,
+  "provenance": "Transcribed actual exec a90c6c; no separately recorded raw log or absolute timestamps",
+  "source_sha256": "390c3a52837e88a716df15ff496967cb313f1fd63d892ca1eb0b4e48096e9146",
+  "tests_sha256": "40426b4c92459ba6861862568ccaabebc57ec23e9319ab47c87063e9b332ef71",
+  "independent_review_sha256": "bf3f3090f3f6322d96f70e2b6c511f8e0e346790c64b8e0de5567505192e4c2b"
+}

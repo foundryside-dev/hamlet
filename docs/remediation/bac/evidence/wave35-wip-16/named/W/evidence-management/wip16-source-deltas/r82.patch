@@ -1,0 +1,583 @@
+diff --git a/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py b/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..aa0ab5ecd09f2fe87c71f6dcc6f00f68ee00a1b7
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py
+@@ -0,0 +1,577 @@
++"""Recurrent DTO validity, real scratch sampling and publication controls.
++
++B1 malformed returned DTOs are intended causal RED on the frozen producer.
++Width/currentness, scratch preservation and staged publication are controls of
++existing behavior. Real sampling/storage/copying always precedes observations
++or selected fault injection; the parent process is never intentionally poisoned.
++"""
++
++from __future__ import annotations
++
++import copy
++import hashlib
++import importlib
++import json
++import multiprocessing
++import os
++import pickle
++import random
++from pathlib import Path
++from typing import Any
++
++import numpy as np
++import pytest
++import test_replay_rng_custody as retained
++import test_world_rng_bootstrap as bootstrap
++import torch
++
++from townlet.exploration.rng_custody import RNGOperation, process_rng_domain
++from townlet.training import sequential_replay_buffer as recurrent
++from townlet.training.replay_contract import PreparedReplay
++from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
++
++_CPU = torch.device("cpu")
++_SUCCESSIVE = "successive_without_replacement"
++_INDEPENDENT = "independent_with_replacement"
++_FAMILIES = ("PCG64", "PCG64DXSM", "MT19937", "Philox", "SFC64")
++_same = retained._assert_same_transport
++_ambient = retained._ambient_cpu_state
++
++
++@pytest.fixture(autouse=True)
++def _restore_ambient() -> Any:
++    before = _ambient()
++    try:
++        yield
++    finally:
++        random.setstate(before[0])
++        np.random.set_state(before[1])
++        torch.set_rng_state(before[2])
++
++
++class _ObservedReplay(SequentialReplayBuffer):
++    """Observe actual issuer material; fail only a selected live assignment."""
++
++    _retained_material: Any
++
++    def _issue_replay(self, payload: object, lease: RNGOperation) -> PreparedReplay:
++        self._retained_material = payload
++        return super()._issue_replay(payload, lease)
++
++    def __setattr__(self, name: str, value: Any) -> None:
++        if name == "_configured" and getattr(self, "_fail_publication", False):
++            raise RuntimeError("recurrent assignment fault after episodes publication")
++        super().__setattr__(name, value)
++
++
++def _store(owner: SequentialReplayBuffer, *, width: int, offset: float) -> None:
++    episode = retained._episode()
++    for name in ("observations", "next_observations"):
++        episode[name] = episode[name].repeat(1, width) + offset
++    episode["rewards"] = episode["rewards"] + offset
++    if owner._configured:
++        owner.store_captured_episode(
++            episode,
++            next_action_masks=torch.ones((3, 2), dtype=torch.bool),
++            legality_recorded=torch.ones(3, dtype=torch.bool),
++        )
++    else:
++        owner.store_episode(episode)
++
++
++def _priority_owner(family: str, mode: str) -> _ObservedReplay:
++    owner = _ObservedReplay.for_prioritized_replay(
++        8,
++        _CPU,
++        options=retained._options().model_copy(update={"sampling_mode": mode}),
++        action_dim=2,
++        legality_mode="captured",
++        alpha=0.6,
++        beta=0.4,
++        beta_annealing=False,
++        beta_vector_tick_horizon=100,
++        current_vector_tick=0,
++        rng=np.random.Generator(getattr(np.random, family)(911)),
++        origin="authored",
++    )
++    assert isinstance(owner, _ObservedReplay)
++    _store(owner, width=1, offset=0.0)
++    return owner
++
++
++def _owner(profile: str) -> _ObservedReplay:
++    if profile == "priority":
++        return _priority_owner("PCG64", _SUCCESSIVE)
++    if profile == "uniform":
++        owner = _ObservedReplay.for_replay(8, _CPU, options=retained._options(), action_dim=2, legality_mode="captured")
++        assert isinstance(owner, _ObservedReplay)
++    else:
++        assert profile in ("legacy", "inspection")
++        owner = _ObservedReplay(8, _CPU)
++    _store(owner, width=1, offset=0.0)
++    if profile == "inspection":
++        owner.load_from_serialized(owner.serialize(), lineage=None)
++        assert len(owner.historical_archives) == 1
++        _store(owner, width=1, offset=10.0)
++    return owner
++
++
++def _request(mode: str) -> Any:
++    return recurrent.ReplayRequest(1, 2, 1, mode, "fixed_full", "window_mean")
++
++
++def _live(owner: SequentialReplayBuffer) -> dict[str, Any]:
++    """Complete data state, including physical rows absent from archival transport.
++
++    Revision/currency may change conservatively during a refused operation;
++    neither is replay data, so they are intentionally outside this comparison.
++    """
++    return {
++        "transport": owner.serialize(),
++        "episodes": copy.deepcopy(list(owner.episodes)),
++        "capacity": owner.capacity,
++        "device": owner.device,
++        "count": owner.num_transitions,
++        "configured": owner._configured,
++        "action_dim": owner.action_dim,
++        "legality_mode": owner.legality_mode,
++        "options": None if owner.replay_options is None else owner.replay_options.model_dump(),
++        "next_episode_id": owner.next_episode_id,
++        "next_transition_id": owner.next_transition_id,
++        "healthy": owner._replay_healthy,
++    }
++
++
++def _incoming(owner: SequentialReplayBuffer) -> dict[str, Any]:
++    saved = owner.serialize()
++    for episode in saved["episodes"]:
++        for name in ("observations", "next_observations", "rewards"):
++            episode[name].add_(40.0)
++    return saved
++
++
++@pytest.mark.parametrize("profile", ["uniform", "priority", "inspection"])
++def test_recurrent_validated_width_rechecks_current_destination(profile: str) -> None:
++    """Already-correct guard: stale target geometry cannot gain fresh authority."""
++    owner = _owner(profile)
++    saved = owner.serialize()
++    validated = owner.validate_serialized(saved, expected_obs_dim=1)
++    owner.clear()
++    if profile == "inspection":
++        # The preserved archive independently fixes width1: use its real refusal.
++        before = _live(owner)
++        with pytest.raises(ValueError, match="[Ww]idth|obs_dim"):
++            owner.prepare_serialized(saved, expected_obs_dim=2, lineage=None)
++        _same(before, _live(owner))
++        fresh = owner.materialize_validated(validated, lineage=None)
++        owner.load_prepared(fresh, lineage=None)
++        _same(saved, owner.serialize())
++        return
++    _store(owner, width=2, offset=20.0)
++    before = _live(owner)
++    with pytest.raises(ValueError, match="[Ww]idth|obs_dim"):
++        owner.prepare_serialized(saved, expected_obs_dim=2, lineage=None)
++    _same(before, _live(owner))
++    with pytest.raises(ValueError, match="[Ww]idth|obs_dim"):
++        owner.materialize_validated(validated, lineage=None)
++    _same(before, _live(owner))
++
++
++@pytest.mark.parametrize("profile", ["uniform", "priority"])
++@pytest.mark.parametrize("damage", ["nonfinite", "successor", "transition-id", "fragment-offset", "extra-row-key"])
++def test_recurrent_mutated_captured_dto_cannot_gain_authority(profile: str, damage: str) -> None:
++    """B1 intended RED: owning mutable bytes must not substitute for validation."""
++    owner = _owner(profile)
++    validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
++    episode = validated.episodes[0]
++    if damage == "nonfinite":
++        episode["rewards"][0] = float("nan")
++    elif damage == "successor":
++        episode["next_action_masks"][0].fill_(False)
++    elif damage == "transition-id":
++        episode["transition_ids"][0] = -1
++    elif damage == "fragment-offset":
++        episode["start_offset"] = -1
++    else:
++        episode["unexpected"] = 1
++    before = _live(owner)
++    with pytest.raises(ValueError):
++        owner.materialize_validated(validated, lineage=None)
++    _same(before, _live(owner))
++
++
++def test_recurrent_mutated_priority_dto_provenance_cannot_gain_authority() -> None:
++    """B1 intended RED: nested mutable priority metadata needs full revalidation."""
++    owner = _owner("priority")
++    owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
++    assert validated.priority is not None
++    validated.priority.initialization["kind"] = "unrecorded-provenance"
++    before = _live(owner)
++    with pytest.raises(ValueError):
++        owner.materialize_validated(validated, lineage=None)
++    _same(before, _live(owner))
++
++
++def test_recurrent_mutated_inspection_dto_cannot_gain_authority() -> None:
++    """B1 intended RED: inspection's mutable active transport must stay valid."""
++    owner = _owner("inspection")
++    validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
++    validated.episodes[0]["observations"][0] = float("nan")
++    before = _live(owner)
++    with pytest.raises(ValueError):
++        owner.materialize_validated(validated, lineage=None)
++    _same(before, _live(owner))
++
++
++def test_recurrent_legacy_selected_original_state_is_revalidated() -> None:
++    """Existing archive guard validates selected original_state, not unused rows."""
++    owner = _owner("legacy")
++    validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)
++    validated.original_state["episodes"][0]["rewards"][0] = float("nan")
++    before = _live(owner)
++    with pytest.raises(ValueError):
++        owner.materialize_validated(validated, lineage=None)
++    _same(before, _live(owner))
++
++
++@pytest.mark.parametrize("profile", ["uniform", "priority", "inspection", "legacy"])
++def test_recurrent_valid_dto_preserves_selected_restore_capability(profile: str) -> None:
++    owner = _owner(profile)
++    if profile == "priority":
++        owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    saved = owner.serialize()
++    validated = owner.validate_serialized(saved, expected_obs_dim=1)
++    candidate = owner.materialize_validated(validated, lineage=None)
++    owner.load_prepared(candidate, lineage=None)
++    if profile == "legacy":
++        assert owner.num_transitions == 0
++        assert len(owner.historical_archives) == 1
++        _same(saved, owner.historical_archives[0].original_state)
++    else:
++        _same(saved, owner.serialize())
++        if profile != "inspection":
++            assert owner.sample_batch(_request(_SUCCESSIVE), lineage=None).observations.shape == (1, 2, 1)
++
++
++@pytest.mark.parametrize("profile", ["uniform", "priority"])
++def test_recurrent_same_outer_lineage_can_prepare_and_install(profile: str) -> None:
++    owner = _owner(profile)
++    peer, participant = retained._peer()
++    incoming = _incoming(owner)
++    with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None) as lease:
++        candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=lease)
++        owner.load_prepared(candidate, lineage=lease)
++        _same(incoming, owner.serialize())
++    assert peer is not None
++
++
++@pytest.mark.parametrize("profile", ["uniform", "priority"])
++@pytest.mark.parametrize("interference", ["sibling-sample", "owner-storage"])
++def test_recurrent_nested_preparation_refuses_intervening_work(profile: str, interference: str) -> None:
++    owner, sibling = _owner(profile), _owner("uniform")
++    peer, participant = retained._peer()
++    with process_rng_domain().operation(participant=participant, operation_kind="hold", lineage=None) as lease:
++        candidate = owner.prepare_serialized(_incoming(owner), expected_obs_dim=1, lineage=lease)
++        if interference == "sibling-sample":
++            ambient = _ambient()
++            assert sibling.sample_batch(_request(_SUCCESSIVE), lineage=lease).observations.shape == (1, 2, 1)
++            assert random.getstate() != ambient[0]
++        else:
++            _store(owner, width=1, offset=20.0)
++        before = _live(owner)
++        with pytest.raises(ValueError, match="[Pp]repar|[Dd]estination|[Ss]tale|[Cc]urrency"):
++            owner.load_prepared(candidate, lineage=lease)
++        _same(before, _live(owner))
++    assert peer is not None
++
++
++def _add_archive(owner: SequentialReplayBuffer) -> None:
++    source = _owner("legacy")
++    owner.load_from_serialized(source.serialize(), lineage=None)
++    assert len(owner.historical_archives) == 1
++    _store(owner, width=1, offset=10.0)
++
++
++@pytest.mark.parametrize("stage", ["episode-copy", "archive-merge", "policy-copy", "priority-copy"])
++def test_recurrent_staging_fault_preserves_live_state_and_healthy_use(stage: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    owner = _owner("priority")
++    if stage == "archive-merge":
++        _add_archive(owner)
++    owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    incoming = _incoming(owner)
++    candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
++    material = owner._retained_material
++    before = _live(owner)
++    staged: list[Any] = []
++    original_fragment, original_merge = owner._own_fragment, owner._merge_archives
++    original_priority = owner._restore_priority
++    policy_type = type(material.replay_options)
++    original_policy = policy_type.model_copy
++
++    def fragment_then_fail(episode: Any, *, device: torch.device) -> Any:
++        owned = original_fragment(episode, device=device)
++        if episode is material.episodes[0]:
++            assert owned is not episode
++            _same(owned, episode)
++            staged.append(owned)
++            raise RuntimeError("recurrent staged episode-copy fault")
++        return owned
++
++    def merge_then_fail(archives: Any, *, expected_obs_dim: int | None) -> Any:
++        owned = original_merge(archives, expected_obs_dim=expected_obs_dim)
++        assert len(owned) == 1
++        _same(owned[0].original_state, archives[0].original_state)
++        staged.append(owned)
++        raise RuntimeError("recurrent staged archive-merge fault")
++
++    def policy_then_fail(policy: Any, *args: Any, **kwargs: Any) -> Any:
++        owned = original_policy(policy, *args, **kwargs)
++        if policy is material.replay_options:
++            assert owned is not policy
++            _same(owned.model_dump(), policy.model_dump())
++            staged.append(owned)
++            raise RuntimeError("recurrent staged policy-copy fault")
++        return owned
++
++    def priority_then_fail(priority: Any) -> Any:
++        owned = original_priority(priority)
++        assert owned.rng is not priority.rng
++        _same(owner._encode_rng(owned.rng), owner._encode_rng(priority.rng))
++        assert all(new.priorities is not old.priorities for new, old in zip(owned.domains, priority.domains, strict=True))
++        staged.append(owned)
++        raise RuntimeError("recurrent staged priority-copy fault")
++
++    with monkeypatch.context() as fault:
++        if stage == "episode-copy":
++            fault.setattr(owner, "_own_fragment", fragment_then_fail)
++        elif stage == "archive-merge":
++            fault.setattr(owner, "_merge_archives", merge_then_fail)
++        elif stage == "policy-copy":
++            fault.setattr(policy_type, "model_copy", policy_then_fail)
++        else:
++            fault.setattr(owner, "_restore_priority", priority_then_fail)
++        with pytest.raises(RuntimeError, match=f"recurrent staged {stage} fault"):
++            owner.load_prepared(candidate, lineage=None)
++    assert len(staged) == 1, "failure must follow the actual selected staging operation"
++    _same(before, _live(owner))
++    fresh = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
++    owner.load_prepared(fresh, lineage=None)
++    _same(incoming, owner.serialize())
++    assert owner.sample_batch(_request(_SUCCESSIVE), lineage=None).observations.shape == (1, 2, 1)
++
++
++def test_recurrent_partial_publication_quarantines_all_managed_routes() -> None:
++    owner = _owner("priority")
++    source = _owner("priority")
++    _store(source, width=1, offset=40.0)
++    incoming = source.serialize()
++    before = _live(owner)
++    candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
++    owner._fail_publication = True
++    with pytest.raises(RuntimeError, match="assignment fault after episodes publication"):
++        owner.load_prepared(candidate, lineage=None)
++    assert owner.num_transitions == 6 and before["count"] == 3
++    _same(list(owner.episodes), incoming["episodes"])
++    assert owner.next_episode_id == before["next_episode_id"] == 1
++    assert incoming["next_episode_id"] == 2
++    for operation in (
++        lambda: owner.sample_batch(_request(_SUCCESSIVE), lineage=None),
++        lambda: owner.sample_sequences(1, 2, lineage=None),
++        lambda: owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None),
++        lambda: owner.load_prepared(candidate, lineage=None),
++        owner.clear,
++        owner.serialize,
++    ):
++        with pytest.raises(RuntimeError, match="quarantined after uncertain publication"):
++            operation()
++
++
++@pytest.mark.parametrize("profile", ["uniform", "priority"])
++def test_recurrent_install_owns_input_and_retained_candidate_material(profile: str) -> None:
++    owner = _owner(profile)
++    if profile == "priority":
++        owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    incoming = _incoming(owner)
++    expected = copy.deepcopy(incoming)
++    candidate = owner.prepare_serialized(incoming, expected_obs_dim=1, lineage=None)
++    material = owner._retained_material
++    incoming["episodes"][0]["observations"].fill_(900.0)
++    incoming["replay_options"]["sequence_objective"] = "anchor_transition"
++    owner.load_prepared(candidate, lineage=None)
++    _same(expected, owner.serialize())
++    installed = _live(owner)
++    material.episodes[0]["observations"].fill_(800.0)
++    material.episodes[0]["transition_ids"].fill_(-1)
++    material.episodes[0]["start_offset"] = -1
++    material.replay_options.sequence_objective = "anchor_transition"
++    if material.priority is not None:
++        material.priority.rng.random()
++        material.priority.initialization["kind"] = "changed"
++        material.priority.domains[0].priorities.setflags(write=True)
++        material.priority.domains[0].priorities.fill(70.0)
++    _same(installed, _live(owner))
++
++
++def _scratch_work(owner: _ObservedReplay, batch: Any, work: str) -> None:
++    if work == "priority-update":
++        owner.update_priorities(batch.unit_ids, torch.full((1, 2), 7.0), loss_mask=batch.loss_mask)
++        assert owner.serialize()["priority_state"]["max_priority"] == 7.0 + 1e-6
++    else:
++        assert work == "store-refresh"
++        before = owner.num_transitions
++        _store(owner, width=1, offset=20.0)
++        assert owner.num_transitions == before + 3
++
++
++def _observe_scratch(owner: _ObservedReplay, batch: Any, work: str) -> None:
++    """A transparent seam observes the real selected sampler and scratch draw."""
++    ambient = _ambient()
++    before = owner.serialize()["priority_state"]["rng"]
++    assert owner._priority is not None
++    persistent = owner._priority.rng
++    original = recurrent.per_sampling.sample_units
++    observations: list[tuple[Any, Any]] = []
++
++    def observed(priorities: Any, *, alpha: float, beta: float, batch_size: int, mode: str, rng: Any) -> Any:
++        assert rng is not persistent and beta == 0.0 and batch_size == 1
++        initial = copy.deepcopy(rng.bit_generator.state)
++        receipt = original(priorities, alpha=alpha, beta=beta, batch_size=batch_size, mode=mode, rng=rng)
++        final = copy.deepcopy(rng.bit_generator.state)
++        assert pickle.dumps(initial) != pickle.dumps(final), "real support sampling must advance the disposable engine"
++        assert receipt.indices.shape == (1,)
++        observations.append((initial, final))
++        return receipt
++
++    with pytest.MonkeyPatch.context() as observe:
++        observe.setattr(recurrent.per_sampling, "sample_units", observed)
++        _scratch_work(owner, batch, work)
++    assert observations, "actual support sampling was not reached"
++    assert owner._priority.rng is persistent
++    _same(before, owner.serialize()["priority_state"]["rng"])
++    _same(ambient, _ambient())
++
++
++@pytest.mark.parametrize("family", _FAMILIES)
++@pytest.mark.parametrize("mode", [_SUCCESSIVE, _INDEPENDENT], ids=["successive", "independent"])
++@pytest.mark.parametrize("work", ["priority-update", "store-refresh"])
++def test_recurrent_support_draw_preserves_ambient_and_persistent_stream(family: str, mode: str, work: str) -> None:
++    """Deleting support or advancing persistent/ambient RNG must break this control."""
++    owner = _priority_owner(family, mode)
++    control = _priority_owner(family, mode)
++    batch = owner.sample_batch(_request(mode), lineage=None)
++    comparison = control.sample_batch(_request(mode), lineage=None)
++    retained._assert_same_selected_batch(batch, comparison)
++    _observe_scratch(owner, batch, work)
++    # Equivalent real work retains exact persistent continuation, independently
++    # of the observation wrapper; compare next real selections and complete RNG.
++    _scratch_work(control, comparison, work)
++    first = owner.sample_batch(_request(mode), lineage=None)
++    second = control.sample_batch(_request(mode), lineage=None)
++    retained._assert_same_selected_batch(first, second)
++    _same(owner.serialize()["priority_state"]["rng"], control.serialize()["priority_state"]["rng"])
++
++
++_CHILD_ROLE = "recurrent_replay_poison"
++_CHILD_MESSAGE = "recurrent replay scratch poison fail closed"
++_CHILD_IMPORTS = (
++    "townlet.training.sequential_replay_buffer",
++    "townlet.training.replay_contract",
++    "townlet.exploration.rng_custody",
++    "test_recurrent_replay_rng_custody",
++    "test_replay_rng_custody",
++)
++
++
++def _scratch_poison_child(queue: Any) -> None:
++    qualified = bootstrap._child_identity(_CHILD_ROLE)
++    if qualified:
++        path = Path(os.environ["BAC_QUAL_OUTPUT"]) / f"spawn-identity-{_CHILD_ROLE}.json"
++        identity = json.loads(path.read_text())
++        identity["ppid"] = os.getppid()
++        imports = {}
++        for name in _CHILD_IMPORTS:
++            location = importlib.import_module(name).__file__
++            assert location is not None
++            imports[name] = str(Path(location).resolve())
++        identity["replay_imports"] = imports
++        path.write_text(json.dumps(identity, sort_keys=True))
++    owner = _owner("priority")
++    batch = owner.sample_batch(_request(_SUCCESSIVE), lineage=None)
++    saved = owner.serialize()
++    ambient = _ambient()
++    domain = process_rng_domain()
++    with domain.operation(participant=owner.rng_participant, operation_kind="prepare", lineage=None) as lease:
++        candidate = owner.prepare_serialized(saved, expected_obs_dim=1, lineage=lease)
++        domain.poison(operation=lease, error=RuntimeError("recurrent scratch poison control"))
++    for work in ("priority-update", "store-refresh"):
++        _observe_scratch(owner, batch, work)
++        before = _live(owner)
++        for operation in (
++            lambda: owner.sample_batch(_request(_SUCCESSIVE), lineage=None),
++            lambda: owner.sample_sequences(1, 2, lineage=None),
++            lambda: owner.prepare_serialized(saved, expected_obs_dim=1, lineage=None),
++            lambda: owner.load_prepared(candidate, lineage=None),
++        ):
++            with pytest.raises(RuntimeError, match="Ambient RNG domain is poisoned after failed restoration"):
++                operation()
++            _same(before, _live(owner))
++    owner.clear()
++    cleared = _live(owner)
++    assert owner.num_transitions == 0 and domain.status()[2]
++    for operation in (
++        lambda: owner.sample_batch(_request(_SUCCESSIVE), lineage=None),
++        lambda: owner.prepare_serialized(saved, expected_obs_dim=1, lineage=None),
++        lambda: owner.load_prepared(candidate, lineage=None),
++    ):
++        with pytest.raises(RuntimeError, match="Ambient RNG domain is poisoned after failed restoration"):
++            operation()
++        _same(cleared, _live(owner))
++    _same(ambient, _ambient())
++    queue.put((_CHILD_MESSAGE, os.getpid(), os.getppid(), qualified))
++
++
++def test_isolated_recurrent_scratch_work_cannot_heal_common_poison() -> None:
++    """Only a fresh actual child is poisoned; root qualifies its identity record."""
++    qualified = bootstrap._qualification_active()
++    parent_pid = os.getpid()
++    ambient = _ambient()
++    context = multiprocessing.get_context("spawn")
++    queue = context.Queue()
++    process = context.Process(target=_scratch_poison_child, args=(queue,), name=_CHILD_ROLE)
++    started = False
++    try:
++        process.start()
++        started = True
++        process.join(90)
++        assert not process.is_alive() and process.exitcode == 0
++        message, queued_pid, child_ppid, child_qualified = queue.get(timeout=5)
++        assert message == _CHILD_MESSAGE
++        assert queued_pid == process.pid and child_ppid == parent_pid
++        assert child_qualified is qualified
++        if qualified:
++            observation = {
++                "process_pid": process.pid,
++                "queued_pid": queued_pid,
++                "exitcode": process.exitcode,
++                "qualified": qualified,
++                "message": message,
++                "manifest_sha256": hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++                "parent_pid": parent_pid,
++            }
++            destination = Path(os.environ["BAC_QUAL_OUTPUT"]) / f"spawn-observation-{_CHILD_ROLE}.json"
++            with destination.open("x") as output:
++                json.dump(observation, output, sort_keys=True)
++    finally:
++        if started and process.is_alive():
++            process.terminate()
++            process.join(10)
++        survived = started and process.is_alive()
++        queue.close()
++        queue.join_thread()
++        if not survived:
++            process.close()
++        if survived:
++            raise AssertionError("recurrent replay child survived bounded cleanup")
++    assert not process_rng_domain().status()[2]
++    _same(ambient, _ambient())

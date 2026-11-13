@@ -1,6 +1,28 @@
 # BAC implementation status
 
-## 2026-11-13 — bounded replay repair A qualified at R81
+## 2026-11-13 — sequential owner caller repair qualified at R85
+
+The older sequential owner tests now declare standalone lineage explicitly at 21 call sites. The masking test patches the sampler actually used and checks a concrete terminal followed by masked rows; its existing assertions remain intact. Production replay and both replay regression modules are unchanged from R84.
+
+At candidate `e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a`, base `29d0204a70b6eef0017b3cee638812e2cc5c7899`, all 49 owner cases and 109 replay regression cases passed: 158 distinct cases. The first repaired node was also run separately and overlaps the owner suite. Astra independently passed the same 49 owner cases, with no source/specification/quality findings (review SHA256 `02651be5184464c84335549971a4e4752d4de5f582fcd43e1a073618d8883998`). Source/process and both actual replay child identities were verified. The changed test passes Ruff and Black; the global static results below remain evidence from R84, not new R85 commands.
+
+This closes the R84 owner49 caller prerequisite. Its original failure remains recorded below; the repair is no longer pending. CUDA capability/lifecycle/completion and real hardware, remaining BANK/ENV/POP/native caller integration, broader gates and final fresh programme reviews remain required. Accounting stays 28 qualified, 38 remaining, 66 total. See the [evidence index](EVIDENCE-INDEX.md) for the actual durable checkpoint and CI status.
+
+## Historical source checkpoint — 2026-11-13 bounded CPU replay repair B at R84
+
+Recurrent materialization now owns the selected validation DTO content and reruns the complete validator against the current destination before issuing authority. Captured6/7, active inspection, archival5 and captured6-to-prioritized adaptation remain supported. Support checks still perform real disposable-generator draws; ambient and persistent RNG streams remain unchanged. Existing width refusal is preserved behavior, not a new repair.
+
+At candidate `aa583c282043c445c2286b0b93df244cad9149c5`, base `29d0204a70b6eef0017b3cee638812e2cc5c7899`, root passed 109 replay cases: 54 retained and 55 recurrent, including their isolated CPU children. Independent execution passed the same 55 recurrent cases; these overlap root's selection. Source/process and actual-child custody were verified. Global Ruff, Black and defaults checks, owned-four types and public prepared-result type checks passed. Independent specification/quality/API and bounded CPU review approves this component (review SHA256 `e7f29a3a4ed3dd046f8ed8b6d3fc6a21c8ea5420892a6afd4ce3c3d659cc9dca`).
+
+The following owner-gate failure is the historical R84 outcome, superseded by the R85 repair above.
+
+The separate owner49 gate stopped after 1 PASS and 1 missing-lineage FAIL; 47 cases were UNRUN. Its required test-only caller repair is in progress, so neither owner49 nor the package is qualified by the replay result. CUDA capability/lifecycle/completion and hardware evidence, remaining callers and native integration, broader suites and final programme gates remain open. Accounting stays 28 qualified, 38 remaining, 66 total.
+
+See the [recurrent contract](CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md), [shared and flat/PER contract](CURRENT-REPLAY-CUSTODY-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md). R84 supersedes the R81 pending recurrent-B and recurrent defaults/formatting statements below. Earlier candidate/CI records remain historical; R84 supplies no new remote/CI or CUDA pass.
+
+## Historical checkpoint — 2026-11-13 replay repair A at R81
+
+The following R81/WIP15 entry is preserved as its source-specific record. Its pending recurrent-B and recurrent style/defaults statements are superseded by the R84 entry above; its original evidence and remaining programme boundaries are retained.
 
 Replay repair A now revalidates owned flat/PER mutable validation DTOs against the current destination before issuing authority. Shared prepared handles contain only identity; revision, token and material stay with the issuer. Typed guards preserve required lineage and expose `PreparedReplay` results. Independent SPEC/QUALITY approval covers this finite CPU slice.
 

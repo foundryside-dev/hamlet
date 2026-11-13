@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_mutated_captured_dto_cannot_gain_authority[transition-id-uniform]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "profile = 'uniform', damage = 'transition-id'\n\n    @pytest.mark.parametrize(\"profile\", [\"uniform\", \"priority\"])\n    @pytest.mark.parametrize(\"damage\", [\"nonfinite\", \"successor\", \"transition-id\", \"fragment-offset\", \"extra-row-key\"])\n    def test_recurrent_mutated_captured_dto_cannot_gain_authority(profile: str, damage: str) -> None:\n        \"\"\"B1 intended RED: owning mutable bytes must not substitute for validation.\"\"\"\n        owner = _owner(profile)\n        validated = owner.validate_serialized(owner.serialize(), expected_obs_dim=1)\n        episode = validated.episodes[0]\n        if damage == \"nonfinite\":\n            episode[\"rewards\"][0] = float(\"nan\")\n        elif damage == \"successor\":\n            episode[\"next_action_masks\"][0].fill_(False)\n        elif damage == \"transition-id\":\n            episode[\"transition_ids\"][0] = -1\n        elif damage == \"fragment-offset\":\n            episode[\"start_offset\"] = -1\n        else:\n            episode[\"unexpected\"] = 1\n        before = _live(owner)\n>       with pytest.raises(ValueError):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py:198: Failed",
+  "candidate_tree": "690c51f8a89653b9bdcf4b52c002b3fe73c7f27c"
+}

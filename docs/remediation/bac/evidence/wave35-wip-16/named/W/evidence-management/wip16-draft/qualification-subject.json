@@ -1,0 +1,49 @@
+{
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "status": "DRAFT PROPOSAL; NOT FROZEN FOR TERMINAL REVIEW",
+  "contract": {
+    "root": "W",
+    "path": "evidence-management/wip16-draft/contract.json",
+    "sha256": "ac4e1abaef775cdf7b2b9e0d97dafef97a7c918a96178bd39fee56ef38b4e6f6",
+    "bytes": 3630
+  },
+  "checkpoint_id": "wave35-wip-16",
+  "series": "wave35",
+  "interval": [
+    82,
+    85
+  ],
+  "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r85-candidate.json",
+    "sha256": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246",
+    "bytes": 206987
+  },
+  "execution_subtrees": {
+    "src": "4db5626a407ddfccd29ce2fde2d9a8f147f02070",
+    "tests": "738f692968a8f277590b08821a70d97bb728f904",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip16-draft/terminal-input.json",
+    "sha256": "45f8f58feb8b0d41948416fc20e0bea37d16ee56a0bfd4a7d8c08aa794050dec",
+    "bytes": 280665
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Bounded recurrent replay B1/B3/B4 and current explicit-lineage owner caller/fixture repair; R85 root158 unique cases, independent owner49 overlapping. No CUDA/external integration/package/programme closure.",
+  "required_next": [
+    "B6 CUDA capability/lifecycle/completion and real hardware",
+    "External BANK/ENV/POP/native/runner current caller migration and integration",
+    "Global types, full/default repository, coverage, slow, learning, final CI and fresh programme review"
+  ],
+  "review_task": "Independent terminal evidence review after root completes pending source archive/doc closure and freezes actual subject; component approval alone is insufficient."
+}

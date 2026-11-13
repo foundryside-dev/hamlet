@@ -1,0 +1,25 @@
+{
+  "name": "recurrent-replay-poison",
+  "exit_code": 0,
+  "seconds": 7.419265508651733,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison.log",
+  "sha256": "f5da4eceee340ca2a8735419b199db2fae46868654f56647ae1fdb05f1efcdc6",
+  "candidate_tree": "129e097964f7d272a09d6065751fddfb25e80df6",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "manifest_sha256": "8a7642a110098b0a8cf90fc999b1597c72f0aefb2b178d0f652b844d43de4ecf",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

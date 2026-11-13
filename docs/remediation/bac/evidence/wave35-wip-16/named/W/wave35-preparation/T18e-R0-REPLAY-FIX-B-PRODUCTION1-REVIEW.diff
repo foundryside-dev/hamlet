@@ -1,0 +1,155 @@
+diff --git a/src/townlet/training/sequential_replay_buffer.py b/src/townlet/training/sequential_replay_buffer.py
+index e0e0f79d47256a382865b6b1726296cbf4727bd6..1bc93cc6e8d67a683024ee474ccd9c3ecd6f868d 100644
+--- a/src/townlet/training/sequential_replay_buffer.py
++++ b/src/townlet/training/sequential_replay_buffer.py
+@@ -415,9 +415,7 @@ class SequentialReplayBuffer(ReplayCustody):
+             self.num_transitions -= len(oldest_episode["observations"])
+ 
+     @replay_sample
+-    def sample_sequences(
+-        self, batch_size: int, seq_len: int, *, lineage: RNGOperation | None
+-    ) -> dict[str, torch.Tensor]:
++    def sample_sequences(self, batch_size: int, seq_len: int, *, lineage: RNGOperation | None) -> dict[str, torch.Tensor]:
+         """
+         Sample a batch of sequential transitions.
+ 
+@@ -698,6 +696,56 @@ class SequentialReplayBuffer(ReplayCustody):
+             )
+         return _ValidatedLegacyState(num_transitions, tuple(validated_episodes), capacity, history._clone(state))
+ 
++    def _validated_transport(self, state: _ValidatedSequentialState) -> Mapping[str, Any]:
++        """Own the DTO's selected material without treating prior checks as authority."""
++        if not isinstance(state, _ValidatedSequentialState) or state.capacity != self.capacity:
++            raise ValueError("Sequential materialization requires validated state with matching target capacity")
++        if isinstance(state, _ValidatedLegacyState):
++            original = history._clone(state.original_state)
++            if not isinstance(original, Mapping):
++                raise ValueError("Sequential archival material must contain its original transport mapping")
++            return original
++        if not isinstance(state, (_ValidatedInspectionState, _ValidatedCapturedState)):
++            raise ValueError("Sequential materialization requires validated replay state")
++        episodes = [history._clone(episode) for episode in state.episodes]
++        if isinstance(state, _ValidatedInspectionState):
++            # Legacy validation omits absent optional components from its row
++            # DTOs; the exact transport encodes their absence explicitly.
++            for episode in episodes:
++                if isinstance(episode, dict):
++                    for name in _COMPONENT_EPISODE_KEYS:
++                        if name not in episode:
++                            episode[name] = None
++            return {
++                "inspection_kind": _INSPECTION_KIND,
++                "inspection_version": 1,
++                "legacy_transport": {
++                    "replay_kind": SEQUENTIAL_REPLAY_BUFFER_KIND,
++                    "format_version": _LEGACY_VERSION,
++                    "capacity": state.capacity,
++                    "num_transitions": state.num_transitions,
++                    "episodes": episodes,
++                },
++                "historical_archives": [history._record(archive) for archive in state.archives],
++            }
++        transport = {
++            "replay_kind": SEQUENTIAL_REPLAY_BUFFER_KIND,
++            "format_version": SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION,
++            "capacity": state.capacity,
++            "num_transitions": state.num_transitions,
++            "action_dim": state.action_dim,
++            "legality_mode": state.legality_mode,
++            "replay_options": state.replay_options.model_dump(),
++            "next_episode_id": state.next_episode_id,
++            "next_transition_id": state.next_transition_id,
++            "episodes": episodes,
++            "historical_archives": [history._record(archive) for archive in state.archives],
++        }
++        if state.priority is not None:
++            transport["format_version"] = SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION
++            transport["priority_state"] = self._priority_payload(state.priority, state.replay_options)
++        return transport
++
+     def _materialize_serialized(self, state: _ValidatedSequentialState) -> _SequentialRestoreCandidate:
+         if not isinstance(state, _ValidatedSequentialState) or state.capacity != self.capacity:
+             raise ValueError("Sequential materialization requires validated state with matching target capacity")
+@@ -771,13 +819,13 @@ class SequentialReplayBuffer(ReplayCustody):
+ 
+     @replay_prepare
+     def materialize_validated(self, state: _ValidatedSequentialState, *, lineage: RNGOperation | None) -> object:
+-        """Materialize one restore candidate from already validated structure."""
+-        return self._materialize_serialized(state)
++        """Revalidate owned DTO bytes against the current destination before issuance."""
++        owned = self._validated_transport(state)
++        validated = self._validate_serialized(owned, expected_obs_dim=None)
++        return self._materialize_serialized(validated)
+ 
+     @replay_prepare
+-    def prepare_serialized(
+-        self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None
+-    ) -> object:
++    def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None, lineage: RNGOperation | None) -> object:
+         """Validate and materialize the one candidate that will be installed."""
+         return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+ 
+@@ -788,11 +836,7 @@ class SequentialReplayBuffer(ReplayCustody):
+                 if not isinstance(candidate, PreparedReplay):
+                     raise ValueError("Prepared replay is foreign, fabricated or already consumed")
+                 material = self._prepared_payload(candidate)
+-                if (
+-                    not isinstance(material, _PreparedSequenceState)
+-                    or material.capacity != self.capacity
+-                    or material.device != self.device
+-                ):
++                if not isinstance(material, _PreparedSequenceState) or material.capacity != self.capacity or material.device != self.device:
+                     raise ValueError("Sequential installation requires a compatible prepared replay candidate")
+                 if self._configured and (
+                     not material.configured
+@@ -803,15 +847,13 @@ class SequentialReplayBuffer(ReplayCustody):
+                     raise ValueError("prepared replay cannot downgrade or replace the target's configured geometry/options")
+                 if self._configured and (self._priority is None) != (material.priority is None):
+                     raise ValueError("prepared replay cannot replace uniform/prioritized identity; prepare against the intended target")
+-                if (
+-                    self._priority is not None
+-                    and material.priority is not None
+-                    and self._priority.config != material.priority.config
+-                ):
++                if self._priority is not None and material.priority is not None and self._priority.config != material.priority.config:
+                     raise ValueError("prepared replay priority configuration/origin differs from target")
+                 archives = self._merge_archives(material.archives, expected_obs_dim=None)
+                 episodes = deque(self._own_fragment(episode, device=self.device) for episode in material.episodes)
+-                policy = None if material.replay_options is None else material.replay_options.model_copy(deep=True)
++                policy = material.replay_options
++                if policy is not None:
++                    policy = policy.model_copy(deep=True)
+                 priority = self._restore_priority(material.priority)
+ 
+                 def publish() -> None:
+@@ -824,6 +866,7 @@ class SequentialReplayBuffer(ReplayCustody):
+                     self.replay_options = policy
+                     self.next_episode_id, self.next_transition_id = material.next_episode_id, material.next_transition_id
+                     self._historical_archives, self._priority = archives, priority
++
+                 self._validate_replay(candidate, lease)
+                 self._publish_replay(candidate, publish)
+ 
+@@ -1055,6 +1098,11 @@ class SequentialReplayBuffer(ReplayCustody):
+         return _PriorityDomain(length, keys, ids, owned)
+ 
+     def _support(self, state: _PriorityState, domain: _PriorityDomain, policy: ReplayOptions) -> None:
++        """Check support with a real disposable draw, preserving ambient and live RNG.
++
++        Owner-local callers keep their persistent generator and owner exclusion;
++        this scratch work neither admits publication nor heals common poison.
++        """
+         if domain.priorities.size:
+             assert policy.sampling_mode is not None
+             per_sampling.sample_units(
+@@ -1870,9 +1918,7 @@ class SequentialReplayBuffer(ReplayCustody):
+             raise ValueError("current captured replay cannot discard qualified rows/history through archival reset")
+         return self._materialize_serialized(validated)
+ 
+-    def load_for_mode(
+-        self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None
+-    ) -> None:
++    def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None) -> None:
+         candidate = self.prepare_for_mode(state, expected_obs_dim=None, requested_mode=requested_mode, lineage=lineage)
+         self.load_prepared(candidate, lineage=lineage)
+ 

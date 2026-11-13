@@ -1,0 +1,27 @@
+{
+  "schema": "bac-ci-observation-v1",
+  "commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "config": {
+    "run": 43406791037,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "lint": {
+    "run": 43406791002,
+    "job": 131822957153,
+    "status": "completed",
+    "conclusion": "failure",
+    "verified_cause": "Black would reformat src/townlet/training/sequential_replay_buffer.py;1file/718unchanged",
+    "ruff": "passed",
+    "mypy": "skipped",
+    "defaults": "skipped",
+    "raw_log_sha256": "376d61f66ac1c28c7873a18b6dd657542e3a655babd43d56a82ce0e25bae7a6b",
+    "raw_log_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip15-ci-lint.log"
+  },
+  "tests": {
+    "run": 43406791198,
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "scope": "Exact WIP15 hosted CI observation; no assumption skipped checks pass. Recurrent formatting is already required in accepted sliceB."
+}

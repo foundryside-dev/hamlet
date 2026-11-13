@@ -1,0 +1,25 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_tree": "690c51f8a89653b9bdcf4b52c002b3fe73c7f27c",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "For further information visit https://errors.pydantic.dev/2.13/v/frozen_instance",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_install_owns_input_and_retained_candidate_material[uniform]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_recurrent_install_owns_input_and_retained_candidate_material[priority]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

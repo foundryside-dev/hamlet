@@ -1,0 +1,76 @@
+{
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "contract": {
+    "root": "W",
+    "path": "wave35/r85-checkpoint-contract.json",
+    "sha256": "ac4e1abaef775cdf7b2b9e0d97dafef97a7c918a96178bd39fee56ef38b4e6f6",
+    "bytes": 3630
+  },
+  "checkpoint_id": "wave35-wip-16",
+  "series": "wave35",
+  "interval": [
+    82,
+    85
+  ],
+  "candidate_tree": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r85-candidate.json",
+    "sha256": "9df6603bae0b0ebeedecf199e222cacddb4de501e1242c148117f9c85d678246",
+    "bytes": 206987
+  },
+  "execution_subtrees": {
+    "src": "4db5626a407ddfccd29ce2fde2d9a8f147f02070",
+    "tests": "738f692968a8f277590b08821a70d97bb728f904",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip16-r85-terminal-review-input-v2.json",
+    "sha256": "184d37936d6be46f056bf7a09ca86dd60fe8fe922f63aacadd5882c79e6d1cee",
+    "bytes": 287533
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Bounded recurrent replay B1/B3/B4 and current explicit-lineage owner caller/fixture repair; R85 root158 unique cases, independent owner49 overlapping. No CUDA/external integration/package/programme closure.",
+  "required_next": [
+    "B6 CUDA capability/lifecycle/completion and real hardware",
+    "External BANK/ENV/POP/native/runner current caller migration and integration",
+    "Global types, full/default repository, coverage, slow, learning, final CI and fresh programme review"
+  ],
+  "review_task": "Independent terminal evidence review of exact frozen input/subject/candidate/source-delta/document closure. No component approval substitute; publication equivalence and exact remote CI remain root steps.",
+  "source_delta_archive": {
+    "manifest": {
+      "root": "W",
+      "path": "evidence-management/wip16-source-deltas/manifest.json",
+      "sha256": "ea38108c0c5b5350afab50432d936be8f33053fdde4521e5a569fbe3495cfed9",
+      "bytes": 436491
+    },
+    "scope": "Four exact base-to-candidate nonexecutable patch DATA files retained. Root generated; this actor hash-checked bytes only, did not read/apply/import/execute patch content."
+  },
+  "publication_document_deltas": {
+    "guarded_status_path": "docs/remediation/bac/STATUS.md",
+    "execution_sha256": "7dba8e1d95f734ab9dfa3ad53e8646cc661c86f44eefca1687f558b5f52f00eb",
+    "publication_sha256": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c",
+    "reason": "Exact independently reviewed prose integration after execution closed. Only declared protected-document difference; root publication execution-subtree equivalence remains to verify.",
+    "integration": {
+      "root": "W",
+      "path": "evidence-management/wip16-reviewed-document-application.json",
+      "sha256": "0a9b07ed66ce0b8c3cb10e41f8e93b8f7d7d865d58d693fc88fb2016e1814ea2",
+      "bytes": 1658
+    }
+  },
+  "supersedes": {
+    "root": "W",
+    "path": "evidence-management/wip16-r85-qualification-subject-v1.json",
+    "sha256": "b348254754624c4a9782c89072d3daebef016b191b5cc257db42499a160d2c0d",
+    "bytes": 3456
+  }
+}

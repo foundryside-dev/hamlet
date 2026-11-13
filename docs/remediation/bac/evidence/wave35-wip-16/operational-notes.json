@@ -1,0 +1,42 @@
+{
+  "schema": "bac-root-publication-operations-v1",
+  "qualification_vs_representation": "Independent terminal v2subject approved; root converted attestation named-reference mapping to receipt-required list without changing any eight refs or qualification facts.",
+  "failed_final_selection": {
+    "receipt": {
+      "path": "docs/remediation/bac/evidence/wave35-wip-16/failed-final-seal-v2.json",
+      "sha256": "d747db7a7153b1320504a001960e1ed8dfe4c5c3ac99275312c2b87f3abe2652",
+      "bytes": 290476
+    },
+    "tool": "bac_checkpoint_contract.py plan",
+    "exit_code": 1,
+    "exception": "ValueError: review subject list missing",
+    "reason": "Root copied reviewed_subject named map from independent attestation; finalreceipt API requireslist. Failure before plan output or assembly; no application execution.",
+    "proposed_output": "evidence-management/wip16-r85-final-plan-v2.json",
+    "output_created": false
+  },
+  "repair": {
+    "receipt_original": "evidence-management/wip16-r85-terminal-receipt-final-v3.json",
+    "sha256": "45d72fd657f4f977c58b34c7eed8df6d9192fcd0327030ec17aaa13023b70a3c",
+    "only_delta": "reviews[0].reviewed_subject = list(original named-map values)",
+    "frozen_input_other_fields": "deep-equal after excluding status/review_subject/reviews"
+  },
+  "final_selection": {
+    "status": "READY FOR ROOT PUBLICATION CHECKS",
+    "exit_code": 0,
+    "selection_plan": {
+      "path": "docs/remediation/bac/evidence/wave35-wip-16/selection-plan.json",
+      "sha256": "81df9d15bc175cc9a52ed6b448ce165ae5c12eb1c4741146b7ad3e6c94e903cb",
+      "bytes": 270542
+    }
+  },
+  "assembly": {
+    "exit_code": 0,
+    "copied": 223,
+    "report": {
+      "path": "docs/remediation/bac/evidence/wave35-wip-16/assembly-report.json",
+      "sha256": "2c60361466fc477f7f7e1833160ffe6793996486c6f9ae981f240440e793101c",
+      "bytes": 251306
+    }
+  },
+  "scope": "Root post-review publication operations, not additional application checks or coverage; failedseal bytes retained exactly."
+}

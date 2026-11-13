@@ -1,0 +1,34 @@
+{
+  "schema": "bac-reviewed-document-application-v1",
+  "execution_candidate": "e1d5bf0e123cc04eca943a34125bdfbd1e6fc42a",
+  "changes": {
+    "README.md": {
+      "before_sha256": "f9ec1316b895f7bce7a5950499aec03f1a28495d9f08a62efa799d80dafc2b2a",
+      "after_sha256": "8aec89e582812c92ce1a25b7a980e563c927eb134bb15e1803a069ca5c81a982"
+    },
+    "docs/remediation/bac/STATUS.md": {
+      "before_sha256": "7dba8e1d95f734ab9dfa3ad53e8646cc661c86f44eefca1687f558b5f52f00eb",
+      "after_sha256": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c"
+    },
+    "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md": {
+      "before_sha256": "1c983b02f3fdd610857fc40b95eb454b5b3f701d02b869e35ea3d57e4befd63f",
+      "after_sha256": "80f6fcede2e7a60ff9548746849e2b31d172807fd8f529420fe43e543028e275"
+    },
+    "docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md": {
+      "before_sha256": null,
+      "after_sha256": "f6059c4a80e89767214a76fa794f9622d1aa680251afc8d2ec48db128e99306e"
+    }
+  },
+  "proposal_reviews": [
+    {
+      "path": "wave35-preparation/T18e-R0-REPLAY-FIX-B-DOC-REVIEW.md",
+      "sha256": "4a133586109229976d16e07e5309cb20a1025ab457207aa5ba4c76723efa2411"
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-REPLAY-R85-DOC-ADDENDUM-REVIEW.md",
+      "sha256": "07d3be30700475f651e87e346e314bdd1b84181d61e17007ff6696ebe0543d75"
+    }
+  ],
+  "method": "Applied exact approved markdown blocks with exact approved R85 superseding replacements; historical bodies retained",
+  "scope": "Prose only after allruntimeclosed; no code/tests/configs/scripts changes; publication source equivalence still owed"
+}

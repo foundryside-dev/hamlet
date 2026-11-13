@@ -1,0 +1,169 @@
+{
+  "schema": "bac-bounded-tests-first-receipt-v1",
+  "status": "R83 tests-only fix1 approved; production repair authorized next",
+  "scope": "Recurrent B test prerequisites and CPU child only; production unchanged from WIP15",
+  "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+  "candidate_tree": "129e097964f7d272a09d6065751fddfb25e80df6",
+  "manifest_sha256": "8a7642a110098b0a8cf90fc999b1597c72f0aefb2b178d0f652b844d43de4ecf",
+  "checks": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection-spec.json",
+      "spec_sha256": "f5cbbd1f360eb398df8e96739c109a8256c4018b4ee2849d93aa265679443c23",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection/identity-controller.json": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection-result.json": "aeb62e4f26f62e60e4b202e3aa81bde71933f66a99c60c01ca8af8bf461549f2",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection.log": "20805b898a2685137e93831fd97d0bc03496b1ea9f21b49b3049af6b4e298b15",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/static-custody.json": "1ad0877c1e58f791354b7d53793a72aec4a2bede5c98283ebf164a388ec56624"
+      },
+      "results": [
+        {
+          "name": "collection",
+          "exit_code": 0,
+          "seconds": 14.077932119369507,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-collection/collection.log",
+          "sha256": "20805b898a2685137e93831fd97d0bc03496b1ea9f21b49b3049af6b4e298b15",
+          "candidate_tree": "129e097964f7d272a09d6065751fddfb25e80df6",
+          "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+          "manifest_sha256": "8a7642a110098b0a8cf90fc999b1597c72f0aefb2b178d0f652b844d43de4ecf",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix-spec.json",
+      "spec_sha256": "19aa0b54dc255ee2de8c5752a62cb43943e5eaddbec56440712f0eee67cca99f",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix/identity-controller.json": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix-custody.json": "9636310a6982a08b598a3c19509ff09419887659e9f9005260df0358ac14b558",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix-result.json": "67f89e53a24d0b60d9eb1f14939f2b52edfe652daf572b5aafbd2e6f9ace1dc3",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix.log": "57bc7c135453794a15ab9b5e503f0ac7e822981a45ac50cd761017060bf8ffb8"
+      },
+      "results": [
+        {
+          "name": "recurrent-fixture-fix",
+          "exit_code": 0,
+          "seconds": 4.1953675746917725,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-k",
+            "install_owns_input or support_draw or captured6_dto",
+            "-x"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-fixture-fix/recurrent-fixture-fix.log",
+          "sha256": "57bc7c135453794a15ab9b5e503f0ac7e822981a45ac50cd761017060bf8ffb8",
+          "candidate_tree": "129e097964f7d272a09d6065751fddfb25e80df6",
+          "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+          "manifest_sha256": "8a7642a110098b0a8cf90fc999b1597c72f0aefb2b178d0f652b844d43de4ecf",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison-spec.json",
+      "spec_sha256": "db8bc37049c3da57d19467576f9893bf0deebb1f212499fa370f9f1cb8795218",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/identity-controller.json": "1e0009b04908f4b2d8ac7585af02f1b520b8c8eb78554016d1736c7fc0018103",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/replay-spawn-custody-recurrent_replay_poison.json": "306642c7134f045a208c97b340110c30a4e8f2de484966fee87ef9ac2e99fe72",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/spawn-identity-recurrent_replay_poison.json": "091bfe6f615058671642cea9e00e6a2be5cc672feff29249caee5be9ec379514",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison/spawn-observation-recurrent_replay_poison.json": "768218731565922c8a1de0f4f1ac6f2299e4011d3d4f19856f5751ffcb197869",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison-custody.json": "fedcbf79542c9b369ae3b45ca1605beedf7bb1ff961ef85b14ba0e2c6233a0f8",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison-result.json": "a5c6371cb341456d4365efa836af08235051c9f9987ec29e8ae305142cb0e8a5",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison.log": "f5da4eceee340ca2a8735419b199db2fae46868654f56647ae1fdb05f1efcdc6"
+      },
+      "results": [
+        {
+          "name": "recurrent-replay-poison",
+          "exit_code": 0,
+          "seconds": 7.419265508651733,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-recurrent-replay-poison/recurrent-replay-poison.log",
+          "sha256": "f5da4eceee340ca2a8735419b199db2fae46868654f56647ae1fdb05f1efcdc6",
+          "candidate_tree": "129e097964f7d272a09d6065751fddfb25e80df6",
+          "base_commit": "29d0204a70b6eef0017b3cee638812e2cc5c7899",
+          "manifest_sha256": "8a7642a110098b0a8cf90fc999b1597c72f0aefb2b178d0f652b844d43de4ecf",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    }
+  ],
+  "collection": 55,
+  "unique_executed": 24,
+  "passed": 24,
+  "failed": 0,
+  "selection": "23 corrected/new ordinary controls plus1 isolated child; not full55 GREEN",
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-FIX-B-FIXTURE1-REVIEW.md",
+    "sha256": "a93e68c48233be76b48034775ff1615937fa86b29a9b8630a3dff39a096d0254",
+    "disposition": "three scoped test corrections approved"
+  },
+  "prior_causal_RED": {
+    "receipt": "wave35/r82-recurrent-tests-receipt.json",
+    "sha256": "46528bf03000cd106ed204e687ea41232a4c1982cf8eee5deceebc5751b651a1",
+    "status": "12 intended malformed DTO missing-ValueError failures remain unresolved in unchanged production; not rerun merely for new timestamp"
+  },
+  "child": {
+    "status": "actual CPU child and strong external identity verification PASS",
+    "child_pid": 60791,
+    "parent_pid": 60759,
+    "child_ppid": 60759,
+    "verifier_sha256": "390c3a52837e88a716df15ff496967cb313f1fd63d892ca1eb0b4e48096e9146",
+    "scope": "CPU replay poison consumer; no CUDA/restoration-failure/whole-programme claim"
+  },
+  "failed_prerequisite": {
+    "command": "python /workspace/bac-review-2026-11-01/qualification/verify_bac_run.py /workspace/bac-review-2026-01-01/qualification/wave35-r83-recurrent-fixture-fix-spec.json",
+    "outcome": "FileNotFoundError before spec read due to root wrong-month path; no application execution or mutation",
+    "repair": "Corrected to /workspace/bac-review-2026-11-01; verifier PASS"
+  },
+  "runtime_custody": "All executed groups verified816 source/573configs/13protected/14registry MAIN1; all sessions closed",
+  "absolute_time_limitation": "Original harness records elapsed seconds but not absolute start/end UTC; none inferred",
+  "unrun": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r83-owned-spec.json",
+      "reason": "Generated default curriculum template; no execution"
+    }
+  ],
+  "accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

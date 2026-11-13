@@ -1,0 +1,71 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 55 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_recurrent_replay_rng_custody.py>
+            <Function test_recurrent_validated_width_rechecks_current_destination[uniform]>
+            <Function test_recurrent_validated_width_rechecks_current_destination[priority]>
+            <Function test_recurrent_validated_width_rechecks_current_destination[inspection]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[nonfinite-uniform]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[nonfinite-priority]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[successor-uniform]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[successor-priority]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[transition-id-uniform]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[transition-id-priority]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[fragment-offset-uniform]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[fragment-offset-priority]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[extra-row-key-uniform]>
+            <Function test_recurrent_mutated_captured_dto_cannot_gain_authority[extra-row-key-priority]>
+            <Function test_recurrent_mutated_priority_dto_provenance_cannot_gain_authority>
+            <Function test_recurrent_mutated_inspection_dto_cannot_gain_authority>
+            <Function test_recurrent_legacy_selected_original_state_is_revalidated>
+            <Function test_recurrent_valid_dto_preserves_selected_restore_capability[uniform]>
+            <Function test_recurrent_valid_dto_preserves_selected_restore_capability[priority]>
+            <Function test_recurrent_valid_dto_preserves_selected_restore_capability[inspection]>
+            <Function test_recurrent_valid_dto_preserves_selected_restore_capability[legacy]>
+            <Function test_recurrent_captured6_dto_adapts_to_prioritized_destination>
+            <Function test_recurrent_same_outer_lineage_can_prepare_and_install[uniform]>
+            <Function test_recurrent_same_outer_lineage_can_prepare_and_install[priority]>
+            <Function test_recurrent_nested_preparation_refuses_intervening_work[sibling-sample-uniform]>
+            <Function test_recurrent_nested_preparation_refuses_intervening_work[sibling-sample-priority]>
+            <Function test_recurrent_nested_preparation_refuses_intervening_work[owner-storage-uniform]>
+            <Function test_recurrent_nested_preparation_refuses_intervening_work[owner-storage-priority]>
+            <Function test_recurrent_staging_fault_preserves_live_state_and_healthy_use[episode-copy]>
+            <Function test_recurrent_staging_fault_preserves_live_state_and_healthy_use[archive-merge]>
+            <Function test_recurrent_staging_fault_preserves_live_state_and_healthy_use[policy-copy]>
+            <Function test_recurrent_staging_fault_preserves_live_state_and_healthy_use[priority-copy]>
+            <Function test_recurrent_partial_publication_quarantines_all_managed_routes>
+            <Function test_recurrent_install_owns_input_and_retained_candidate_material[uniform]>
+            <Function test_recurrent_install_owns_input_and_retained_candidate_material[priority]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-successive-PCG64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-successive-PCG64DXSM]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-successive-MT19937]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-successive-Philox]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-successive-SFC64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-independent-PCG64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-independent-PCG64DXSM]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-independent-MT19937]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-independent-Philox]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[priority-update-independent-SFC64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-successive-PCG64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-successive-PCG64DXSM]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-successive-MT19937]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-successive-Philox]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-successive-SFC64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-independent-PCG64]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-independent-PCG64DXSM]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-independent-MT19937]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-independent-Philox]>
+            <Function test_recurrent_support_draw_preserves_ambient_and_persistent_stream[store-refresh-independent-SFC64]>
+            <Function test_isolated_recurrent_scratch_work_cannot_heal_common_poison>
+
+========================= 55 tests collected in 0.10s ==========================

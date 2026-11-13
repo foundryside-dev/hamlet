@@ -1,0 +1,16 @@
+{
+  "kind": "capture_precondition_failure",
+  "command": "python Q/capture_wave14_round.py r88 wave35 e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32 wave35/r87-candidate.json",
+  "exit_code": 1,
+  "observed_exception": "AssertionError: ('/workspace/hamlet/src/townlet/exploration/rng_custody.py', 809, 650)",
+  "cause": "Older completed review scopes retained371/650 source ceilings although current fresh two-body grant allows1200. Capture stages knownpaths before checking inventories; no manifest or app runtime created.",
+  "disposition": "Seal four old contexts at exactR87inventories; preserve allsourceguards via baselineunion and explicit requiredregression paths; freshcorecontext2218<3000/5000. No acceptance requirement removed or sourcecap bypass.",
+  "failed_stdout": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-capture.log",
+  "failed_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sealed_scopes": [
+    "W35-R0-EXISTING-OWNER-REGRESSIONS",
+    "W35-PURE-BOOTSTRAP-CORE",
+    "W35-BANK-CP-STAGEB",
+    "W35-OWNER-ATOMIC-CAPTURE"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "core-api-red",
+  "exit_code": 1,
+  "seconds": 4.179393768310547,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red.log",
+  "sha256": "3b81550eb1fea2a80fb289f777de6831b0c1dd83b3cbfc869e2c38e1b02c80b3",
+  "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

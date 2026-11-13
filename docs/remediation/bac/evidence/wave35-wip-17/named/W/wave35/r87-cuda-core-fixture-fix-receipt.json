@@ -1,0 +1,145 @@
+{
+  "schema": "bac-bounded-component-receipt-v1",
+  "status": "R87 tests fixture repair verified; source review pending; production absent",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+  "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+  "checks": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-collection-spec.json",
+      "spec_sha256": "a15a069df39b536482e34d778835e177022e02767e6876b44b99e0a54cce7e89",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-collection/collection/identity-controller.json": "70afd76b8e4098ba8866bce2da4b9783c09d1e665003a30b5def1c7e31581b10",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-collection/collection-result.json": "dab41f4b7647bb34420528c13e7d6c984d810c4c6b33ee24b253916ed2d2f25a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-collection/collection.log": "3feb00b50fb3cebd6dff2e4c37b045f666640fc788a84f963f9fa23d7ba0833d",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-collection/static-custody.json": "43f94606117eb8056db6fa3a7ecf641697ad0478462b79fa546993734ebebe09"
+      },
+      "results": [
+        {
+          "name": "collection",
+          "exit_code": 0,
+          "seconds": 4.080721139907837,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-collection/collection.log",
+          "sha256": "3feb00b50fb3cebd6dff2e4c37b045f666640fc788a84f963f9fa23d7ba0833d",
+          "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy-spec.json",
+      "spec_sha256": "906a74a83a607b1c875089f436778bd518a937413e583f8c3c9322f0800326f7",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy/core-healthy/identity-controller.json": "70afd76b8e4098ba8866bce2da4b9783c09d1e665003a30b5def1c7e31581b10",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy/core-healthy-custody.json": "7a3bcdb866f5c96fd0e726164cd97df5f95ff118957123e30fae507e0e498fa5",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy/core-healthy-result.json": "2dd2645943c13169226a0c955f9b734a191ab55f38aa3075560a9d31c8f9b9cc",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy/core-healthy.log": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588"
+      },
+      "results": [
+        {
+          "name": "core-healthy",
+          "exit_code": 0,
+          "seconds": 3.849067211151123,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_nested_currency_distinguishes_sibling_from_open_prepare",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy/core-healthy.log",
+          "sha256": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588",
+          "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red-spec.json",
+      "spec_sha256": "4df4190c1bf9197f878c6c1ad9e68a0e94b116d3cde45c6922fb83c916439d44",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red/failure-controller-1421fd7ea92e4f1d.json": "82f400cc29b70377e087f8ecbe39db275209e6d2bda4ee2122e4475ab0a0f9ff",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red/failure-controller-238b84081825d69b.json": "dbddbcac70e1b9829b957308c402f49d45ca7687fead3847309b3e24d9e466d7",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red/failure-controller-c5807472fde45eec.json": "b1e3f017cebc4054fc5ee6a0503a69ecc6dc3ef5fa9a91e1f9c957a1057ade43",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red/identity-controller.json": "70afd76b8e4098ba8866bce2da4b9783c09d1e665003a30b5def1c7e31581b10",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red-failure-index.json": "1bc6cfadf46cac77017b31b4471f047c91af94c053b750466d4063eaebd4e394",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red-negative-custody.json": "12c27bbab09008bff5d21380ab1c4e6ebe04b9c16722d51083508f0e41a616cb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red-result.json": "ed99c79c706d74e5138772b604c330eafdec54b0946a3dba94b0ffcf34c4c88f",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red.log": "3b81550eb1fea2a80fb289f777de6831b0c1dd83b3cbfc869e2c38e1b02c80b3"
+      },
+      "results": [
+        {
+          "name": "core-api-red",
+          "exit_code": 1,
+          "seconds": 4.179393768310547,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-api-red/core-api-red.log",
+          "sha256": "3b81550eb1fea2a80fb289f777de6831b0c1dd83b3cbfc869e2c38e1b02c80b3",
+          "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    }
+  ],
+  "accounting": {
+    "collected": 67,
+    "unique_executed": 6,
+    "passed": 3,
+    "failed": 3,
+    "intended_missing_api_failures": 3,
+    "fixture_failures": 0
+  },
+  "causal_disposition": "Both R86 NoCUDA.__class__ prerequisites repaired. HealthyCPU passes and subset test now reaches genuinely absent device_operation. Other two failures likewise missing new APIs. No production repaired yet.",
+  "custody": "Root collection static and both runtime source/index/import/thread/fixture custody verified;817source/573config/13artifact/14registryMAIN1; sessionsclosed",
+  "unrun": [
+    "61 other collected cases including ten child roles and two nestedforktrials: APIs absent and strict newroleverifier not implemented",
+    "wave35-r87-owned-spec.json unused generated curriculum template"
+  ],
+  "review_delta": "wave35-preparation/T18e-R0-CUDA-CORE-TESTS-FIX1-REVIEW.diff",
+  "next": "Scoped independent tests review; strict child tooling extension independentlyverified; separate core productiongrant and rootactualGREEN. No hardware/packageacceptance."
+}

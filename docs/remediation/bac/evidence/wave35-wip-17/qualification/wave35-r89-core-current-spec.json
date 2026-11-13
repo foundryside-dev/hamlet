@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r89-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-current",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "core-current",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+        "-k",
+        "not test_isolated",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-x"
+      ]
+    }
+  ]
+}

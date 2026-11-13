@@ -1,0 +1,41 @@
+--- /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cuda-core-fix1-before-verify_bac_replay_spawn_identity.py.txt
++++ /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py
+@@ -134,6 +134,10 @@
+ 
+ 
+ def check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash):
++    for kind in ("identity", "observation"):
++        expected = {f"fork-{kind}-cuda_core_inherited_pid-{trial}.json" for trial in FORK_ACTIONS}
++        actual = {path.name for path in job_dir.glob(f"fork-{kind}-cuda_core_inherited_pid-*.json")}
++        require(actual == expected, f"unexpected fork record inventory: {kind}")
+     receipts = []
+     seen_pids = {child["pid"], observed["parent_pid"]}
+     imports = {key: str(root / relative) for key, relative in CUDA_IMPORTS.items()}
+--- /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cuda-core-fix1-before-test_replay_spawn_verifier.py.txt
++++ /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py
+@@ -674,6 +674,25 @@
+         f.write("child", f.child)
+         f.refuse()
+ 
++    def test_unknown_fork_identity_record_refused(self):
++        self.assert_unknown_fork_records_refused(("identity",))
++
++    def test_lone_unknown_fork_observation_refused(self):
++        self.assert_unknown_fork_records_refused(("observation",))
++
++    def test_extra_fork_pair_refused(self):
++        self.assert_unknown_fork_records_refused(("identity", "observation"))
++
++    def assert_unknown_fork_records_refused(self, kinds):
++        fixture = self.fixture()
++        for kind in kinds:
++            original = fixture.job_dir / f"fork-{kind}-cuda_core_inherited_pid-admission.json"
++            extra = fixture.job_dir / f"fork-{kind}-cuda_core_inherited_pid-unknown.json"
++            extra.write_bytes(original.read_bytes())
++        with self.assertRaisesRegex(ValueError, "unexpected fork record inventory"):
++            fixture.invoke()
++        self.assertFalse((fixture.job_dir / ("replay-spawn-custody-" + fixture.role + ".json")).exists())
++
+     def test_node_source_profile_and_unknown_job(self):
+         for check in (
+             "test_other_node_cannot_substitute",

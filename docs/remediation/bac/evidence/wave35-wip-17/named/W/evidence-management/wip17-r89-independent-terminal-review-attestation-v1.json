@@ -1,0 +1,103 @@
+{
+  "schema": "bac-checkpoint-independent-terminal-review-v1",
+  "checkpoint_id": "wave35-wip-17",
+  "series": "wave35",
+  "interval": [
+    86,
+    89
+  ],
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_cuda_core_review",
+  "metadata_author": "/root/bac_astra_replay_child_verifier",
+  "disposition": "APPROVED",
+  "spec": "APPROVED",
+  "quality": "APPROVED",
+  "findings": [],
+  "scope": "Independent terminal evidence review of frozen WIP17 R86-R89 bounded CPU CUDA core checkpoint; not whole-BAC/package/hardware/publication acceptance.",
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-qualification-subject-v1.json",
+    "sha256": "9a5d809c142f6af6982445180b80e225662c1ab2b68193a8f919347b2a7ab2c0",
+    "bytes": 6253
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-terminal-review-input-v1.json",
+    "sha256": "bc644db1c854197611be203bf780c465b32219b0fdd7f1f46f3c3eac9af175a3",
+    "bytes": 776530
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip17-checkpoint-contract.json",
+    "sha256": "a120ee67775728dd96d587ecdb3d6f65ca217bc1c292de52e75381c4dcf0bb4f",
+    "bytes": 4221
+  },
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r89-candidate.json",
+    "sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+    "bytes": 202387
+  },
+  "report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-REVIEW.md",
+    "sha256": "fc66e78c9cef31d223499e924fba5ffcbfaaeaa90df15aa92b47c58d6341e0b1",
+    "bytes": 10529
+  },
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "independence": {
+    "producer": "/root",
+    "reviewer": "/root/bac_astra_cuda_core_review",
+    "distinct": true,
+    "statement": "Reviewer did not author implementation, terminal metadata, document draft or evidence tools. Earlier independent source/67-test/document reviews are separately bound and did not substitute for this terminal assessment.",
+    "metadata_author": "/root/bac_astra_replay_child_verifier"
+  },
+  "verification": {
+    "hash_size_reference_tuples_checked": 532,
+    "logical_checks": 58,
+    "attempts": 68,
+    "executed_result_commands": 64,
+    "explicit_unrun_templates": 4,
+    "separate_failed_capture_retained": true,
+    "exact_interval_top_entries": 105,
+    "strong_child_attempt_links_checked": 25,
+    "rejected_worker2_batch_attempts": 10,
+    "named_dependency_closure": 7,
+    "source_guards": 817,
+    "configuration_guards": 573,
+    "protected_artifacts": 13,
+    "approved_guarded_document_deltas": 2,
+    "errors": []
+  },
+  "accounting": {
+    "root_unique_passed": 1515,
+    "core": 67,
+    "coherent": 1290,
+    "replay": 109,
+    "owner": 49,
+    "independent_core_passed": 67,
+    "independent_additional_unique": 0,
+    "hardware_skips": 2,
+    "required_deselected_runner": 1,
+    "package_accounting": {
+      "qualified": 28,
+      "remaining": 38,
+      "total": 66
+    }
+  },
+  "limitations": [
+    "Root Git subtree/preassembly observation is attributed; reviewer independently checked current source/config/artifact bytes and approved document deltas without Git.",
+    "Generic helpers lack runtime code self-hashes; explicit root invocation lineage and current/prior byte equality are retained, not cryptographic runtime self-attestation.",
+    "Prior WIP16 hosted Tests failure retained with cause unavailable; no cause inferred from separate mypy.",
+    "Final receipt seal, nondraft selection, assembly, publication tree, exact remote identity and CI are future root gates."
+  ],
+  "required_next": [
+    "Global mypy15 (oracle6/POP-lineage9) and required native runner.",
+    "Actual CUDA producer/parent integration and one-/two-device hardware; no enabled production local-GPU leaf.",
+    "Coverage/slow/full-repository/final CI and remaining38 programme packages."
+  ],
+  "mutated_inputs": false,
+  "application_runtime_executed_this_terminal_review": false,
+  "new_implementation_bodies_read": 0
+}

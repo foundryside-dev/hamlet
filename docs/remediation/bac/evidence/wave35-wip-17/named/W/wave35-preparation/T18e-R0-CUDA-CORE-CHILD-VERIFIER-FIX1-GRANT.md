@@ -1,0 +1,9 @@
+# Child verifier — finite fix round1
+
+PREPARED, not active until root explicitly transfers source baton after core writer freeze. Original tool author owns the same two existing tooling files under CHILD-VERIFIER-GRANT.md, same retained fivebodycap3460/5000. Read independent review T18e-R0-CUDA-CORE-CHILD-VERIFIER-INDEPENDENT-REVIEW.md SHAe91c13c652a4886569b233ff84738d865cbc3515b0fec195cf77becbca22d4c5. Exact finding must be addressed, no application code/runtime/Git/newbody/delegation/copies.
+
+The verifier reads only fixed admission/local fork paths; it accepted an extra fork-identity-cuda_core_inherited_pid-unknown.json and wrote custody. Protocol requires exactly two named pairs, no unknown trial/extra success. Reject additional matching identity OR observation records in that jobdirectory; add precise synthetic unknownidentity, loneunknownobservation and extra-pair mutations showing intended RED on frozen currentverifier, then implement guard and GREEN. Existing valid10CUDA/2replay controls and all prior47methods retained. No broad prefix role acceptance or weakened historicalchecks.
+
+Before mutation preserve current397/1853e8a5 and695/f379be75 as inertDATA, no execution/importcopy. Targeted formatting/lint and fixture-only unittest allowed. Save exact commands/rawoutputs/delta and finalwholecounts/hashes. Append fix1 report to original CHILD-VERIFIER-REPORT.md; root routes same SOL scopedrereview and syntheticrepeat before actualnewchildren. No app/child/hardwarequalification claimed.
+
+ACTIVATION: coreproduction1 frozen809/8d63b963 andtest1409/b044538d, sourcewriter relinquished. Ten-role/schema unchanged; testdelta adds actualgate state snapshot only. Toolauthor nowsolewriter twoexistingtoolingfiles. Root may run independent ordinary application/static checks against frozenR88; they do not import/use this childverifier and these toolpaths are outside appsource/artifactguards. Actualchildqualification remains held until reapproval.

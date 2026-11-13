@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r88-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "core-api",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

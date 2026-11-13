@@ -1,0 +1,19 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "source_guards": 817,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "collection",
+      "exit_code": 0,
+      "seconds": 4.293627023696899,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-collection/collection.log",
+      "sha256": "d4228dc459927b25d8a9081383c24e31dcfc069f3b787e63cfa902486f8393a1"
+    }
+  ],
+  "all_passed": true,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

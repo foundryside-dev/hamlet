@@ -1,0 +1,36 @@
+{
+  "schema": "bac-reviewed-document-application-v1",
+  "execution_candidate": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "changes": {
+    "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+      "before_sha256": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c",
+      "after_sha256": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1"
+    },
+    "README.md": {
+      "before_sha256": "8aec89e582812c92ce1a25b7a980e563c927eb134bb15e1803a069ca5c81a982",
+      "after_sha256": "020a4d5dbad1519d25d6c3e536fc142044088a84c3b444b942c1b1392b647187"
+    },
+    "docs/remediation/bac/STATUS.md": {
+      "before_sha256": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c",
+      "after_sha256": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6"
+    }
+  },
+  "proposal_reviews": [
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-CORE-DOCS-REVIEW.md",
+      "sha256": "06d8c21110d321beca6731a529fb2749f611a315faf723dbcaa9035c6e1ece20"
+    }
+  ],
+  "proposal_inputs": [
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-CORE-CONTRACT-DRAFT.md",
+      "sha256": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1"
+    },
+    {
+      "path": "wave35-preparation/P/T18e-R0-CUDA-CORE-DOCS-REPORT.md",
+      "sha256": "9cfac0bc3399e5ed12536de6facbe7d4cdec4203e16b5fcdbc4b773a62a9066c"
+    }
+  ],
+  "method": "Exact reviewed contract and paragraphs applied; README relative link adjusted, new dated STATUS heading/navigation added. Existing historical prose preserved.",
+  "scope": "Documentation only after closed R89 execution; source equivalence independently measured next."
+}

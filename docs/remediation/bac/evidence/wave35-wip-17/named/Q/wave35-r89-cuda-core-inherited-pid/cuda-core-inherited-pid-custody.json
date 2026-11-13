@@ -1,0 +1,22 @@
+{
+  "job": "cuda-core-inherited-pid",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 6.3085479736328125,
+  "source_guards": 817,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

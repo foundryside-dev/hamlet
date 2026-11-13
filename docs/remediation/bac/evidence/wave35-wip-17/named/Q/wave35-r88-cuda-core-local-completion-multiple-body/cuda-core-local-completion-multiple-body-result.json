@@ -1,0 +1,25 @@
+{
+  "name": "cuda-core-local-completion-multiple-body",
+  "exit_code": 0,
+  "seconds": 7.2220070362091064,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[local_completion_multiple_body]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body.log",
+  "sha256": "4fbaca31646646067ce6ab88b4a8384e42c44462fcbd02ee03189ad0b770abe0",
+  "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

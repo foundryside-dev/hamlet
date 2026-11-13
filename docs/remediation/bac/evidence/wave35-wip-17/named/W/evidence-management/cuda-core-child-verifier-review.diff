@@ -1,0 +1,527 @@
+--- /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cuda-core-before-verify_bac_replay_spawn_identity.py.txt
++++ /workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py
+@@ -62,6 +62,155 @@
+ CHILD_FIELDS = IDENTITY_FIELDS | {"pid", "ppid", "manifest_sha256", "debug", "interop_threads", "imports", "replay_imports"}
+ OBSERVATION_FIELDS = {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256", "parent_pid"}
+ 
++CUDA_IMPORTS = {
++    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
++    "test_rng_cuda_admission": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
++}
++# Closed case inventory: derived strings below cannot admit an unknown case/job.
++CUDA_CASES = (
++    "bootstrap_failure",
++    "runtime_query_failure",
++    "local_completion_single",
++    "local_completion_multiple_body",
++    "poison_unknown_ready",
++    "poison_ready_qualified",
++    "poison_ready_healthy_only",
++    "operation_body_completion",
++    "local_completion_duplicate_parent",
++    "inherited_pid",
++)
++for _case in CUDA_CASES:
++    _node = "test_isolated_inherited_pid_gate_refusal" if _case == "inherited_pid" else f"test_isolated_poison_protocol[{_case}]"
++    ROLE_CONFIGS["cuda-core-" + _case.replace("_", "-")] = {
++        "role": "cuda_core_" + _case,
++        "message": "cuda core inherited pid gates fail closed" if _case == "inherited_pid" else f"cuda core {_case} fail closed",
++        "args": ("-m", "pytest", CUDA_IMPORTS["test_rng_cuda_admission"] + "::" + _node, *REPLAY_ARGS[3:]),
++        "imports": CUDA_IMPORTS,
++        "cuda": True,
++        "fork": _case == "inherited_pid",
++    }
++CUDA_CHILD_FIELDS = (CHILD_FIELDS - {"replay_imports"}) | {"cuda_core_imports", "cuda_core_test_sha256"}
++FORK_IDENTITY_FIELDS = {
++    "schema",
++    "profile",
++    "role",
++    "trial",
++    "pid",
++    "ppid",
++    "inherited_domain_pid",
++    "qualified",
++    "base_commit",
++    "candidate_tree",
++    "manifest_sha256",
++    "cuda_core_imports",
++    "module_origin",
++    "source_sha256",
++    "os_threads",
++    "torch_profile",
++    "torch_profile_unavailable_reason",
++    "guard_results",
++}
++FORK_OBSERVATION_FIELDS = {
++    "schema",
++    "trial",
++    "role",
++    "parent_pid",
++    "fork_pid",
++    "waitpid_pid",
++    "wait_status",
++    "exit_code",
++    "queued_pid",
++    "queued_ppid",
++    "identity_sha256",
++    "message",
++    "parent_os_threads_before_fork",
++    "manifest_sha256",
++}
++FORK_ACTIONS = {
++    "admission": {"resolve_cuda", "enroll", "report_failure", "domain_admission"},
++    "local": {"resolve_cuda", "complete", "completion_failed", "report_failure", "domain_local_cuda_access"},
++}
++FORK_COUNTERS = {"lock_acquire_calls", "owner_lock_acquire_calls", "cuda_touch_calls", "body_calls"}
++
++
++def check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash):
++    receipts = []
++    seen_pids = {child["pid"], observed["parent_pid"]}
++    imports = {key: str(root / relative) for key, relative in CUDA_IMPORTS.items()}
++    source_hashes = {key: manifest["source_files"][relative] for key, relative in CUDA_IMPORTS.items()}
++    for trial, actions in FORK_ACTIONS.items():
++        identity_path = job_dir / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
++        observation_path = job_dir / f"fork-observation-cuda_core_inherited_pid-{trial}.json"
++        identity, identity_hash = read_json(identity_path)
++        parent, parent_hash = read_json(observation_path)
++        require(set(identity) == FORK_IDENTITY_FIELDS, "fork identity schema mismatch")
++        require(set(parent) == FORK_OBSERVATION_FIELDS, "fork observation schema mismatch")
++        require(identity["schema"] == "cuda-core-fork-guard-identity-v1", "fork identity version mismatch")
++        require(parent["schema"] == "cuda-core-fork-guard-observation-v1", "fork observation version mismatch")
++        require(identity["profile"] == "linux-fork-inherited-guard-only-v1", "fork profile mismatch")
++        require(identity["role"] == parent["role"] == "cuda_core_inherited_pid_guard", "fork role mismatch")
++        require(identity["trial"] == parent["trial"] == trial, "fork trial mismatch")
++        for value in [identity[k] for k in ("pid", "ppid", "inherited_domain_pid")] + [
++            parent[k] for k in ("parent_pid", "fork_pid", "waitpid_pid", "queued_pid", "queued_ppid")
++        ]:
++            require(positive_pid(value), "fork PID must be positive exact integer")
++        pid = identity["pid"]
++        require(pid not in seen_pids, "fork PID reused or collides with ancestor")
++        seen_pids.add(pid)
++        require(pid == parent["fork_pid"] == parent["waitpid_pid"] == parent["queued_pid"], "fork/waitpid/queue PID mismatch")
++        require(
++            identity["ppid"] == identity["inherited_domain_pid"] == parent["parent_pid"] == parent["queued_ppid"] == child["pid"],
++            "fork ancestry mismatch",
++        )
++        # Linux normal exit zero has raw wait status zero. Never decode a signal into a false success.
++        for field in ("wait_status", "exit_code"):
++            require(type(parent[field]) is int and parent[field] == 0, "fork did not exit normally with zero")
++        require(parent["identity_sha256"] == identity_hash, "fork identity byte hash mismatch")
++        require(parent["message"] == f"cuda core inherited pid {trial} fail closed", "fork success message mismatch")
++        require(identity["qualified"] is True, "unqualified fork")
++        require(identity["manifest_sha256"] == parent["manifest_sha256"] == manifest_hash, "fork manifest mismatch")
++        for field in ("base_commit", "candidate_tree"):
++            require(identity[field] == manifest[field], f"fork {field} mismatch")
++        require(identity["cuda_core_imports"] == imports, "fork import mismatch")
++        require(identity["source_sha256"] == source_hashes, "fork source hashes mismatch")
++        require(identity["module_origin"] == "inherited-loaded-module-objects", "fork module origin mismatch")
++        require(type(identity["os_threads"]) is int and identity["os_threads"] == 1, "fork OS thread profile mismatch")
++        require(
++            type(parent["parent_os_threads_before_fork"]) is int and parent["parent_os_threads_before_fork"] == 1,
++            "pre-fork OS thread profile mismatch",
++        )
++        require(
++            identity["torch_profile"] is None
++            and identity["torch_profile_unavailable_reason"] == "no Torch calls permitted in fork guard-only process",
++            "fork must not claim a Torch profile",
++        )
++        results = identity["guard_results"]
++        require(type(results) is dict and set(results) == actions, "fork guard actions mismatch")
++        for action, result in results.items():
++            require(
++                type(result) is dict and set(result) == FORK_COUNTERS | {"exception_class", "diagnostic", "state_unchanged"},
++                f"fork guard result schema mismatch: {action}",
++            )
++            require(
++                result["exception_class"] == "builtins.RuntimeError"
++                and result["diagnostic"] == "RNG custody cannot be inherited by another process",
++                "fork PID refusal mismatch",
++            )
++            for counter in FORK_COUNTERS:
++                require(type(result[counter]) is int and result[counter] == 0, f"fork guard effect: {counter}")
++            require(result["state_unchanged"] is True, "fork guard changed state")
++        receipts.append(
++            {
++                "trial": trial,
++                "pid": pid,
++                "ppid": child["pid"],
++                "profile": identity["profile"],
++                "identity_sha256": identity_hash,
++                "observation_sha256": parent_hash,
++            }
++        )
++    return receipts
++
+ 
+ def require(condition, message):
+     if not condition:
+@@ -163,8 +312,11 @@
+     child, child_hash = read_json(job_dir / f"spawn-identity-{role}.json")
+     observed, observed_hash = read_json(job_dir / f"spawn-observation-{role}.json")
+     require(set(controller) == IDENTITY_FIELDS, "controller schema mismatch")
+-    require(set(child) == CHILD_FIELDS, "child schema mismatch")
+-    require(set(observed) == OBSERVATION_FIELDS, "observation schema mismatch")
++    is_cuda = config.get("cuda", False)
++    require(set(child) == (CUDA_CHILD_FIELDS if is_cuda else CHILD_FIELDS), "child schema mismatch")
++    require(set(observed) == (OBSERVATION_FIELDS | {"queued_ppid"} if is_cuda else OBSERVATION_FIELDS), "observation schema mismatch")
++    if is_cuda:
++        require(positive_pid(observed["queued_ppid"]) and observed["queued_ppid"] == child["ppid"], "queued PPID mismatch")
+     for value in (child["pid"], child["ppid"], observed["parent_pid"], observed["process_pid"], observed["queued_pid"]):
+         require(positive_pid(value), "PID must be a positive exact integer")
+     require(observed["process_pid"] == observed["queued_pid"] == child["pid"], "child/Process/queue PID mismatch")
+@@ -186,10 +338,16 @@
+         "bootstrap imports mismatch",
+     )
+     replay_imports = {module: str(root / relative) for module, relative in config["imports"].items()}
+-    require(child["replay_imports"] == replay_imports, "replay imports mismatch")
++    require(child["cuda_core_imports" if is_cuda else "replay_imports"] == replay_imports, "role imports mismatch")
++    if is_cuda:
++        require(
++            child["cuda_core_test_sha256"] == manifest["source_files"][CUDA_IMPORTS["test_rng_cuda_admission"]],
++            "CUDA core test source hash mismatch",
++        )
+     for path in [root / "src/townlet/__init__.py", *map(Path, child["imports"].values()), *map(Path, replay_imports.values())]:
+         require(str(path.relative_to(root)) in manifest["source_files"], "import absent from source manifest")
+     check_inventory(root, manifest)
++    fork_guards = check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash) if config.get("fork", False) else None
+     check_repository(root, manifest)
+     receipt = {
+         "status": "REPLAY SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+@@ -220,6 +378,15 @@
+         "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+         "scope": "This CPU replay poison consumer child only; no restoration-failure, CUDA, other-process or whole-package qualification.",
+     }
++    if is_cuda:
++        receipt["status"] = "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
++        receipt["scope"] = "This CPU CUDA-core control only; no CUDA hardware, B6, replay migration or whole-package qualification."
++        if fork_guards is not None:
++            receipt["fork_guards"] = fork_guards
++            receipt["fork_guard_limitations"] = (
++                "Linux inherited guard-only records: actual OS single-thread profile, no Torch profile or CUDA work. "
++                "Zero-effect counters require independent production source review of guard ordering, all lock routes and state coverage."
++            )
+     with destination.open("x") as stream:
+         stream.write(json.dumps(receipt, indent=2) + "\n")
+     return receipt
+--- /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cuda-core-before-test_replay_spawn_verifier.py.txt
++++ /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py
+@@ -378,5 +378,318 @@
+         self.refuse()
+ 
+ 
++CUDA_CASES = (
++    "bootstrap_failure",
++    "runtime_query_failure",
++    "local_completion_single",
++    "local_completion_multiple_body",
++    "poison_unknown_ready",
++    "poison_ready_qualified",
++    "poison_ready_healthy_only",
++    "operation_body_completion",
++    "local_completion_duplicate_parent",
++    "inherited_pid",
++)
++CUDA_MODULES = {
++    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
++    "test_rng_cuda_admission": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
++}
++
++
++class CudaVerifierTests(unittest.TestCase):
++    # Reuse only synthetic fixture construction; no application or real Git invocation.
++    def fixture(self, case="inherited_pid"):
++        fixture = ReplayVerifierTests()
++        self.addCleanup(fixture.doCleanups)
++        fixture.job_name = "cuda-core-" + case.replace("_", "-")
++        fixture.role = "cuda_core_" + case
++        fixture.message = "cuda core inherited pid gates fail closed" if case == "inherited_pid" else f"cuda core {case} fail closed"
++        node = "test_isolated_inherited_pid_gate_refusal" if case == "inherited_pid" else f"test_isolated_poison_protocol[{case}]"
++        fixture.args = ("-m", "pytest", CUDA_MODULES["test_rng_cuda_admission"] + "::" + node, *verifier.REPLAY_ARGS[3:])
++        fixture.module_paths = CUDA_MODULES
++        fixture.setUp()
++        fixture.child["cuda_core_imports"] = fixture.child.pop("replay_imports")
++        fixture.child["cuda_core_test_sha256"] = fixture.manifest["source_files"][CUDA_MODULES["test_rng_cuda_admission"]]
++        fixture.observed["queued_ppid"] = 101
++        fixture.write("child", fixture.child)
++        fixture.write("observed", fixture.observed)
++        fixture.guards = {}
++        if case == "inherited_pid":
++            for trial, pid, actions in (
++                ("admission", 103, ("resolve_cuda", "enroll", "report_failure", "domain_admission")),
++                ("local", 104, ("resolve_cuda", "complete", "completion_failed", "report_failure", "domain_local_cuda_access")),
++            ):
++                identity = {
++                    "schema": "cuda-core-fork-guard-identity-v1",
++                    "profile": "linux-fork-inherited-guard-only-v1",
++                    "role": "cuda_core_inherited_pid_guard",
++                    "trial": trial,
++                    "pid": pid,
++                    "ppid": 102,
++                    "inherited_domain_pid": 102,
++                    "qualified": True,
++                    "base_commit": fixture.manifest["base_commit"],
++                    "candidate_tree": fixture.manifest["candidate_tree"],
++                    "manifest_sha256": fixture.child["manifest_sha256"],
++                    "cuda_core_imports": fixture.child["cuda_core_imports"],
++                    "module_origin": "inherited-loaded-module-objects",
++                    "source_sha256": {k: fixture.manifest["source_files"][v] for k, v in CUDA_MODULES.items()},
++                    "os_threads": 1,
++                    "torch_profile": None,
++                    "torch_profile_unavailable_reason": "no Torch calls permitted in fork guard-only process",
++                    "guard_results": {
++                        a: {
++                            "exception_class": "builtins.RuntimeError",
++                            "diagnostic": "RNG custody cannot be inherited by another process",
++                            "lock_acquire_calls": 0,
++                            "owner_lock_acquire_calls": 0,
++                            "cuda_touch_calls": 0,
++                            "body_calls": 0,
++                            "state_unchanged": True,
++                        }
++                        for a in actions
++                    },
++                }
++                observation = {
++                    "schema": "cuda-core-fork-guard-observation-v1",
++                    "trial": trial,
++                    "role": "cuda_core_inherited_pid_guard",
++                    "parent_pid": 102,
++                    "fork_pid": pid,
++                    "waitpid_pid": pid,
++                    "wait_status": 0,
++                    "exit_code": 0,
++                    "queued_pid": pid,
++                    "queued_ppid": 102,
++                    "identity_sha256": "pending",
++                    "message": f"cuda core inherited pid {trial} fail closed",
++                    "parent_os_threads_before_fork": 1,
++                    "manifest_sha256": fixture.child["manifest_sha256"],
++                }
++                fixture.guards[trial] = (identity, observation)
++                self.save_guard(fixture, trial)
++        return fixture
++
++    def save_guard(self, fixture, trial):
++        identity, observed = fixture.guards[trial]
++        path = fixture.job_dir / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
++        path.write_text(json.dumps(identity))
++        if "identity_sha256" in observed:
++            observed["identity_sha256"] = verifier.digest(path.read_bytes())
++        (fixture.job_dir / f"fork-observation-cuda_core_inherited_pid-{trial}.json").write_text(json.dumps(observed))
++
++    def test_all_ten_exact_mappings(self):
++        for case in CUDA_CASES:
++            with self.subTest(case=case):
++                f = self.fixture(case)
++                receipt = f.invoke()
++                self.assertEqual(receipt["case"], f.role)
++                self.assertEqual(receipt["expected_message"], f.message)
++                if case == "inherited_pid":
++                    self.assertEqual(len(receipt["fork_guards"]), 2)
++                    self.assertEqual([r["pid"] for r in receipt["fork_guards"]], [103, 104])
++
++    def test_cuda_outer_corruptions(self):
++        f = self.fixture()
++        controls = [
++            ("child", "cuda_core_test_sha256", "wrong"),
++            ("child", "cuda_core_imports", {}),
++            ("observed", "queued_ppid", True),
++            ("observed", "queued_ppid", 999),
++            ("child", "threads", True),
++            ("child", "interop_threads", 1),
++            ("child", "debug", False),
++            ("child", "pid", True),
++            ("observed", "message", "wrong"),
++            ("observed", "exitcode", False),
++        ]
++        for record, field, bad in controls:
++            with self.subTest(record=record, field=field, bad=bad):
++                obj = getattr(f, record)
++                original = obj[field]
++                obj[field] = bad
++                f.write(record, obj)
++                f.refuse()
++                obj[field] = original
++                f.write(record, obj)
++
++    def test_fork_identity_corruptions(self):
++        f = self.fixture()
++        controls = {
++            "schema": "wrong",
++            "profile": "full-torch",
++            "role": "cuda_core_inherited_pid",
++            "trial": "local",
++            "pid": True,
++            "ppid": 101,
++            "inherited_domain_pid": 999,
++            "qualified": False,
++            "base_commit": "wrong",
++            "candidate_tree": "wrong",
++            "manifest_sha256": "wrong",
++            "cuda_core_imports": {},
++            "module_origin": "fresh-import",
++            "source_sha256": {},
++            "os_threads": True,
++            "torch_profile": {"threads": 5},
++            "torch_profile_unavailable_reason": "wrong",
++            "guard_results": {},
++        }
++        identity, _ = f.guards["admission"]
++        for field, bad in controls.items():
++            with self.subTest(field=field):
++                original = identity[field]
++                identity[field] = bad
++                self.save_guard(f, "admission")
++                f.refuse()
++                identity[field] = original
++                self.save_guard(f, "admission")
++
++    def test_fork_observation_corruptions(self):
++        f = self.fixture()
++        _, observed = f.guards["admission"]
++        controls = {
++            "schema": "wrong",
++            "trial": "local",
++            "role": "wrong",
++            "parent_pid": 101,
++            "fork_pid": 999,
++            "waitpid_pid": 999,
++            "wait_status": 9,
++            "exit_code": False,
++            "queued_pid": True,
++            "queued_ppid": 101,
++            "message": "wrong",
++            "parent_os_threads_before_fork": True,
++            "manifest_sha256": "wrong",
++        }
++        for field, bad in controls.items():
++            with self.subTest(field=field):
++                original = observed[field]
++                observed[field] = bad
++                self.save_guard(f, "admission")
++                f.refuse()
++                observed[field] = original
++                self.save_guard(f, "admission")
++        for bad in (True, -1, 256, 127, 65536):
++            observed["wait_status"] = bad
++            self.save_guard(f, "admission")
++            f.refuse()
++
++    def test_all_guard_effects_and_diagnostics(self):
++        f = self.fixture()
++        for trial, (identity, _) in f.guards.items():
++            for action, result in identity["guard_results"].items():
++                for field in result:
++                    original = result[field]
++                    values = (1, False) if field.endswith("calls") else ("wrong",)
++                    for bad in values:
++                        with self.subTest(trial=trial, action=action, field=field, bad=bad):
++                            result[field] = bad
++                            self.save_guard(f, trial)
++                            f.refuse()
++                    result[field] = original
++                    self.save_guard(f, trial)
++
++    def test_guard_schemas_missing_extra_and_missing_records(self):
++        f = self.fixture()
++        for trial, pair in f.guards.items():
++            for record in pair:
++                for field in list(record):
++                    original = record.pop(field)
++                    self.save_guard(f, trial)
++                    f.refuse()
++                    record[field] = original
++                    self.save_guard(f, trial)
++                record["extra"] = 1
++                self.save_guard(f, trial)
++                f.refuse()
++                del record["extra"]
++                self.save_guard(f, trial)
++            for kind in ("identity", "observation"):
++                path = f.job_dir / f"fork-{kind}-cuda_core_inherited_pid-{trial}.json"
++                saved = path.with_suffix(".saved")
++                path.rename(saved)
++                f.refuse()
++                saved.rename(path)
++
++    def test_guard_hash_and_reused_pid(self):
++        f = self.fixture()
++        path = f.job_dir / "fork-identity-cuda_core_inherited_pid-admission.json"
++        original = path.read_bytes()
++        path.write_bytes(original + b" ")
++        f.refuse()
++        path.write_bytes(original)
++        identity, observed = f.guards["local"]
++        for pid in (101, 102, 103):
++            identity["pid"] = pid
++            for field in ("fork_pid", "waitpid_pid", "queued_pid"):
++                observed[field] = pid
++            self.save_guard(f, "local")
++            f.refuse()
++
++    def test_guard_action_and_result_schema_mutations(self):
++        f = self.fixture()
++        for trial, (identity, _) in f.guards.items():
++            actions = identity["guard_results"]
++            for action in list(actions):
++                result = actions.pop(action)
++                self.save_guard(f, trial)
++                f.refuse()
++                actions[action] = result
++                for field in list(result):
++                    value = result.pop(field)
++                    self.save_guard(f, trial)
++                    f.refuse()
++                    result[field] = value
++                result["extra"] = 0
++                self.save_guard(f, trial)
++                f.refuse()
++                del result["extra"]
++            actions["unknown"] = {}
++            self.save_guard(f, trial)
++            f.refuse()
++            del actions["unknown"]
++            self.save_guard(f, trial)
++
++    def test_each_role_rejects_another_cuda_node(self):
++        for case in CUDA_CASES:
++            f = self.fixture(case)
++            wrong = "bootstrap_failure" if case != "bootstrap_failure" else "runtime_query_failure"
++            args = list(f.args)
++            args[2] = CUDA_MODULES["test_rng_cuda_admission"] + f"::test_isolated_poison_protocol[{wrong}]"
++            f.spec_data["jobs"][0]["args"] = args
++            f.result["command"] = [str(f.root / ".venv/bin/python"), *args]
++            f.write("spec", f.spec_data)
++            f.write("result", f.result)
++            f.refuse()
++
++    def test_guard_profile_never_weakens_outer_profile(self):
++        f = self.fixture()
++        f.child["torch"] = None
++        f.write("child", f.child)
++        f.refuse()
++        f.child["torch"] = f.controller["torch"]
++        f.child["interop_threads"] = None
++        f.write("child", f.child)
++        f.refuse()
++
++    def test_node_source_profile_and_unknown_job(self):
++        for check in (
++            "test_other_node_cannot_substitute",
++            "test_source_config_artifact_mismatch",
++            "test_wrong_cpu_harness_profile",
++            "test_invalid_parent_elapsed_seconds",
++            "test_parent_result_controls",
++            "test_partial_and_unknown_schemas",
++        ):
++            f = self.fixture("bootstrap_failure")
++            getattr(f, check)()
++        f = self.fixture()
++        f.spec_data["jobs"][0]["name"] = "cuda-core-unknown"
++        f.write("spec", f.spec_data)
++        f.refuse()
++
++
+ if __name__ == "__main__":
+     unittest.main()

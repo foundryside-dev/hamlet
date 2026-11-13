@@ -1,0 +1,471 @@
+{
+  "schema": "bac-bounded-component-receipt-v1",
+  "status": "R88 production1 runtime60uniquePASS; two static gate defects required before closure",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+  "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+  "checks": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-collection-spec.json",
+      "spec_sha256": "5590b2859a4b05792fd05a26e8c41cdb7b5d03215cd193ecfdb70b3b4fe405f7",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-collection/collection/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-collection/collection-result.json": "50dba91488fc698d0f0fc39014ced87e0af11ca028e997584f4fae63b4068ce6",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-collection/collection.log": "d5f9b7c5ecb688b144ab5e811ea8138b815bdf5587d4a490d7934c8f387291c7",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-collection/static-custody.json": "d6843626a5d198ace45bd785c4bafc44603cceed006fc9998f8895ba82de9d26"
+      },
+      "results": [
+        {
+          "name": "collection",
+          "exit_code": 0,
+          "seconds": 3.972452402114868,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-collection/collection.log",
+          "sha256": "d5f9b7c5ecb688b144ab5e811ea8138b815bdf5587d4a490d7934c8f387291c7",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-healthy-spec.json",
+      "spec_sha256": "f54b8c7617f859a8378b24946cccdb40aad030aee08c3079d5ed308da99514bc",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-healthy/core-healthy/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-healthy/core-healthy-custody.json": "ed492724a2145f903aec2341f565f5bd79e891be72d46e19eef548b500fbceae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-healthy/core-healthy-result.json": "5229ecab0d22928b9c591b9c65ec49c8648bb8066c78d37a110a8a42d521661d",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-healthy/core-healthy.log": "ee9dfa855f43d799d07d86a6f1da23224032a298c1082d5fe8f33ed61100fbf9"
+      },
+      "results": [
+        {
+          "name": "core-healthy",
+          "exit_code": 0,
+          "seconds": 4.498304605484009,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_nested_currency_distinguishes_sibling_from_open_prepare",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-healthy/core-healthy.log",
+          "sha256": "ee9dfa855f43d799d07d86a6f1da23224032a298c1082d5fe8f33ed61100fbf9",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api-spec.json",
+      "spec_sha256": "7003ca60e057c4efa488cd59be905a9ff0313e16cdd9bae859e51eb2f6925022",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api/core-api/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api/core-api-custody.json": "00fd772f27ee81076d28964cc57d7a64553055cc01ff568864a4b8804a4d2b39",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api/core-api-result.json": "c7b1526e342badf55d43a2802d27780331c6530814090bc11b1a22cbe5ba8d91",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api/core-api.log": "a6f44a3533515c39ac2f4ff35a05871a18ef512badc8227515500da9d9f9cfac"
+      },
+      "results": [
+        {
+          "name": "core-api",
+          "exit_code": 0,
+          "seconds": 4.849695920944214,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-api/core-api.log",
+          "sha256": "a6f44a3533515c39ac2f4ff35a05871a18ef512badc8227515500da9d9f9cfac",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types-spec.json",
+      "spec_sha256": "efa6c67003d7229db7ad4654cfd0eed56322885bb35f9674f8c46d50ecea26ec",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/owned-mypy-result.json": "3bac75c906ad70904464b28b85e67c6257914afe4fcde72551cde2c17d97f1a5",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/owned-mypy.log": "1f470cc6065fe9e92d6696df39a0161e51d900eb02cfb83a7f8ea93076ec5368",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/public-types-result.json": "58eb7965284c25c82f6a56b666262dcd14060c2bba2065456e88adc771a5a42d",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/public-types.log": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/static-custody.json": "e8ecaeb50e8be28c73a1827ba6986b0a85ee3c5d78ffac78df947e92e1614ee5"
+      },
+      "results": [
+        {
+          "name": "owned-mypy",
+          "exit_code": 1,
+          "seconds": 2.933764934539795,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "src/townlet/exploration/rng_custody.py",
+            "--follow-imports=silent"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/owned-mypy.log",
+          "sha256": "1f470cc6065fe9e92d6696df39a0161e51d900eb02cfb83a7f8ea93076ec5368",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "public-types",
+          "exit_code": 0,
+          "seconds": 0.5533874034881592,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "--follow-imports=silent",
+            "-c",
+            "from typing import assert_type\nimport torch\nfrom townlet.exploration.rng_custody import AmbientRNGDomain, RNGParticipant, RNGOperation, RNGAdmission, LocalCUDAContract, LocalCUDAGate\n\ndef check_public(domain: AmbientRNGDomain, participant: RNGParticipant, lineage: RNGOperation | None, contract: LocalCUDAContract, device: torch.device, devices: tuple[int, ...], error: BaseException) -> None:\n    with domain.operation(participant=participant, operation_kind=\"ordinary\", lineage=lineage) as operation:\n        assert_type(operation, RNGOperation)\n    with domain.device_operation(participant=participant, operation_kind=\"ordinary\", lineage=lineage, cuda_devices=devices) as operation:\n        assert_type(operation, RNGOperation)\n    with domain.admission(lineage=lineage) as admission:\n        assert_type(admission, RNGAdmission)\n        assert_type(admission.resolve_cuda(device), int)\n        assert_type(admission.enroll(participant=participant, cuda_devices=devices), None)\n        assert_type(admission.report_failure(error=error), None)\n    with domain.local_cuda_access(participant=participant, contract=contract) as local:\n        assert_type(local, LocalCUDAGate)\n        assert_type(local.resolve_cuda(device=device), int)\n        with local.complete(cuda_devices=devices) as completed:\n            assert_type(completed, None)\n        assert_type(local.completion_failed(), bool)\n        assert_type(local.report_failure(error=error), None)\n"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-types/public-types.log",
+          "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current-spec.json",
+      "spec_sha256": "7910010c0dff7e45e9283c11bf064618a009acea7396eeaec54d08bedb20f3a8",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current/core-current/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current/core-current-custody.json": "4c43fb1988e0832ddfe40f117ed210035c137392ac5a3e9596eebf8270fda897",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current/core-current-result.json": "9683ca9d1939cdc57b446bd06ecfc4a56fac35d86b4ca7cbe312f2865a38b242",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current/core-current.log": "b1abc7bb58019bf9cb6dd4bbdd0de4621b0029bb9702432f84fa1b3b641abb93"
+      },
+      "results": [
+        {
+          "name": "core-current",
+          "exit_code": 0,
+          "seconds": 4.514674663543701,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "-k",
+            "not test_isolated",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-x"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current/core-current.log",
+          "sha256": "b1abc7bb58019bf9cb6dd4bbdd0de4621b0029bb9702432f84fa1b3b641abb93",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static-spec.json",
+      "spec_sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/black-global-result.json": "db8e9683db4326a527a23efad247f2d22f1ab735a39123480ad6298c2f1c93b3",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/black-global.log": "b8cfc41db07ae3c60f423c5b75176f263c9c4a492964f48e6200d7def48a785a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/no-defaults-result.json": "d9a13aaaa4148b4a696e82053d36d94683ab7b4589c56a00d9c1311fe779617a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/no-defaults.log": "a3872137454aefb440161667b620db59cb0561b02669f088bee507a1126ecdc0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/ruff-global-result.json": "58ed59eada3e129a73b4c87f1fd86c0117189008fce3aab199c3eabf9ae79265",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/ruff-global.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/static-custody.json": "8e24006d847b2c8ebd254aff9cbe0b2ca8e48bae2c4d785ca1331585de944a08"
+      },
+      "results": [
+        {
+          "name": "black-global",
+          "exit_code": 0,
+          "seconds": 40.67647576332092,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "src",
+            "tests",
+            "scripts",
+            "--workers",
+            "1"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/black-global.log",
+          "sha256": "b8cfc41db07ae3c60f423c5b75176f263c9c4a492964f48e6200d7def48a785a",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "no-defaults",
+          "exit_code": 1,
+          "seconds": 0.7922549247741699,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet",
+            "--quiet"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/no-defaults.log",
+          "sha256": "a3872137454aefb440161667b620db59cb0561b02669f088bee507a1126ecdc0",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "name": "ruff-global",
+          "exit_code": 0,
+          "seconds": 0.08363556861877441,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "."
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-static/ruff-global.log",
+          "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure-spec.json",
+      "spec_sha256": "5a195ca2bf30db2d5c3c40dfd24cd4eb6dfeb3d09e1ed1a450a83ca3dbf53503",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/replay-spawn-custody-cuda_core_bootstrap_failure.json": "34831d022fd234a369216a480576653bf844ccdb1f352e5ecd20cdbac07e6314",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-identity-cuda_core_bootstrap_failure.json": "6958e6d7fc85dd6c075f1817c7506dfbbe2559058d9c4f1f3a72984d7236ada6",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-observation-cuda_core_bootstrap_failure.json": "465359a735782f05ee45d1187b0ea38757447072c64ffedd6a466f37b08477df",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json": "5b09e24680d1f21e95d365f3167479d3cf48e5f5b63e67dde5da0f1fa23b475b",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json": "9b9c41fbb967dd824b79fb290452460e0159f45b5f609d4f2f41111f5a2e0bea",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure.log": "2138e3c7d910b818a6f3da3c03475d52c6fe6452174879aba11a8c76fa73195b"
+      },
+      "results": [
+        {
+          "name": "cuda-core-bootstrap-failure",
+          "exit_code": 0,
+          "seconds": 6.67797327041626,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[bootstrap_failure]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure.log",
+          "sha256": "2138e3c7d910b818a6f3da3c03475d52c6fe6452174879aba11a8c76fa73195b",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body-spec.json",
+      "spec_sha256": "f89a5eb2b30668b1f9f283dac2ea381cc036e9e89fb08f3956c1892e3a5f4dde",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/replay-spawn-custody-cuda_core_local_completion_multiple_body.json": "2ff7663bc89c59148a947e0aa09406fcd19eec286c7c75cbd99d4943d36f177f",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-identity-cuda_core_local_completion_multiple_body.json": "c313c713c81de769a1ac779fdfbccc2a274e514aced012c6580e6c470dcc39f3",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-observation-cuda_core_local_completion_multiple_body.json": "48109c986de8635697802d040adc2da278aa6b362e60b8252e1217699e06b93f",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json": "14d1c8c30c9cb9f1c54e01b4717fe8891dfa0daf62f4593eda10502666b9a553",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json": "6ca3d2888c76b065ff79ab420315053adb232f17c42426de3892f937bbf5fee5",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body.log": "4fbaca31646646067ce6ab88b4a8384e42c44462fcbd02ee03189ad0b770abe0"
+      },
+      "results": [
+        {
+          "name": "cuda-core-local-completion-multiple-body",
+          "exit_code": 0,
+          "seconds": 7.2220070362091064,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[local_completion_multiple_body]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body.log",
+          "sha256": "4fbaca31646646067ce6ab88b4a8384e42c44462fcbd02ee03189ad0b770abe0",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid-spec.json",
+      "spec_sha256": "7bd9b85c3ad141a1eff8d776774545947928769e0165cb35d2360abfabd847ec",
+      "files": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-admission.json": "30564005a419ad715e45eff8799406c3ec3165604a76b3a496a172455f5d3cfa",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-local.json": "35ef3823576d3d8bb0595d7deb34f0575dbdd89ae649d07bf8a07330008e17c6",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-admission.json": "a4d142f0a92308fcb7ee2167a468d737a87d218653dfed3aab418ffd0d0a329d",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-local.json": "88a74f7f21b373b065daf8d203954649925d35bddd04fb38dd063690e69adb77",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/identity-controller.json": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/replay-spawn-custody-cuda_core_inherited_pid.json": "de9405b983e17b78b2a022063ec93b48609c5bcff464938144294143dad7309d",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-identity-cuda_core_inherited_pid.json": "be4b61efdf0206f4ef25fe887c2bec8219e6249e8b9874bc69f6f72981a8b119",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-observation-cuda_core_inherited_pid.json": "4ba7b0a1131f2a7e7c1e88bef7070b61d95628e898792094c96ddf9d127c7802",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json": "7a7c64c675d6a0cb125dd48f7c149633f0f435c167b6381ff7d19a12344eaed7",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json": "f7e39129413e63469181832cd39f70131c421c77e23e475b086f5afe18c44d09",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid.log": "b458b7f05345047dda51e643833df9de9e5db8c8fe4d21107f8fabc6be09e6b3"
+      },
+      "results": [
+        {
+          "name": "cuda-core-inherited-pid",
+          "exit_code": 0,
+          "seconds": 7.195553541183472,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid.log",
+          "sha256": "b458b7f05345047dda51e643833df9de9e5db8c8fe4d21107f8fabc6be09e6b3",
+          "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+          "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+          "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+          "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        }
+      ]
+    }
+  ],
+  "accounting": {
+    "collected": 67,
+    "unique_passed": 60,
+    "ordinary": 57,
+    "representative_children": 3,
+    "nested_guard_forks": 2,
+    "overlap": "Healthy3/API3 are among57ordinary, notextra. Twoforktrials belong to one childtest, notextra pytestcases.",
+    "unrun_child_cases": 7
+  },
+  "static": {
+    "public_typed_consumer": "PASS",
+    "owned_core_mypy": "FAIL1 RLock._is_owned attr-defined at369",
+    "global_ruff": "PASS",
+    "global_black": "PASS",
+    "defaults": "FAIL602>600; newASG002 _runtime_snapshot.count line477 and_operation_inventory.count line630"
+  },
+  "custody": "All actualcommands sourcebound817/573/13/14MAIN1; genericruntime/staticverified; each3child actualPID/PPID verified by independentlyapproved872ed3a1 verifier; inheritedrole includes2realOSfork records/singlethread/noCUDA proof. Sessionsclosed.",
+  "children": {
+    "bootstrap": [
+      96966,
+      96852
+    ],
+    "multiple_body": [
+      96915,
+      96809
+    ],
+    "inherited_spawn": [
+      96963,
+      96854
+    ],
+    "inherited_forks": [
+      97063,
+      97065
+    ]
+  },
+  "reviews": [
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-CORE-PRODUCTION1-REVIEW.md",
+      "sha256": "84a874ae1d91e5623290c8238a53eca3e35eaffddfc7ebe72ea745c2e9113e5a",
+      "verdict": "SPECsourceapproved; QUALITYQ1typingrequired"
+    },
+    {
+      "path": "wave35-preparation/T18e-R0-CUDA-CORE-CHILD-VERIFIER-FIX1-INDEPENDENT-REVIEW.md",
+      "sha256": "9f26365cf9226f98d0419c77143a361e6b84f9a3693d6105ed2e90f9d99c2630",
+      "verdict": "ToolingSPECQUALITYapproved; original50syntheticsamecases acrossauthor/root/SOL"
+    }
+  ],
+  "unrun": [
+    "remaining7newchildcases",
+    "existingcore/BANK/replayaffectedregressiongates onnewcore",
+    "independent actualapplication rerun",
+    "generatedownedcurriculumtemplate",
+    "actualCUDAhardware anddownstreamproducerintegration"
+  ],
+  "capture_prerequisite": "evidence-management/r88-initial-capture-failure.json retains historicalcontextceilingfailure; correctedcaptureseals4oldcontexts withoutdroppingsourceguards/tests",
+  "next": "Originalauthor boundedcorefix1 typing+twoexplicitbranches; preserveownercheck/defaultceiling; then exactnewsourceverifyall67+affectedcontrols andindependentreview. No B6/package/hardwareclosure."
+}

@@ -1,0 +1,17 @@
+......F.....................................
+======================================================================
+FAIL: test_guard_schemas_missing_extra_and_missing_records (test_replay_spawn_verifier.CudaVerifierTests.test_guard_schemas_missing_extra_and_missing_records)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 510, in test_guard_schemas_missing_extra_and_missing_records
+    original = record.pop(field); self.save_guard(f, trial); f.refuse()
+                                                             ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 147, in refuse
+    with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'KeyError'>, <class 'FileNotFoundError'>, <class 'FileExistsError'>) not raised
+
+----------------------------------------------------------------------
+Ran 44 tests in 0.373s
+
+FAILED (failures=1)

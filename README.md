@@ -381,6 +381,8 @@ refresh the broader dated source/CI review above.
 
 BAC remediation remains in progress: 28 qualified, 38 remaining, 66 total. The bounded CPU replay repair now rejects malformed mutable payloads before issuing installation authority. At R85, all 109 replay regression cases and 49 sequential owner cases passed; independent execution repeated the same 49 owner cases. CUDA, remaining caller integration and programme gates remain open. See the [shared and flat/PER replay contract](docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md), [recurrent replay contract](docs/remediation/bac/CURRENT-RECURRENT-REPLAY-CUSTODY-CONTRACT.md) and [BAC status](docs/remediation/bac/STATUS.md).
 
+The RNG custody core now provides scoped CUDA admission and idle enrollment, explicit per-invocation device operations, and source-bound local CUDA completion. Its bounded CPU/protocol component is qualified at R89; see [the core contract](docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) for exact APIs and evidence. The production local-GPU contract manifest remains empty; B6 producer integration and real GPU qualification remain required. Programme accounting stays28 qualified/38 remaining/66 total.
+
 T17 token-set and recurrent factories consume the declared `linear` or `interaction_mlp`
 row encoder before either `mean` or `attention` pooling. Interaction jointly encodes each
 row's descriptor and live payload through Linear → ReLU → Linear with an explicit positive

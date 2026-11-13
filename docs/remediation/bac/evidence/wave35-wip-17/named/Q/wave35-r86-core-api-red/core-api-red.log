@@ -1,0 +1,60 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py FFF        [100%]
+
+=================================== FAILURES ===================================
+______________ test_public_required_signatures_and_empty_manifest ______________
+
+    def test_public_required_signatures_and_empty_manifest() -> None:
+        expected = {
+            "operation": ("participant", "operation_kind", "lineage"),
+            "device_operation": ("participant", "operation_kind", "lineage", "cuda_devices"),
+            "admission": ("lineage",),
+            "local_cuda_access": ("participant", "contract"),
+        }
+        for name, names in expected.items():
+>           parameters = list(inspect.signature(getattr(custody.AmbientRNGDomain, name)).parameters.values())[1:]
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: type object 'AmbientRNGDomain' has no attribute 'device_operation'
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:191: AttributeError
+_________ test_idle_admission_is_not_lineage_and_escaped_gate_refuses __________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f98f81e0c20>
+
+    def test_idle_admission_is_not_lineage_and_escaped_gate_refuses(domain: Any) -> None:
+>       with domain.admission(lineage=None) as gate:
+             ^^^^^^^^^^^^^^^^
+E       AttributeError: 'AmbientRNGDomain' object has no attribute 'admission'
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:213: AttributeError
+___________________ test_subset_cpu_path_never_queries_cuda ____________________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f98f81e0c20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f98f7fb8d60>
+
+    def test_subset_cpu_path_never_queries_cuda(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+>       monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:413: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_rng_cuda_admission.NoCUDA object at 0x7f98f7f21fd0>
+name = '__class__'
+
+    def __getattribute__(self, name: str) -> Any:
+>       raise AssertionError(f"CPU protocol queried CUDA attribute {name}")
+E       AssertionError: CPU protocol queried CUDA attribute __class__
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda
+============================== 3 failed in 0.12s ===============================

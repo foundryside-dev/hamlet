@@ -1,0 +1,112 @@
+diff --git a/src/townlet/exploration/rng_custody.py b/src/townlet/exploration/rng_custody.py
+index 15c1770a..1c319d86 100644
+--- a/src/townlet/exploration/rng_custody.py
++++ b/src/townlet/exploration/rng_custody.py
+@@ -7,25 +7,31 @@ Same-object mutation exclusion and real parent boundary authority remain separat
+ from __future__ import annotations
+ 
+ import os
+ import queue
+ import threading
+ import weakref
+ from collections.abc import Iterator, Mapping
+ from contextlib import contextmanager
+ from dataclasses import dataclass
+ from types import MappingProxyType
+-from typing import Any
++from typing import Any, Protocol, cast
+ 
+ import torch
+ 
+ 
++class _OwnedRLock(Protocol):
++    """Ownership extension of the actual process RLock and its forwarding probe."""
++
++    def _is_owned(self) -> bool: ...
++
++
+ class _Opaque:
+     __slots__ = ("__weakref__",)
+ 
+     def __new__(cls) -> Any:
+         raise TypeError("RNG capabilities are issued by their process domain")
+ 
+     def __init__(self) -> None:
+         raise TypeError("RNG capabilities cannot be reinitialized")
+ 
+     def __copy__(self) -> Any:
+@@ -359,21 +365,21 @@ class AmbientRNGDomain:
+ 
+     def _gate_record(self, gate: RNGAdmission | LocalCUDAGate) -> _Gate:
+         # Methods already hold the issuing scope's real lock. Authenticate before
+         # any lock/owner/CUDA work, including wrong-thread and inherited callers.
+         self._check_pid()
+         if type(gate) not in {RNGAdmission, LocalCUDAGate} or gate not in self._gates:
+             raise ValueError("RNG gate is foreign or expired")
+         record = self._gates[gate]
+         if record.thread != threading.get_ident():
+             raise ValueError("RNG gate belongs to another thread")
+-        if not self._lock._is_owned():
++        if not cast(_OwnedRLock, self._lock)._is_owned():
+             raise RuntimeError("RNG gate requires its actual domain exclusion")
+         if record.lineage is not None:
+             self._authenticate(record.lineage)
+         if type(gate) is LocalCUDAGate:
+             if record.participant is None or record.contract is None or record.policy is None:
+                 raise ValueError("Local CUDA gate has no authentic binding")
+             member = self._member(record.participant)
+             if (
+                 member.owner() is not record.owner
+                 or _LOCAL_CUDA_CONTRACTS.get(record.contract) is not record.policy
+@@ -467,21 +473,24 @@ class AmbientRNGDomain:
+             self._poison = error
+         active = self._active()
+         if active is not None:
+             reported = self._authenticate(active).reported
+             if all(error is not previous for previous in reported):
+                 reported.append(error)
+ 
+     def _runtime_snapshot(self, gate: RNGAdmission | LocalCUDAGate) -> tuple[bool, int]:
+         try:
+             initialized = torch.cuda.is_initialized()
+-            count = torch.cuda.device_count() if initialized else 0
++            if initialized:
++                count = torch.cuda.device_count()
++            else:
++                count = 0
+             if type(initialized) is not bool or type(count) is not int or (initialized and count <= 0):
+                 raise RuntimeError("CUDA runtime returned invalid initialized device inventory")
+             if not initialized or self._poison is None:
+                 self._cuda_ready = initialized
+             return initialized, count
+         except BaseException as error:
+             self._cuda_ready = False
+             self._gate_report_failure(gate=gate, error=error)
+             raise
+ 
+@@ -620,21 +629,24 @@ class AmbientRNGDomain:
+     def _operation_inventory(self, *, member: _Member, cuda_devices: tuple[int, ...]) -> None:
+         self._device_tuple(cuda_devices)
+         if not set(cuda_devices).issubset(member.cuda_devices):
+             raise ValueError("RNG operation device inventory is outside enrolled membership; idle preflight is required")
+         if not cuda_devices:
+             return
+         self._cuda_busy = threading.get_ident()
+         try:
+             try:
+                 initialized = torch.cuda.is_initialized()
+-                count = torch.cuda.device_count() if initialized else 0
++                if initialized:
++                    count = torch.cuda.device_count()
++                else:
++                    count = 0
+                 if type(initialized) is not bool or type(count) is not int or (initialized and count <= 0):
+                     raise RuntimeError("CUDA runtime returned invalid initialized device inventory")
+             except BaseException as error:
+                 self._cuda_ready = False
+                 self._record_failure(error)
+                 raise
+             self._cuda_ready = initialized
+             if not initialized or any(index >= count for index in cuda_devices):
+                 raise ValueError("RNG operation requires initialized enrolled CUDA indices")
+         finally:

@@ -1,0 +1,48 @@
+{
+  "status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+  "job": "cuda-core-inherited-pid",
+  "case": "cuda_core_inherited_pid",
+  "expected_message": "cuda core inherited pid gates fail closed",
+  "parent_job_exit_code": 0,
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "manifest_sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+  "spec_sha256": "25c7b990df85f03e6af999de2da7ce6c57c1387e63c95755212dde79fee5cce5",
+  "result_sha256": "7f4a98244b1efdfc9f5d235efa36a0dfb73a6ec3afa732ec5e4af1fd3cbd2a0b",
+  "controller_sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+  "child_receipt_sha256": "9e0c134d2124ab30637826341d677d304611baeb3387bf7f76d5965d2991896e",
+  "parent_observation_sha256": "5c7001719204d56d91e74474d9d55c80f3c8f4927630b4f18304ac6dcdd3d579",
+  "verifier_sha256": "872ed3a110789627d28b97af2eb64d7c8e15f6f46bad14942c52b0f529787ac4",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+  "child_pid": 106838,
+  "parent_pid": 106765,
+  "child_ppid": 106765,
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "debug": true,
+  "source_guards": 817,
+  "configs": 573,
+  "artifacts": 13,
+  "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+  "scope": "This CPU CUDA-core control only; no CUDA hardware, B6, replay migration or whole-package qualification.",
+  "fork_guards": [
+    {
+      "trial": "admission",
+      "pid": 106892,
+      "ppid": 106838,
+      "profile": "linux-fork-inherited-guard-only-v1",
+      "identity_sha256": "22fcc8dbd73011f0a06e0904f70f081d89bd7f2b201b39cbfb02d51c4e30ac2e",
+      "observation_sha256": "4fe493d535e21979e38995a473d883ea80d614b778810494eb2a7a6019bb4a24"
+    },
+    {
+      "trial": "local",
+      "pid": 106895,
+      "ppid": 106838,
+      "profile": "linux-fork-inherited-guard-only-v1",
+      "identity_sha256": "5779d3994cf1e3413f5a21b792ce1aebb7eed3a859aed285ba35c23a49fded58",
+      "observation_sha256": "5e10b7167e5537acb94f7798d92e2a7302e2efba464bb7d03fbb253d1909ba9d"
+    }
+  ],
+  "fork_guard_limitations": "Linux inherited guard-only records: actual OS single-thread profile, no Torch profile or CUDA work. Zero-effect counters require independent production source review of guard ordering, all lock routes and state coverage."
+}

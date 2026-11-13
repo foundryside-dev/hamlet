@@ -1,5 +1,11 @@
 # BAC implementation status
 
+## 2026-11-13 — CUDA custody core CPU component qualified at R89
+
+R89 bounded core CPU/protocol component qualified: root1515 unique PASS (67 core +1290 coherent +109 replay +49 owner), with two CUDA-hardware SKIP and one prior required ordinary-runner deselection still owed. Independent Astra's same67 PASS overlap root's67. Ten qualified spawn children and two real inherited-gate fork trials retain strict ancestry/source custody; the rejected initial two-worker batch is preserved and corrected one-worker runs supply accepted qualification. Owned/public types and global Ruff/Black/defaults600 PASS; global mypy still fails15 required oracle6/POP-lineage9 errors. B6 concrete producer/hardware integration and full-programme38 remaining packages stay open;28/38/66 accounting is unchanged. Application execution is closed.
+
+See the [core contract](CURRENT-RNG-CUSTODY-CORE-CONTRACT.md) and [evidence index](EVIDENCE-INDEX.md) for exact scope and publication identity.
+
 ## 2026-11-13 — sequential owner caller repair qualified at R85
 
 The older sequential owner tests now declare standalone lineage explicitly at 21 call sites. The masking test patches the sampler actually used and checks a concrete terminal followed by masked rows; its existing assertions remain intact. Production replay and both replay regression modules are unchanged from R84.

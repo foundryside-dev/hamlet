@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7fdf649e8c20>\n\n    def test_idle_admission_is_not_lineage_and_escaped_gate_refuses(domain: Any) -> None:\n>       with domain.admission(lineage=None) as gate:\n             ^^^^^^^^^^^^^^^^\nE       AttributeError: 'AmbientRNGDomain' object has no attribute 'admission'\n\ntests/test_townlet/regressions/bac/test_rng_cuda_admission.py:225: AttributeError",
+  "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c"
+}

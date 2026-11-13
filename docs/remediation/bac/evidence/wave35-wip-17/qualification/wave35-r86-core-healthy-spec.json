@@ -1,0 +1,26 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r86-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r86-core-healthy",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "core-healthy",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_nested_currency_distinguishes_sibling_from_open_prepare",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

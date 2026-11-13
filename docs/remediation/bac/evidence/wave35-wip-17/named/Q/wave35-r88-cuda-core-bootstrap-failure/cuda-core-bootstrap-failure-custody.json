@@ -1,0 +1,22 @@
+{
+  "job": "cuda-core-bootstrap-failure",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 6.67797327041626,
+  "source_guards": 817,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

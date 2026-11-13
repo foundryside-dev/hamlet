@@ -1,0 +1,41 @@
+....F......F.F....................................
+======================================================================
+FAIL: test_extra_fork_pair_refused (test_replay_spawn_verifier.CudaVerifierTests.test_extra_fork_pair_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 684, in test_extra_fork_pair_refused
+    self.assert_unknown_fork_records_refused(("identity", "observation"))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 692, in assert_unknown_fork_records_refused
+    with self.assertRaisesRegex(ValueError, "unexpected fork record inventory"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_lone_unknown_fork_observation_refused (test_replay_spawn_verifier.CudaVerifierTests.test_lone_unknown_fork_observation_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 681, in test_lone_unknown_fork_observation_refused
+    self.assert_unknown_fork_records_refused(("observation",))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 692, in assert_unknown_fork_records_refused
+    with self.assertRaisesRegex(ValueError, "unexpected fork record inventory"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_unknown_fork_identity_record_refused (test_replay_spawn_verifier.CudaVerifierTests.test_unknown_fork_identity_record_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 678, in test_unknown_fork_identity_record_refused
+    self.assert_unknown_fork_records_refused(("identity",))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 692, in assert_unknown_fork_records_refused
+    with self.assertRaisesRegex(ValueError, "unexpected fork record inventory"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 50 tests in 0.583s
+
+FAILED (failures=3)

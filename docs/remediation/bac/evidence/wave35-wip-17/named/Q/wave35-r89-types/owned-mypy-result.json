@@ -1,0 +1,18 @@
+{
+  "name": "owned-mypy",
+  "exit_code": 0,
+  "seconds": 0.8773748874664307,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "mypy",
+    "src/townlet/exploration/rng_custody.py",
+    "--follow-imports=silent"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-types/owned-mypy.log",
+  "sha256": "5d4b6d285b77932e3d08212c3b4974d0a803f98ec60408ac6ccf6a063fa6c19e",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "manifest_sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

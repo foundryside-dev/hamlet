@@ -1,0 +1,27 @@
+{
+  "name": "core-healthy",
+  "exit_code": 0,
+  "seconds": 3.849067211151123,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_cpu_registration_and_completion_query_no_cuda",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_released_prepare_install_currentness",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_existing_nested_currency_distinguishes_sibling_from_open_prepare",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r87-core-healthy/core-healthy.log",
+  "sha256": "8c4f4ac186b4046663529c66541d300a27a7157cd0bb63bf064664c6eefdf588",
+  "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,8 +1,84 @@
 # RNG custody core contract
 
-Current native wire is strict RND/adaptive/ICM v4 with embedded named Adam recipes; see the [native restore configuration contract](CURRENT-NATIVE-RESTORE-CONFIGURATION-CONTRACT.md). The R45/R47 bindings and runtime evidence below are historical. The [current pure bootstrap contract](CURRENT-PURE-BOOTSTRAP-CONTRACT.md) records the R58 shared reservation and explicit-lineage APIs, source and bounded CPU execution.
+Current native wire is strict RND/adaptive/ICM v4 with embedded named Adam recipes; see the [native restore configuration contract](CURRENT-NATIVE-RESTORE-CONFIGURATION-CONTRACT.md). The [pure bootstrap contract](CURRENT-PURE-BOOTSTRAP-CONTRACT.md) describes empty shared reservation, held pure bootstrap and explicit-lineage activation. The historical owner/bootstrap/capture/BANK records below retain their own source bindings and evidence scopes.
 
-The standalone core supports empty shared reservation, held pure bootstrap, explicit named private activation under authentic lineage and atomic private native/auxiliary/RNG capture through `OwnedWorldBackend.snapshot_with_capture`. The R67 atomic capture producer contract and CPU evidence are recorded below. Domain custody, owner mutation exclusion, current tokens and opaque prepared handles remain the common primitives. R72 now qualifies bounded CPU BANK/CP custody adoption and the atomic owner producer. Actual joint parent restoration and all-child durable publication, full-D acceptance, ordinary runner integration, six global oracle type errors, applicable hardware, direct-consumer enrollment and final programme gates remain required; documentation/evidence and remote publication are pending. This current disposition governs the historical R45/R47/R58 records below; their then-open BANK adoption and 14 BANK caller type errors are not current R72 blockers.
+The current process core adds scoped CUDA admission, idle enrollment expansion, exact per-invocation device operations and source-classified local CUDA completion. These are process-custody capabilities. They do not supply parent boundary/role authority, same-owner revision tracking, truthful producer device inventory or all-child publication. The production local-contract manifest is empty; no real local GPU leaf is enabled by this core-only change.
+
+## Current source and qualification scope
+
+Current [rng_custody.py](../../../src/townlet/exploration/rng_custody.py) is821 lines, SHA256 `0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477`. Focused [CUDA admission regression](../../../tests/test_townlet/regressions/bac/test_rng_cuda_admission.py) is1409 lines, SHA256 `b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e`.
+
+R89 qualifies this bounded core CPU/protocol component. Root records1515 unique PASS:67 new core,1290 coherent existing,109 replay and49 owner regression cases. Two CUDA-hardware controls remain SKIP, and one previously required ordinary-runner case remains deselected and owed. The focused67 include ten actual qualified spawn children and two real inherited-gate fork trials, with strict source/import/manifest/PID/PPID ancestry checks. Independent Astra executed the same67 with complete custody verification and PASS; those overlap root's67 and add no unique cases. All application execution is closed.
+
+An initial ten-case pytest batch passed but was rejected by the strong verifier because it actually used two workers. That rejected evidence is retained. Corrected separate one-worker runs supply the accepted child qualification; repeated attempts are not extra unique cases. Immutable R89 component receipt `wave35/r89-cuda-core-component-receipt.json`, SHA256 `dda5f267a4db95acf62b5ec885e28e2a7911845824b15c63b5a30a537abc8332`, and independent verification `P/T18e-R0-CUDA-CORE-INDEPENDENT-VERIFICATION.md`, SHA256 `306d71862be4b66688bcb8aef2160a77202c6180d090b34cc7dff1f2d1d37b7f`, bind these final results.
+
+Owned-core and public-consumer typing, global Ruff/Black and the unchanged defaults600 gate pass. Global mypy still fails with15 required errors: six oracle and nine POP lineage errors. This component qualification leaves programme accounting unchanged at28 qualified/38 remaining/66 total; it does not accept those failures or close remaining programme work.
+
+Instrumented CUDA seams qualify protocol behavior, phase/currentness effects, exact inventory/completion calls and failure identity. They do not qualify actual CUDA initialization/query RNG effects, real asynchronous GPU completion or one-/two-device replay behavior. The actual fork witness establishes inherited-process guard behavior in its measured Linux single-thread profile. No real CUDA work occurs in the guard grandchildren. Skipped hardware controls remain unexecuted.
+
+## Sole domain and required public APIs
+
+`process_rng_domain()` returns the sole process domain; independently constructed domains are refused. Registration binds an actual weak-referenceable lifetime owner, exact initialized sorted/unique CUDA indices and a nonempty immutable entrypoint set. Empty `()` registration is CUDA-query-free and does not enroll a device. Registration/retirement and ownership adoption require idle custody. Active operations pin their admitted owners; idle weak retirement drains under the actual domain lock.
+
+All parameters below are required. Domain entrypoints and gate methods use the exact keyword/positional forms shown. Context-manager APIs yield the listed capability/value; generator `Iterator` annotations do not change the typed public context-manager call.
+
+| API | Result or yielded value |
+| --- | --- |
+| `domain.operation(*, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation \| None)` | yields `RNGOperation`; full-member completion |
+| `domain.device_operation(*, participant: RNGParticipant, operation_kind: str, lineage: RNGOperation \| None, cuda_devices: tuple[int, ...])` | yields `RNGOperation`; exact invocation subset |
+| `domain.admission(*, lineage: RNGOperation \| None)` | yields `RNGAdmission` |
+| `admission.resolve_cuda(device: torch.device)` | `int`; positional or keyword selector |
+| `admission.enroll(*, participant: RNGParticipant, cuda_devices: tuple[int, ...])` | `None` |
+| `admission.report_failure(*, error: BaseException)` | `None` |
+| `domain.local_cuda_access(*, participant: RNGParticipant, contract: LocalCUDAContract)` | yields `LocalCUDAGate` |
+| `local_gate.resolve_cuda(*, device: torch.device)` | `int`; keyword selector |
+| `local_gate.complete(*, cuda_devices: tuple[int, ...])` | yields `None` around actual local work |
+| `local_gate.completion_failed()` | `bool` while gate remains open |
+| `local_gate.report_failure(*, error: BaseException)` | `None` |
+
+The full-member and explicit-subset operations are distinct capabilities. Both authenticate the actual participant, registered entrypoint, issuing thread and exact active lineage, and share ordinary-work currency, revision, token and failure rules. A subset must be sorted/unique, initialized and within enrolled membership before its body begins; it cannot add membership. Each nested operation completes its selected scope inventory and contributes that inventory to the sorted outer completion union. A full-member scope selects the member's declared tuple. An explicit empty subset is truthful only for work that uses no CUDA. Both empty routes access no CUDA attributes.
+
+`lineage=None` obtains standalone admission only while the same thread is idle. An active operation requires its exact authentic lineage; missing, foreign, expired and cross-thread lineage refuse. No local scope, diagnostic value or gate can fabricate lineage. Other threads wait at the actual domain RLock. The new admission gate holds that same lock throughout its lifetime and creates no operation, token or draw authority. A gate opened under a parent requires its authentic lineage and cannot initialize or enroll while that parent remains active.
+
+## Lazy resolution, READY and enrollment
+
+CUDA resolution requires an actual `torch.device` CUDA selector. Structural refusal precedes CUDA queries. For unindexed `torch.device("cuda")`, resolution reads the actual current device anew; the public selector is not permanently canonicalized to its first index. A returned effective index is per invocation. Producer inventory must separately include actual retained/source/input/staged/output/temporary devices; selection alone is insufficient, and historical enrollment is not an instruction to synchronize every device on every call.
+
+Healthy idle resolution verifies an already initialized runtime or calls explicit `torch.cuda.init()` when necessary. Immediately before an actual initialization attempt, the core advances ordinary-work currency once, invalidating prior preparations without inventing an operation exit/revision. Successful initialization records READY before normal index validation. Thus successful first init followed by an out-of-range refusal retains READY and its currency invalidation, without owner-data publication or enrollment. A no-op already-initialized resolution preserves otherwise current preparations. No seed, draw, RNG capture or all-device enrollment is performed merely to resolve an index.
+
+READY is a process-local healthy-runtime fact. It is established by successful healthy initialization or initialized-runtime verification and cleared when uninitialized/uncertain runtime state is observed. It is not membership, current-token authority or proof of an arbitrary leaf's effects. Active-parent initialization refuses before an attempt and requires idle preflight. Uncertain query/init failure clears readiness, preserves the original exception and records common first-cause poison; normal device/index refusal does not itself poison. Initialization has no claimed rollback to a CUDA state that did not exist.
+
+Under an idle admission gate, `enroll` authenticates the existing participant/live owner and validates exact initialized indices, then atomically replaces the immutable member record with its exact union. Participant identity, weak owner reference and entrypoints remain. Only a real expansion increments membership generation; an unchanged union is a no-op. The gate pins an enrolled owner through exit. No unregister/re-register, token refresh or compensating generation reset is used. Active enrollment refuses even with genuine parent lineage.
+
+## Source-bound local CUDA work and completion
+
+`LocalCUDAContract` is an opaque source-issued classification identity. The immutable core manifest associates each enabled identity with one exact concrete owner class and route/input/effect policy, including separate healthy and READY post-poison permissions. Local entry authenticates both membership and contract, requires `type(owner) is policy.owner_type`, pins that same lifetime instance and retains the exact participant/owner/contract/route binding. Unrelated producers, unlisted subclasses, name spoofing, fabricated contracts and caller purity declarations do not qualify. There is no public issuer or policy-registration API.
+
+The current production manifest contains no entries. A later bounded producer/supplier change must enable each concrete audited route and its actual input restrictions before migrating that route. The finite private CPU fixture supplies no production permission. Producer dispatch remains responsible for executing exactly the classified leaf with its supported ordinary inputs and truthful device inventory; the core is not an arbitrary-code purity detector.
+
+A local gate holds the sole domain lock before producer owner exclusion. Healthy idle local resolution may initialize before acquiring the owner lock. Under an active parent it cannot initialize or enroll. Under common poison, it requires a previously READY runtime and an individually qualified post-poison route; it cannot bootstrap or verify unknown readiness. Already READY unindexed selection remains dynamic under the route's qualified query contract. CPU owner-local leaves and accepted disposable cloned-generator scratch work remain on their existing owner-only path without new CUDA prerequisites.
+
+The producer acquires its owner lock, validates health and inventories actual initialized source/destination/temporary devices, then enters exactly one `local_gate.complete(cuda_devices=...)` scope around the actual work. Tuple validation precedes the body. Mid-work resolution, overlapping/repeated completion and escaping an active unfinished scope refuse. Internal helpers reuse the producer's existing scope and effective device. They cannot retroactively add an unlisted device after work starts.
+
+Local completion attempts every declared index in stable order on success or body failure, without sweeping undeclared available/historical devices. It runs while the producer still holds owner exclusion. In an owner-held `finally`, the producer inspects `completion_failed()` and quarantines an affected owner before releasing its lock; then it releases the gate/pin. The core cannot inspect a producer's private lock or prove its inventory. Actual producer dispatch, exclusion and quarantine placement require their own bounded implementation/review.
+
+## Failure, currentness and process boundaries
+
+Body failure with successful completion is raised unchanged. Local completion uncertainty sets the authentic failure marker and first common poison cause; every declared local index is still attempted. Body and distinct completion failures retain original identity/order, with the body first. Repeated exception identities are not duplicated through nested/parent cleanup. Gate `report_failure` can report pre-operation uncertainty without fabricating an operation; under a genuine active operation its errors also participate in that operation's exit aggregation. Reporting and successful local work never heal common poison, mint/refresh tokens or authorize publication. No public poison reset exists.
+
+Core tokens are issuer-owned evidence for their participant, operation, generation, revision and currency; producers validate the original token. The core finalizes still-current issued tokens through its own operation-exit weak-retirement bookkeeping; this grants no producer permission to refresh stale material. In the same held operation, validation uses its original revision; across release it permits only the immediately following operation revision with matching generation/currency. Actual membership changes and ordinary admitted work can stale preparations. Ordinary nested sibling work changes currency; ordinary work inside an open preparation follows the existing nesting rule and need not independently stale its core token. Producer owner-revision/material checks are therefore independently required after staging and immediately before publication. Successful local work alone does not advance core operation revision/currency/generation. Owner mutations must advance the producer's own revision before their mutation body, including failed attempts, when that producer is integrated.
+
+Correct lock order is sole domain admission/gate before producer-owner exclusion, with parent/BANK lifecycle locks placed inside the declared order. CUDA completion must finish before owner exclusion is released. The core's `_cuda_busy` transaction guard rejects unrelated same-thread reentry during runtime/bootstrap/inventory/local-completion transactions; other threads wait at the actual domain lock. `status()` remains blocking diagnostics and supplies no owner-lock-safe admission authority.
+
+New gate entries and every gate method check the actual process PID before lock acquisition, scope/thread/policy checks or CUDA effects. Real inherited use raises built-in `RuntimeError` with exact text `RNG custody cannot be inherited by another process`. Open issuing-thread scope, real RLock ownership and unchanged local binding are also authenticated. Gate/contract/operation/participant/token capabilities are process identities, noncopyable and nonportable; synchronous scopes cannot cross await/task ownership or be used after exit. Genuine domain custody does not intercept arbitrary raw library calls or detect raw mutable aliases.
+
+## Remaining integration and hardware obligations
+
+The core change supplies no replay CUDA preflight wrapper, per-producer selected/retained/input/staged inventory, local route activation, owner mutation revision/publication implementation or parent call-site migration. Those require their own bounded source and causal evidence. Existing same-object/raw-alias quiescence and real parent/role/all-child publication responsibilities remain. Real CUDA initialization and initialized-query RNG preservation, actual asynchronous completion under owner exclusion and applicable one-/two-device tests remain required. B6 actual producer/hardware work, the deselected required ordinary-runner case,15 global type errors and the remaining38 programme packages stay open despite this core component qualification.
+
+## Historical source-qualified contracts and evidence
+
+The following records retain their original source hashes, runtime selections and checkpoint-specific limits. Their historical pending lists and package counts do not rebind current source or assert current package accounting. In particular, old371-line core hashes below describe those checkpoints; the current core binding is stated above. Native v3 history creates no compatibility path through the strict current v4 wire.
 
 ## Historical R45 source binding and public interfaces
 
@@ -113,7 +189,7 @@ Current migration status supplied by root at R53:946 owner cases yielded920 PASS
 
 The shared pure bootstrap and `activate_under` producer APIs are implemented and boundedly qualified; see [current pure bootstrap](CURRENT-PURE-BOOTSTRAP-CONTRACT.md). Earlier R45/R47 statements listing bootstrap as pending and the final R53 paragraph reporting 946 owner cases with 24 failures describe historical source snapshots. Current R58 coherent execution passed 1,052 cases with two unavailable-CUDA skips; the required ordinary-runner ENV integration failure remains OPEN. Actual BANK/CP adoption and parent publication remain open. The 28/38/66 package count and 54 requirements/22 final lenses are unchanged.
 
-## Current R67 additive atomic private capture
+## Historical R67 additive atomic private capture
 
 ```python
 OwnedWorldBackend.snapshot_with_capture(capture, *, lineage) -> (snapshot_envelope, owned_auxiliary_value)

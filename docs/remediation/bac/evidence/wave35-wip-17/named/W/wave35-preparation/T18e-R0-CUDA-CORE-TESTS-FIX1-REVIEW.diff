@@ -1,0 +1,710 @@
+--- R86/test_rng_cuda_admission.py
++++ R87/test_rng_cuda_admission.py
+@@ -4,21 +4,24 @@
+ 
+ import copy
+ import hashlib
+ import importlib
+ import inspect
+ import json
+ import multiprocessing
+ import os
+ import pickle
+ import random
++import select
++import signal
+ import threading
++import time
+ import weakref
+ from pathlib import Path
+ from types import MappingProxyType
+ from typing import Any
+ 
+ import numpy as np
+ import pytest
+ import test_world_rng_bootstrap as bootstrap
+ import torch
+ 
+@@ -79,20 +82,22 @@
+     def synchronize(self, index: int) -> None:
+         self.calls.append(("synchronize", index))
+         if self.sync_hook is not None:
+             self.sync_hook(index)
+         if index in self.sync_errors:
+             raise self.sync_errors[index]
+ 
+ 
+ class NoCUDA:
+     def __getattribute__(self, name: str) -> Any:
++        if name == "__class__":
++            return object.__getattribute__(self, name)
+         raise AssertionError(f"CPU protocol queried CUDA attribute {name}")
+ 
+ 
+ @pytest.fixture
+ def domain() -> Any:
+     actual = custody.process_rng_domain()
+     assert actual.status()[2] is False
+     yield actual
+     assert actual.status()[2] is False
+ 
+@@ -191,20 +196,27 @@
+         parameters = list(inspect.signature(getattr(custody.AmbientRNGDomain, name)).parameters.values())[1:]
+         assert tuple(parameter.name for parameter in parameters) == names
+         assert all(parameter.kind is inspect.Parameter.KEYWORD_ONLY for parameter in parameters)
+         assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
+     for name, names in {"resolve_cuda": ("device",), "complete": ("cuda_devices",), "report_failure": ("error",)}.items():
+         parameters = list(inspect.signature(getattr(custody.LocalCUDAGate, name)).parameters.values())[1:]
+         assert tuple(parameter.name for parameter in parameters) == names
+         assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
+         assert all(parameter.kind is inspect.Parameter.KEYWORD_ONLY for parameter in parameters)
+     assert len(inspect.signature(custody.LocalCUDAGate.completion_failed).parameters) == 1
++    admission_methods = {"resolve_cuda": ("device",), "enroll": ("participant", "cuda_devices"), "report_failure": ("error",)}
++    for name, names in admission_methods.items():
++        parameters = list(inspect.signature(getattr(custody.RNGAdmission, name)).parameters.values())[1:]
++        assert tuple(parameter.name for parameter in parameters) == names
++        assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
++        expected_kind = inspect.Parameter.POSITIONAL_OR_KEYWORD if name == "resolve_cuda" else inspect.Parameter.KEYWORD_ONLY
++        assert all(parameter.kind is expected_kind for parameter in parameters)
+     assert isinstance(custody._LOCAL_CUDA_CONTRACTS, MappingProxyType)
+     assert not custody._LOCAL_CUDA_CONTRACTS
+ 
+ 
+ @pytest.mark.parametrize("name", ["RNGAdmission", "LocalCUDAGate", "LocalCUDAContract"])
+ def test_new_capabilities_have_no_public_constructor(name: str) -> None:
+     capability_type = getattr(custody, name)
+     with pytest.raises(TypeError):
+         capability_type()
+ 
+@@ -471,20 +483,67 @@
+     owner = Owner()
+     participant = register(domain, owner, ())
+     monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+     for member, contract in ((participant, unissued), (object(), issued)):
+         with pytest.raises((ValueError, RuntimeError)):
+             with domain.local_cuda_access(participant=member, contract=contract):
+                 pytest.fail("unissued identity or member yielded")
+     domain.unregister(participant=participant)
+ 
+ 
++def test_local_gate_live_thread_copy_unissued_and_expired_authentication(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    contract = contract_fixture(monkeypatch, False)
++    owner = Owner()
++    participant = register(domain, owner, ())
++    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
++    body_calls: list[str] = []
++
++    def methods_refuse(gate: Any) -> None:
++        with pytest.raises((ValueError, RuntimeError)):
++            gate.resolve_cuda(device=torch.device("cuda"))
++        with pytest.raises((ValueError, RuntimeError)):
++            with gate.complete(cuda_devices=()):
++                body_calls.append("invalid completion")
++        with pytest.raises((ValueError, RuntimeError)):
++            gate.report_failure(error=RuntimeError("invalid reporter must not poison"))
++        with pytest.raises((ValueError, RuntimeError)):
++            gate.completion_failed()
++
++    done = threading.Event()
++    errors: list[BaseException] = []
++    with domain.local_cuda_access(participant=participant, contract=contract) as live:
++        for copier in (copy.copy, copy.deepcopy, pickle.dumps):
++            with pytest.raises(TypeError):
++                copier(live)
++
++        def another_thread() -> None:
++            try:
++                methods_refuse(live)
++            except BaseException as error:
++                errors.append(error)
++            finally:
++                done.set()
++
++        thread = threading.Thread(target=another_thread)
++        thread.start()
++        refused_while_live = done.wait(2)
++    thread.join(5)
++    assert not thread.is_alive()
++    assert refused_while_live, "wrong-thread local methods blocked on held domain instead of refusing"
++    assert not errors
++    methods_refuse(live)
++    methods_refuse(object.__new__(custody.LocalCUDAGate))
++    assert not body_calls
++    assert not domain.status()[2]
++    domain.unregister(participant=participant)
++
++
+ def test_local_empty_completion_queries_no_cuda(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+     contract = contract_fixture(monkeypatch, False)
+     owner = Owner()
+     participant = register(domain, owner, ())
+     monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+     with domain.local_cuda_access(participant=participant, contract=contract) as gate:
+         with gate.complete(cuda_devices=()):
+             pass
+         assert not gate.completion_failed()
+     domain.unregister(participant=participant)
+@@ -650,20 +709,21 @@
+     assert np.array_equal(actual[1], numpy[1])
+     assert actual[2:] == numpy[2:]
+     assert torch.equal(torch.get_rng_state(), cpu)
+ 
+ 
+ CHILD_CASES = (
+     "bootstrap_failure",
+     "runtime_query_failure",
+     "local_completion_single",
+     "local_completion_multiple_body",
++    "local_completion_duplicate_parent",
+     "poison_unknown_ready",
+     "poison_ready_qualified",
+     "poison_ready_healthy_only",
+     "operation_body_completion",
+ )
+ 
+ 
+ def child_identity(role: str) -> bool:
+     qualified = bootstrap._child_identity(role)
+     if qualified:
+@@ -706,20 +766,52 @@
+     elif case == "operation_body_completion":
+         with domain.admission(lineage=None) as gate:
+             gate.resolve_cuda(torch.device("cuda:0"))
+             gate.enroll(participant=participant, cuda_devices=(0,))
+         cuda.sync_errors[0] = cleanup
+         with pytest.raises(BaseExceptionGroup) as raised:
+             with domain.device_operation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(0,)):
+                 raise primary
+         assert raised.value.exceptions == (primary, cleanup)
+         assert domain._poison is cleanup
++    elif case == "local_completion_duplicate_parent":
++        contract = contract_fixture(monkeypatch, True)
++        with domain.admission(lineage=None) as gate:
++            gate.resolve_cuda(torch.device("cuda:0"))
++            gate.enroll(participant=participant, cuda_devices=(0, 1, 2))
++        cuda.sync_errors = {0: primary, 1: primary, 2: second}
++        local_calls: list[int] = []
++        with pytest.raises(BaseException) as raised:
++            with domain.operation(participant=participant, operation_kind="parent", lineage=None):
++                with domain.local_cuda_access(participant=participant, contract=contract) as local:
++                    with owner.lock:
++                        try:
++                            with local.complete(cuda_devices=(0, 1, 2)):
++                                raise primary
++                        finally:
++                            owner.quarantined = local.completion_failed()
++                            local_calls.extend(syncs(cuda))
++        leaves: list[BaseException] = []
++
++        def flatten(error: BaseException) -> None:
++            if isinstance(error, BaseExceptionGroup):
++                for child in error.exceptions:
++                    flatten(child)
++            else:
++                leaves.append(error)
++
++        flatten(raised.value)
++        assert leaves == [primary, second]
++        assert domain._poison is primary
++        assert owner.quarantined
++        assert local_calls == [0, 1, 2]
++        assert syncs(cuda)[3:4] == [0]  # authentic parent cleanup also ran; its remaining policy is unchanged
+     else:
+         contract = contract_fixture(monkeypatch, case != "poison_ready_healthy_only")
+         if case.startswith("poison_"):
+             if case != "poison_unknown_ready":
+                 with domain.local_cuda_access(participant=participant, contract=contract) as gate:
+                     gate.resolve_cuda(device=torch.device("cuda:0"))
+             with domain.admission(lineage=None) as gate:
+                 gate.report_failure(error=primary)
+             before_calls = list(cuda.calls)
+             if case == "poison_ready_qualified":
+@@ -733,41 +825,84 @@
+             else:
+                 with pytest.raises(RuntimeError):
+                     with domain.local_cuda_access(participant=participant, contract=contract):
+                         pytest.fail("unqualified poisoned local path admitted")
+                 assert cuda.calls == before_calls
+             assert domain._poison is primary
+         else:
+             cuda.sync_errors[0] = cleanup
+             if case == "local_completion_multiple_body":
+                 cuda.sync_errors[2] = second
++            sync_started, attempted, release_sync, mutated = (threading.Event() for _ in range(4))
++            observations: list[bool] = []
++            thread_errors: list[BaseException] = []
++
++            def contender() -> None:
++                try:
++                    assert sync_started.wait(3)
++                    attempted.set()
++                    with owner.lock:
++                        observations.append(owner.quarantined)
++                        mutated.set()
++                except BaseException as error:
++                    thread_errors.append(error)
++
++            def observe_barrier() -> None:
++                try:
++                    assert sync_started.wait(3)
++                    assert attempted.wait(3)
++                    assert not mutated.wait(0.05)
++                except BaseException as error:
++                    thread_errors.append(error)
++                finally:
++                    release_sync.set()
++
++            def hold_failed_completion(index: int) -> None:
++                if index == 0:
++                    sync_started.set()
++                    assert release_sync.wait(3)
++                    assert not mutated.is_set()
++
++            cuda.sync_hook = hold_failed_completion
++            mutation_thread = threading.Thread(target=contender)
++            observer_thread = threading.Thread(target=observe_barrier)
+             with domain.local_cuda_access(participant=participant, contract=contract) as gate:
+                 gate.resolve_cuda(device=torch.device("cuda:0"))
+                 with owner.lock:
+                     try:
+                         with gate.complete(cuda_devices=(0, 1, 2)):
++                            mutation_thread.start()
++                            observer_thread.start()
+                             if case == "local_completion_multiple_body":
+                                 raise primary
+                     except BaseException as error:
+                         if case == "local_completion_multiple_body":
+                             assert isinstance(error, BaseExceptionGroup)
+                             assert error.exceptions == (primary, cleanup, second)
+                         else:
+                             assert error is cleanup
+                     else:
+                         pytest.fail("completion failure returned success")
+                     finally:
+                         assert gate.completion_failed()
++                        assert attempted.is_set()
++                        assert not mutated.is_set()
+                         owner.quarantined = True
+                 assert owner.quarantined
+                 assert domain._poison is cleanup
+                 assert syncs(cuda) == [0, 1, 2]
++            mutation_thread.join(5)
++            observer_thread.join(5)
++            assert not mutation_thread.is_alive()
++            assert not observer_thread.is_alive()
++            assert not thread_errors
++            assert observations == [True]
+     assert domain.status()[2]
+     with pytest.raises(RuntimeError):
+         with domain.admission(lineage=None):
+             pytest.fail("poisoned admission yielded")
+     with pytest.raises(RuntimeError):
+         with domain.operation(participant=participant, operation_kind="ordinary", lineage=None):
+             pytest.fail("poisoned operation yielded")
+     # CPU local work remains owner-only and does not heal common poison.
+     with owner.lock:
+         owner.revision += 1
+@@ -826,10 +961,403 @@
+     finally:
+         if process.is_alive():
+             process.terminate()
+             process.join(10)
+         assert not process.is_alive()
+         queue.close()
+         queue.join_thread()
+         process.close()
+     assert custody.process_rng_domain().status()[2] is False
+     assert_ambient_unchanged(before)
++
++
++class LockProbe:
++    """Forward every observed acquisition to the same genuine RLock."""
++
++    def __init__(self, actual: Any) -> None:
++        self.actual = actual
++        self.calls = [0]
++
++    def acquire(self, *args: Any, **kwargs: Any) -> Any:
++        self.calls[0] += 1
++        return self.actual.acquire(*args, **kwargs)
++
++    def release(self) -> None:
++        self.actual.release()
++
++    def __enter__(self) -> LockProbe:
++        self.acquire()
++        return self
++
++    def __exit__(self, *exc: Any) -> None:
++        self.release()
++
++    def _is_owned(self) -> bool:
++        return self.actual._is_owned()
++
++    def _acquire_restore(self, state: Any) -> Any:
++        self.calls[0] += 1
++        return self.actual._acquire_restore(state)
++
++    def _release_save(self) -> Any:
++        return self.actual._release_save()
++
++
++class ForbiddenCUDA:
++    def __init__(self, counter: list[int]) -> None:
++        self.counter = counter
++
++    def __getattribute__(self, name: str) -> Any:
++        if name == "__class__":
++            return object.__getattribute__(self, name)
++        counter = object.__getattribute__(self, "counter")
++        counter[0] += 1
++        raise AssertionError(f"fork guard reached forbidden CUDA accessor {name}")
++
++
++def guard_state(domain: Any) -> tuple[Any, ...]:
++    return (
++        domain._pid,
++        domain._generation,
++        domain._revision,
++        domain._currency,
++        domain._ambient_revision,
++        id(domain._poison),
++        tuple(id(key) for key in domain._members),
++        tuple(id(key) for key in domain._operations),
++        tuple(id(key) for key in domain._tokens),
++        domain._cuda_ready,
++    )
++
++
++def fork_guard_grandchild(
++    trial: str,
++    actions: dict[str, Any],
++    domain: Any,
++    domain_lock: LockProbe,
++    owner_lock: LockProbe,
++    cuda_calls: list[int],
++    body_calls: list[int],
++    metadata: dict[str, Any],
++    modules: dict[str, Any],
++    identity_path: Path,
++    read_fd: int,
++    write_fd: int,
++) -> None:
++    """No imports, Torch/NumPy calls, queue use or inherited-scope unwind here."""
++    os.close(read_fd)
++    try:
++        assert os.getpid() != domain._pid
++        assert os.getppid() == domain._pid
++        os_threads = len(os.listdir("/proc/self/task"))
++        assert os_threads == 1
++        results: dict[str, Any] = {}
++        for name, action in actions.items():
++            domain_lock.calls[0] = owner_lock.calls[0] = cuda_calls[0] = body_calls[0] = 0
++            before = guard_state(domain)
++            try:
++                action()
++            except BaseException as error:
++                assert type(error) is RuntimeError
++                assert str(error) == "RNG custody cannot be inherited by another process"
++                exception_class = "builtins.RuntimeError"
++                diagnostic = str(error)
++            else:
++                raise AssertionError(f"inherited {trial}/{name} did not refuse")
++            unchanged = guard_state(domain) == before
++            assert unchanged
++            assert domain_lock.calls[0] == owner_lock.calls[0] == cuda_calls[0] == body_calls[0] == 0
++            results[name] = {
++                "exception_class": exception_class,
++                "diagnostic": diagnostic,
++                "lock_acquire_calls": domain_lock.calls[0],
++                "owner_lock_acquire_calls": owner_lock.calls[0],
++                "cuda_touch_calls": cuda_calls[0],
++                "body_calls": body_calls[0],
++                "state_unchanged": unchanged,
++            }
++        imports = {name: str(Path(module.__file__).resolve()) for name, module in modules.items()}
++        source_hashes = {name: hashlib.sha256(Path(path).read_bytes()).hexdigest() for name, path in imports.items()}
++        identity = {
++            "schema": "cuda-core-fork-guard-identity-v1",
++            "profile": "linux-fork-inherited-guard-only-v1",
++            "role": "cuda_core_inherited_pid_guard",
++            "trial": trial,
++            "pid": os.getpid(),
++            "ppid": os.getppid(),
++            "inherited_domain_pid": domain._pid,
++            **metadata,
++            "cuda_core_imports": imports,
++            "module_origin": "inherited-loaded-module-objects",
++            "source_sha256": source_hashes,
++            "os_threads": os_threads,
++            "torch_profile": None,
++            "torch_profile_unavailable_reason": "no Torch calls permitted in fork guard-only process",
++            "guard_results": results,
++        }
++        with identity_path.open("x") as stream:
++            json.dump(identity, stream, sort_keys=True)
++        acknowledgement = {
++            "trial": trial,
++            "pid": os.getpid(),
++            "ppid": os.getppid(),
++            "identity_sha256": hashlib.sha256(identity_path.read_bytes()).hexdigest(),
++            "message": f"cuda core inherited pid {trial} fail closed",
++        }
++        payload = json.dumps(acknowledgement, sort_keys=True).encode("utf-8")
++        assert len(payload) <= 4096
++        position = 0
++        while position < len(payload):
++            written = os.write(write_fd, payload[position:])
++            assert written > 0
++            position += written
++    except BaseException as error:
++        try:
++            os.write(write_fd, repr(error).encode("utf-8")[:1024])
++        finally:
++            os._exit(1)
++    os.close(write_fd)
++    os._exit(0)
++
++
++def await_owned_fork(pid: int, read_fd: int) -> tuple[int, int, bytes]:
++    deadline = time.monotonic() + 10
++    payload = bytearray()
++    reaped = False
++    eof = False
++    wait_pid, status = 0, 0
++    try:
++        os.set_blocking(read_fd, False)
++        while not (reaped and eof):
++            remaining = deadline - time.monotonic()
++            assert remaining > 0, "inherited guard exceeded owned ten-second deadline"
++            ready, _, _ = select.select([] if eof else [read_fd], [], [], min(remaining, 0.05))
++            if ready:
++                data = os.read(read_fd, 4097)
++                if data:
++                    payload.extend(data)
++                    assert len(payload) <= 4096
++                else:
++                    eof = True
++            if not reaped:
++                wait_pid, status = os.waitpid(pid, os.WNOHANG)
++                reaped = wait_pid == pid
++        return wait_pid, status, bytes(payload)
++    finally:
++        if not reaped:
++            wait_pid, _ = os.waitpid(pid, os.WNOHANG)
++            reaped = wait_pid == pid
++        if not reaped:
++            # Only our still-unreaped child can receive these signals.
++            os.kill(pid, signal.SIGTERM)
++            cleanup_deadline = time.monotonic() + 1
++            while time.monotonic() < cleanup_deadline:
++                wait_pid, _ = os.waitpid(pid, os.WNOHANG)
++                if wait_pid == pid:
++                    reaped = True
++                    break
++                select.select([], [], [], 0.01)
++            if not reaped:
++                wait_pid, _ = os.waitpid(pid, os.WNOHANG)
++                reaped = wait_pid == pid
++            if not reaped:
++                os.kill(pid, signal.SIGKILL)
++                cleanup_deadline = time.monotonic() + 1
++                while time.monotonic() < cleanup_deadline:
++                    wait_pid, _ = os.waitpid(pid, os.WNOHANG)
++                    if wait_pid == pid:
++                        reaped = True
++                        break
++                    select.select([], [], [], 0.01)
++            assert reaped, "owned fork child could not be reaped"
++
++
++def run_fork_trial(
++    trial: str,
++    gate: Any,
++    domain: Any,
++    participant: Any,
++    contract: Any,
++    domain_lock: LockProbe,
++    owner_lock: LockProbe,
++    cuda_calls: list[int],
++    metadata: dict[str, Any],
++    modules: dict[str, Any],
++    output: Path,
++) -> None:
++    device = torch.device("cuda")
++    sentinel = RuntimeError("inherited reporter must not mutate poison")
++    body_calls = [0]
++
++    def enter(context: Any) -> None:
++        with context:
++            body_calls[0] += 1
++
++    if trial == "admission":
++        actions = {
++            "resolve_cuda": lambda: gate.resolve_cuda(device),
++            "enroll": lambda: gate.enroll(participant=participant, cuda_devices=()),
++            "report_failure": lambda: gate.report_failure(error=sentinel),
++            "domain_admission": lambda: enter(domain.admission(lineage=None)),
++        }
++    else:
++        assert trial == "local"
++        actions = {
++            "resolve_cuda": lambda: gate.resolve_cuda(device=device),
++            "complete": lambda: enter(gate.complete(cuda_devices=())),
++            "completion_failed": gate.completion_failed,
++            "report_failure": lambda: gate.report_failure(error=sentinel),
++            "domain_local_cuda_access": lambda: enter(domain.local_cuda_access(participant=participant, contract=contract)),
++        }
++    identity_path = output / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
++    observation_path = output / f"fork-observation-cuda_core_inherited_pid-{trial}.json"
++    parent_pid = os.getpid()
++    read_fd, write_fd = os.pipe()
++    try:
++        parent_threads = len(os.listdir("/proc/self/task"))
++        assert parent_threads == 1, "fork guard requires exactly one actual OS task before fork"
++        pid = os.fork()
++        if pid == 0:
++            fork_guard_grandchild(
++                trial, actions, domain, domain_lock, owner_lock, cuda_calls, body_calls, metadata, modules, identity_path, read_fd, write_fd
++            )
++            os._exit(1)
++        os.close(write_fd)
++        write_fd = -1
++        wait_pid, status, payload = await_owned_fork(pid, read_fd)
++        assert os.WIFEXITED(status)
++        assert os.WEXITSTATUS(status) == 0, payload.decode("utf-8", errors="replace")
++        acknowledgement = json.loads(payload)
++        assert set(acknowledgement) == {"trial", "pid", "ppid", "identity_sha256", "message"}
++        assert acknowledgement["trial"] == trial
++        assert wait_pid == pid == acknowledgement["pid"]
++        assert acknowledgement["ppid"] == parent_pid
++        assert acknowledgement["message"] == f"cuda core inherited pid {trial} fail closed"
++        identity_hash = hashlib.sha256(identity_path.read_bytes()).hexdigest()
++        assert acknowledgement["identity_sha256"] == identity_hash
++        identity = json.loads(identity_path.read_text())
++        assert identity["pid"] == pid
++        assert identity["ppid"] == identity["inherited_domain_pid"] == parent_pid
++        with observation_path.open("x") as stream:
++            json.dump(
++                {
++                    "schema": "cuda-core-fork-guard-observation-v1",
++                    "trial": trial,
++                    "role": "cuda_core_inherited_pid_guard",
++                    "parent_pid": parent_pid,
++                    "fork_pid": pid,
++                    "waitpid_pid": wait_pid,
++                    "wait_status": status,
++                    "exit_code": os.WEXITSTATUS(status),
++                    "queued_pid": acknowledgement["pid"],
++                    "queued_ppid": acknowledgement["ppid"],
++                    "identity_sha256": identity_hash,
++                    "message": acknowledgement["message"],
++                    "parent_os_threads_before_fork": parent_threads,
++                    "manifest_sha256": metadata["manifest_sha256"],
++                },
++                stream,
++                sort_keys=True,
++            )
++    finally:
++        os.close(read_fd)
++        if write_fd != -1:
++            os.close(write_fd)
++
++
++def inherited_pid_child(queue: Any, ordinary_output: str) -> None:
++    role = "cuda_core_inherited_pid"
++    qualified = child_identity(role)
++    before = ambient_snapshot()
++    domain = custody.process_rng_domain()
++    assert not domain.status()[2]
++    metadata: dict[str, Any] = {"qualified": qualified, "base_commit": None, "candidate_tree": None, "manifest_sha256": None}
++    if qualified:
++        output = Path(os.environ["BAC_QUAL_OUTPUT"])
++        manifest_bytes = Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()
++        manifest = json.loads(manifest_bytes)
++        outer_identity = json.loads((output / f"spawn-identity-{role}.json").read_text())
++        assert manifest["base_commit"] == outer_identity["sha"] == os.environ["BAC_QUAL_SHA"]
++        assert manifest["candidate_tree"] == outer_identity["candidate_tree"] == os.environ["BAC_QUAL_TREE"]
++        metadata.update(
++            base_commit=manifest["base_commit"],
++            candidate_tree=manifest["candidate_tree"],
++            manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest(),
++        )
++        assert metadata["manifest_sha256"] == outer_identity["manifest_sha256"]
++    else:
++        output = Path(ordinary_output)
++    modules = {
++        "townlet.exploration.rng_custody": custody,
++        "test_rng_cuda_admission": importlib.import_module("test_rng_cuda_admission"),
++    }
++    owner = Owner()
++    participant = register(domain, owner, ())
++    with pytest.MonkeyPatch.context() as monkeypatch:
++        contract = contract_fixture(monkeypatch, False)
++        domain_lock, owner_lock = LockProbe(domain._lock), LockProbe(owner.lock)
++        monkeypatch.setattr(domain, "_lock", domain_lock)
++        monkeypatch.setattr(owner, "lock", owner_lock)
++        cuda_calls = [0]
++        monkeypatch.setattr(custody.torch, "cuda", ForbiddenCUDA(cuda_calls))
++        for trial in ("admission", "local"):
++            context = (
++                domain.admission(lineage=None)
++                if trial == "admission"
++                else domain.local_cuda_access(participant=participant, contract=contract)
++            )
++            with context as gate:
++                run_fork_trial(trial, gate, domain, participant, contract, domain_lock, owner_lock, cuda_calls, metadata, modules, output)
++            assert not domain.status()[2]
++            assert_ambient_unchanged(before)
++    domain.unregister(participant=participant)
++    assert not domain.status()[2]
++    assert_ambient_unchanged(before)
++    queue.put(("cuda core inherited pid gates fail closed", os.getpid(), os.getppid(), qualified))
++
++
++def test_isolated_inherited_pid_gate_refusal(tmp_path: Path) -> None:
++    assert hasattr(os, "fork") and Path("/proc/self/task").is_dir(), "Linux fork guard prerequisite unavailable; UNRUN"
++    before = ambient_snapshot()
++    parent_pid = os.getpid()
++    qualified = bootstrap._qualification_active()
++    role = "cuda_core_inherited_pid"
++    context = multiprocessing.get_context("spawn")
++    queue = context.Queue()
++    process = context.Process(target=inherited_pid_child, args=(queue, str(tmp_path)), name=role)
++    try:
++        process.start()
++        process.join(90)
++        assert not process.is_alive()
++        assert process.exitcode == 0
++        message, queued_pid, queued_ppid, child_qualified = queue.get(timeout=5)
++        assert message == "cuda core inherited pid gates fail closed"
++        assert queued_pid == process.pid
++        assert queued_ppid == parent_pid
++        assert child_qualified is qualified
++        if qualified:
++            output = Path(os.environ["BAC_QUAL_OUTPUT"])
++            with (output / f"spawn-observation-{role}.json").open("x") as stream:
++                json.dump(
++                    {
++                        "process_pid": process.pid,
++                        "queued_pid": queued_pid,
++                        "parent_pid": parent_pid,
++                        "queued_ppid": queued_ppid,
++                        "exitcode": process.exitcode,
++                        "qualified": qualified,
++                        "message": message,
++                        "manifest_sha256": hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest(),
++                    },
++                    stream,
++                    sort_keys=True,
++                )
++    finally:
++        if process.is_alive():
++            process.terminate()
++            process.join(10)
++        assert not process.is_alive()
++        queue.close()
++        queue.join_thread()
++        process.close()
++    assert not custody.process_rng_domain().status()[2]
++    assert_ambient_unchanged(before)

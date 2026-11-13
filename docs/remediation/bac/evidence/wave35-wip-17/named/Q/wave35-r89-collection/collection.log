@@ -1,0 +1,83 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 67 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_rng_cuda_admission.py>
+            <Function test_existing_cpu_registration_and_completion_query_no_cuda>
+            <Function test_existing_released_prepare_install_currentness>
+            <Function test_existing_nested_currency_distinguishes_sibling_from_open_prepare>
+            <Function test_public_required_signatures_and_empty_manifest>
+            <Function test_new_capabilities_have_no_public_constructor[RNGAdmission]>
+            <Function test_new_capabilities_have_no_public_constructor[LocalCUDAGate]>
+            <Function test_new_capabilities_have_no_public_constructor[LocalCUDAContract]>
+            <Function test_idle_admission_is_not_lineage_and_escaped_gate_refuses>
+            <Function test_admission_rejects_fabricated_lineage[lineage0]>
+            <Function test_admission_rejects_fabricated_lineage[False]>
+            <Function test_admission_rejects_fabricated_lineage[operation]>
+            <Function test_gate_lineage_and_active_enrollment_bootstrap_rules>
+            <Function test_initialized_resolve_and_noop_enroll_preserve_real_token>
+            <Function test_actual_expansion_keeps_participant_owner_and_invalidates_token>
+            <Function test_invalid_enrollment_is_atomic[devices0]>
+            <Function test_invalid_enrollment_is_atomic[devices1]>
+            <Function test_invalid_enrollment_is_atomic[devices2]>
+            <Function test_invalid_enrollment_is_atomic[devices3]>
+            <Function test_invalid_enrollment_is_atomic[devices4]>
+            <Function test_invalid_enrollment_is_atomic[devices5]>
+            <Function test_structurally_invalid_resolve_precedes_cuda_queries[device0]>
+            <Function test_structurally_invalid_resolve_precedes_cuda_queries[cuda]>
+            <Function test_structurally_invalid_resolve_precedes_cuda_queries[device2]>
+            <Function test_invalid_index_before_or_after_init_keeps_exact_phase[False]>
+            <Function test_invalid_index_before_or_after_init_keeps_exact_phase[True]>
+            <Function test_first_init_invalidates_without_operation_revision_and_dynamic_selection>
+            <Function test_bootstrap_reentry_refused_before_callbacks>
+            <Function test_mixed_operation_completion_union[False]>
+            <Function test_mixed_operation_completion_union[True]>
+            <Function test_device_operation_rejects_invalid_subset_before_body[devices0]>
+            <Function test_device_operation_rejects_invalid_subset_before_body[devices1]>
+            <Function test_device_operation_rejects_invalid_subset_before_body[devices2]>
+            <Function test_device_operation_rejects_invalid_subset_before_body[devices3]>
+            <Function test_device_operation_rejects_invalid_subset_before_body[devices4]>
+            <Function test_subset_cpu_path_never_queries_cuda>
+            <Function test_actual_gate_blocks_other_thread_and_cross_thread_capability>
+            <Function test_local_contract_rejects_unrelated_subclass_and_name_spoof[OtherOwner]>
+            <Function test_local_contract_rejects_unrelated_subclass_and_name_spoof[ChildOwner]>
+            <Function test_local_contract_rejects_unrelated_subclass_and_name_spoof[Owner]>
+            <Function test_local_contract_cannot_be_caller_declared[contract0]>
+            <Function test_local_contract_cannot_be_caller_declared[test_cuda_leaf]>
+            <Function test_local_contract_cannot_be_caller_declared[True]>
+            <Function test_local_unissued_identity_and_unknown_participant_refuse_before_cuda>
+            <Function test_local_gate_live_thread_copy_unissued_and_expired_authentication>
+            <Function test_local_empty_completion_queries_no_cuda>
+            <Function test_local_active_parent_refuses_bootstrap>
+            <Function test_local_exact_owner_instances_and_noncopyable_contract>
+            <Function test_local_completion_body_error_identity_and_no_currency_change>
+            <Function test_local_completion_validates_before_body[devices0]>
+            <Function test_local_completion_validates_before_body[devices1]>
+            <Function test_local_completion_validates_before_body[devices2]>
+            <Function test_local_completion_validates_before_body[devices3]>
+            <Function test_local_completion_validates_before_body[devices4]>
+            <Function test_local_completion_validates_before_body[devices5]>
+            <Function test_local_completion_scope_reentry_expiry_and_no_retroactive_device>
+            <Function test_local_parent_token_owner_revision_and_no_enrollment_authority>
+            <Function test_local_pin_and_owner_exclusion_through_completion>
+            <Function test_isolated_poison_protocol[bootstrap_failure]>
+            <Function test_isolated_poison_protocol[runtime_query_failure]>
+            <Function test_isolated_poison_protocol[local_completion_single]>
+            <Function test_isolated_poison_protocol[local_completion_multiple_body]>
+            <Function test_isolated_poison_protocol[local_completion_duplicate_parent]>
+            <Function test_isolated_poison_protocol[poison_unknown_ready]>
+            <Function test_isolated_poison_protocol[poison_ready_qualified]>
+            <Function test_isolated_poison_protocol[poison_ready_healthy_only]>
+            <Function test_isolated_poison_protocol[operation_body_completion]>
+            <Function test_isolated_inherited_pid_gate_refusal>
+
+========================= 67 tests collected in 0.04s ==========================

@@ -1,0 +1,133 @@
+{
+  "schema": "bac-checkpoint-independent-terminal-fix2-review-v1",
+  "producer": "/root",
+  "metadata_author": "/root/bac_astra_replay_child_verifier",
+  "reviewer": "/root/bac_astra_cuda_core_review",
+  "checkpoint_id": "wave35-wip-17",
+  "disposition": "APPROVED",
+  "spec": "APPROVED",
+  "quality": "APPROVED",
+  "findings": [],
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-qualification-subject-v3.json",
+    "sha256": "ad28132ce964ec207072d79f2ee029743a31a9c4757b3303e3409774a6a4a51a",
+    "bytes": 9274
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-terminal-review-input-v3.json",
+    "sha256": "0f65f89d18d6a58bd7b2d6eebcef5fb159bc41bf2e30d1304d1df5ac49880572",
+    "bytes": 837493
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip17-checkpoint-contract.json",
+    "sha256": "a120ee67775728dd96d587ecdb3d6f65ca217bc1c292de52e75381c4dcf0bb4f",
+    "bytes": 4221
+  },
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r89-candidate.json",
+    "sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+    "bytes": 202387
+  },
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "prior_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-FIX1-REVIEW.md",
+    "sha256": "93cdf7a9c6791154cf0fea6086b94227559c347dde5defbe86b770f1a0855691",
+    "bytes": 5405
+  },
+  "prior_attestation": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-independent-terminal-fix1-attestation.json",
+    "sha256": "7e7f9bc45afc3e8d6b2eb05dc36764ecf03d4f7ff71438e0bdadc1d31df9bab0",
+    "bytes": 4813
+  },
+  "original_substantive_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-REVIEW.md",
+    "sha256": "fc66e78c9cef31d223499e924fba5ffcbfaaeaa90df15aa92b47c58d6341e0b1",
+    "bytes": 10529
+  },
+  "report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-FIX2-REVIEW.md",
+    "sha256": "556e705652171b900d3d4353f5b7da8646c3e23e9e6088f40fc8295d111976ee",
+    "bytes": 6458
+  },
+  "fix2_evidence": {
+    "interval_inventory": {
+      "root": "W",
+      "path": "evidence-management/wip17-interval-inventory-fix2.json",
+      "sha256": "5d9931d54ec703b806638aab2a05dc8c967da6deabc0793ec690e14c95ba3b91",
+      "bytes": 136947
+    },
+    "diff": {
+      "root": "W",
+      "path": "evidence-management/wip17-metadata-fix2.diff",
+      "sha256": "26268119662795f53811677af920f5f29ff4fc3b34dc7f06471e211ca1d0bb18",
+      "bytes": 91550
+    },
+    "selector_rejection": {
+      "root": "W",
+      "path": "evidence-management/wip17-selector-attempt-2.json",
+      "sha256": "14c36ddcf7487f8909c3f273bb9c7289d2c18a690583609517f2809ccb70959b",
+      "bytes": 986
+    },
+    "late_generic_verification": {
+      "root": "W",
+      "path": "evidence-management/wip17-late-generic-custody-verification.json",
+      "sha256": "eb65e7ebea0eaf283a475d83799c8000702b5f64a734c51615f44c6d7ed4a9e9",
+      "bytes": 9577
+    },
+    "prior_attestation": {
+      "root": "W",
+      "path": "evidence-management/wip17-r89-independent-terminal-fix1-attestation.json",
+      "sha256": "7e7f9bc45afc3e8d6b2eb05dc36764ecf03d4f7ff71438e0bdadc1d31df9bab0",
+      "bytes": 4813
+    },
+    "report": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-METADATA-FIX2-REPORT.md",
+      "sha256": "10f43ab9a185250ce1a8baba9d5e8bdac130bcda88c27f6f0917045afc2c6107",
+      "bytes": 4157
+    },
+    "prior_review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-FIX1-REVIEW.md",
+      "sha256": "93cdf7a9c6791154cf0fea6086b94227559c347dde5defbe86b770f1a0855691",
+      "bytes": 5405
+    }
+  },
+  "independence": {
+    "authored_input": false,
+    "authored_subject": false,
+    "produced_late_verification": false,
+    "application_or_helper_execution_this_review": false,
+    "new_implementation_bodies": 0,
+    "whole_evidence_audit_repeated": false
+  },
+  "verification": {
+    "actual_late_generic_outputs_and_logs": 9,
+    "original_batch_files_hash_preserved": 55,
+    "new_batch_files": 9,
+    "shared_descendants": 74,
+    "batch_attempt_inventories_updated": 10,
+    "all_ten_batch_strong_custody_still_rejected": true,
+    "interval_tops": 105,
+    "terminal_child_fork_bindings_unchanged": true,
+    "application_facts_and_counts_unchanged": true,
+    "whole_input_normalized_equal_v2": true,
+    "diff_regenerated_exact": true,
+    "subject_and_lineage_hashes_verified": true
+  },
+  "scope": "Finite FIX2 metadata and actual late generic proofs only; prior scoped substantive approval retained. No new test or strong-child acceptance. Source restoration is root-attributed.",
+  "required_next": [
+    "Root sealed receipt binding v3 subject/input and this review/attestation.",
+    "Unchanged nondraft selector and existing assembly/publication equivalence/chain/remote CI gates.",
+    "All prior global mypy, runner, hardware, producer and programme obligations remain open."
+  ]
+}

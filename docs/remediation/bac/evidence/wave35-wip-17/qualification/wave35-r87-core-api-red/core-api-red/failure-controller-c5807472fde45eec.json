@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "def test_public_required_signatures_and_empty_manifest() -> None:\n        expected = {\n            \"operation\": (\"participant\", \"operation_kind\", \"lineage\"),\n            \"device_operation\": (\"participant\", \"operation_kind\", \"lineage\", \"cuda_devices\"),\n            \"admission\": (\"lineage\",),\n            \"local_cuda_access\": (\"participant\", \"contract\"),\n        }\n        for name, names in expected.items():\n>           parameters = list(inspect.signature(getattr(custody.AmbientRNGDomain, name)).parameters.values())[1:]\n                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE           AttributeError: type object 'AmbientRNGDomain' has no attribute 'device_operation'\n\ntests/test_townlet/regressions/bac/test_rng_cuda_admission.py:196: AttributeError",
+  "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c"
+}

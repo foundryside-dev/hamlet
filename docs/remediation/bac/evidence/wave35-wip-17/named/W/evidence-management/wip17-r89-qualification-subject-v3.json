@@ -1,0 +1,227 @@
+{
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip17-checkpoint-contract.json",
+    "sha256": "a120ee67775728dd96d587ecdb3d6f65ca217bc1c292de52e75381c4dcf0bb4f",
+    "bytes": 4221
+  },
+  "checkpoint_id": "wave35-wip-17",
+  "series": "wave35",
+  "interval": [
+    86,
+    89
+  ],
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r89-candidate.json",
+    "sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+    "bytes": 202387
+  },
+  "execution_subtrees": {
+    "src": "99184886274feb19fc581da773667d30e2e36ae9",
+    "tests": "f3627bc78d10b4a2e5a28e9437a894dcf7a973ce",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-terminal-review-input-v3.json",
+    "sha256": "0f65f89d18d6a58bd7b2d6eebcef5fb159bc41bf2e30d1304d1df5ac49880572",
+    "bytes": 837493
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Bounded CPU CUDA core independently qualified; root1515 unique=67core+1290coherent+109replay+49owner, independent same67 overlap. No hardware/producer/package/programme closure.",
+  "required_next": [
+    "Global mypy15 (oracle6/POP9), required native runner, actual one/two-device CUDA hardware.",
+    "Accepted replay CUDA producer activation, parent/caller integration and all remaining programme gates.",
+    "Coverage/slow/full-repository/final CI and fresh programme review."
+  ],
+  "source_delta_archive": {
+    "manifest": {
+      "root": "W",
+      "path": "evidence-management/wip17-source-deltas/manifest.json",
+      "sha256": "de7e671a51ea56f3b06213fcc7652dc2af023301b0a6c1507f4fd292a4308da1",
+      "bytes": 4969
+    },
+    "scope": "Root-produced exact nonexecutable patches; hash-inventoried only, never applied/imported/executed here."
+  },
+  "pending_inputs": [
+    "Independent terminal evidence review; final receipt seal and publication steps."
+  ],
+  "pending_root_input_checklist": null,
+  "supersedes": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-qualification-subject-v2.json",
+    "sha256": "c54fac8b6b4d9f5ab84491c178d11d9a8987b8f087ed4da9f42e0a8d2d23e83e",
+    "bytes": 7646
+  },
+  "document_review_status": {
+    "review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-CUDA-CORE-DOCS-REVIEW.md",
+      "sha256": "06d8c21110d321beca6731a529fb2749f611a315faf723dbcaa9035c6e1ece20",
+      "bytes": 7351
+    },
+    "application": {
+      "root": "W",
+      "path": "evidence-management/wip17-reviewed-document-application.json",
+      "sha256": "c67bfc9af6a30a2df1d5799234bdf8982f1cace92b9f899c128cb229830298e1",
+      "bytes": 1668
+    },
+    "equivalence": {
+      "root": "W",
+      "path": "evidence-management/wip17-preassembly-source-equivalence.json",
+      "sha256": "a5734a07bf8637156896ce7e92f956b1e7bfd35141682770678ae615e011c888",
+      "bytes": 1547
+    },
+    "scope": "Reviewed prose applied; exact root source/config/protected-artifact and subtree equivalence observation retained."
+  },
+  "publication_document_deltas": {
+    "integration": {
+      "root": "W",
+      "path": "evidence-management/wip17-reviewed-document-application.json",
+      "sha256": "c67bfc9af6a30a2df1d5799234bdf8982f1cace92b9f899c128cb229830298e1",
+      "bytes": 1668
+    },
+    "equivalence": {
+      "root": "W",
+      "path": "evidence-management/wip17-preassembly-source-equivalence.json",
+      "sha256": "a5734a07bf8637156896ce7e92f956b1e7bfd35141682770678ae615e011c888",
+      "bytes": 1547
+    },
+    "guarded_changes": {
+      "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+        "executed": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c",
+        "current": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1"
+      },
+      "docs/remediation/bac/STATUS.md": {
+        "executed": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c",
+        "current": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6"
+      }
+    },
+    "all_applied_changes": {
+      "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+        "before_sha256": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c",
+        "after_sha256": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1"
+      },
+      "README.md": {
+        "before_sha256": "8aec89e582812c92ce1a25b7a980e563c927eb134bb15e1803a069ca5c81a982",
+        "after_sha256": "020a4d5dbad1519d25d6c3e536fc142044088a84c3b444b942c1b1392b647187"
+      },
+      "docs/remediation/bac/STATUS.md": {
+        "before_sha256": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c",
+        "after_sha256": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6"
+      }
+    },
+    "scope": "Two approved guarded prose deltas: core contract and docs/remediation/bac/STATUS.md; README outside guarded set. Execution subtrees remain exact; final evidence publication tree not yet measured."
+  },
+  "retained_helper_invocation_evidence": {
+    "root": "W",
+    "path": "evidence-management/wip17-draft/retained-helper-invocation-evidence-v2.json",
+    "sha256": "edf91afdf5326539b823410a8b8f4f0ce4e58ecd08f528da47d2d6cee6f3cb9f",
+    "bytes": 141536
+  },
+  "root_helper_invocation_lineage": {
+    "root": "W",
+    "path": "evidence-management/wip17-root-helper-invocation-lineage.json",
+    "sha256": "ff95e8ab6c2f46609e289d69a569d2d85c539b8c6cd59760fec7b5a199ce3765",
+    "bytes": 21974
+  },
+  "root_adoption": {
+    "producer": "/root",
+    "metadata_author": "/root/bac_astra_replay_child_verifier",
+    "proposed_reviewer": "/root/bac_astra_cuda_core_review",
+    "independence": "Reviewer did not author terminal metadata, source implementation or document draft; prior independent actual-core verification is retained as separate scope."
+  },
+  "metadata_fix1": {
+    "change_inventory": {
+      "root": "W",
+      "path": "evidence-management/wip17-metadata-fix1-change-inventory.json",
+      "sha256": "4e512d4d690717fec31d5d55da3f3b52392c4c43e035b2fcb7062b358d0073dd",
+      "bytes": 26021
+    },
+    "diff": {
+      "root": "W",
+      "path": "evidence-management/wip17-metadata-fix1.diff",
+      "sha256": "a0f5b07a4d32eb35dc5a8ac1117a3ec9530bf73f795186835843da8a549554b4",
+      "bytes": 48975
+    },
+    "selector_rejection": {
+      "root": "W",
+      "path": "evidence-management/wip17-selector-attempt-1.json",
+      "sha256": "e5576d75944bb849066d34655bffc5828b5236a12b3f2865ef9fcbf6cfa76de8",
+      "bytes": 925
+    },
+    "report": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-METADATA-FIX1-REPORT.md",
+      "sha256": "0ad119ade0e8d3d369086dda5c27472dbec51bb198d479720ee171d52bc9f36b",
+      "bytes": 6014
+    },
+    "prior_terminal_review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-REVIEW.md",
+      "sha256": "fc66e78c9cef31d223499e924fba5ffcbfaaeaa90df15aa92b47c58d6341e0b1",
+      "bytes": 10529
+    },
+    "prior_attestation": {
+      "root": "W",
+      "path": "evidence-management/wip17-r89-independent-terminal-review-attestation-v1.json",
+      "sha256": "0f30fb9c3bb3c2a022b2ac9b582ba75b3946b3e53779d549e44598de47c141b6",
+      "bytes": 4073
+    }
+  },
+  "metadata_fix2": {
+    "interval_inventory": {
+      "root": "W",
+      "path": "evidence-management/wip17-interval-inventory-fix2.json",
+      "sha256": "5d9931d54ec703b806638aab2a05dc8c967da6deabc0793ec690e14c95ba3b91",
+      "bytes": 136947
+    },
+    "diff": {
+      "root": "W",
+      "path": "evidence-management/wip17-metadata-fix2.diff",
+      "sha256": "26268119662795f53811677af920f5f29ff4fc3b34dc7f06471e211ca1d0bb18",
+      "bytes": 91550
+    },
+    "selector_rejection": {
+      "root": "W",
+      "path": "evidence-management/wip17-selector-attempt-2.json",
+      "sha256": "14c36ddcf7487f8909c3f273bb9c7289d2c18a690583609517f2809ccb70959b",
+      "bytes": 986
+    },
+    "late_generic_verification": {
+      "root": "W",
+      "path": "evidence-management/wip17-late-generic-custody-verification.json",
+      "sha256": "eb65e7ebea0eaf283a475d83799c8000702b5f64a734c51615f44c6d7ed4a9e9",
+      "bytes": 9577
+    },
+    "prior_attestation": {
+      "root": "W",
+      "path": "evidence-management/wip17-r89-independent-terminal-fix1-attestation.json",
+      "sha256": "7e7f9bc45afc3e8d6b2eb05dc36764ecf03d4f7ff71438e0bdadc1d31df9bab0",
+      "bytes": 4813
+    },
+    "report": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-METADATA-FIX2-REPORT.md",
+      "sha256": "10f43ab9a185250ce1a8baba9d5e8bdac130bcda88c27f6f0917045afc2c6107",
+      "bytes": 4157
+    },
+    "prior_review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-FIX1-REVIEW.md",
+      "sha256": "93cdf7a9c6791154cf0fea6086b94227559c347dde5defbe86b770f1a0855691",
+      "bytes": 5405
+    }
+  }
+}

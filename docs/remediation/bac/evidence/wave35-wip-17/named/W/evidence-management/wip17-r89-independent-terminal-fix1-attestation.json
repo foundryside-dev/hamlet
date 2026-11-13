@@ -1,0 +1,131 @@
+{
+  "schema": "bac-checkpoint-independent-terminal-fix1-review-v1",
+  "producer": "/root",
+  "metadata_author": "/root/bac_astra_replay_child_verifier",
+  "reviewer": "/root/bac_astra_cuda_core_review",
+  "checkpoint_id": "wave35-wip-17",
+  "disposition": "APPROVED",
+  "spec": "APPROVED",
+  "quality": "APPROVED",
+  "scope": "Metadata FIX1 only; unchanged substantive evidence inherits prior independent review; no selector/publication/package closure.",
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-qualification-subject-v2.json",
+    "sha256": "c54fac8b6b4d9f5ab84491c178d11d9a8987b8f087ed4da9f42e0a8d2d23e83e",
+    "bytes": 7646
+  },
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-terminal-review-input-v2.json",
+    "sha256": "c7760e5ed44fc117f7cfc382d01076a4bfa595f57ec291ca8f90355981eaa759",
+    "bytes": 787172
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip17-checkpoint-contract.json",
+    "sha256": "a120ee67775728dd96d587ecdb3d6f65ca217bc1c292de52e75381c4dcf0bb4f",
+    "bytes": 4221
+  },
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r89-candidate.json",
+    "sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+    "bytes": 202387
+  },
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "prior_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-REVIEW.md",
+    "sha256": "fc66e78c9cef31d223499e924fba5ffcbfaaeaa90df15aa92b47c58d6341e0b1",
+    "bytes": 10529
+  },
+  "prior_attestation": {
+    "root": "W",
+    "path": "evidence-management/wip17-r89-independent-terminal-review-attestation-v1.json",
+    "sha256": "0f30fb9c3bb3c2a022b2ac9b582ba75b3946b3e53779d549e44598de47c141b6",
+    "bytes": 4073
+  },
+  "report": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-FIX1-REVIEW.md",
+    "sha256": "93cdf7a9c6791154cf0fea6086b94227559c347dde5defbe86b770f1a0855691",
+    "bytes": 5405
+  },
+  "fix1_evidence": {
+    "change_inventory": {
+      "root": "W",
+      "path": "evidence-management/wip17-metadata-fix1-change-inventory.json",
+      "sha256": "4e512d4d690717fec31d5d55da3f3b52392c4c43e035b2fcb7062b358d0073dd",
+      "bytes": 26021
+    },
+    "diff": {
+      "root": "W",
+      "path": "evidence-management/wip17-metadata-fix1.diff",
+      "sha256": "a0f5b07a4d32eb35dc5a8ac1117a3ec9530bf73f795186835843da8a549554b4",
+      "bytes": 48975
+    },
+    "selector_rejection": {
+      "root": "W",
+      "path": "evidence-management/wip17-selector-attempt-1.json",
+      "sha256": "e5576d75944bb849066d34655bffc5828b5236a12b3f2865ef9fcbf6cfa76de8",
+      "bytes": 925
+    },
+    "report": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-METADATA-FIX1-REPORT.md",
+      "sha256": "0ad119ade0e8d3d369086dda5c27472dbec51bb198d479720ee171d52bc9f36b",
+      "bytes": 6014
+    },
+    "prior_terminal_review": {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-WIP17-TERMINAL-REVIEW.md",
+      "sha256": "fc66e78c9cef31d223499e924fba5ffcbfaaeaa90df15aa92b47c58d6341e0b1",
+      "bytes": 10529
+    },
+    "prior_attestation": {
+      "root": "W",
+      "path": "evidence-management/wip17-r89-independent-terminal-review-attestation-v1.json",
+      "sha256": "0f30fb9c3bb3c2a022b2ac9b582ba75b3946b3e53779d549e44598de47c141b6",
+      "bytes": 4073
+    }
+  },
+  "independence": {
+    "authored_input": false,
+    "authored_subject": false,
+    "application_execution_this_review": false,
+    "new_implementation_bodies": 0,
+    "whole_evidence_audit_repeated": false
+  },
+  "verification": {
+    "added_explanation_fields": 58,
+    "executed_with_added_explanation": 54,
+    "unrun_with_added_explanation": 4,
+    "unchanged_preexisting_explanations": 10,
+    "all_attempts": 68,
+    "other_added_fields": [
+      "metadata_fix_parent"
+    ],
+    "strip_additions_deep_equal_v1": true,
+    "diff_exactly_regenerated": true,
+    "inventory_exact": true,
+    "subject_input_hash_binding_verified": true,
+    "substantive_evidence_changed": false
+  },
+  "findings": [],
+  "accounting": {
+    "root_unique_pass": 1515,
+    "independent_pass_overlapping_root": 67,
+    "hardware_unavailable_skip": 2,
+    "required_runner_deselected": 1,
+    "required_global_mypy_failures": 15,
+    "programme_qualified": 28,
+    "programme_remaining": 38,
+    "programme_total": 66
+  },
+  "required_next": [
+    "Root new sealed receipt binding v2 subject/input and independent fix1 review/attestation.",
+    "Unchanged nondraft selector and existing assembly/publication equivalence/chain/remote CI gates.",
+    "All prior required runner, global mypy, actual CUDA, B6 producer/integration and programme obligations remain open."
+  ]
+}

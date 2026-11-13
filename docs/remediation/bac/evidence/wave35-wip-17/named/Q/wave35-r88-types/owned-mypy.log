@@ -1,0 +1,2 @@
+src/townlet/exploration/rng_custody.py:369: error: "RLock" has no attribute "_is_owned"  [attr-defined]
+Found 1 error in 1 file (checked 1 source file)

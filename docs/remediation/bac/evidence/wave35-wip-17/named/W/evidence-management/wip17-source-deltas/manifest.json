@@ -1,0 +1,93 @@
+{
+  "schema": "bac-source-delta-data-v1",
+  "candidates": [
+    {
+      "candidate": "r86",
+      "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+      "candidate_tree": "264f35c14a20b9fc2a75e067fa2fdef7a0b61c8c",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r86-candidate.json",
+      "manifest_sha256": "283cc013ad65bd2d62810cfcc42dc9c82e2ea5e376216bad6607bbe7710f049a",
+      "patch": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-source-deltas/r86-from-e880ab6b.patch",
+      "patch_sha256": "139c9c6d592d13717edafdc757330dbd5295b3390e59176e9441c805e142965d",
+      "patch_bytes": 37354,
+      "changed_files": [
+        {
+          "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+          "git_blob": "4d468682ac7b596f6f6141996237a7757dcfade7",
+          "sha256": "b0f9e15457fa0a0f8e2b9cf0da63bd03b97ea96a11694d9bc74267c49fd75e60",
+          "bytes": 36170
+        }
+      ],
+      "disposition": "Inert reconstruction DATA only; never applied/imported/executed; no branch/worktree/sourcecopy created"
+    },
+    {
+      "candidate": "r87",
+      "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+      "candidate_tree": "520cdf84738ec9b9af2eb128a10dda69d71e8d2c",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r87-candidate.json",
+      "manifest_sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+      "patch": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-source-deltas/r87-from-e880ab6b.patch",
+      "patch_sha256": "189d36e853db0022912fd8685108257feb68e95cc48bb8822c246f45921440b6",
+      "patch_bytes": 60005,
+      "changed_files": [
+        {
+          "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+          "git_blob": "3cb99eef56f9138a9a22f0d019a3da60df0c57f5",
+          "sha256": "aadce55cdf8513a66535d07a0e0812f9e02e97d87be33f736096d97b679f3d2f",
+          "bytes": 58292
+        }
+      ],
+      "disposition": "Inert reconstruction DATA only; never applied/imported/executed; no branch/worktree/sourcecopy created"
+    },
+    {
+      "candidate": "r88",
+      "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+      "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r88-candidate.json",
+      "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+      "patch": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-source-deltas/r88-from-e880ab6b.patch",
+      "patch_sha256": "d0a6c4aa48fdb6d4fb72fd18b46a2e190caaa9deadb2e32a3a289ee422a67a40",
+      "patch_bytes": 94091,
+      "changed_files": [
+        {
+          "path": "src/townlet/exploration/rng_custody.py",
+          "git_blob": "15c1770aa00d31488f575c5be18806787d2c2a33",
+          "sha256": "8d63b963d39537281dc2f646edf5c1496fe33eef89357f7cafbbd19cc9ae6713",
+          "bytes": 34198
+        },
+        {
+          "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+          "git_blob": "e14cac2e5bf98881e3ddfa8e72647eef4d214059",
+          "sha256": "b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e",
+          "bytes": 59860
+        }
+      ],
+      "disposition": "Inert reconstruction DATA only; never applied/imported/executed; no branch/worktree/sourcecopy created"
+    },
+    {
+      "candidate": "r89",
+      "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+      "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r89-candidate.json",
+      "manifest_sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+      "patch": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-source-deltas/r89-from-e880ab6b.patch",
+      "patch_sha256": "ce47ecfabd5b2680dc3b7755228decda1199b310b733961b36c997ca90ea7a63",
+      "patch_bytes": 94435,
+      "changed_files": [
+        {
+          "path": "src/townlet/exploration/rng_custody.py",
+          "git_blob": "1c319d866ad99dc0916281a1b82e758c44bddaac",
+          "sha256": "0a0f19d37ac85b1584ea028e7e7268a04d18e9f39db0e41b9780181913aae477",
+          "bytes": 34506
+        },
+        {
+          "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+          "git_blob": "e14cac2e5bf98881e3ddfa8e72647eef4d214059",
+          "sha256": "b044538dfe656976c0171d81fae4c3d44bba9b47f8b5072d846cfe2d9acf962e",
+          "bytes": 59860
+        }
+      ],
+      "disposition": "Inert reconstruction DATA only; never applied/imported/executed; no branch/worktree/sourcecopy created"
+    }
+  ]
+}

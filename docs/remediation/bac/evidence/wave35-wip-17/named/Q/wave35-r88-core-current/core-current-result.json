@@ -1,0 +1,28 @@
+{
+  "name": "core-current",
+  "exit_code": 0,
+  "seconds": 4.514674663543701,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+    "-k",
+    "not test_isolated",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-x"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r88-core-current/core-current.log",
+  "sha256": "b1abc7bb58019bf9cb6dd4bbdd0de4621b0029bb9702432f84fa1b3b641abb93",
+  "candidate_tree": "93de5d431bf37aefd8853ffce57021ddd15852d5",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "manifest_sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

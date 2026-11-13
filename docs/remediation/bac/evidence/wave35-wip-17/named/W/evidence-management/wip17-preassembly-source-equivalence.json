@@ -1,0 +1,33 @@
+{
+  "schema": "bac-publication-preassembly-equivalence-v1",
+  "executed_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "preassembly_staged_tree": "96660ceea041bb95c55235a712d4c75e81db834e",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "changed_paths": [
+    "README.md",
+    "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+    "docs/remediation/bac/STATUS.md"
+  ],
+  "execution_subtrees_equal": {
+    "src": "99184886274feb19fc581da773667d30e2e36ae9",
+    "tests": "f3627bc78d10b4a2e5a28e9437a894dcf7a973ce",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "source_guards": 817,
+  "configuration_guards": 573,
+  "protected_artifacts": 13,
+  "intentional_prose_guard_delta": {
+    "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md": {
+      "executed": "d3333ee7b05a3710792b28e87fcdb10aa3ef79e51ab8c7d12245b347d405b20c",
+      "current": "09f60d3c402e9fffc6049640b2cd6c3f5469cb74c518a76331ee3312821774b1"
+    },
+    "docs/remediation/bac/STATUS.md": {
+      "executed": "cbd6b402fff559066cdba196afc463e826c557140043e924e03917617e950b9c",
+      "current": "3823fe16377749618f580513bda97c7f4f62fcd7688a8d94d4da67e3193511a6"
+    }
+  },
+  "registered_worktrees": 14,
+  "scope": "Measured current index and files; exact application execution bytes remain unchanged; only independently reviewed documentation delta. Final evidence publication tree still owed."
+}

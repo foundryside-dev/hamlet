@@ -1,0 +1,23 @@
+{
+  "schema": "bac-checkpoint-operational-notes-v1",
+  "selector_attempts": [
+    {
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-selector-attempt-1.json",
+      "disposition": "Not selected; separately preserved local operational observation."
+    },
+    {
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-selector-attempt-2.json",
+      "disposition": "Not selected; separately preserved local operational observation."
+    }
+  ],
+  "fixes": "FIX1 adds explicit unavailable-field explanations; FIX2 records nine actual late generic verifications, with all original batch files preserved and strong batch rejection unchanged. No application rerun or tool guard change.",
+  "late_generic_verification": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-17/named/W/evidence-management/wip17-late-generic-custody-verification.json",
+    "sha256": "eb65e7ebea0eaf283a475d83799c8000702b5f64a734c51615f44c6d7ed4a9e9",
+    "bytes": 9577,
+    "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-verification.json"
+  },
+  "missing_timestamps": "Original execution start/end unavailable; elapsed duration remains recorded. Later verification timestamps label only later verification.",
+  "process_lesson": "Complete generic custody verification for every retained executed attempt, including strong-child-rejected attempts, before applying publication prose. Draft selector bypasses complete final receipt validation.",
+  "scope": "No new source or acceptance scope; original28/38/66 unchanged."
+}

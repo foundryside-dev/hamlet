@@ -1,0 +1,41 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "264f35c14a20b9fc2a75e067fa2fdef7a0b61c8c",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'AmbientRNGDomain' object has no attribute 'admission'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_idle_admission_is_not_lineage_and_escaped_gate_refuses",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: type object 'AmbientRNGDomain' has no attribute 'device_operation'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AssertionError: CPU protocol queried CUDA attribute __class__",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_subset_cpu_path_never_queries_cuda",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

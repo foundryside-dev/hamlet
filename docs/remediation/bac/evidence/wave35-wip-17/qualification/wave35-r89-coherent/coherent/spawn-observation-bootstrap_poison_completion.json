@@ -1,0 +1,8 @@
+{
+  "exitcode": 0,
+  "manifest_sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+  "message": "bootstrap poison completion fail closed",
+  "process_pid": 101500,
+  "qualified": true,
+  "queued_pid": 101500
+}

@@ -1,0 +1,3455 @@
+{
+  "schema": "bac-helper-invocation-evidence-map-v1",
+  "status": "EVIDENCE MAP FOR ROOT ATTESTATION; NOT RUNTIME SELFHASH CLAIM",
+  "helpers": [
+    {
+      "helper": {
+        "root": "Q",
+        "path": "run_bac_packet_checks_locked.py",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "bytes": 2043,
+        "role": "qualification_harness"
+      },
+      "retained_evidence": [
+        {
+          "check": "wave35-r86-collection--collection",
+          "attempt": "wave35-r86-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-collection-spec.json",
+              "sha256": "463974d6df396834db0de5f9cdc37e3157e3c00b829cba970b3d66dc128331c1",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-collection/collection-result.json",
+              "sha256": "ed696a99c56fca045b65c166b19b93709e308e44be1fcaaa5c5538660cb38d3a",
+              "bytes": 858
+            }
+          ]
+        },
+        {
+          "check": "wave35-r86-core-healthy--core-healthy",
+          "attempt": "wave35-r86-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-healthy-spec.json",
+              "sha256": "87813e1de671f290377745a7c3b6a8c8889b5b93382d70b897887bcab3a54a1e",
+              "bytes": 926
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-healthy/core-healthy-result.json",
+              "sha256": "28741fe34984cce9ccae2b410e59d7e048e0eb5658361040e74e89a39476f013",
+              "bytes": 1163
+            }
+          ]
+        },
+        {
+          "check": "wave35-r86-core-api-red--core-api-red",
+          "attempt": "wave35-r86-core-api-red--core-api-red",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-api-red-spec.json",
+              "sha256": "f1196c34fc20e07ec372874846ef8724a73a2ac7db7b0b2220a5018ae074574e",
+              "bytes": 896
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-api-red/core-api-red-result.json",
+              "sha256": "3468ed80404168be79ebe7355d2cced96918d39664afbb87099aa8ded4020dd7",
+              "bytes": 1135
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-collection--collection",
+          "attempt": "wave35-r87-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-collection-spec.json",
+              "sha256": "a15a069df39b536482e34d778835e177022e02767e6876b44b99e0a54cce7e89",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-collection/collection-result.json",
+              "sha256": "dab41f4b7647bb34420528c13e7d6c984d810c4c6b33ee24b253916ed2d2f25a",
+              "bytes": 858
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-core-healthy--core-healthy",
+          "attempt": "wave35-r87-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-healthy-spec.json",
+              "sha256": "906a74a83a607b1c875089f436778bd518a937413e583f8c3c9322f0800326f7",
+              "bytes": 926
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-healthy/core-healthy-result.json",
+              "sha256": "2dd2645943c13169226a0c955f9b734a191ab55f38aa3075560a9d31c8f9b9cc",
+              "bytes": 1164
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-core-api-red--core-api-red",
+          "attempt": "wave35-r87-core-api-red--core-api-red",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-api-red-spec.json",
+              "sha256": "4df4190c1bf9197f878c6c1ad9e68a0e94b116d3cde45c6922fb83c916439d44",
+              "bytes": 896
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-api-red/core-api-red-result.json",
+              "sha256": "ed99c79c706d74e5138772b604c330eafdec54b0946a3dba94b0ffcf34c4c88f",
+              "bytes": 1134
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-collection--collection",
+          "attempt": "wave35-r88-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-collection-spec.json",
+              "sha256": "5590b2859a4b05792fd05a26e8c41cdb7b5d03215cd193ecfdb70b3b4fe405f7",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-collection/collection-result.json",
+              "sha256": "50dba91488fc698d0f0fc39014ced87e0af11ca028e997584f4fae63b4068ce6",
+              "bytes": 858
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-healthy--core-healthy",
+          "attempt": "wave35-r88-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-healthy-spec.json",
+              "sha256": "f54b8c7617f859a8378b24946cccdb40aad030aee08c3079d5ed308da99514bc",
+              "bytes": 926
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-healthy/core-healthy-result.json",
+              "sha256": "5229ecab0d22928b9c591b9c65ec49c8648bb8066c78d37a110a8a42d521661d",
+              "bytes": 1164
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-api--core-api",
+          "attempt": "wave35-r88-core-api--core-api",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-api-spec.json",
+              "sha256": "7003ca60e057c4efa488cd59be905a9ff0313e16cdd9bae859e51eb2f6925022",
+              "bytes": 888
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-api/core-api-result.json",
+              "sha256": "c7b1526e342badf55d43a2802d27780331c6530814090bc11b1a22cbe5ba8d91",
+              "bytes": 1122
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-types--owned-mypy",
+          "attempt": "wave35-r88-types--owned-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-types-spec.json",
+              "sha256": "efa6c67003d7229db7ad4654cfd0eed56322885bb35f9674f8c46d50ecea26ec",
+              "bytes": 2075
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-types/owned-mypy-result.json",
+              "sha256": "3bac75c906ad70904464b28b85e67c6257914afe4fcde72551cde2c17d97f1a5",
+              "bytes": 710
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-types--public-types",
+          "attempt": "wave35-r88-types--public-types",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-types-spec.json",
+              "sha256": "efa6c67003d7229db7ad4654cfd0eed56322885bb35f9674f8c46d50ecea26ec",
+              "bytes": 2075
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-types/public-types-result.json",
+              "sha256": "58eb7965284c25c82f6a56b666262dcd14060c2bba2065456e88adc771a5a42d",
+              "bytes": 2167
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-current--core-current",
+          "attempt": "wave35-r88-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-current-spec.json",
+              "sha256": "7910010c0dff7e45e9283c11bf064618a009acea7396eeaec54d08bedb20f3a8",
+              "bytes": 653
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-current/core-current-result.json",
+              "sha256": "9683ca9d1939cdc57b446bd06ecfc4a56fac35d86b4ca7cbe312f2865a38b242",
+              "bytes": 887
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--black-global",
+          "attempt": "wave35-r88-static--black-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static-spec.json",
+              "sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+              "bytes": 841
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/black-global-result.json",
+              "sha256": "db8e9683db4326a527a23efad247f2d22f1ab735a39123480ad6298c2f1c93b3",
+              "bytes": 719
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--no-defaults",
+          "attempt": "wave35-r88-static--no-defaults",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static-spec.json",
+              "sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+              "bytes": 841
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/no-defaults-result.json",
+              "sha256": "d9a13aaaa4148b4a696e82053d36d94683ab7b4589c56a00d9c1311fe779617a",
+              "bytes": 777
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--ruff-global",
+          "attempt": "wave35-r88-static--ruff-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static-spec.json",
+              "sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+              "bytes": 841
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/ruff-global-result.json",
+              "sha256": "58ed59eada3e129a73b4c87f1fd86c0117189008fce3aab199c3eabf9ae79265",
+              "bytes": 660
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r88-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-bootstrap-failure-spec.json",
+              "sha256": "5a195ca2bf30db2d5c3c40dfd24cd4eb6dfeb3d09e1ed1a450a83ca3dbf53503",
+              "bytes": 676
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+              "sha256": "9b9c41fbb967dd824b79fb290452460e0159f45b5f609d4f2f41111f5a2e0bea",
+              "bytes": 936
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r88-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-local-completion-multiple-body-spec.json",
+              "sha256": "f89a5eb2b30668b1f9f283dac2ea381cc036e9e89fb08f3956c1892e3a5f4dde",
+              "bytes": 715
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "6ca3d2888c76b065ff79ab420315053adb232f17c42426de3892f937bbf5fee5",
+              "bytes": 990
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r88-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-inherited-pid-spec.json",
+              "sha256": "7bd9b85c3ad141a1eff8d776774545947928769e0165cb35d2360abfabd847ec",
+              "bytes": 660
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+              "sha256": "f7e39129413e63469181832cd39f70131c421c77e23e475b086f5afe18c44d09",
+              "bytes": 917
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-coherent-collection--collection",
+          "attempt": "wave35-r89-coherent-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-collection-spec.json",
+              "sha256": "874e2c206021b4de698716be9bcf48fa6c08bfc2b7ff4363652fc5c2cf20a368",
+              "bytes": 1575
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-collection/collection-result.json",
+              "sha256": "c88b304a7a35d6c3b516e30fa1be4790b721a70a2b7c1ea447bf882a08551da0",
+              "bytes": 1764
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-coherent--coherent",
+          "attempt": "wave35-r89-coherent--coherent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-spec.json",
+              "sha256": "32ac805370bcdbddb5d36b47798514c6c83819065e74a7272b61c606a7b9bcd9",
+              "bytes": 1857
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent/coherent-result.json",
+              "sha256": "20d087fc9561de1007d5a0829232e06120b4f00f66e2ec218dc96c18b289025f",
+              "bytes": 2019
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-collection--collection",
+          "attempt": "wave35-r89-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-collection-spec.json",
+              "sha256": "65412f5d30a934d8b149173dc5748565d4503352efb68b28b2512152e84300fe",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-collection/collection-result.json",
+              "sha256": "0595f6f22742c65493346a058edb009175164f9e68d9604b63e106b262e107b2",
+              "bytes": 858
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-core-current--core-current",
+          "attempt": "wave35-r89-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-current-spec.json",
+              "sha256": "feb75586080c81298793168b9e06e90bb8fa4e0ba725a4324b2ccd9cb60e106f",
+              "bytes": 653
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-current/core-current-result.json",
+              "sha256": "36f2b80394c6231d87235f3947c401815b4a80c1694f43f0ecf9f7ed5083477e",
+              "bytes": 887
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-core-children--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-bootstrap-failure-result.json",
+              "sha256": "69e99a0665d625339a179094ac745b4a300d623a5808644f70df39e4aa584761",
+              "bytes": 924
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-bootstrap-failure-spec.json",
+              "sha256": "f356a66a74096613b72a180773b297a28e4cbe88f061597dad09909f86a9c554",
+              "bytes": 676
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+              "sha256": "77ad14e4e8196015d8209bde47b1d4e9d4c769ccd9bc8ec9829cd3c5f8dcbce9",
+              "bytes": 936
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-core-children--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-inherited-pid-result.json",
+              "sha256": "5da0061b83b4d21795d5c5e0c07dca4b09e23a7df7c5b915efbb120e5662fa7a",
+              "bytes": 907
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-inherited-pid-spec.json",
+              "sha256": "4b25cdaed9328e44f8b4780809a1e5b8ce32d62b042926760e884e509883e91e",
+              "bytes": 660
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+              "sha256": "e9c6d2577a4c47e6fbb086dc1487df7b39cb3252c52621e8f040f5f8afb37b1a",
+              "bytes": 918
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-core-children--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-local-completion-duplicate-parent-result.json",
+              "sha256": "9122a73194eede8827bb86a2437fd6d71dd0428bd0386fa79e65afc51dc200f3",
+              "bytes": 971
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-duplicate-parent-spec.json",
+              "sha256": "e3346766969b4a1b1056267286adbf1f2fa6962183f1bb55e2cb4a5cf05b361d",
+              "bytes": 724
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+              "sha256": "68d0c2b8f9328f794e3537ac41e70acc7b1860691e38151dd04da464e9094c34",
+              "bytes": 1002
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-core-children--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "72d06f39337b551a4e3b96a87f7c3f6f31758556aebda14a03eb9681378f7883",
+              "bytes": 962
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-multiple-body-spec.json",
+              "sha256": "7c3d5d5dbf697cc177e670375e880b8b65b034710b4f1846b073d97aacabcc6d",
+              "bytes": 715
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "4f46526db08efc4d456f0b77e406fcce5d8c5e22a9e2dbda1e9c09020c8a3979",
+              "bytes": 989
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-core-children--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-local-completion-single-result.json",
+              "sha256": "9afd4c4444534f62b4ae8173aa984d44d3eda89cfa7b34949038648acece155d",
+              "bytes": 941
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-single-spec.json",
+              "sha256": "29d99b82196bde82e67e54b5fb63c9adbe23d3bca9e7bcbd68315c8c3092ed0b",
+              "bytes": 694
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+              "sha256": "11ec5008461f789c8d70c98b483f8e44571a6d3400b1b05bc7da78dc6bf24493",
+              "bytes": 962
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-core-children--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-operation-body-completion-result.json",
+              "sha256": "772d3dd0e10580858d56cdcd433d3f093ba59ab6bc3e0b4a72df665a8f10a67a",
+              "bytes": 947
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-operation-body-completion-spec.json",
+              "sha256": "b18e6da586208b4762dbfcf8ace54f8d354890ea31401722e7f07a80971a8444",
+              "bytes": 700
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+              "sha256": "ab5e2ceeffd789c7ecb3a3af88ea92e6b8ec605eb1126a7532d7f13f20a9ebd7",
+              "bytes": 969
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-core-children--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-poison-ready-healthy-only-result.json",
+              "sha256": "a63fd355be4c96b0d6e8e06c88524239f455675583897bf9d8f1bf0d723b6b17",
+              "bytes": 947
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-healthy-only-spec.json",
+              "sha256": "8d1b845682af85e5be1cf300bca74aeeca17f110e91f74f29eae3760d9a18557",
+              "bytes": 700
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+              "sha256": "956b128074ac6743f2990fda1ea62c05e72e7498a15f961aa1732945cc07b780",
+              "bytes": 969
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-core-children--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-poison-ready-qualified-result.json",
+              "sha256": "e10aa4af87d534f204e5934a0b491728477a8651fc68ae42c21f2fafe2557af2",
+              "bytes": 939
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-qualified-spec.json",
+              "sha256": "ac0ca6620d59e4cf3c4f6f8fb6b9ee8dc2510c51132cfe0f4e8959ec2025fc45",
+              "bytes": 691
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+              "sha256": "a58f9d78f147c4ce17672a1ddab0e004b38dea4667d6c78e66dd7d05281cf0ba",
+              "bytes": 957
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-core-children--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-poison-unknown-ready-result.json",
+              "sha256": "3f262181d3bf760faf45f71fd6e5169ac81de3649a46b30be95b1c85b42e7d24",
+              "bytes": 932
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-unknown-ready-spec.json",
+              "sha256": "48a77494d3def86e56be2567e6c2d124f0e2edace20aaedff3f4718f46cb5a0e",
+              "bytes": 685
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+              "sha256": "3d2700a14b2e2fb5c8e9f62ed65ba43cbdb80c59331107822c7d8e4b329a8fe2",
+              "bytes": 949
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-core-children--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-runtime-query-failure-result.json",
+              "sha256": "c5012a9c43095128b4c16b699083ff1b169f7078b7b1b4911048358159054953",
+              "bytes": 935
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-runtime-query-failure-spec.json",
+              "sha256": "6d9191e8e865762c2595a3703589582d022dfa87a882eb773a95b42244cbc2ee",
+              "bytes": 688
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+              "sha256": "3a36aeae41107446062e80ac47ea3f462db288c9f20c6f562428abc34254f550",
+              "bytes": 953
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-global-mypy--global-mypy",
+          "attempt": "wave35-r89-global-mypy--global-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-global-mypy-spec.json",
+              "sha256": "f23014b07b5c764a5f9c36b2b44796abf47bfa182bea0a04d361efbf7dc7bf4b",
+              "bytes": 375
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-global-mypy/global-mypy-result.json",
+              "sha256": "a4936a3631cfd6d688caa1d51c6f8d2127391345d23148773cfbbeed1107fd19",
+              "bytes": 653
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-core-current--core-current",
+          "attempt": "wave35-r89-independent-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-core-current-spec.json",
+              "sha256": "0e4863cedccc2e2747d256fa8493eb465b89b852d5d46bdc5b6d0101e62a674c",
+              "bytes": 665
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-core-current/core-current-result.json",
+              "sha256": "942bca13e006d84fda33b9d3b6c18f078eeebde9b5b91dcbe2fdb01e6df423e2",
+              "bytes": 900
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-independent-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-bootstrap-failure-spec.json",
+              "sha256": "e66a4eb022a58db3d1e0806fb0f4bd3b98eeb48827c87dfa723daa705b93fab6",
+              "bytes": 688
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+              "sha256": "2b0ad96aed6340ccd00a34e531a724caa3d5c20f332b59c7b49033062d3209e0",
+              "bytes": 950
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-independent-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-inherited-pid-spec.json",
+              "sha256": "25c7b990df85f03e6af999de2da7ce6c57c1387e63c95755212dde79fee5cce5",
+              "bytes": 672
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+              "sha256": "7f4a98244b1efdfc9f5d235efa36a0dfb73a6ec3afa732ec5e4af1fd3cbd2a0b",
+              "bytes": 929
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent-spec.json",
+              "sha256": "0c44558c16c871cc1a4d1868deddf6e41a856e86814744ebb4679ce3af3b54cf",
+              "bytes": 736
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+              "sha256": "bfcc926e20a75af5560657f2fe524748ef33dec17206d121a5d3169959efad5a",
+              "bytes": 1013
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-multiple-body-spec.json",
+              "sha256": "e86ea76df0c0499247b04198c58005363e76174966c109bb820d7f01ecb2fa93",
+              "bytes": 727
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "257bbe2450a07ebe9381952a6c078741c0156ea96d9fd2deafceea7798b4f0e6",
+              "bytes": 1000
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-single-spec.json",
+              "sha256": "6d501bdc2598d177c08362808d0bc49bc7bf71cf74bf387f23d351693ecdb070",
+              "bytes": 706
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+              "sha256": "e3d3a3135710fb182662f839123284b1b4de0625bbcc63b151650c994ebacf28",
+              "bytes": 973
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-independent-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-operation-body-completion-spec.json",
+              "sha256": "ba9ab6a7091727610ff697bbc24910ef15830c127016c5fc42a5b63411c41532",
+              "bytes": 712
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+              "sha256": "04d427cad5ffbeec3783ecaca1f5872e1fc43f980130dda8d0f4e07a56adafa6",
+              "bytes": 981
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-independent-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-healthy-only-spec.json",
+              "sha256": "8b1e4140e9029d1d828b7f45ac17004702b12e6f555f6819cdfa2e797ba7b908",
+              "bytes": 712
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+              "sha256": "49b921b760a5ad076fba7b4b1bbda53c55ada123724c49dd147d40035732a752",
+              "bytes": 981
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-independent-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-qualified-spec.json",
+              "sha256": "65bad10939c89e080455dd960c7cbbbe7437d299f6a083b1098550daaa991e90",
+              "bytes": 703
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+              "sha256": "f2ced93321fbeb8dd1f32a0f125c35b6036aa4e564ae14102ef6d382b2593de6",
+              "bytes": 969
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-independent-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-unknown-ready-spec.json",
+              "sha256": "ecf3db7781e67def1f99b6446c7eaa6a143bec61e5a2f5bc057f82cbbb70634e",
+              "bytes": 697
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+              "sha256": "4817962ed6d30bb700a1809ad9e5e051116ce19d22e2fe900591064634e2f9fe",
+              "bytes": 961
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-independent-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-runtime-query-failure-spec.json",
+              "sha256": "a87c73caeccbd373d1548781e377d4d68e3d42f6f0cafaba0f2ac2bf742e1bf3",
+              "bytes": 700
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+              "sha256": "5324ef37aa39b6c48ff4ab5f61bc698247c2a24b7fddd9cc8271a692dacce730",
+              "bytes": 965
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-owner-sequential--owner-sequential",
+          "attempt": "wave35-r89-owner-sequential--owner-sequential",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-owner-sequential-spec.json",
+              "sha256": "ff4ec4aaded4eed670bc5c2e9352cf9d03db51779c8e6b46b69f8ad57f93d85d",
+              "bytes": 608
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-owner-sequential/owner-sequential-result.json",
+              "sha256": "460036ea6a4dde3e0d9e4757aa9203a52567bbc5dd1870bcb2d603d592c8794a",
+              "bytes": 858
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-recurrent-current--recurrent-current",
+          "attempt": "wave35-r89-recurrent-current--recurrent-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-current-spec.json",
+              "sha256": "c84f44cce4847f08cce81157544072957228f5dfd52d50c1a69fb60535a80ae6",
+              "bytes": 785
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-current/recurrent-current-result.json",
+              "sha256": "95915dc08f2e33f7f90b9055d2441b5ea9d0cb89e4dd1eefc584efd1976aeaad",
+              "bytes": 1029
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-recurrent-replay-poison--recurrent-replay-poison",
+          "attempt": "wave35-r89-recurrent-replay-poison--recurrent-replay-poison",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-replay-poison-spec.json",
+              "sha256": "e8c0f45274a96821aea414802fb4720acbb98db4b8f022e152ea19e4f0519aca",
+              "bytes": 692
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-replay-poison/recurrent-replay-poison-result.json",
+              "sha256": "f25b67514ee67ddbe893384318a6325cf7f7ab267558b6eba8f688a80c6a9a77",
+              "bytes": 949
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-replay-current--replay-current",
+          "attempt": "wave35-r89-replay-current--replay-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-current-spec.json",
+              "sha256": "7a623c46813ee49bb70e79908e8e1d31252e9a3e51a7d65c8e44bd98f35a3d15",
+              "bytes": 752
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-current/replay-current-result.json",
+              "sha256": "eb4a7554f8d0f76a8414b3ab74f3711bf782655842aa50b0faafdcec15408fab",
+              "bytes": 992
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-replay-poison--replay-poison",
+          "attempt": "wave35-r89-replay-poison--replay-poison",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-poison-spec.json",
+              "sha256": "1fd5f3eabc6ea04ef6ab05f7527d73f19e001549bc5f7ccfbd46e1cf66f7f4cc",
+              "bytes": 655
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-poison/replay-poison-result.json",
+              "sha256": "45582f61c55cb2638025aee7afe0ff8b3014dddb153410433044b7487016af22",
+              "bytes": 903
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--black-global",
+          "attempt": "wave35-r89-static--black-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static-spec.json",
+              "sha256": "89da399910c7c625ba8d987bc992abf80203877dd82af40f445fa53328d35cc6",
+              "bytes": 841
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/black-global-result.json",
+              "sha256": "6bbd465f7a189cb28db01436a3926ac3ab28a050f84fb59d59c50cfc51d44aa4",
+              "bytes": 719
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--no-defaults",
+          "attempt": "wave35-r89-static--no-defaults",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static-spec.json",
+              "sha256": "89da399910c7c625ba8d987bc992abf80203877dd82af40f445fa53328d35cc6",
+              "bytes": 841
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/no-defaults-result.json",
+              "sha256": "14e3450eea05802ee140d0f9bf7f964c2c659a70bafba5df4862bf0dfbcdb6ea",
+              "bytes": 776
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--ruff-global",
+          "attempt": "wave35-r89-static--ruff-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static-spec.json",
+              "sha256": "89da399910c7c625ba8d987bc992abf80203877dd82af40f445fa53328d35cc6",
+              "bytes": 841
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/ruff-global-result.json",
+              "sha256": "e283e579fdd30f03db6a6f32440f3ab4747827c904035fafd9d738c4a9c658a7",
+              "bytes": 660
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-types--owned-mypy",
+          "attempt": "wave35-r89-types--owned-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-types-spec.json",
+              "sha256": "b88f33266e4e287e9e8bfaa939249f24d76e68e8dd9aa25c83168b0d4d5f6c09",
+              "bytes": 2075
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-types/owned-mypy-result.json",
+              "sha256": "a52313f01d0de4da212ed818be5b37b987118bb0f534a866c74e8f793d8d5ca7",
+              "bytes": 711
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-types--public-types",
+          "attempt": "wave35-r89-types--public-types",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-types-spec.json",
+              "sha256": "b88f33266e4e287e9e8bfaa939249f24d76e68e8dd9aa25c83168b0d4d5f6c09",
+              "bytes": 2075
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-types/public-types-result.json",
+              "sha256": "90bb8ddf0dceceda49250affac58ac6ad5645c444450f34a9336911c129ea6be",
+              "bytes": 2167
+            }
+          ]
+        }
+      ],
+      "limitation": "Each structured result directly records harness_sha256; raw session invocation still belongs to root."
+    },
+    {
+      "helper": {
+        "root": "Q",
+        "path": "verify_bac_run.py",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+        "bytes": 3032,
+        "role": "runtime_custody_verifier"
+      },
+      "retained_evidence": [
+        {
+          "check": "wave35-r87-core-healthy--core-healthy",
+          "attempt": "wave35-r87-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-healthy/core-healthy-result.json",
+              "sha256": "2dd2645943c13169226a0c955f9b734a191ab55f38aa3075560a9d31c8f9b9cc",
+              "bytes": 1164
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-healthy/core-healthy-custody.json",
+              "sha256": "7a3bcdb866f5c96fd0e726164cd97df5f95ff118957123e30fae507e0e498fa5",
+              "bytes": 643
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-healthy--core-healthy",
+          "attempt": "wave35-r88-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-healthy/core-healthy-result.json",
+              "sha256": "5229ecab0d22928b9c591b9c65ec49c8648bb8066c78d37a110a8a42d521661d",
+              "bytes": 1164
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-healthy/core-healthy-custody.json",
+              "sha256": "ed492724a2145f903aec2341f565f5bd79e891be72d46e19eef548b500fbceae",
+              "bytes": 643
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-api--core-api",
+          "attempt": "wave35-r88-core-api--core-api",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-api/core-api-result.json",
+              "sha256": "c7b1526e342badf55d43a2802d27780331c6530814090bc11b1a22cbe5ba8d91",
+              "bytes": 1122
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-api/core-api-custody.json",
+              "sha256": "00fd772f27ee81076d28964cc57d7a64553055cc01ff568864a4b8804a4d2b39",
+              "bytes": 639
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-current--core-current",
+          "attempt": "wave35-r88-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-current/core-current-result.json",
+              "sha256": "9683ca9d1939cdc57b446bd06ecfc4a56fac35d86b4ca7cbe312f2865a38b242",
+              "bytes": 887
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-current/core-current-custody.json",
+              "sha256": "4c43fb1988e0832ddfe40f117ed210035c137392ac5a3e9596eebf8270fda897",
+              "bytes": 644
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r88-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+              "sha256": "9b9c41fbb967dd824b79fb290452460e0159f45b5f609d4f2f41111f5a2e0bea",
+              "bytes": 936
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+              "sha256": "5b09e24680d1f21e95d365f3167479d3cf48e5f5b63e67dde5da0f1fa23b475b",
+              "bytes": 657
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r88-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "6ca3d2888c76b065ff79ab420315053adb232f17c42426de3892f937bbf5fee5",
+              "bytes": 990
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+              "sha256": "14d1c8c30c9cb9f1c54e01b4717fe8891dfa0daf62f4593eda10502666b9a553",
+              "bytes": 672
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r88-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+              "sha256": "f7e39129413e63469181832cd39f70131c421c77e23e475b086f5afe18c44d09",
+              "bytes": 917
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+              "sha256": "7a7c64c675d6a0cb125dd48f7c149633f0f435c167b6381ff7d19a12344eaed7",
+              "bytes": 654
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-coherent--coherent",
+          "attempt": "wave35-r89-coherent--coherent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent/coherent-result.json",
+              "sha256": "20d087fc9561de1007d5a0829232e06120b4f00f66e2ec218dc96c18b289025f",
+              "bytes": 2019
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent/coherent-custody.json",
+              "sha256": "3486b134aa3720edc74e487036b71c4aff70c2a7737c4d223e6d7a7f45ae6a9f",
+              "bytes": 642
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-core-current--core-current",
+          "attempt": "wave35-r89-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-current/core-current-result.json",
+              "sha256": "36f2b80394c6231d87235f3947c401815b4a80c1694f43f0ecf9f7ed5083477e",
+              "bytes": 887
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-current/core-current-custody.json",
+              "sha256": "9cdfc614fadd957de7b1c17aef68affb6f23cb5b87f2c87a4eeb0f0ea93954bc",
+              "bytes": 644
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-core-children--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-bootstrap-failure-result.json",
+              "sha256": "69e99a0665d625339a179094ac745b4a300d623a5808644f70df39e4aa584761",
+              "bytes": 924
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-bootstrap-failure-custody.json",
+              "sha256": "0de53336d3966bb2aedc46a33c2cc8892fbca250167fff6d912e2653fed652b6",
+              "bytes": 659
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+              "sha256": "77ad14e4e8196015d8209bde47b1d4e9d4c769ccd9bc8ec9829cd3c5f8dcbce9",
+              "bytes": 936
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+              "sha256": "811d016fdf07ef6ed88890e9b79f1a28e319376d7932b9257580e1457bae4fcd",
+              "bytes": 657
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+              "sha256": "e9c6d2577a4c47e6fbb086dc1487df7b39cb3252c52621e8f040f5f8afb37b1a",
+              "bytes": 918
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+              "sha256": "45ffe751b1b094fad4f20a59484d2dfab1bfacfd4a1debab3b4de19970231a4e",
+              "bytes": 655
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+              "sha256": "68d0c2b8f9328f794e3537ac41e70acc7b1860691e38151dd04da464e9094c34",
+              "bytes": 1002
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-custody.json",
+              "sha256": "1c4eaafa03249c33b89c5a036a1d2f03db4eb67d36c32581f269342b1d7f2b98",
+              "bytes": 675
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "4f46526db08efc4d456f0b77e406fcce5d8c5e22a9e2dbda1e9c09020c8a3979",
+              "bytes": 989
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+              "sha256": "6e08cab10439a4bae7e95d46d980cd0d4ea9dd6bf2815f87969a504e290785a2",
+              "bytes": 671
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+              "sha256": "11ec5008461f789c8d70c98b483f8e44571a6d3400b1b05bc7da78dc6bf24493",
+              "bytes": 962
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-single/cuda-core-local-completion-single-custody.json",
+              "sha256": "6e2c376e22dd098b98ac16d442db90ee2cc2c17c8209b17c3e30dac2168db469",
+              "bytes": 665
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+              "sha256": "ab5e2ceeffd789c7ecb3a3af88ea92e6b8ec605eb1126a7532d7f13f20a9ebd7",
+              "bytes": 969
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-operation-body-completion/cuda-core-operation-body-completion-custody.json",
+              "sha256": "96eb220e62f275e5dfd93273099affb650918f7bdd75d76e91b217482fc4fa76",
+              "bytes": 666
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+              "sha256": "956b128074ac6743f2990fda1ea62c05e72e7498a15f961aa1732945cc07b780",
+              "bytes": 969
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-custody.json",
+              "sha256": "5c0f1a2cf21c7186c92f36239ffa5f353349a8463cb0dbc2528181b93d0f8400",
+              "bytes": 666
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+              "sha256": "a58f9d78f147c4ce17672a1ddab0e004b38dea4667d6c78e66dd7d05281cf0ba",
+              "bytes": 957
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-custody.json",
+              "sha256": "15a2db1f1559148d271dffc4da663582008859a171c90338dabac9b6c9d16bf0",
+              "bytes": 663
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+              "sha256": "3d2700a14b2e2fb5c8e9f62ed65ba43cbdb80c59331107822c7d8e4b329a8fe2",
+              "bytes": 949
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-custody.json",
+              "sha256": "5b5498d87b652da46efea3a83e2431a2b36e48839eec7b13374495dab3960f61",
+              "bytes": 661
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+              "sha256": "3a36aeae41107446062e80ac47ea3f462db288c9f20c6f562428abc34254f550",
+              "bytes": 953
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-custody.json",
+              "sha256": "94ebf23cd4401b918726491c3fd397bc874ad86bc5d58849b6c7a2f33d731707",
+              "bytes": 662
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-core-current--core-current",
+          "attempt": "wave35-r89-independent-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-core-current/core-current-result.json",
+              "sha256": "942bca13e006d84fda33b9d3b6c18f078eeebde9b5b91dcbe2fdb01e6df423e2",
+              "bytes": 900
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-core-current/core-current-custody.json",
+              "sha256": "78b17cd5ae4bee32db8e731a4e1285cf9ff164fd093c6273858bd93e1e76cae1",
+              "bytes": 645
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-independent-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+              "sha256": "2b0ad96aed6340ccd00a34e531a724caa3d5c20f332b59c7b49033062d3209e0",
+              "bytes": 950
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+              "sha256": "c74c990ecc52bbcc850bd7ddf1f99b12d72c91ed4bfcd1337515e51e93ebd21e",
+              "bytes": 659
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-independent-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+              "sha256": "7f4a98244b1efdfc9f5d235efa36a0dfb73a6ec3afa732ec5e4af1fd3cbd2a0b",
+              "bytes": 929
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+              "sha256": "6c7366cb9ed9cf5f43f81c6b7a228e9cbedafdc971c793b0f68d45dfef2d0d1a",
+              "bytes": 654
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+              "sha256": "bfcc926e20a75af5560657f2fe524748ef33dec17206d121a5d3169959efad5a",
+              "bytes": 1013
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-custody.json",
+              "sha256": "1f5329af1677fea07766dfcfd18af40e95f9db8d17a62869defa801a96aa0723",
+              "bytes": 674
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+              "sha256": "257bbe2450a07ebe9381952a6c078741c0156ea96d9fd2deafceea7798b4f0e6",
+              "bytes": 1000
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+              "sha256": "15bc2f118d7484eaedeab0948e1e2590c5f896682adfa3f9dc77688b8bdee42c",
+              "bytes": 670
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+              "sha256": "e3d3a3135710fb182662f839123284b1b4de0625bbcc63b151650c994ebacf28",
+              "bytes": 973
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-single/cuda-core-local-completion-single-custody.json",
+              "sha256": "bfab86a01d12c41c76721af5aa316559e5730918b5187bcfbde1e9139ab537a1",
+              "bytes": 664
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-independent-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+              "sha256": "04d427cad5ffbeec3783ecaca1f5872e1fc43f980130dda8d0f4e07a56adafa6",
+              "bytes": 981
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-operation-body-completion/cuda-core-operation-body-completion-custody.json",
+              "sha256": "dcfba276148a58b2b5896c51da900f88c334e455e569b8ade29d9bca5fdec99a",
+              "bytes": 666
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-independent-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+              "sha256": "49b921b760a5ad076fba7b4b1bbda53c55ada123724c49dd147d40035732a752",
+              "bytes": 981
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-custody.json",
+              "sha256": "138a1a8c6e17008cfaef72f43534619348521ad6d642b44f1619b57601ba6531",
+              "bytes": 666
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-independent-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+              "sha256": "f2ced93321fbeb8dd1f32a0f125c35b6036aa4e564ae14102ef6d382b2593de6",
+              "bytes": 969
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-custody.json",
+              "sha256": "4426198efa4b1ddd1625bb93f265c75d387b5012a287658be8f0c1f2e0faf050",
+              "bytes": 663
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-independent-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+              "sha256": "4817962ed6d30bb700a1809ad9e5e051116ce19d22e2fe900591064634e2f9fe",
+              "bytes": 961
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-custody.json",
+              "sha256": "54088f0a7c181be20995449242d32506947fcb942b8be98763be3b3e11dcefd6",
+              "bytes": 661
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-independent-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+              "sha256": "5324ef37aa39b6c48ff4ab5f61bc698247c2a24b7fddd9cc8271a692dacce730",
+              "bytes": 965
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-custody.json",
+              "sha256": "c3d224e04824e974bada4c9a7cc60aa2738c0b6f9b4d28cf8a0d6672faaff11c",
+              "bytes": 662
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-owner-sequential--owner-sequential",
+          "attempt": "wave35-r89-owner-sequential--owner-sequential",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-owner-sequential/owner-sequential-result.json",
+              "sha256": "460036ea6a4dde3e0d9e4757aa9203a52567bbc5dd1870bcb2d603d592c8794a",
+              "bytes": 858
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-owner-sequential/owner-sequential-custody.json",
+              "sha256": "54a1c107e14c8ffa8de4770a61cc040f5ed842e242207cc78e8bcb521a95bd2b",
+              "bytes": 648
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-recurrent-current--recurrent-current",
+          "attempt": "wave35-r89-recurrent-current--recurrent-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-current/recurrent-current-result.json",
+              "sha256": "95915dc08f2e33f7f90b9055d2441b5ea9d0cb89e4dd1eefc584efd1976aeaad",
+              "bytes": 1029
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-current/recurrent-current-custody.json",
+              "sha256": "a0973111c9bdbbc155112bbbd1ef7a482b276e2db28d2db8fe2b3e79885765b6",
+              "bytes": 650
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-recurrent-replay-poison--recurrent-replay-poison",
+          "attempt": "wave35-r89-recurrent-replay-poison--recurrent-replay-poison",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-replay-poison/recurrent-replay-poison-result.json",
+              "sha256": "f25b67514ee67ddbe893384318a6325cf7f7ab267558b6eba8f688a80c6a9a77",
+              "bytes": 949
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-replay-poison/recurrent-replay-poison-custody.json",
+              "sha256": "98861590068319bdceae244f767016631fdb860302c2edfdc108ccc95bd326b2",
+              "bytes": 654
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-replay-current--replay-current",
+          "attempt": "wave35-r89-replay-current--replay-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-current/replay-current-result.json",
+              "sha256": "eb4a7554f8d0f76a8414b3ab74f3711bf782655842aa50b0faafdcec15408fab",
+              "bytes": 992
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-current/replay-current-custody.json",
+              "sha256": "dc3bde160a0b80fa8f19ce88ddddf757397071e863c1fcb8ef2da6a84421b732",
+              "bytes": 646
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-replay-poison--replay-poison",
+          "attempt": "wave35-r89-replay-poison--replay-poison",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-poison/replay-poison-result.json",
+              "sha256": "45582f61c55cb2638025aee7afe0ff8b3014dddb153410433044b7487016af22",
+              "bytes": 903
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-poison/replay-poison-custody.json",
+              "sha256": "e86d8c317d93f527f89e7384ea347fee0d2d9691ba3f49adad89e76dfcb5a69a",
+              "bytes": 645
+            }
+          ]
+        }
+      ],
+      "limitation": "Named custody JSON records actual verification output but no verifier runtime selfhash; root must attest exact invocation/version from retained history."
+    },
+    {
+      "helper": {
+        "root": "Q",
+        "path": "verify_bac_failed_run.py",
+        "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56",
+        "bytes": 4596,
+        "role": "failed_runtime_custody_verifier"
+      },
+      "retained_evidence": [
+        {
+          "check": "wave35-r86-core-healthy--core-healthy",
+          "attempt": "wave35-r86-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-healthy/core-healthy-result.json",
+              "sha256": "28741fe34984cce9ccae2b410e59d7e048e0eb5658361040e74e89a39476f013",
+              "bytes": 1163
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-healthy/core-healthy-negative-custody.json",
+              "sha256": "8dc201411e925e6d47a5d0129dc523f0c35b87e80399c335f68c824d70304a2d",
+              "bytes": 957
+            }
+          ]
+        },
+        {
+          "check": "wave35-r86-core-api-red--core-api-red",
+          "attempt": "wave35-r86-core-api-red--core-api-red",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-api-red/core-api-red-result.json",
+              "sha256": "3468ed80404168be79ebe7355d2cced96918d39664afbb87099aa8ded4020dd7",
+              "bytes": 1135
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-api-red/core-api-red-negative-custody.json",
+              "sha256": "573f854bf77258c7799eefeaa7455bdf5eb48083f72c7ebb5d583012abb8932b",
+              "bytes": 959
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-core-api-red--core-api-red",
+          "attempt": "wave35-r87-core-api-red--core-api-red",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-api-red/core-api-red-result.json",
+              "sha256": "ed99c79c706d74e5138772b604c330eafdec54b0946a3dba94b0ffcf34c4c88f",
+              "bytes": 1134
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-api-red/core-api-red-negative-custody.json",
+              "sha256": "12c27bbab09008bff5d21380ab1c4e6ebe04b9c16722d51083508f0e41a616cb",
+              "bytes": 958
+            }
+          ]
+        }
+      ],
+      "limitation": "Named custody JSON records actual verification output but no verifier runtime selfhash; root must attest exact invocation/version from retained history."
+    },
+    {
+      "helper": {
+        "root": "Q",
+        "path": "verify_bac_static_run.py",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1",
+        "bytes": 2532,
+        "role": "static_custody_verifier"
+      },
+      "retained_evidence": [
+        {
+          "check": "wave35-r86-collection--collection",
+          "attempt": "wave35-r86-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-collection/collection-result.json",
+              "sha256": "ed696a99c56fca045b65c166b19b93709e308e44be1fcaaa5c5538660cb38d3a",
+              "bytes": 858
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-collection/static-custody.json",
+              "sha256": "d2f0b141738cd6d163148ca81b97c0db98d3745f84d01b454826d876b3fae213",
+              "bytes": 717
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-collection--collection",
+          "attempt": "wave35-r87-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-collection/collection-result.json",
+              "sha256": "dab41f4b7647bb34420528c13e7d6c984d810c4c6b33ee24b253916ed2d2f25a",
+              "bytes": 858
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-collection/static-custody.json",
+              "sha256": "43f94606117eb8056db6fa3a7ecf641697ad0478462b79fa546993734ebebe09",
+              "bytes": 717
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-collection--collection",
+          "attempt": "wave35-r88-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-collection/collection-result.json",
+              "sha256": "50dba91488fc698d0f0fc39014ced87e0af11ca028e997584f4fae63b4068ce6",
+              "bytes": 858
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-collection/static-custody.json",
+              "sha256": "d6843626a5d198ace45bd785c4bafc44603cceed006fc9998f8895ba82de9d26",
+              "bytes": 717
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-types--owned-mypy",
+          "attempt": "wave35-r88-types--owned-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-types/owned-mypy-result.json",
+              "sha256": "3bac75c906ad70904464b28b85e67c6257914afe4fcde72551cde2c17d97f1a5",
+              "bytes": 710
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-types/static-custody.json",
+              "sha256": "e8ecaeb50e8be28c73a1827ba6986b0a85ee3c5d78ffac78df947e92e1614ee5",
+              "bytes": 995
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-types--public-types",
+          "attempt": "wave35-r88-types--public-types",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-types/public-types-result.json",
+              "sha256": "58eb7965284c25c82f6a56b666262dcd14060c2bba2065456e88adc771a5a42d",
+              "bytes": 2167
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-types/static-custody.json",
+              "sha256": "e8ecaeb50e8be28c73a1827ba6986b0a85ee3c5d78ffac78df947e92e1614ee5",
+              "bytes": 995
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--black-global",
+          "attempt": "wave35-r88-static--black-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/black-global-result.json",
+              "sha256": "db8e9683db4326a527a23efad247f2d22f1ab735a39123480ad6298c2f1c93b3",
+              "bytes": 719
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/static-custody.json",
+              "sha256": "8e24006d847b2c8ebd254aff9cbe0b2ca8e48bae2c4d785ca1331585de944a08",
+              "bytes": 1281
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--no-defaults",
+          "attempt": "wave35-r88-static--no-defaults",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/no-defaults-result.json",
+              "sha256": "d9a13aaaa4148b4a696e82053d36d94683ab7b4589c56a00d9c1311fe779617a",
+              "bytes": 777
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/static-custody.json",
+              "sha256": "8e24006d847b2c8ebd254aff9cbe0b2ca8e48bae2c4d785ca1331585de944a08",
+              "bytes": 1281
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--ruff-global",
+          "attempt": "wave35-r88-static--ruff-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/ruff-global-result.json",
+              "sha256": "58ed59eada3e129a73b4c87f1fd86c0117189008fce3aab199c3eabf9ae79265",
+              "bytes": 660
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-static/static-custody.json",
+              "sha256": "8e24006d847b2c8ebd254aff9cbe0b2ca8e48bae2c4d785ca1331585de944a08",
+              "bytes": 1281
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-coherent-collection--collection",
+          "attempt": "wave35-r89-coherent-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-collection/collection-result.json",
+              "sha256": "c88b304a7a35d6c3b516e30fa1be4790b721a70a2b7c1ea447bf882a08551da0",
+              "bytes": 1764
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-collection/static-custody.json",
+              "sha256": "9db83578f31d158d418a27640924cd7afe7769fffe62f6a409ba74d5e52d4f9f",
+              "bytes": 727
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-collection--collection",
+          "attempt": "wave35-r89-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-collection/collection-result.json",
+              "sha256": "0595f6f22742c65493346a058edb009175164f9e68d9604b63e106b262e107b2",
+              "bytes": 858
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-collection/static-custody.json",
+              "sha256": "ccd53ea807b316d657b6f8b040cb955725f8e9d8d0ba6f22c999f125448cdeaf",
+              "bytes": 717
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-global-mypy--global-mypy",
+          "attempt": "wave35-r89-global-mypy--global-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-global-mypy/global-mypy-result.json",
+              "sha256": "a4936a3631cfd6d688caa1d51c6f8d2127391345d23148773cfbbeed1107fd19",
+              "bytes": 653
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-global-mypy/static-custody.json",
+              "sha256": "4a34db46f71cd2cfd893b72ba53d1e0fe05c6cc9c84cc8cd2245dcf50173deca",
+              "bytes": 722
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--black-global",
+          "attempt": "wave35-r89-static--black-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/black-global-result.json",
+              "sha256": "6bbd465f7a189cb28db01436a3926ac3ab28a050f84fb59d59c50cfc51d44aa4",
+              "bytes": 719
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/static-custody.json",
+              "sha256": "3f895deef5e8b4de477513fe3f4f46f6587d543768f2f9dff1b7ab57783fe588",
+              "bytes": 1279
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--no-defaults",
+          "attempt": "wave35-r89-static--no-defaults",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/no-defaults-result.json",
+              "sha256": "14e3450eea05802ee140d0f9bf7f964c2c659a70bafba5df4862bf0dfbcdb6ea",
+              "bytes": 776
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/static-custody.json",
+              "sha256": "3f895deef5e8b4de477513fe3f4f46f6587d543768f2f9dff1b7ab57783fe588",
+              "bytes": 1279
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--ruff-global",
+          "attempt": "wave35-r89-static--ruff-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/ruff-global-result.json",
+              "sha256": "e283e579fdd30f03db6a6f32440f3ab4747827c904035fafd9d738c4a9c658a7",
+              "bytes": 660
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-static/static-custody.json",
+              "sha256": "3f895deef5e8b4de477513fe3f4f46f6587d543768f2f9dff1b7ab57783fe588",
+              "bytes": 1279
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-types--owned-mypy",
+          "attempt": "wave35-r89-types--owned-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-types/owned-mypy-result.json",
+              "sha256": "a52313f01d0de4da212ed818be5b37b987118bb0f534a866c74e8f793d8d5ca7",
+              "bytes": 711
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-types/static-custody.json",
+              "sha256": "b427990585d667aada1c888ed1b23671e8fa59ce1a09eef103967cffd7ab426e",
+              "bytes": 995
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-types--public-types",
+          "attempt": "wave35-r89-types--public-types",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-types/public-types-result.json",
+              "sha256": "90bb8ddf0dceceda49250affac58ac6ad5645c444450f34a9336911c129ea6be",
+              "bytes": 2167
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-types/static-custody.json",
+              "sha256": "b427990585d667aada1c888ed1b23671e8fa59ce1a09eef103967cffd7ab426e",
+              "bytes": 995
+            }
+          ]
+        }
+      ],
+      "limitation": "Named custody JSON records actual verification output but no verifier runtime selfhash; root must attest exact invocation/version from retained history."
+    },
+    {
+      "helper": {
+        "root": "Q",
+        "path": "capture_wave14_round.py",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+        "bytes": 6277,
+        "role": "candidate_capture"
+      },
+      "retained_evidence": [
+        {
+          "round": 86,
+          "references": [
+            {
+              "root": "W",
+              "path": "wave35/r86-candidate.json",
+              "sha256": "283cc013ad65bd2d62810cfcc42dc9c82e2ea5e376216bad6607bbe7710f049a",
+              "bytes": 206533
+            },
+            {
+              "root": "W",
+              "path": "wave35/r86-fixture-resource-preflight.json",
+              "sha256": "2cbd5960d19e8d2020666dad8433f5293998dad4419b7095f11c0a1f6e96bf6d",
+              "bytes": 2998
+            }
+          ]
+        },
+        {
+          "round": 87,
+          "references": [
+            {
+              "root": "W",
+              "path": "wave35/r87-candidate.json",
+              "sha256": "7fe18ea72bc917308eeefcc393a839f875305601054f742e494ce270d79972b7",
+              "bytes": 206534
+            },
+            {
+              "root": "W",
+              "path": "wave35/r87-fixture-resource-preflight.json",
+              "sha256": "e2a617a3479f9b5f209a11c6c31fa5d8e9d6b689974cacce2d5306f285154559",
+              "bytes": 2965
+            }
+          ]
+        },
+        {
+          "round": 88,
+          "references": [
+            {
+              "root": "W",
+              "path": "wave35/r88-candidate.json",
+              "sha256": "1f4686d880c32e1c47e0a18f45e1575d772517f5ebd2055e27d6911a9cf60e3c",
+              "bytes": 202387
+            },
+            {
+              "root": "W",
+              "path": "wave35/r88-fixture-resource-preflight.json",
+              "sha256": "55c2a080464cb40f291935369c62574f4ed062f1c6c3450a7015c60042cc3112",
+              "bytes": 2999
+            }
+          ]
+        },
+        {
+          "round": 89,
+          "references": [
+            {
+              "root": "W",
+              "path": "wave35/r89-candidate.json",
+              "sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+              "bytes": 202387
+            },
+            {
+              "root": "W",
+              "path": "wave35/r89-fixture-resource-preflight.json",
+              "sha256": "059421ee203367eac0505b26aedfb532fac409bf69959b0356877d5fc96fda47",
+              "bytes": 2999
+            }
+          ]
+        },
+        {
+          "failure_observation": {
+            "root": "W",
+            "path": "evidence-management/r88-initial-capture-failure.json",
+            "sha256": "41920e4ffa45b69ea69edefce9e899648132f9fef77d8dfe159c9ffcbd1c2af6",
+            "bytes": 1098
+          },
+          "successful_stdout_paths": [
+            "Q/wave35-r88-capture-after-scope-seal.log",
+            "Q/wave35-r89-capture.log"
+          ],
+          "limitation": "R86/R87 per-invocation capture command/raw stdout not separately supplied here; root retained session history required."
+        }
+      ],
+      "limitation": "Candidate/preflight/output/failure observations show produced capture facts; capture helper does not runtime-selfhash."
+    },
+    {
+      "helper": {
+        "root": "Q",
+        "path": "bac_source_identity.py",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+        "bytes": 2917,
+        "role": "pytest_source_identity"
+      },
+      "retained_evidence": [
+        {
+          "check": "wave35-r86-collection--collection",
+          "attempt": "wave35-r86-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-collection-spec.json",
+              "sha256": "463974d6df396834db0de5f9cdc37e3157e3c00b829cba970b3d66dc128331c1",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-collection/collection/identity-controller.json",
+              "sha256": "5982b75fa81384af5fb03dfd9310037e9719307ae2b2ff9752de57b12899eb06",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r86-core-healthy--core-healthy",
+          "attempt": "wave35-r86-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-healthy-spec.json",
+              "sha256": "87813e1de671f290377745a7c3b6a8c8889b5b93382d70b897887bcab3a54a1e",
+              "bytes": 926
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-healthy/core-healthy/identity-controller.json",
+              "sha256": "5982b75fa81384af5fb03dfd9310037e9719307ae2b2ff9752de57b12899eb06",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r86-core-api-red--core-api-red",
+          "attempt": "wave35-r86-core-api-red--core-api-red",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-api-red-spec.json",
+              "sha256": "f1196c34fc20e07ec372874846ef8724a73a2ac7db7b0b2220a5018ae074574e",
+              "bytes": 896
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r86-core-api-red/core-api-red/identity-controller.json",
+              "sha256": "5982b75fa81384af5fb03dfd9310037e9719307ae2b2ff9752de57b12899eb06",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-collection--collection",
+          "attempt": "wave35-r87-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-collection-spec.json",
+              "sha256": "a15a069df39b536482e34d778835e177022e02767e6876b44b99e0a54cce7e89",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-collection/collection/identity-controller.json",
+              "sha256": "70afd76b8e4098ba8866bce2da4b9783c09d1e665003a30b5def1c7e31581b10",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-core-healthy--core-healthy",
+          "attempt": "wave35-r87-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-healthy-spec.json",
+              "sha256": "906a74a83a607b1c875089f436778bd518a937413e583f8c3c9322f0800326f7",
+              "bytes": 926
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-healthy/core-healthy/identity-controller.json",
+              "sha256": "70afd76b8e4098ba8866bce2da4b9783c09d1e665003a30b5def1c7e31581b10",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r87-core-api-red--core-api-red",
+          "attempt": "wave35-r87-core-api-red--core-api-red",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-api-red-spec.json",
+              "sha256": "4df4190c1bf9197f878c6c1ad9e68a0e94b116d3cde45c6922fb83c916439d44",
+              "bytes": 896
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r87-core-api-red/core-api-red/identity-controller.json",
+              "sha256": "70afd76b8e4098ba8866bce2da4b9783c09d1e665003a30b5def1c7e31581b10",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-collection--collection",
+          "attempt": "wave35-r88-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-collection-spec.json",
+              "sha256": "5590b2859a4b05792fd05a26e8c41cdb7b5d03215cd193ecfdb70b3b4fe405f7",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-collection/collection/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-healthy--core-healthy",
+          "attempt": "wave35-r88-core-healthy--core-healthy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-healthy-spec.json",
+              "sha256": "f54b8c7617f859a8378b24946cccdb40aad030aee08c3079d5ed308da99514bc",
+              "bytes": 926
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-healthy/core-healthy/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-api--core-api",
+          "attempt": "wave35-r88-core-api--core-api",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-api-spec.json",
+              "sha256": "7003ca60e057c4efa488cd59be905a9ff0313e16cdd9bae859e51eb2f6925022",
+              "bytes": 888
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-api/core-api/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-types--owned-mypy",
+          "attempt": "wave35-r88-types--owned-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-types-spec.json",
+              "sha256": "efa6c67003d7229db7ad4654cfd0eed56322885bb35f9674f8c46d50ecea26ec",
+              "bytes": 2075
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-types--public-types",
+          "attempt": "wave35-r88-types--public-types",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-types-spec.json",
+              "sha256": "efa6c67003d7229db7ad4654cfd0eed56322885bb35f9674f8c46d50ecea26ec",
+              "bytes": 2075
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-core-current--core-current",
+          "attempt": "wave35-r88-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-current-spec.json",
+              "sha256": "7910010c0dff7e45e9283c11bf064618a009acea7396eeaec54d08bedb20f3a8",
+              "bytes": 653
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-core-current/core-current/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--black-global",
+          "attempt": "wave35-r88-static--black-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static-spec.json",
+              "sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+              "bytes": 841
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--no-defaults",
+          "attempt": "wave35-r88-static--no-defaults",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static-spec.json",
+              "sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+              "bytes": 841
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-static--ruff-global",
+          "attempt": "wave35-r88-static--ruff-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-static-spec.json",
+              "sha256": "f1613bcb15081778efbb9f8a293ba72366b92efa392ece1dfd266c011d20062f",
+              "bytes": 841
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r88-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-bootstrap-failure-spec.json",
+              "sha256": "5a195ca2bf30db2d5c3c40dfd24cd4eb6dfeb3d09e1ed1a450a83ca3dbf53503",
+              "bytes": 676
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r88-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-local-completion-multiple-body-spec.json",
+              "sha256": "f89a5eb2b30668b1f9f283dac2ea381cc036e9e89fb08f3956c1892e3a5f4dde",
+              "bytes": 715
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r88-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r88-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-inherited-pid-spec.json",
+              "sha256": "7bd9b85c3ad141a1eff8d776774545947928769e0165cb35d2360abfabd847ec",
+              "bytes": 660
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r88-cuda-core-inherited-pid/cuda-core-inherited-pid/identity-controller.json",
+              "sha256": "5b84869b3aedc431232aaec4ac2a43786809279ad6ce641d83ea8399722f1bae",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-coherent-collection--collection",
+          "attempt": "wave35-r89-coherent-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-collection-spec.json",
+              "sha256": "874e2c206021b4de698716be9bcf48fa6c08bfc2b7ff4363652fc5c2cf20a368",
+              "bytes": 1575
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-collection/collection/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-coherent--coherent",
+          "attempt": "wave35-r89-coherent--coherent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent-spec.json",
+              "sha256": "32ac805370bcdbddb5d36b47798514c6c83819065e74a7272b61c606a7b9bcd9",
+              "bytes": 1857
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent/coherent/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent/coherent/identity-gw0.json",
+              "sha256": "02e5f243b88ca38453ff530fc86553d39c80f08995683020ebe4d0c41357226f",
+              "bytes": 239,
+              "role": "worker"
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-coherent/coherent/identity-gw1.json",
+              "sha256": "59820f057aacebd47116d9158c882f5c7a8e09f7a2c059f4ce69e4eeac4aebe2",
+              "bytes": 239,
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-collection--collection",
+          "attempt": "wave35-r89-collection--collection",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-collection-spec.json",
+              "sha256": "65412f5d30a934d8b149173dc5748565d4503352efb68b28b2512152e84300fe",
+              "bytes": 618
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-collection/collection/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-core-current--core-current",
+          "attempt": "wave35-r89-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-current-spec.json",
+              "sha256": "feb75586080c81298793168b9e06e90bb8fa4e0ba725a4324b2ccd9cb60e106f",
+              "bytes": 653
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-current/core-current/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-core-children--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-bootstrap-failure/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-bootstrap-failure-spec.json",
+              "sha256": "f356a66a74096613b72a180773b297a28e4cbe88f061597dad09909f86a9c554",
+              "bytes": 676
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-core-children--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-inherited-pid/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-inherited-pid-spec.json",
+              "sha256": "4b25cdaed9328e44f8b4780809a1e5b8ce32d62b042926760e884e509883e91e",
+              "bytes": 660
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-inherited-pid/cuda-core-inherited-pid/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-core-children--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-local-completion-duplicate-parent/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-duplicate-parent-spec.json",
+              "sha256": "e3346766969b4a1b1056267286adbf1f2fa6962183f1bb55e2cb4a5cf05b361d",
+              "bytes": 724
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-core-children--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-local-completion-multiple-body/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-multiple-body-spec.json",
+              "sha256": "7c3d5d5dbf697cc177e670375e880b8b65b034710b4f1846b073d97aacabcc6d",
+              "bytes": 715
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-core-children--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-local-completion-single/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-single-spec.json",
+              "sha256": "29d99b82196bde82e67e54b5fb63c9adbe23d3bca9e7bcbd68315c8c3092ed0b",
+              "bytes": 694
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-local-completion-single/cuda-core-local-completion-single/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-core-children--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-operation-body-completion/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-operation-body-completion-spec.json",
+              "sha256": "b18e6da586208b4762dbfcf8ace54f8d354890ea31401722e7f07a80971a8444",
+              "bytes": 700
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-operation-body-completion/cuda-core-operation-body-completion/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-core-children--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-poison-ready-healthy-only/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-healthy-only-spec.json",
+              "sha256": "8d1b845682af85e5be1cf300bca74aeeca17f110e91f74f29eae3760d9a18557",
+              "bytes": 700
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-core-children--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-poison-ready-qualified/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-qualified-spec.json",
+              "sha256": "ac0ca6620d59e4cf3c4f6f8fb6b9ee8dc2510c51132cfe0f4e8959ec2025fc45",
+              "bytes": 691
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-core-children--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-poison-unknown-ready/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-unknown-ready-spec.json",
+              "sha256": "48a77494d3def86e56be2567e6c2d124f0e2edace20aaedff3f4718f46cb5a0e",
+              "bytes": 685
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-core-children--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children-spec.json",
+              "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+              "bytes": 4331
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-core-children/cuda-core-runtime-query-failure/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-runtime-query-failure-spec.json",
+              "sha256": "6d9191e8e865762c2595a3703589582d022dfa87a882eb773a95b42244cbc2ee",
+              "bytes": 688
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-global-mypy--global-mypy",
+          "attempt": "wave35-r89-global-mypy--global-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-global-mypy-spec.json",
+              "sha256": "f23014b07b5c764a5f9c36b2b44796abf47bfa182bea0a04d361efbf7dc7bf4b",
+              "bytes": 375
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-core-current--core-current",
+          "attempt": "wave35-r89-independent-core-current--core-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-core-current-spec.json",
+              "sha256": "0e4863cedccc2e2747d256fa8493eb465b89b852d5d46bdc5b6d0101e62a674c",
+              "bytes": 665
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-core-current/core-current/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "attempt": "wave35-r89-independent-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-bootstrap-failure-spec.json",
+              "sha256": "e66a4eb022a58db3d1e0806fb0f4bd3b98eeb48827c87dfa723daa705b93fab6",
+              "bytes": 688
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "attempt": "wave35-r89-independent-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-inherited-pid-spec.json",
+              "sha256": "25c7b990df85f03e6af999de2da7ce6c57c1387e63c95755212dde79fee5cce5",
+              "bytes": 672
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-inherited-pid/cuda-core-inherited-pid/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent-spec.json",
+              "sha256": "0c44558c16c871cc1a4d1868deddf6e41a856e86814744ebb4679ce3af3b54cf",
+              "bytes": 736
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-multiple-body-spec.json",
+              "sha256": "e86ea76df0c0499247b04198c58005363e76174966c109bb820d7f01ecb2fa93",
+              "bytes": 727
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "attempt": "wave35-r89-independent-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-single-spec.json",
+              "sha256": "6d501bdc2598d177c08362808d0bc49bc7bf71cf74bf387f23d351693ecdb070",
+              "bytes": 706
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-local-completion-single/cuda-core-local-completion-single/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "attempt": "wave35-r89-independent-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-operation-body-completion-spec.json",
+              "sha256": "ba9ab6a7091727610ff697bbc24910ef15830c127016c5fc42a5b63411c41532",
+              "bytes": 712
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-operation-body-completion/cuda-core-operation-body-completion/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "attempt": "wave35-r89-independent-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-healthy-only-spec.json",
+              "sha256": "8b1e4140e9029d1d828b7f45ac17004702b12e6f555f6819cdfa2e797ba7b908",
+              "bytes": 712
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "attempt": "wave35-r89-independent-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-qualified-spec.json",
+              "sha256": "65bad10939c89e080455dd960c7cbbbe7437d299f6a083b1098550daaa991e90",
+              "bytes": 703
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "attempt": "wave35-r89-independent-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-unknown-ready-spec.json",
+              "sha256": "ecf3db7781e67def1f99b6446c7eaa6a143bec61e5a2f5bc057f82cbbb70634e",
+              "bytes": 697
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-independent-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "attempt": "wave35-r89-independent-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-runtime-query-failure-spec.json",
+              "sha256": "a87c73caeccbd373d1548781e377d4d68e3d42f6f0cafaba0f2ac2bf742e1bf3",
+              "bytes": 700
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-independent-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-owner-sequential--owner-sequential",
+          "attempt": "wave35-r89-owner-sequential--owner-sequential",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-owner-sequential-spec.json",
+              "sha256": "ff4ec4aaded4eed670bc5c2e9352cf9d03db51779c8e6b46b69f8ad57f93d85d",
+              "bytes": 608
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-owner-sequential/owner-sequential/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-recurrent-current--recurrent-current",
+          "attempt": "wave35-r89-recurrent-current--recurrent-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-current-spec.json",
+              "sha256": "c84f44cce4847f08cce81157544072957228f5dfd52d50c1a69fb60535a80ae6",
+              "bytes": 785
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-current/recurrent-current/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-recurrent-replay-poison--recurrent-replay-poison",
+          "attempt": "wave35-r89-recurrent-replay-poison--recurrent-replay-poison",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-replay-poison-spec.json",
+              "sha256": "e8c0f45274a96821aea414802fb4720acbb98db4b8f022e152ea19e4f0519aca",
+              "bytes": 692
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-recurrent-replay-poison/recurrent-replay-poison/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-replay-current--replay-current",
+          "attempt": "wave35-r89-replay-current--replay-current",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-current-spec.json",
+              "sha256": "7a623c46813ee49bb70e79908e8e1d31252e9a3e51a7d65c8e44bd98f35a3d15",
+              "bytes": 752
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-current/replay-current/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-replay-poison--replay-poison",
+          "attempt": "wave35-r89-replay-poison--replay-poison",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-poison-spec.json",
+              "sha256": "1fd5f3eabc6ea04ef6ab05f7527d73f19e001549bc5f7ccfbd46e1cf66f7f4cc",
+              "bytes": 655
+            },
+            {
+              "root": "Q",
+              "path": "wave35-r89-replay-poison/replay-poison/identity-controller.json",
+              "sha256": "17746ca3ea1da5fea2eba9128e564ee7aa01dcd562ca5210936e7ceab8656dc9",
+              "bytes": 246,
+              "role": "controller"
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--black-global",
+          "attempt": "wave35-r89-static--black-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static-spec.json",
+              "sha256": "89da399910c7c625ba8d987bc992abf80203877dd82af40f445fa53328d35cc6",
+              "bytes": 841
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--no-defaults",
+          "attempt": "wave35-r89-static--no-defaults",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static-spec.json",
+              "sha256": "89da399910c7c625ba8d987bc992abf80203877dd82af40f445fa53328d35cc6",
+              "bytes": 841
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-static--ruff-global",
+          "attempt": "wave35-r89-static--ruff-global",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-static-spec.json",
+              "sha256": "89da399910c7c625ba8d987bc992abf80203877dd82af40f445fa53328d35cc6",
+              "bytes": 841
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-types--owned-mypy",
+          "attempt": "wave35-r89-types--owned-mypy",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-types-spec.json",
+              "sha256": "b88f33266e4e287e9e8bfaa939249f24d76e68e8dd9aa25c83168b0d4d5f6c09",
+              "bytes": 2075
+            }
+          ]
+        },
+        {
+          "check": "wave35-r89-types--public-types",
+          "attempt": "wave35-r89-types--public-types",
+          "references": [
+            {
+              "root": "Q",
+              "path": "wave35-r89-types-spec.json",
+              "sha256": "b88f33266e4e287e9e8bfaa939249f24d76e68e8dd9aa25c83168b0d4d5f6c09",
+              "bytes": 2075
+            }
+          ]
+        }
+      ],
+      "limitation": "Specs select -p bac_source_identity and actual controller/worker identity JSON records imports/thread/source; plugin does not runtime-selfhash."
+    }
+  ],
+  "root_attestation_pending": true
+}

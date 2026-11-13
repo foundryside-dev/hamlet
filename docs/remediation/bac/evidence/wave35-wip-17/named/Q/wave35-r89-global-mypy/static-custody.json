@@ -1,0 +1,19 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "e880ab6bd3bd8ec6c16ee6c5ace123b2ed1b6a32",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "source_guards": 817,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "global-mypy",
+      "exit_code": 1,
+      "seconds": 26.269253969192505,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-global-mypy/global-mypy.log",
+      "sha256": "97b0acc6db53ae2cfe9037794211464b7dc01c75e6909adcf3c440a4dfa5a6e7"
+    }
+  ],
+  "all_passed": false,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

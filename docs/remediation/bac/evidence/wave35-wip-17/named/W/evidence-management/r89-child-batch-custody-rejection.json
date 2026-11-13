@@ -1,0 +1,24 @@
+{
+  "status": "ACTUAL TESTS PASSED BUT CHILD CUSTODY REJECTED; NOT QUALIFIED",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+  "actual_pytest_jobs": 10,
+  "actual_pytest_exits": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "actual_verification_command": "python Q/verify_bac_replay_spawn_identity.py Q/wave35-r89-core-children-spec.json 0",
+  "verification_exit_code": 1,
+  "observed_error": "ValueError: CPU harness concurrency mismatch",
+  "cause": "Root configured harness workers2. Approved strict verifier requires spec workers exactint1. This is orchestration prerequisite, not appfailure.",
+  "raw_verifier_log": null,
+  "raw_verifier_log_unavailable_reason": "Error observed in tool output; standalone verifier stdout/stderr file was not captured. No fabricated raw log.",
+  "disposition": "Preserve original spec/results/allrecords untouched. New actual one-job/worker1 invocations percase run concurrently externally. Do not change originalmetadata or relaxverifier. All10 currentbatch childresults unqualified; no duplicated testcasecounts."
+}

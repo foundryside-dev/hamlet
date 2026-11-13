@@ -1,0 +1,220 @@
+{
+  "schema": "bac-late-generic-custody-verification-v1",
+  "status": "PASS",
+  "started_at": "2026-11-13T13:10:51.913772+00:00",
+  "ended_at": "2026-11-13T13:10:52.611108+00:00",
+  "root": "/root",
+  "candidate_tree": "8416a6c8f887153d02ce8e19be9328d0fafe661e",
+  "manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r89-candidate.json",
+    "sha256": "c6c679c633d7f47c185b3cb78996ad22b93607958ebbbc48c2214e21ee38e035",
+    "bytes": 202387
+  },
+  "spec": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+    "sha256": "7d4be05fd83eed3945cfa57809b49fb63d53c8a94590a8f355d673f52bfee9d0",
+    "bytes": 4331
+  },
+  "helper": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+    "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "bytes": 3032
+  },
+  "jobs": [
+    {
+      "job_index": 1,
+      "job": "cuda-core-runtime-query-failure",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "1"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-1.log",
+        "sha256": "375a4930ee148bfa082b22f5546d680994e2d546f563f030d94e8e16cf4132e2",
+        "bytes": 662
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-runtime-query-failure-custody.json",
+        "sha256": "375a4930ee148bfa082b22f5546d680994e2d546f563f030d94e8e16cf4132e2",
+        "bytes": 662
+      }
+    },
+    {
+      "job_index": 2,
+      "job": "cuda-core-local-completion-single",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "2"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-2.log",
+        "sha256": "e666fafd86ba36868c8d40b0df54787d533ac89c2d009eaaa504e511897d50c6",
+        "bytes": 664
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-local-completion-single-custody.json",
+        "sha256": "e666fafd86ba36868c8d40b0df54787d533ac89c2d009eaaa504e511897d50c6",
+        "bytes": 664
+      }
+    },
+    {
+      "job_index": 3,
+      "job": "cuda-core-local-completion-multiple-body",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "3"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-3.log",
+        "sha256": "a2f066e410d0eff1cc41253185cc8de414f508c8ed0c6253186749624936cd7c",
+        "bytes": 671
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-local-completion-multiple-body-custody.json",
+        "sha256": "a2f066e410d0eff1cc41253185cc8de414f508c8ed0c6253186749624936cd7c",
+        "bytes": 671
+      }
+    },
+    {
+      "job_index": 4,
+      "job": "cuda-core-poison-unknown-ready",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "4"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-4.log",
+        "sha256": "465cf4059796ca6e70a3d6dfa9daa325db7ccd3447e430902eebcde5cba5f4e3",
+        "bytes": 661
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-poison-unknown-ready-custody.json",
+        "sha256": "465cf4059796ca6e70a3d6dfa9daa325db7ccd3447e430902eebcde5cba5f4e3",
+        "bytes": 661
+      }
+    },
+    {
+      "job_index": 5,
+      "job": "cuda-core-poison-ready-qualified",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "5"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-5.log",
+        "sha256": "f449eb6388e3d4555f356e8fb0ac4dd45babaf0c667769acbf09faccc9c59e08",
+        "bytes": 664
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-poison-ready-qualified-custody.json",
+        "sha256": "f449eb6388e3d4555f356e8fb0ac4dd45babaf0c667769acbf09faccc9c59e08",
+        "bytes": 664
+      }
+    },
+    {
+      "job_index": 6,
+      "job": "cuda-core-poison-ready-healthy-only",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "6"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-6.log",
+        "sha256": "faf21eb869021ab09c9aa050838e05c5c89ada66c86b6d4061ab79f0f3bbcab0",
+        "bytes": 666
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-poison-ready-healthy-only-custody.json",
+        "sha256": "faf21eb869021ab09c9aa050838e05c5c89ada66c86b6d4061ab79f0f3bbcab0",
+        "bytes": 666
+      }
+    },
+    {
+      "job_index": 7,
+      "job": "cuda-core-operation-body-completion",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "7"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-7.log",
+        "sha256": "23bcac7082309cc087c6c6930f747a51964e7b8583e5306abd7e0ed96bf93523",
+        "bytes": 666
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-operation-body-completion-custody.json",
+        "sha256": "23bcac7082309cc087c6c6930f747a51964e7b8583e5306abd7e0ed96bf93523",
+        "bytes": 666
+      }
+    },
+    {
+      "job_index": 8,
+      "job": "cuda-core-local-completion-duplicate-parent",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "8"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-8.log",
+        "sha256": "3413d2368534e2c60c32acfbc9d4fe4bd42d0e6aa9209fc650a8b2884a1b2647",
+        "bytes": 674
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-local-completion-duplicate-parent-custody.json",
+        "sha256": "3413d2368534e2c60c32acfbc9d4fe4bd42d0e6aa9209fc650a8b2884a1b2647",
+        "bytes": 674
+      }
+    },
+    {
+      "job_index": 9,
+      "job": "cuda-core-inherited-pid",
+      "command": [
+        "python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children-spec.json",
+        "9"
+      ],
+      "exit_code": 0,
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip17-late-generic-custody-9.log",
+        "sha256": "f48a23d28e9abcc8ed85ca7c3a2e5ace15e0147499e4de6f71d8946b5cc35881",
+        "bytes": 654
+      },
+      "verifier": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r89-core-children/cuda-core-inherited-pid-custody.json",
+        "sha256": "f48a23d28e9abcc8ed85ca7c3a2e5ace15e0147499e4de6f71d8946b5cc35881",
+        "bytes": 654
+      }
+    }
+  ],
+  "retained_original_files_checked": 55,
+  "original_bytes_unchanged": true,
+  "publication_docs_index_restored": true,
+  "publication_preassembly_tree": "96660ceea041bb95c55235a712d4c75e81db834e",
+  "scope": "LATE actual generic verification of retained nine original worker2 batch results and source/controller/log custody. No application rerun. Strong child protocol still REJECTED for all ten batch jobs, qualifying=false. Corrected one-job worker1 terminal witnesses alone qualify. No passing-count increase.",
+  "source_restoration": "Only three reviewed prose files temporarily returned to exact R89 tree bytes; finally restored exact reviewed publication bytes/index; no branch/worktree/source copy."
+}
